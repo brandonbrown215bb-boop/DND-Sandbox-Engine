@@ -129,7 +129,9 @@ func _ready() -> void:
 	if not combat_result.is_empty():
 		GameManager.transition_context["combat_result"] = ""
 		_handle_combat_result(combat_result)
-	
+	elif _clear_reward_pending():
+		hud.add_log("[color=yellow]The dungeon reward is still unclaimed. Make backpack space, then click the boss room to claim it.[/color]")
+
 	_highlight_accessible_rooms()
 	if not local_room_id.is_empty():
 		_enter_local_room(local_room_id)
@@ -197,7 +199,10 @@ func _on_room_clicked(coord: Vector2i) -> void:
 		return
 	if coord == party_position:
 		var current: Room = rooms.get(coord)
-		if current != null and dungeon_data.get("tactical_rooms", {}).has(str(current.id)): _enter_local_room(str(current.id))
+		if current == null: return
+		if _clear_reward_pending() and current.type == Room.RoomType.BOSS: _clear_dungeon_successfully()
+		elif current.type == Room.RoomType.LOOT and not current.is_cleared: _resolve_room_encounter(current)
+		elif dungeon_data.get("tactical_rooms", {}).has(str(current.id)): _enter_local_room(str(current.id))
 		return
 
 	# Must be neighbor room
@@ -270,20 +275,11 @@ func _resolve_room_encounter(room: Room) -> void:
 
 		Room.RoomType.LOOT:
 			hud.add_log("[color=green]You found a treasure chest![/color]")
-			# Grant loot items to the active character
-			var char_data: Character = PartyManager.get_active_characters()[0] if not PartyManager.get_active_characters().is_empty() else PlayerManager.get_active_player().get("character")
-			for item_id in room.loot_item_ids:
-				if item_id.begins_with("gold_"):
-					var amount: int = item_id.substr(5).to_int()
-					char_data.inventory.gold += amount
-					hud.add_log("%s received %d gold!" % [char_data.character_name, amount])
-				else:
-					char_data.inventory.add_item(item_id)
-					var item_name: String = DataLoader.get_item(item_id).get("name", item_id)
-					hud.add_log("%s received %s!" % [char_data.character_name, item_name])
-			room.is_cleared = true
-			_save_dungeon_state_to_manager()
-			hud.update_hud()
+			# A refused chest stays uncleared; returning to the room retries it.
+			if _deliver_reward(room.loot_item_ids):
+				room.is_cleared = true
+				_save_dungeon_state_to_manager()
+				hud.update_hud()
 
 		Room.RoomType.BOSS:
 			hud.add_log("[color=purple]Entering the Boss Chamber! The guardian awaits.[/color]")
@@ -363,6 +359,10 @@ func _complete_pending_combat() -> Room:
 	return completed_room
 
 
+func _clear_reward_pending() -> bool:
+	return boss_defeated and not dungeon_id.is_empty() and dungeon_id not in GameManager.cleared_dungeons
+
+
 func _handle_defeat() -> void:
 	hud.add_log("[color=red]Party was wiped. Opening defeat screen...[/color]")
 	hex_grid.set_process_input(false)
@@ -370,33 +370,14 @@ func _handle_defeat() -> void:
 
 
 func _clear_dungeon_successfully() -> void:
-	hud.add_log("[color=green]DUNGEON CLEARED SUCCESSFULLY![/color]")
-	if not GameManager.mark_dungeon_cleared(dungeon_id):
+	if dungeon_id.is_empty() or dungeon_id in GameManager.cleared_dungeons:
 		hud.add_log("This dungeon has already been cleared. No duplicate rewards granted.")
 		await get_tree().create_timer(1.0).timeout
 		GameManager.exit_dungeon()
 		return
-	
-	# Give campaign rewards to the party
-	var active_members := PartyManager.get_active_characters()
-	var active_char: Character = active_members[0] if not active_members.is_empty() else PlayerManager.get_active_player().get("character")
-	var loot_list: Array = dungeon_data.get("loot", [])
-	
-	if loot_list.is_empty():
-		active_char.inventory.add_item("crown_fragment")
-		hud.add_log("%s claimed the Crown Fragment!" % active_char.character_name)
-	else:
-		for loot_item in loot_list:
-			var item_id: String = loot_item.get("item_id", "")
-			if not item_id.is_empty():
-				if item_id.begins_with("gold_"):
-					var amount: int = item_id.substr(5).to_int()
-					active_char.inventory.gold += amount
-					hud.add_log("%s received %d gold!" % [active_char.character_name, amount])
-				else:
-					active_char.inventory.add_item(item_id)
-					var item_name: String = DataLoader.get_item(item_id).get("name", item_id)
-					hud.add_log("%s received %s!" % [active_char.character_name, item_name])
+	if not _pay_clear_reward():
+		return # boss stays defeated and the clear unrecorded; clicking the boss room retries
+	hud.add_log("[color=green]DUNGEON CLEARED SUCCESSFULLY![/color]")
 
 	# Trigger Milestone Clear if specified
 	var milestone_clear = dungeon_data.get("milestone_clear")
@@ -406,6 +387,44 @@ func _clear_dungeon_successfully() -> void:
 	# Return to overworld
 	await get_tree().create_timer(3.0).timeout
 	GameManager.exit_dungeon()
+
+
+## Pay the clear reward, then record the clear. Nothing is recorded unless the
+## whole reward was delivered, and a recorded clear never pays again.
+func _pay_clear_reward() -> bool:
+	if dungeon_id.is_empty() or dungeon_id in GameManager.cleared_dungeons:
+		return false
+	var entries: Array = []
+	for loot_item in dungeon_data.get("loot", []):
+		entries.append(str(loot_item.get("item_id", "")))
+	if entries.is_empty():
+		entries = ["crown_fragment"]
+	if not _deliver_reward(entries.filter(func(id): return not id.is_empty())):
+		return false
+	return GameManager.mark_dungeon_cleared(dungeon_id)
+
+
+## Give a whole reward bundle to the first active member with room for it.
+## Pays nothing when nobody has room.
+func _deliver_reward(entries: Array) -> bool:
+	var members: Array = PartyManager.get_active_characters()
+	if members.is_empty():
+		members = [PlayerManager.get_active_player().get("character")]
+	for member in members:
+		var receipt: Dictionary = member.inventory.grant_bundle(entries)
+		if not receipt.success:
+			continue
+		if receipt.gold > 0:
+			_log("%s received %d gold!" % [member.character_name, receipt.gold])
+		for id in receipt.items:
+			_log("%s received %s!" % [member.character_name, DataLoader.get_item(id).get("name", id)])
+		return true
+	_log("[color=yellow]No one has backpack room for this reward. Make space, then click this room to claim it.[/color]")
+	return false
+
+
+func _log(text: String) -> void:
+	if hud != null: hud.add_log(text) # null when lifecycle tests build the state without its scene
 
 
 ## --- System-row handlers (mirror OverworldState) ---

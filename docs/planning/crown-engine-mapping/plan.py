@@ -462,7 +462,61 @@ c("JOURNEY", "Normal creation-to-finale proof", "Campaign acceptance; S-216/S-21
   "docs/testing.md;viewport_harness.gd;crown_fresh_relaunch_probe.gd", "gameplay_proof")
 
 
+# 2026-11-09 source validation. Where a native per-ID path already exists, the
+# assignment replaces it with shared data; it must not build a second path.
+VALIDATION = {
+    "PACK": "Background packages need BACKGROUND, which has no host yet. Deliver grants through the CLEAR_REWARD deliver-or-refuse helper.",
+    "ARMOR": "Mage Armor base AC is native (src/characters/character.gd:1603). armor_proficiencies has no gameplay consumer, so untrained penalties and Shield training are genuinely new.",
+    "QUANTITY": "Native fuel consumes a whole fuel copy per lighting (src/characters/inventory.gd:938). Replace it; don't add a second fuel model.",
+    "COMPONENT": "Focus compatibility is a hardcoded item-ID check (src/characters/inventory.gd:171); replace it with item data.",
+    "DICE": "Savage Attacker and Potent Cantrip exist nowhere in src/ or data/ (data/core/feats holds only skilled.json). Champion crit is already data-driven (modify_crit_range, src/characters/character.gd:1380). GWF is native (src/characters/fighter_rules.gd:306). Potent Cantrip's half damage reuses damage_scale_by_outcome (src/combat/shared_step_executor.gd:1131), not a new halving path.",
+    "INIT": "Alert is not loaded; it is Criminal's origin feat, so it moves forward with BACKGROUND.",
+    "REPEAT": "Extend the existing damage event (src/combat/combat_action.gd:1255 into SpellEffects.publish_event, src/spells/spell_effects.gd:303) with a save gate. Don't add a new damage hook.",
+    "BUDGET": "Reuse is overstated: CombatTurnBudget tracks only Action Surge and magic_action (src/combat/combat_turn_budget.gd). Restricted-action permission is new.",
+    "POSTHIT": "Divine Smite (src/combat/combat_action.gd:2289) and Pact-only Eldritch Smite (src/characters/warlock_rules.gd:302) exist natively. Replace them; don't add a parallel post-hit cast.",
+    "DAMAGE_COPY": "Add copy as another DamageLinkRules policy (src/combat/damage_link_rules.gd) next to split/redirect.",
+    "DAMAGE_HEAL": "DamageResponseRules counter_heal (src/combat/damage_response_rules.gd:12) already heals from settled damage. Extend it for Vampiric Touch.",
+    "DEFLECT": "Deflect Attacks reduction (src/combat/combat_action.gd:2128) and the Focus-paid redirect (:1380) are native. What remains is the sight, Total Cover and 60 ft checks, plus moving it to shared data.",
+    "RIDER": "Native riders: Hunter's Mark (src/combat/combat_action.gd:1534), also hardcoded as target.marked_by_actor in src/combat/shared_step_executor.gd:552; Guiding Bolt, Divine Favor, Sneak Attack. Replace them. Only retargeting is new.",
+    "BENEFIT": "Aid, Barkskin, Heroism, Beacon of Hope, Magic Weapon and Enhance Ability already target others natively (src/spells/spell_effect_benefits.gd). The work is grant_source_benefits for other recipients. AC already has five carriers: converge on source_benefits and add no sixth.",
+    "LIFETIME": "Record the paid cast level on every lifetime owner here; DISPEL depends on it.",
+    "ITEM_MAGIC": "Shillelagh (keyed by weapon definition ID, src/characters/character.gd:388), Magic Weapon, pact weapon and Remove Curse item breaking (src/characters/curse_rules.gd:46) are native. Key them to exact copies.",
+    "WEAPON": "Mastery is a hardcoded weapon-ID map (src/characters/fighter_rules.gd:8), so renamed weapons get none. Moving mastery into item data is the core work.",
+    "GRAPPLE": "Reuse is overstated: Grappled only sets Speed 0 (src/combat/combat_action.gd:83). Attack Disadvantage against non-grapplers and Unarmed Grapple/Shove are new.",
+    "MOVE": "Fallback climb/swim cost already exists in PhysicalFactsRules.attempt_movement_step (src/combat/physical_facts_rules.gd:734), but only checks call it. Wire it into production movement. Jump is native (src/combat/combat_state.gd:2793).",
+    "GRANTED_MOVE": "Command's orders (src/combat/combat_state.gd:1258) and Repelling Blast (src/spells/spell_effect_application.gd) are native. Dissonant Whispers and Fear are new.",
+    "FALL": "Falling damage is native in combat (src/combat/combat_state.gd:7006) and in rooms (src/dungeon/local_room_rules.gd:397). Feather Fall and Slow Fall hook these; no new fall path.",
+    "PHASE": "Misty Step is already data-driven (a teleport effect with requires_sight, src/combat/travel_placement_rules.gd).",
+    "OBJECT": "Area object damage and ignition already exist (src/combat/combat_object_rules.gd:200).",
+    "TOOL": "Thieves' Tools lockpicking and Crowbar prying are native (src/dungeon/local_room_rules.gd:856). A Crowbar is required there, but in the SRD it grants Advantage.",
+    "HAZARD": "Ashvale heat is already data-driven terrain (src/dungeon/local_room_rules.gd:406).",
+    "LIGHT": "Outlined Advantage exists natively (src/combat/combat_action.gd:625).",
+    "ZONE": "Spirit Guardians, Moonbeam, Spike Growth and other zones are native per-spell code (src/spells/combat_spell_zones.gd). This is replacement, not new wiring.",
+    "WARD": "Knock suppression (src/combat/combat_object_rules.gd:335) and Arcane Lock password/designated users (:373) are native. Missing: the password UI, Knock's noise, Magic Mouth.",
+    "POOL": "Created slots (src/characters/sorcerer_rules.gd:217), Wild Resurgence (src/characters/druid_rules.gd:180), Tactical Mind (src/characters/fighter_rules.gd:241) and the shared exchange (src/characters/resource_pool_rules.gd:312) exist. Arcane Recovery is the new piece.",
+    "SUPPLY": "Per-size food/water needs and deprivation exhaustion exist (src/characters/survival_rules.gd:6). Stock, spoilage and contamination are new.",
+    "REMAINS": "The Gentle Repose clock pause (src/characters/corpse_rules.gd:56) and Revivify window/refusals (:73) are native. Wight max-HP drain and the delayed Zombie are new.",
+    "BOOK": "Wizard copying cost/time is native (src/characters/class_progression.gd:771), but it only reports hours and never spends campaign time.",
+    "ACTOR": "Build Multiattack on the existing extra-attack units, not a monster-only path.",
+    "BACKGROUND": "No background host exists (src/ui/character_creation/character_creation.gd:628: no background step yet). The four SRD backgrounds are written only as candidates in preparation/crown-characters/backgrounds. Their origin feats (Alert, Magic Initiate, Savage Attacker) are not loaded. Moved forward because every new character needs it.",
+    "CLEAR_REWARD": "Live defect: dungeon clear marks itself cleared (src/dungeon/dungeon_state.gd:372) before paying, and ignores add_item returning false on a full backpack, so a fragment can be lost. The loot room (:281) and event give_item (src/events/event_resolver.gd:615) also ignore it, and gold_ is parsed separately in each route. Build one deliver-or-refuse helper here, preflighting with PermanentProgressionRules.can_fit. PACK, EVENT_REWARD and MONSTER_REWARD use it. Moved forward.",
+    "EVENT_REWARD": "Pay through the CLEAR_REWARD delivery helper.",
+    "MONSTER_REWARD": "Pay through the CLEAR_REWARD delivery helper.",
+}
+STATUS = {"AMMO": "**Verified bounded CXM-01 delivery (2026-11-08)** in the [slice registry](../vocabulary-slices.md#exact-ammunition-spending-and-recovery). The planning target below is retained; catalog promotion, shop lot expansion and fired-ammo corrosion remain separate.",
+          "CLEAR_REWARD": "**Partial CXM-02 delivery (2026-11-09)** in the [slice registry](../vocabulary-slices.md#dungeon-reward-delivery-or-refusal): `Inventory.grant_bundle` delivers dungeon clear and loot-room rewards whole or not at all, and the clear is recorded only after payment. Real boss-clear gameplay, checkpoint relaunch proof and the active/inactive policy remain.",
+          "PACK": "**Partial CXM-03 delivery (2026-11-09)** in [progression choices](../../mechanics/progression-choices.md): generic `starting_equipment_choices` slots and one GP selector replaced the Bard/Barbarian branches. All 12 classes have their SRD kits and GP options (Fighter A/B/C via `starting_equipment_alternatives`), except Wizard B, which waits on a Spellbook ruling. Packs and their contents, Arrows, Quiver, Books, Pouch, Traveler's Clothes and the arcane-focus Quarterstaff are in the catalog; starting Arrows are stowed in the Quiver. Catalog bows don't spend Arrows yet. Background packages belong to CXM-04.",
+          "BACKGROUND": "**Partial CXM-04 delivery (2026-11-09)** in the [slice registry](../vocabulary-slices.md#background-acquisition-at-creation): backgrounds are a loaded content type with a creation step; the four SRD backgrounds grant their ability increase, skills, tool, kit or 50 GP and fixed Origin feat once, and a background character takes no legacy species ability bonuses. Alert, Savage Attacker and Magic Initiate are owned but their rules wait for CXM-05, CXM-06 and CXM-60, so the fixed Initiate spell and ability choice is not delivered."}
+# Owner-selected priority (2026-11-09): reward safety, then character origins.
+FRONT = ["BASE", "AMMO", "CLEAR_REWARD", "PACK", "BACKGROUND", "INIT", "DICE"]
+
+
 def write():
+    CAPS.sort(key=lambda cap: (FRONT.index(cap["id"]) if cap["id"] in FRONT else len(FRONT), cap["order"]))
+    for i, cap in enumerate(CAPS):
+        cap["order"], cap["assignment"] = i, "REUSE" if not i else f"CXM-{i:02}"
+        if cap["id"] in VALIDATION:
+            cap["validation"] = VALIDATION[cap["id"]]
     missing = {"AMMO", "INIT", "DAMAGE_COPY", "DISPEL", "STORAGE"}
     content = {"PACK", "CHOICE", "COMPANION", "CATALOG", "JOURNEY"}
     facts = {"CARRY", "QUANTITY", "TOOL", "DETECT", "KNOWLEDGE", "SUPPLY", "BREATH", "REMAINS", "TRAVEL", "TRAP"}
@@ -531,14 +585,16 @@ def write():
         "MULTI": {"ACQUIRE": "Only chosen secondary source/feature/subclass/resource kinds.", "CAST": "Only actual caster contribution/repertoire; accepted entry gate and noncaster progress independent."},
         "TRAP": {"WARD": "Only matching exact lock state/key policy.", "TOOL": "Only selected disarm/break task; no full tool catalog gate.", "REPAIR": "Only actual broken piece facts, not general Mending."},
         "EVENT": {"KNOWLEDGE": "Only a branch that grants/queries authored information.", "REST": "Only inn/rest service; other table routing independent."},
-        "CLEAR_REWARD": {"PACK": "Only reuse exact delivery preflight/receipt behavior if extended there; starting package catalog not required.", "EVENT": "Only selected generated/event child that owns this reward; native dungeon clear independent."},
-        "EVENT_REWARD": {"EVENT": "Only exact pending child-encounter/parent continuation.", "CLEAR_REWARD": "Only common delivery preflight/receipt if extended; all three dungeon conversions not required."},
-        "MONSTER_REWARD": {"CLEAR_REWARD": "Only collision/occurrence receipt contract at selected actual overlap.", "EVENT_REWARD": "Only bounty overlap if loot policy selects same encounter; first resolve policy."},
+        "CLEAR_REWARD": {"EVENT": "Only selected generated/event child that owns this reward; native dungeon clear independent."},
+        "EVENT_REWARD": {"EVENT": "Only exact pending child-encounter/parent continuation."},
+        "MONSTER_REWARD": {"EVENT_REWARD": "Only bounty overlap if loot policy selects same encounter; first resolve policy."},
         "COMPANION": {"BACKGROUND": "Only selected legal default/origin source.", "SPECIES": "Only selected lineage/traits.", "MULTI": "Only if companion actually multiclasses; ordinary level-up sources suffice otherwise.", "CLEAR_REWARD": "Only roster-fragment predicate/delivery actually affected."},
     }
     for key, requirements in dependent.items():
         selected[key]["prerequisites"] = []
         selected[key]["conditional_prerequisites"] = requirements
+    for key in ("PACK", "EVENT_REWARD", "MONSTER_REWARD"):
+        selected[key]["prerequisites"] = ["CLEAR_REWARD"]  # one shared delivery helper
     policy = ("Prerequisites mean only the selected needed behavior, not completion of a whole referenced assignment or parent slice. "
               "Neutral loaded production fixtures can provide it without production catalogs. Numeric order picks ready work; "
               "independent ready work may proceed. CATALOG/JOURNEY are convergence checks, not gates on narrow promotion.")
@@ -557,7 +613,8 @@ def write():
         lines += [f"## {cap['assignment']} — {cap['title']} ({cap['id']})", "",
                   f"Owner: **{cap['slice_owner']}**. Prerequisites: " + (", ".join(cap["prerequisites"]) or "accepted reuse only") + ".", "",
                   "Consumers: " + cap["concrete_consumers"], "", "Reuse: " + cap["reuse"], "",
-                  "Deliver: " + cap["remaining"], "", "Acceptance: " + cap["acceptance"], "",
+                  "Deliver: " + cap["remaining"], ""] + (["Runtime status: " + STATUS[cap["id"]], ""] if cap["id"] in STATUS else []) + (["Source check (2026-11-09): " + cap["validation"], ""] if cap.get("validation") else []) + [
+                  "Acceptance: " + cap["acceptance"], "",
                   "Evidence: " + ", ".join(f"[{Path(p).name}](../../../{p})" for p in cap["evidence"]) + ".", ""]
         if cap.get("conditional_prerequisites"):
             lines += ["Conditional dependencies: " + " ".join(f"{k}: {v}" for k, v in cap["conditional_prerequisites"].items()), ""]

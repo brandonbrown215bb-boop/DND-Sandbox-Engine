@@ -43,6 +43,7 @@ static func run(check: Callable) -> void:
 	DataLoader._load_errors.resize(errors_before)
 	check.call(not accepted_a and not accepted_b and added.filter(func(e): return "starting_equipment_includes_tool_choice" in str(e)).size() == 2, "The loader refuses a tool-item declaration without tool_choices or as a non-boolean (%s)" % str(added))
 	_package_checks(check)
+	_choice_slot_checks(check)
 	# Neutral renamed class: same declaration, no class-ID branch.
 	var neutral := DataLoader.get_character_class("monk").duplicate(true)
 	neutral["id"] = "tool_item_probe"
@@ -58,6 +59,75 @@ static func run(check: Callable) -> void:
 	plain.initialize("Plain", "human", "tool_item_probe", AbilityScores.new(), "equipment", choices)
 	check.call(plain.inventory.count_item("cooks_utensils") == 0 and plain.tool_proficiencies == ["cooks_utensils"], "Without the declaration the same class gets proficiency only")
 	DataLoader.classes.erase("tool_item_probe")
+
+
+## CXM-03: GP alternatives and picked starting items come from class data only.
+static func _choice_slot_checks(check: Callable) -> void:
+	var gold_barbarian := Character.new()
+	gold_barbarian.initialize("Gold Barbarian", "human", "barbarian", AbilityScores.new(), "gold", ClassProgression.default_creation_choices("barbarian", "human"))
+	check.call(gold_barbarian.inventory.gold == 75 and owned(gold_barbarian).is_empty(), "Barbarian option B is 75 GP and no items from class data")
+	var paladin := Character.new()
+	paladin.initialize("Paladin A", "human", "paladin", AbilityScores.new(), "equipment", ClassProgression.default_creation_choices("paladin", "human"))
+	check.call(owned(paladin) == {"chain_mail": 1, "shield": 1, "longsword": 1, "javelin": 6, "holy_symbol": 1, "priests_pack": 1} and paladin.inventory.gold == 9, "Paladin option A is the SRD kit and 9 GP (%s)" % str(owned(paladin)))
+	var gold_paladin := Character.new()
+	gold_paladin.initialize("Paladin B", "human", "paladin", AbilityScores.new(), "gold", ClassProgression.default_creation_choices("paladin", "human"))
+	check.call(gold_paladin.inventory.gold == 150 and owned(gold_paladin).is_empty(), "Paladin option B is 150 GP")
+	var bard_choices := ClassProgression.default_creation_choices("bard", "human")
+	bard_choices["instrument"] = "javelin"
+	check.call(ClassProgression.creation_choices_error("bard", "human", bard_choices) == "Choose a starting Musical Instrument.", "A starting item outside its slot list is refused")
+	bard_choices["equipment"] = "gold"
+	check.call(ClassProgression.creation_choices_error("bard", "human", bard_choices).is_empty(), "The GP option needs no starting item pick")
+	# A renamed class using the same slot gets its pick with no class-ID branch.
+	var probe := DataLoader.get_character_class("barbarian").duplicate(true)
+	probe["id"] = "choice_slot_probe"
+	probe["starting_equipment_choices"] = [{"key": "keepsake", "from": ["dagger", "sickle"]}]
+	DataLoader.classes["choice_slot_probe"] = probe
+	var probe_choices := ClassProgression.default_creation_choices("choice_slot_probe", "human")
+	probe_choices["keepsake"] = "sickle"
+	var picked := Character.new()
+	picked.initialize("Probe", "human", "choice_slot_probe", AbilityScores.new(), "equipment", probe_choices)
+	check.call(owned(picked).get("sickle", 0) == 1 and owned(picked).get("greataxe", 0) == 1, "A neutral class gets its picked starting item alongside option A")
+	DataLoader.classes.erase("choice_slot_probe")
+	var malformed := probe.duplicate(true)
+	malformed["id"] = "fixture:choice_slot_bad"
+	malformed["starting_equipment_choices"] = [{"key": "equipment", "from": ["dagger"]}]
+	var errors_before: int = DataLoader._load_errors.size()
+	var accepted: bool = DataLoader._validate_semantics(malformed, "class", "choice slot review")
+	var added: Array = DataLoader._load_errors.slice(errors_before)
+	DataLoader._load_errors.resize(errors_before)
+	check.call(not accepted and added.any(func(e): return "starting_equipment_choices" in str(e)), "The loader refuses a slot that reuses a reserved choice key")
+	# Catalog packs expand once into their exact SRD contents.
+	var pack_sizes := {"dungeoneers_pack": 28, "burglars_pack": 30, "scholars_pack": 26}
+	for pack_id in pack_sizes:
+		var holder := Inventory.new()
+		holder.add_item(pack_id)
+		var expanded := holder.expand_pack_instance(str(holder.backpack_instances()[0].instance_id))
+		check.call(expanded.get("success", false) and holder.backpack.size() == pack_sizes[pack_id] and holder.count_item(pack_id) == 0, "%s expands into its %d SRD pieces" % [pack_id, pack_sizes[pack_id]])
+	# Starting Arrows go into the kit's Quiver; the pack still expands.
+	var ranger := Character.new()
+	ranger.initialize("Ranger A", "human", "ranger", AbilityScores.new(), "equipment", ClassProgression.default_creation_choices("ranger", "human"))
+	var quiver_ids: Array = ranger.inventory.backpack_instances().filter(func(r): return r.definition_id == "quiver").map(func(r): return str(r.instance_id))
+	check.call(quiver_ids.size() == 1 and ContainerRules.contents(ranger.inventory, quiver_ids[0], "pieces").size() == 20 and ranger.inventory.count_item("arrows") == 0 and ranger.inventory.gold == 7, "Ranger option A carries 20 Arrows inside its Quiver and 7 GP")
+	var reloaded_ranger := Character.new()
+	reloaded_ranger.from_dict(ranger.to_dict())
+	check.call(ContainerRules.contents(reloaded_ranger.inventory, quiver_ids[0], "pieces").size() == 20 and reloaded_ranger.inventory.count_item("arrows") == 0, "Stowed starting Arrows survive a save round-trip without regrant")
+	var ranger_pack: Array = ranger.inventory.backpack_instances().filter(func(r): return r.definition_id == "explorers_pack")
+	check.call(ranger.inventory.expand_pack_instance(str(ranger_pack[0].instance_id)).get("success", false), "Ranger option A can still expand its Explorer's Pack")
+	var fighter_b_choices := ClassProgression.default_creation_choices("fighter", "human")
+	fighter_b_choices["equipment"] = "equipment_b"
+	check.call(ClassProgression.creation_choices_error("fighter", "human", fighter_b_choices).is_empty() and ClassProgression.equipment_options("fighter") == ["equipment", "equipment_b", "gold"], "Fighter offers options A, B and GP")
+	var fighter_b := Character.new()
+	fighter_b.initialize("Fighter B", "human", "fighter", AbilityScores.new(), "equipment_b", fighter_b_choices)
+	check.call(fighter_b.inventory.get_armor() == "studded_leather_armor" and fighter_b.inventory.get_weapon() == "scimitar" and fighter_b.inventory.gold == 11 and owned(fighter_b).get("arrows", 0) == 0 and not fighter_b.inventory.has_item("greatsword"), "Fighter option B is its own kit with 11 GP and stowed Arrows")
+	var fighter_c := Character.new()
+	fighter_c.initialize("Fighter C", "human", "fighter", AbilityScores.new(), "gold", ClassProgression.default_creation_choices("fighter", "human"))
+	check.call(fighter_c.inventory.gold == 155 and owned(fighter_c).is_empty(), "Fighter option C is 155 GP")
+	var wizard := Character.new()
+	wizard.initialize("Wizard A", "human", "wizard", AbilityScores.new(), "equipment", ClassProgression.default_creation_choices("wizard", "human"))
+	check.call(wizard.inventory.held_spellcasting_focus("wizard") == "arcane_focus_quarterstaff" and wizard.inventory.held_spellcasting_focus("fighter").is_empty(), "Wizard option A holds its arcane-focus Quarterstaff; other classes don't count it")
+	var wizard_b := Character.new()
+	wizard_b.initialize("Wizard B", "human", "wizard", AbilityScores.new(), "spellbook_and_gold", ClassProgression.default_creation_choices("wizard", "human"))
+	check.call(ClassProgression.equipment_options("wizard") == ["equipment", "spellbook_and_gold"] and wizard_b.inventory.gold == 55 and wizard_b.inventory.backpack_instances().map(func(i): return str(i.definition_id)) == ["spellbook"], "Wizard option B is 55 GP plus the Spellbook the class feature needs")
 
 
 ## Owned item copies (backpack plus equipped) by definition id.

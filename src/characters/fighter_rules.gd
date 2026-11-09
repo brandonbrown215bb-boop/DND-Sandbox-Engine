@@ -119,9 +119,9 @@ static func choose_skills(c: Character, first: String, second: String) -> bool:
 		return false
 	if FeatRules.owns_skill(c, first) or FeatRules.owns_skill(c, second):
 		return false # G4: a feat instance (Skilled) already owns that skill.
-	var racial: Array = DataLoader.get_race(c.race_id).get("proficiencies", [])
+	var racial: Array = DataLoader.get_race(c.race_id).get("proficiencies", []) + DataLoader.get_background(c.background_id).get("skills", [])
 	if c.creation_choices.has("skills") and (first in racial or second in racial):
-		return false # PR C: a recorded class pick may not duplicate a species skill.
+		return false # PR C: a recorded class pick may not duplicate a species (CXM-04: or background) skill.
 	for old in c.fighter_training.get("skills", []):
 		if old not in racial and not FeatRules.owns_skill(c, str(old)):
 			c.skill_proficiencies.erase(str(old))

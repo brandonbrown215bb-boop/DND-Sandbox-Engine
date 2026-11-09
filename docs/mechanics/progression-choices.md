@@ -50,6 +50,48 @@ no items. The item copy is inventory only; proficiency still comes from
 `tool_proficiency_sources`. Items are granted once at Confirm (`initialize`
 refuses a character whose class is already set) and are never re-added on
 restore, so older saves keep their inventory without retroactive kits.
+
+Picked starting items (CXM-03): a class declares
+`"starting_equipment_choices": [{"key": K, "label": L, "from": [item ids]}]`.
+Each slot stores its pick in `creation_choices[K]` (default: the first `from`
+id), and option A adds that one item. The GP option needs no pick. A pick outside
+`from` is refused with "Choose a starting L." The loader refuses a slot whose key
+reuses `skills`, `tools`, `equipment` or `ability_generation`. Bard uses slot
+`instrument` (any Musical Instrument, independent of its three instrument
+proficiencies). The creation screen shows one generic `<Class>Starting<Key>`
+picker per slot and one `<Class>StartingEquipment` selector for any class with
+`starting_gold_alternative`; no class has its own selector or ID branch.
+SRD kits (option A, then the GP option): Paladin (Chain Mail, Shield, Longsword,
+6 Javelins, Holy Symbol, Priest's Pack, 9 GP; or 150 GP), Fighter A (Chain
+Mail, Greatsword, Flail, 8 Javelins, Dungeoneer's Pack, 4 GP; or C, 155 GP),
+Sorcerer (Spear, 2 Daggers, Arcane Crystal, Dungeoneer's Pack, 28 GP; or 50 GP),
+Warlock (Leather Armor, Sickle, 2 Daggers, Arcane Orb, Book of occult lore,
+Scholar's Pack, 15 GP; or 100 GP) and Wizard A (Arcane Focus Quarterstaff, 2
+Daggers, Robe, Spellbook, Scholar's Pack, 5 GP). The staff is listed first so
+it is held, like Druid's focus; it declares `"spellcasting_focus_kind":
+"arcane"`, which Sorcerer, Warlock and Wizard accept. Ranger (Studded Leather,
+Scimitar, Shortsword, Longbow, 20 Arrows, Quiver, Sprig of Mistletoe,
+Explorer's Pack, 7 GP; or 150 GP), Rogue (Leather Armor, 2 Daggers, Shortsword,
+Shortbow, 20 Arrows, Quiver, Thieves' Tools, Burglar's Pack, 8 GP; or 100 GP)
+and Fighter B (Studded Leather, Scimitar, Shortsword, Longbow, 20 Arrows,
+Quiver, Dungeoneer's Pack, 11 GP) complete the class kits.
+
+Extra kits: `"starting_equipment_alternatives": [{"id", "label", "gold",
+"items"}]` adds options between option A (`equipment`) and `gold`; the stored
+choice is the option id (Fighter B is `equipment_b`), and
+`ClassProgression.equipment_options`/`creation_starting_gold` serve creation,
+validation and the screen. Picked-item slots apply to option A only.
+
+Starting ammunition: Arrows are catalog `ammunition` pieces (`ammunition_kind:
+arrow`) and the Quiver has a 20-piece `ammunition` compartment. After a kit is
+granted, `Inventory.add_starting_equipment` stows each item into a carried
+compartment that names its item type, so 20 Arrows use one backpack slot and
+the kit's pack can still expand; untyped compartments are left alone. Catalog
+bows still don't declare `ammunition_kind`, so Arrows aren't spent yet (see
+[ammunition](ammunition.md)). Wizard option B is 55 GP plus the Spellbook
+(`spellbook_and_gold`): house ruling that the book belongs to the class feature,
+which load restore already assumes. The creation screen groups repeated items
+("Arrows ×20"); the granted copies are unchanged.
 Option A also lists one `explorers_pack` for Druid and Monk through the same
 `starting_equipment` path; it is one pack copy whose existing `pack_contents`
 expand through `Inventory.expand_pack_instance` (Backpack, Bedroll, 2 Oil, 10
@@ -73,8 +115,8 @@ PR C class skills (SRD 5.2.1 Core Traits; `srd.txt` lines): Barbarian 2 of 6
 (1735-1737), Fighter 2 of 9 (2844-2848), Paladin 2 of 6 (3177-3181), Ranger 3
 of 8 (3417-3420), Sorcerer 2 of 6 (3818-3822), Warlock 2 of 7 (4187-4190),
 Wizard 2 of 7 (4604-4606). A pick may not repeat a species skill; Skilled
-refuses skills the class picks already granted. Barbarian keeps its own A/B
-selector (`starting_gold_alternative: 75`, SRD 1741-1745). The Fighter's two
+refuses skills the class picks already granted. Barbarian uses the generic A/B
+selector (`starting_gold` 15, `starting_gold_alternative` 75, SRD 1741-1745). The Fighter's two
 picks *are* its training skills: the picker preselects Athletics and Perception
 (minus species skills), Confirm passes the picks to `FighterRules.choose_skills`,
 a pre-combat swap updates `creation_choices.skills`, refuses species-held and
@@ -109,9 +151,55 @@ chosen proficiency-choice feat without its record, a record for an instance that
 does not hold that feat, wrong counts or off-list picks, a skill or tool picked
 by two instances, a pick that is not held or a tool without its instance source,
 and any `feat:` tool source no record owns. Saves from before G4 (no key) load
-as `{}`. Creation preselects no Origin feat (there is no background step yet)
-and shows `OriginFeatProficiency1..N`; the level-up sheet shows
-`LevelFeatProficiency1..N` beside `LevelFeatPicker`.
+as `{}`. A character made without a background (a legacy path the creation
+screen no longer reaches) may pick any Origin feat through `OriginFeatPicker`
+and `OriginFeatProficiency1..N`; with a background the feat is fixed (below).
+The level-up sheet shows `LevelFeatProficiency1..N` beside `LevelFeatPicker`.
+
+## Backgrounds (CXM-04 / S-231)
+
+`data/core/backgrounds/` is a content type (SRD 5.2.1 p.83). A background
+declares `ability_options` (three abilities), `origin_feat` (a loaded Origin
+feat id, `feat_id|parameter` for a parameterised one), two `skills`, the class
+tool keys `tool_proficiency_grants` / `tool_choices` /
+`starting_equipment_includes_tool_choice`, `starting_equipment`,
+`starting_gold` and `starting_gold_alternative`. The loader refuses a bad
+shape; a missing feat, tool or item, an illegal feat parameter, or an Origin
+feat with `proficiency_choices` (not supported on backgrounds yet) is a load
+error. Core holds Acolyte, Criminal, Sage and Soldier; no code names them.
+
+The creation screen has a Background step after Class. One `BackgroundAbilities`
+picker lists the seven legal spreads (each +2/+1 pair, or +1 to all three);
+`BackgroundTool1..N` appear for a tool choice (Soldier's Gaming Set); and
+`BackgroundEquipment` chooses the kit or the GP. Next stays disabled until the
+picks are legal. The Equipment step shows the fixed Origin feat instead of the
+feat picker, disables class skills the background gives, and clears a class
+pick the background takes over. Random picks a legal background every time.
+
+`Character.initialize(..., background_id, background_choices)` validates the
+whole background before changing anything (`BackgroundRules.creation_error`):
+the spread, no score above 20, the tool pick, the option, no class skill pick
+that repeats a background skill, and that the kit fits after the class kit.
+It then applies the increases before HP, the two skills, the tool with source
+`background:<id>`, the kit (Soldier's kit includes the chosen Gaming Set) or
+the GP on top of the class GP, and the Origin feat. `background_id` and
+`background_choices` (`{"abilities", "tools", "equipment"}`) are saved. Restore
+replays nothing. Save preflight refuses an unknown background, illegal or extra
+picks, a missing Origin feat or skill, and a missing or stale `background:`
+tool source, on both party and player records.
+
+Species boundary: a character with a background takes no species
+`ability_bonuses`; one without keeps them, so the two never stack. Old saves
+and directly built characters have no background and are unchanged. Species
+data was not rewritten.
+
+Limits: Alert, Magic Initiate and Savage Attacker are loaded as acquisition
+records with `"effects_pending": true`. A background grants them, but their
+rules do nothing yet (CXM-05, CXM-60 and CXM-06), and `FeatRules.options` does
+not offer an effects-pending feat as a pick. Magic Initiate records its fixed
+list (`magic_initiate|cleric`) but no spells or casting ability. Book topics
+and the Holy Symbol form are not represented. A Fighter cannot swap a training
+skill onto a background skill.
 
 ## Feature choices
 

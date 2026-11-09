@@ -496,6 +496,8 @@ func _run_scenario(scenario: String) -> void:
 		"class_proficiency_creation_reload": await ClassProficiencyCreationControls.reload(self)
 		"skilled_feat_creation_flow": await SkilledFeatControls.run(self)
 		"skilled_feat_creation_reload": await SkilledFeatControls.reload(self)
+		"background_creation_flow": await BackgroundCreationControls.run(self)
+		"background_creation_reload": await BackgroundCreationControls.reload(self)
 		"class_tool_items_flow": await ClassToolItemControls.run(self)
 		"class_tool_items_reload": await ClassToolItemControls.reload(self)
 		"druidic_focus_cast_flow": await DruidicFocusControls.run(self)

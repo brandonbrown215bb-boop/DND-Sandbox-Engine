@@ -612,9 +612,11 @@ static func _apply_single_effect(character: Character, effect: Dictionary, rolle
 		"give_item":
 			var item_id: String = effect.get("item_id", "")
 			if not item_id.is_empty():
-				character.inventory.add_item(item_id)
 				var item_data := DataLoader.get_item(item_id)
 				var item_name: String = item_data.get("name", item_id)
+				# shortcut: refused items are reported, not held; EVENT_REWARD (CXM) owns holding them.
+				if not character.inventory.add_item(item_id):
+					return {"type": "give_item", "item_id": item_id, "success": false, "message": "%s has no room for %s." % [character.character_name, item_name]}
 				return {"type": "give_item", "item_id": item_id, "message": "%s received %s!" % [character.character_name, item_name]}
 
 		"take_gold":

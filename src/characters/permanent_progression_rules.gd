@@ -9,7 +9,7 @@ static func definition_error(data: Dictionary, resolve_references: bool = true) 
 	if not data.has("permanent_progression"): return ""
 	if "|" in str(data.get("id", "")): return "Progression class ID cannot contain a receipt delimiter."
 	if resolve_references and (not DataLoader.get_subclasses_for_class(str(data.get("id", ""))).is_empty() or not str(data.get("legacy_subclass", "")).is_empty()): return "Subclass progression is unavailable in this host."
-	for field in PROFICIENCIES + ["starting_equipment", "skill_choices", "tool_choices", "spell_slots_by_character_level", "spell_slots_by_level", "pact_magic_by_level"]:
+	for field in PROFICIENCIES + ["starting_equipment", "starting_equipment_choices", "starting_equipment_alternatives", "skill_choices", "tool_choices", "spell_slots_by_character_level", "spell_slots_by_level", "pact_magic_by_level"]:
 		if (not data.get(field, []) is Array and not data.get(field, []) is Dictionary) or not data.get(field, []).is_empty(): return "Permanent progression replaces native acquisition/slot fields."
 	if not data.get("features_by_level", {}) is Dictionary: return "Invalid progression features."
 	for features in data.get("features_by_level", {}).values():

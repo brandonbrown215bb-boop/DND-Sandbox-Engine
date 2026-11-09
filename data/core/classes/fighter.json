@@ -36,8 +36,22 @@
   },
   "starting_equipment": [
     "chain_mail",
-    "shield",
-    "longsword"
+    "greatsword",
+    "flail",
+    "javelin",
+    "javelin",
+    "javelin",
+    "javelin",
+    "javelin",
+    "javelin",
+    "javelin",
+    "javelin",
+    "dungeoneers_pack"
+  ],
+  "starting_gold": 4,
+  "starting_gold_alternative": 155,
+  "starting_equipment_alternatives": [
+    {"id": "equipment_b", "label": "Equipment B", "gold": 11, "items": ["studded_leather_armor", "scimitar", "shortsword", "longbow", "arrows", "arrows", "arrows", "arrows", "arrows", "arrows", "arrows", "arrows", "arrows", "arrows", "arrows", "arrows", "arrows", "arrows", "arrows", "arrows", "arrows", "arrows", "arrows", "arrows", "quiver", "dungeoneers_pack"]}
   ],
   "spell_slots_by_level": {},
   "cantrips_known": [],

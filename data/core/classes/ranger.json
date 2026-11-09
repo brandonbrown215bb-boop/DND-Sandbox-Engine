@@ -36,10 +36,12 @@
     "druidic"
   ],
   "starting_equipment": [
-    "leather_armor",
-    "longbow",
-    "shortsword"
+    "studded_leather_armor", "scimitar", "shortsword", "longbow",
+    "arrows", "arrows", "arrows", "arrows", "arrows", "arrows", "arrows", "arrows", "arrows", "arrows", "arrows", "arrows", "arrows", "arrows", "arrows", "arrows", "arrows", "arrows", "arrows", "arrows",
+    "quiver", "sprig_of_mistletoe", "explorers_pack"
   ],
+  "starting_gold": 7,
+  "starting_gold_alternative": 150,
   "spell_list_ids": [
     "aid",
     "alarm",

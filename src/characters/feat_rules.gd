@@ -15,6 +15,7 @@ static func definition_error(data: Dictionary) -> String:
 	if "|" in str(data.get("id", "")): return "Feat ids cannot contain '|'"
 	if str(data.get("category", "")) not in CATEGORIES: return "Feat category must be origin, general, fighting_style or epic_boon"
 	if data.has("repeatable") and not data.repeatable is bool: return "Feat repeatable must be a boolean"
+	if data.has("effects_pending") and not data.effects_pending is bool: return "Feat effects_pending must be a boolean"
 	if bool(data.get("repeatable", false)) and not data.get("features", []).is_empty(): return "A repeatable feat cannot own mode/upgrade features (their ids would collide)"
 	var pre: Variant = data.get("prerequisite", {})
 	if not pre is Dictionary: return "Feat prerequisite must be an object"
@@ -142,6 +143,7 @@ static func options(c: Character, category: String) -> Array[String]:
 	ids.sort()
 	for id in ids:
 		var feat: Dictionary = DataLoader.get_feat(str(id))
+		if feat.get("effects_pending", false) == true: continue # CXM-04: a background can grant it, but its rules aren't built, so it isn't offered as a pick.
 		var parameters: Array = feat.get("repeatable_parameter_options", [])
 		if parameters.is_empty():
 			if eligibility_error(c, str(id), category).is_empty(): out.append(str(id))

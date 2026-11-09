@@ -11,7 +11,10 @@ static func default_creation_choices(class_id: String, race_id: String) -> Dicti
 	for skill in data.get("skill_choices", {}).get("from", []):
 		if skill not in racial and skill not in skills:
 			skills.append(skill)
-	return {"skills": skills.slice(0, int(data.get("skill_choices", {}).get("pick", 0))), "tools": data.get("tool_choices", {}).get("from", []).slice(0, int(data.get("tool_choices", {}).get("pick", 0))), "instrument": "lute", "equipment": "equipment"}
+	var choices := {"skills": skills.slice(0, int(data.get("skill_choices", {}).get("pick", 0))), "tools": data.get("tool_choices", {}).get("from", []).slice(0, int(data.get("tool_choices", {}).get("pick", 0))), "equipment": "equipment"}
+	for slot in data.get("starting_equipment_choices", []):
+		choices[slot.key] = slot.from[0]
+	return choices
 
 
 ## PR C: picks shown preselected at creation. Fighter keeps its automatic
@@ -32,16 +35,55 @@ static func uses_creation_choices(class_id: String) -> bool:
 ## Option-A starting items from class data. A gold-only choice gives no items.
 ## `starting_equipment_includes_tool_choice` adds one copy of each already
 ## validated chosen tool (SRD Monk: "Artisan's Tools or Musical Instrument
-## chosen for the tool proficiency above"). Items never grant proficiency.
+## chosen for the tool proficiency above"). `starting_equipment_choices` slots
+## add the one item picked for each (SRD Bard: a Musical Instrument chosen
+## independently of the instrument proficiencies). Items never grant proficiency.
 static func creation_starting_equipment(class_id: String, choices: Dictionary) -> Array:
 	var data := DataLoader.get_character_class(class_id)
-	if str(choices.get("equipment", "equipment")) == "gold":
+	var option := str(choices.get("equipment", "equipment"))
+	if option == "gold":
 		return []
+	var alternative := _equipment_alternative(data, option)
+	if not alternative.is_empty():
+		return alternative.items.duplicate()
 	var gear: Array = data.get("starting_equipment", []).duplicate()
 	if data.get("starting_equipment_includes_tool_choice", false) == true:
 		for tool in choices.get("tools", []):
 			gear.append(str(tool))
+	for slot in data.get("starting_equipment_choices", []):
+		var picked := str(choices.get(slot.key, ""))
+		if not picked.is_empty(): # unpicked only while the creation screen is still choosing
+			gear.append(picked)
 	return gear
+
+
+## Starting-equipment option ids in display order: "equipment" (option A), each
+## `starting_equipment_alternatives` id (SRD Fighter B), then "gold".
+static func equipment_options(class_id: String) -> Array:
+	var data := DataLoader.get_character_class(class_id)
+	var options := ["equipment"]
+	for alternative in data.get("starting_equipment_alternatives", []):
+		options.append(str(alternative.id))
+	if data.has("starting_gold_alternative"):
+		options.append("gold")
+	return options
+
+
+## GP that comes with the chosen starting-equipment option.
+static func creation_starting_gold(class_id: String, choices: Dictionary) -> int:
+	var data := DataLoader.get_character_class(class_id)
+	var option := str(choices.get("equipment", "equipment"))
+	if option == "gold" and data.has("starting_gold_alternative"):
+		return int(data.starting_gold_alternative)
+	var alternative := _equipment_alternative(data, option)
+	return int(alternative.get("gold", 0)) if not alternative.is_empty() else int(data.get("starting_gold", 0))
+
+
+static func _equipment_alternative(data: Dictionary, option: String) -> Dictionary:
+	for alternative in data.get("starting_equipment_alternatives", []):
+		if str(alternative.id) == option:
+			return alternative
+	return {}
 
 
 ## Source-owned tool proficiency. Each source grants a tool once; a tool held by
@@ -136,10 +178,12 @@ static func creation_choices_error(class_id: String, race_id: String, choices: D
 			if pair[0] == "tools" and value in data.get("tool_proficiency_grants", []):
 				return "Choose a tool your class does not already provide."
 			seen.append(value)
-	if choices.get("equipment", "") not in (["equipment", "gold"] if data.has("starting_gold_alternative") else ["equipment"]):
+	if choices.get("equipment", "") not in equipment_options(class_id):
 		return "Choose equipment or starting gold."
-	if class_id == "bard" and choices.get("equipment", "") == "equipment" and choices.get("instrument", "") not in data.get("tool_choices", {}).get("from", []):
-		return "Choose a starting Musical Instrument."
+	if choices.get("equipment", "") == "equipment":
+		for slot in data.get("starting_equipment_choices", []):
+			if choices.get(slot.key, "") not in slot.from:
+				return "Choose a starting %s." % str(slot.get("label", slot.key))
 	return ""
 
 
@@ -530,7 +574,7 @@ static func _revoke_feature_option_grants(c: Character, feature_id: String, old_
 		for s in effect.get("skill_proficiencies", []):
 			var s_str := str(s)
 			var keep := PermanentProgressionRules.retains(c, "skill_proficiencies", s_str)
-			if s_str in race_data.get("proficiencies", []):
+			if s_str in race_data.get("proficiencies", []) or s_str in DataLoader.get_background(c.background_id).get("skills", []):
 				keep = true
 			if not keep and s_str in c.creation_choices.get("skills", []):
 				keep = true
@@ -1095,6 +1139,9 @@ static func saved_choices_error(dto: Dictionary) -> String:
 	var feat_error := FeatRules.saved_error(dto) # Batch 051: origin and level-up feats.
 	if not feat_error.is_empty():
 		return feat_error
+	var background_error := BackgroundRules.saved_error(dto) # CXM-04
+	if not background_error.is_empty():
+		return background_error
 	var creation_error := saved_creation_error(dto)
 	if not creation_error.is_empty():
 		return creation_error

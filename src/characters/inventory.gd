@@ -63,6 +63,29 @@ func add_item(item_id: String) -> bool:
 	return true
 
 
+## Add a reward bundle whole or not at all, so a full backpack never loses part
+## of it. "gold_N" entries pay coins directly (dungeon loot shorthand); unknown
+## item IDs are skipped like add_item.
+func grant_bundle(entries: Array) -> Dictionary:
+	copies.sync(self)
+	var items: Array[String] = []
+	var gold_paid := 0
+	for entry in entries:
+		var id := str(entry)
+		if id.begins_with("gold_"):
+			gold_paid += maxi(0, id.substr(5).to_int())
+		elif DataLoader.get_item(id).is_empty():
+			push_warning("[Inventory] Unknown reward item skipped: %s" % id)
+		else:
+			items.append(id)
+	if backpack.size() + items.size() > MAX_BACKPACK_SIZE:
+		return {"success": false, "needed": items.size(), "free": MAX_BACKPACK_SIZE - backpack.size()}
+	for id in items:
+		_add_single_item(id)
+	gold += gold_paid
+	return {"success": true, "items": items, "gold": gold_paid}
+
+
 func _add_single_item(item_id: String) -> void:
 	backpack.append(item_id)
 	var record := copies.create(item_id)
@@ -647,6 +670,21 @@ func add_starting_equipment(item_ids: Array) -> void:
 
 		if not auto_equipped:
 			add_item(item_id)
+	_stow_typed_starting_items()
+
+
+## Starting items go into a carried compartment that names their item type
+## (a Quiver's Arrows), so a kit's ammunition doesn't fill the backpack.
+## Untyped compartments (a Backpack's main space) are left for the player.
+func _stow_typed_starting_items() -> void:
+	for host in backpack_instances():
+		var comps := ContainerRules.compartments(str(host.definition_id))
+		for compartment_id in comps:
+			if not comps[compartment_id].has("item_types"):
+				continue
+			for child in backpack_instances():
+				if ContainerRules.put_error(self, str(host.instance_id), str(child.instance_id), compartment_id).is_empty():
+					ContainerRules.put(self, str(host.instance_id), str(child.instance_id), compartment_id)
 
 
 ## Serialize to dictionary.

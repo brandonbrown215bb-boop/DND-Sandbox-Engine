@@ -26,22 +26,109 @@ Evidence: [shared_spell.gd](../../../src/spells/shared_spell.gd), [shared_step_e
 
 Owner: **S-249; S-049/S-196/S-064 reuse**. Prerequisites: accepted reuse only.
 
-Subsequent runtime status (2026-11-08): **verified bounded CXM-01 delivery** in the
-[slice registry](../vocabulary-slices.md#exact-ammunition-spending-and-recovery).
-The planning target below is retained; catalog promotion, shop lot expansion and
-fired-ammo corrosion remain separate.
-
 Consumers: Arrows/Quiver, Bolts/Case, Sling Bullets, Firearm Bullets, Blowgun Needles; bows/crossbows/Sling/Pistol/Musket/Blowgun; Fighter B/Ranger/Rogue packages and merchant links.
 
 Reuse: Exact inventory copies/quantities, attack budgets and campaign clock; accepted S-250 range/Heavy. Native Loading already caps ordinary Attack swings.
 
 Deliver: No established exact debit/recovery host. Bind ammunition kind and weapon to each committed shot, hand/loading eligibility, spent encounter batch and once-only recovery. Purchase lots differ from pieces; general liquids/fuel are not prerequisites.
 
+Runtime status: **Verified bounded CXM-01 delivery (2026-11-08)** in the [slice registry](../vocabulary-slices.md#exact-ammunition-spending-and-recovery). The planning target below is retained; catalog promotion, shop lot expansion and fired-ammo corrosion remain separate.
+
 Acceptance: Windows production input with renamed bow/ammo: 0 refuses before RNG/action; two shots from 3 leave 1, including misses. Cancel/stale spends0, committed continuation spends1. Check actual loading/free hand and off-turn routes. One minute recovers floor(half eligible spent) once per encounter; destroyed ammunition is excluded when corrosion is wired. Both allowed DTO/relaunch routes retain counts; malformed counters refuse before replacing session.
 
 Evidence: [inventory_copies.gd](../../../src/characters/inventory_copies.gd), [combat_action.gd](../../../src/combat/combat_action.gd), [combat_state.gd](../../../src/combat/combat_state.gd), [exact-contents-and-parts.md](../../../docs/mechanics/exact-contents-and-parts.md).
 
-## CXM-02 — Worn penalties and legal base AC (ARMOR)
+## CXM-02 — Dungeon and generated-room delivery (CLEAR_REWARD)
+
+Owner: **S-216; S-049/S-048 reuse**. Prerequisites: accepted reuse only.
+
+Consumers: Three clear rewards/generated_loot_room/three fragments/four milestones/crown_goals active-character predicate.
+
+Reuse: cleared_dungeons/mark_dungeon_cleared, generated loot/room state, native payout and milestones. claim_reward is not their actual payment route.
+
+Deliver: Prove actual delivery/full-inventory before clear/claim, dungeon-clear distinct from generated room. Shared replacement consumes existing receipt, never pays beside native route.
+
+Runtime status: **Partial CXM-02 delivery (2026-11-09)** in the [slice registry](../vocabulary-slices.md#dungeon-reward-delivery-or-refusal): `Inventory.grant_bundle` delivers dungeon clear and loot-room rewards whole or not at all, and the clear is recorded only after payment. Real boss-clear gameplay, checkpoint relaunch proof and the active/inactive policy remain.
+
+Source check (2026-11-09): Live defect: dungeon clear marks itself cleared (src/dungeon/dungeon_state.gd:372) before paying, and ignores add_item returning false on a full backpack, so a fragment can be lost. The loot room (:281) and event give_item (src/events/event_resolver.gd:615) also ignore it, and gold_ is parsed separately in each route. Build one deliver-or-refuse helper here, preflighting with PermanentProgressionRules.can_fit. PACK, EVENT_REWARD and MONSTER_REWARD use it. Moved forward.
+
+Acceptance: Real boss clear/loot pickup normal/full inventory/recipient; failure cannot lose reward or misleadingly claim. Reentry/both checkpoint relaunches never duplicate GP/items/levels. Three fragments plus actual Lich defeat; active/inactive policy remains explicit. Existing shortcut fixtures keep bounded purpose.
+
+Evidence: [game_manager.gd](../../../src/autoload/game_manager.gd), [local_room_view.gd](../../../src/dungeon/local_room_view.gd), [overworld_state.gd](../../../src/overworld/overworld_state.gd), [dungeon_generator.gd](../../../src/dungeon/dungeon_generator.gd).
+
+Conditional dependencies: EVENT: Only selected generated/event child that owns this reward; native dungeon clear independent.
+
+## CXM-03 — Exact starting alternatives and pack grants (PACK)
+
+Owner: **S-047/S-049/S-050; S-231 consumer**. Prerequisites: CLEAR_REWARD.
+
+Consumers: packages.json; all12 classes/four backgrounds, Bard/Monk/Soldier choices, Holy Symbol forms; Cleric A is7GP.
+
+Reuse: G2 skill/tool choices, Monk tool copy, Explorer pack expansion, combined Druid Quarterstaff/focus, permanent-grant fit preflight/receipts.
+
+Deliver: Wire16 full A/B/C/GP packages, six packs and linked choices once. No pack shell/contents double counting, invented Backpack fit, forced Amulet, Bard proficiency match or replay. Retained source conflicts remain explicit.
+
+Runtime status: **Partial CXM-03 delivery (2026-11-09)** in [progression choices](../../mechanics/progression-choices.md): generic `starting_equipment_choices` slots and one GP selector replaced the Bard/Barbarian branches. All 12 classes have their SRD kits and GP options (Fighter A/B/C via `starting_equipment_alternatives`), except Wizard B, which waits on a Spellbook ruling. Packs and their contents, Arrows, Quiver, Books, Pouch, Traveler's Clothes and the arcane-focus Quarterstaff are in the catalog; starting Arrows are stowed in the Quiver. Catalog bows don't spend Arrows yet. Background packages belong to CXM-04.
+
+Source check (2026-11-09): Background packages need BACKGROUND, which has no host yet. Deliver grants through the CLEAR_REWARD deliver-or-refuse helper.
+
+Acceptance: Normal creation each alternative plus Back/Random/seat reset: exact quantities/GP, Monk/Soldier match tool, Bard independent. Full grant refuses atomically when it cannot fit; expand once. Sell/consume then reload both DTOs: no recreation. Unknown weights remain unknown.
+
+Evidence: [permanent-progression.md](../../../docs/mechanics/permanent-progression.md), [progression-choices.md](../../../docs/mechanics/progression-choices.md), [inventory.gd](../../../src/characters/inventory.gd).
+
+## CXM-04 — Background creation and origins (BACKGROUND)
+
+Owner: **S-231; S-233/S-242/S-047 reuse**. Prerequisites: accepted reuse only.
+
+Consumers: Acolyte/Criminal/Sage/Soldier; fixed Cleric/Wizard Initiate and chosen Gaming Set.
+
+Reuse: Four adapted candidates, ability/feat parameters, tool-source ownership and complete package map.
+
+Deliver: Production background type/loader/creation step, listed +2/+1 or+1/+1/+1, fixed feat/skills/tool/A-or50GP once. Prevent legacy species ASI stacking, no legacy rewrite.
+
+Runtime status: **Partial CXM-04 delivery (2026-11-09)** in the [slice registry](../vocabulary-slices.md#background-acquisition-at-creation): backgrounds are a loaded content type with a creation step; the four SRD backgrounds grant their ability increase, skills, tool, kit or 50 GP and fixed Origin feat once, and a background character takes no legacy species ability bonuses. Alert, Savage Attacker and Magic Initiate are owned but their rules wait for CXM-05, CXM-06 and CXM-60, so the fixed Initiate spell and ability choice is not delivered.
+
+Source check (2026-11-09): No background host exists (src/ui/character_creation/character_creation.gd:628: no background step yet). The four SRD backgrounds are written only as candidates in preparation/crown-characters/backgrounds. Their origin feats (Alert, Magic Initiate, Savage Attacker) are not loaded. Moved forward because every new character needs it.
+
+Acceptance: Normal four-seat creation each ability split/alternative/Back/Random/reset/stale confirm. Soldier set matches; fixed Initiate list with legal ability/spells. No revisited/reloaded double grants; both DTO source validation and legacy species boundary.
+
+Evidence: [progression-choices.md](../../../docs/mechanics/progression-choices.md), [permanent-progression.md](../../../docs/mechanics/permanent-progression.md).
+
+Conditional dependencies: PACK: Only selected A package; GP alternative independent. CHOICE: Only selected Origin feat parameters. ACQUIRE: Only once-only background source grants/validation.
+
+## CXM-05 — Immediate willing initiative exchange (INIT)
+
+Owner: **S-091 initiative owner extension; S-233 acquisition reuse**. Prerequisites: accepted reuse only.
+
+Consumers: Alert /authored_operations/1; Criminal and legal Human/feat acquisitions.
+
+Reuse: Settled initiative/order, encounter identity, conditions and feat ownership; late/group rolls already delivered.
+
+Deliver: Alert exact value swap immediately after owner rolls, willing same-combat ally, neither Incapacitated. Generic exchange not established; record narrow registry requirement at implementation, not a fabricated accepted S-ID.
+
+Source check (2026-11-09): Alert is not loaded; it is Criminal's origin feat, so it moves forward with BACKGROUND.
+
+Acceptance: Real initiative window accept swaps exact values/order once. Decline/nonconsent/incapacity/wrong combat/stale/late/double choice does nothing. Late/group actors cannot reopen old window. Pending choice remains transient.
+
+Evidence: [progression-choices.md](../../../docs/mechanics/progression-choices.md), [combat_state.gd](../../../src/combat/combat_state.gd).
+
+## CXM-06 — Natural thresholds and whole damage rolls (DICE)
+
+Owner: **S-240; S-123/S-124/S-125/S-126 reuse**. Prerequisites: accepted reuse only.
+
+Consumers: Champion, GWF, Savage Attacker, Evoker Potent Cantrip, Fiendish Vigor, Empowered/Seeking Spell.
+
+Reuse: Captured natural/critical faces, remove/maximize/reroll/multiplier operations; native Champion/GWF/Savage Attacker comparison.
+
+Deliver: Weapon/Unarmed natural19 critical; GWF eligible1/2 become3; Savage Attacker chooses one whole weapon roll, not selected dice. Potent Cantrip half damage on miss/save excludes extra effects. Exact dice/turn locks.
+
+Source check (2026-11-09): Savage Attacker and Potent Cantrip exist nowhere in src/ or data/ (data/core/feats holds only skilled.json). Champion crit is already data-driven (modify_crit_range, src/characters/character.gd:1380). GWF is native (src/characters/fighter_rules.gd:306). Potent Cantrip's half damage reuses damage_scale_by_outcome (src/combat/shared_step_executor.gd:1131), not a new halving path.
+
+Acceptance: Natural18/19/20 versus modified19; two-handed/Versatile/one-hand, weapon/spell dice; two whole weapon rolls leave other riders untouched. Cantrip miss/save half never applies hit-only rider. Duplicate continuation neither rerolls nor repays.
+
+Evidence: [shared-spells.md](../../../docs/mechanics/shared-spells.md), [attack-profiles.md](../../../docs/mechanics/attack-profiles.md), [combat_action.gd](../../../src/combat/combat_action.gd).
+
+## CXM-07 — Worn penalties and legal base AC (ARMOR)
 
 Owner: **S-251; S-085/S-252 reuse**. Prerequisites: accepted reuse only.
 
@@ -51,25 +138,13 @@ Reuse: Real don/doff and Shield Action; ProtectionRules/RuleUpgradeRules base al
 
 Deliver: Strength Speed penalty, Stealth Disadvantage, untrained STR/DEX D20 penalties/cast refusal on actual hosts; Shield training and choice among legal AC bases. Keep native armor behavior until its consumers are covered.
 
+Source check (2026-11-09): Mage Armor base AC is native (src/characters/character.gd:1603). armor_proficiencies has no gameplay consumer, so untrained penalties and Shield training are genuinely new.
+
 Acceptance: Real Equip/Unequip, checks/attacks/casts at/below STR threshold, trained/untrained and Shield-only. Removal clears only its penalties, never refunds movement. Compare competing base AC and checkpoint recovery; reuse accepted timing proof.
 
 Evidence: [equipment-timing.md](../../../docs/mechanics/equipment-timing.md), [attack-and-ac-upgrades.md](../../../docs/mechanics/attack-and-ac-upgrades.md), [protection_rules.gd](../../../src/characters/protection_rules.gd).
 
-## CXM-03 — Exact starting alternatives and pack grants (PACK)
-
-Owner: **S-047/S-049/S-050; S-231 consumer**. Prerequisites: accepted reuse only.
-
-Consumers: packages.json; all12 classes/four backgrounds, Bard/Monk/Soldier choices, Holy Symbol forms; Cleric A is7GP.
-
-Reuse: G2 skill/tool choices, Monk tool copy, Explorer pack expansion, combined Druid Quarterstaff/focus, permanent-grant fit preflight/receipts.
-
-Deliver: Wire16 full A/B/C/GP packages, six packs and linked choices once. No pack shell/contents double counting, invented Backpack fit, forced Amulet, Bard proficiency match or replay. Retained source conflicts remain explicit.
-
-Acceptance: Normal creation each alternative plus Back/Random/seat reset: exact quantities/GP, Monk/Soldier match tool, Bard independent. Full grant refuses atomically when it cannot fit; expand once. Sell/consume then reload both DTOs: no recreation. Unknown weights remain unknown.
-
-Evidence: [permanent-progression.md](../../../docs/mechanics/permanent-progression.md), [progression-choices.md](../../../docs/mechanics/progression-choices.md), [inventory.gd](../../../src/characters/inventory.gd).
-
-## CXM-04 — Capacity, mass and handling (CARRY)
+## CXM-08 — Capacity, mass and handling (CARRY)
 
 Owner: **S-266; S-196/S-210 reuse**. Prerequisites: accepted reuse only.
 
@@ -83,7 +158,7 @@ Acceptance: At/over limits with mixed equipment and contents: no double count, s
 
 Evidence: [exact-contents-and-parts.md](../../../docs/mechanics/exact-contents-and-parts.md), [physical-facts-space-and-movement.md](../../../docs/mechanics/physical-facts-space-and-movement.md), [inventory_copies.gd](../../../src/characters/inventory_copies.gd).
 
-## CXM-05 — Measured portions and cumulative fuel (QUANTITY)
+## CXM-09 — Measured portions and cumulative fuel (QUANTITY)
 
 Owner: **S-197; S-196/S-064 reuse**. Prerequisites: accepted reuse only.
 
@@ -93,13 +168,15 @@ Reuse: Exact copies, non-nested contents, clock/light owners; linked destruction
 
 Deliver: Gallons/pounds/sheets/days/flasks/uses distinct from lots; partial transfers/overflow/stock, active fuel time across extinction/rekindling. Do not invent stock, weight or servings-to-pounds conversion.
 
+Source check (2026-11-09): Native fuel consumes a whole fuel copy per lighting (src/characters/inventory.gd:938). Replace it; don't add a second fuel model.
+
 Acceptance: Partial/full/overcapacity transfers lose/duplicate nothing. Burn/extinguish/wait/rekindle/reload spends only active fuel time. Exhaust finite stock once; empty vessel identity survives. Equal copies independent; malformed units/counters refuse save preflight.
 
 Evidence: [inventory_copies.gd](../../../src/characters/inventory_copies.gd), [light_source_rules.gd](../../../src/characters/light_source_rules.gd), [linked-removal-causes.md](../../../docs/mechanics/linked-removal-causes.md).
 
 Conditional dependencies: CARRY: Only admission/overflow into a selected measured container; burning fuel does not wait for all carrying rules.
 
-## CXM-06 — Exact materials, hands and focus roles (COMPONENT)
+## CXM-10 — Exact materials, hands and focus roles (COMPONENT)
 
 Owner: **S-134/S-135/S-136/S-142; S-049 reuse**. Prerequisites: accepted reuse only.
 
@@ -109,11 +186,13 @@ Reuse: Source/payment chooser, Ready prepaid materials, Chromatic Orb diamond; c
 
 Deliver: All183 material routes: worth/form/consumed quantity and persistent worn/held roles. Worth is not price; touched Rope/weapon target remains required. Current Somatic-only held-focus house rule is policy, not SRD.
 
+Source check (2026-11-09): Focus compatibility is a hardcoded item-ID check (src/characters/inventory.gd:171); replace it with item data.
+
 Acceptance: Normal/ritual/Ready casts: focus/pouch only substitutes unpriced unconsumed material. Wrong worth/form/hand/wear/copy refuses unpaid; paid held release never repays. Two rings checked throughout. Renamed dual-role staff works for True Strike/Shillelagh/Topple without ID branch.
 
 Evidence: [spell-permissions-and-preparation.md](../../../docs/mechanics/spell-permissions-and-preparation.md), [spell-slots-and-ritual-casting.md](../../../docs/mechanics/spell-slots-and-ritual-casting.md), [progression-choices.md](../../../docs/mechanics/progression-choices.md).
 
-## CXM-07 — Captured choices on remaining roll hosts (ROLL)
+## CXM-11 — Captured choices on remaining roll hosts (ROLL)
 
 Owner: **S-096/S-224/S-226; S-093/S-094/S-225 reuse**. Prerequisites: accepted reuse only.
 
@@ -127,35 +206,7 @@ Acceptance: Qualifying and unrelated rolls on each selected host: hold/decline/s
 
 Evidence: [owned-ability-check-modifiers.md](../../../docs/mechanics/owned-ability-check-modifiers.md), [party-intervention-and-allocation.md](../../../docs/mechanics/party-intervention-and-allocation.md), [core-rules-status.md](../../../docs/mechanics/core-rules-status.md).
 
-## CXM-08 — Natural thresholds and whole damage rolls (DICE)
-
-Owner: **S-240; S-123/S-124/S-125/S-126 reuse**. Prerequisites: accepted reuse only.
-
-Consumers: Champion, GWF, Savage Attacker, Evoker Potent Cantrip, Fiendish Vigor, Empowered/Seeking Spell.
-
-Reuse: Captured natural/critical faces, remove/maximize/reroll/multiplier operations; native Champion/GWF/Savage Attacker comparison.
-
-Deliver: Weapon/Unarmed natural19 critical; GWF eligible1/2 become3; Savage Attacker chooses one whole weapon roll, not selected dice. Potent Cantrip half damage on miss/save excludes extra effects. Exact dice/turn locks.
-
-Acceptance: Natural18/19/20 versus modified19; two-handed/Versatile/one-hand, weapon/spell dice; two whole weapon rolls leave other riders untouched. Cantrip miss/save half never applies hit-only rider. Duplicate continuation neither rerolls nor repays.
-
-Evidence: [shared-spells.md](../../../docs/mechanics/shared-spells.md), [attack-profiles.md](../../../docs/mechanics/attack-profiles.md), [combat_action.gd](../../../src/combat/combat_action.gd).
-
-## CXM-09 — Immediate willing initiative exchange (INIT)
-
-Owner: **S-091 initiative owner extension; S-233 acquisition reuse**. Prerequisites: accepted reuse only.
-
-Consumers: Alert /authored_operations/1; Criminal and legal Human/feat acquisitions.
-
-Reuse: Settled initiative/order, encounter identity, conditions and feat ownership; late/group rolls already delivered.
-
-Deliver: Alert exact value swap immediately after owner rolls, willing same-combat ally, neither Incapacitated. Generic exchange not established; record narrow registry requirement at implementation, not a fabricated accepted S-ID.
-
-Acceptance: Real initiative window accept swaps exact values/order once. Decline/nonconsent/incapacity/wrong combat/stale/late/double choice does nothing. Late/group actors cannot reopen old window. Pending choice remains transient.
-
-Evidence: [progression-choices.md](../../../docs/mechanics/progression-choices.md), [combat_state.gd](../../../src/combat/combat_state.gd).
-
-## CXM-10 — Damage-triggered repeat saves (REPEAT)
+## CXM-12 — Damage-triggered repeat saves (REPEAT)
 
 Owner: **S-087/S-092; S-072 schedules reuse**. Prerequisites: accepted reuse only.
 
@@ -165,11 +216,13 @@ Reuse: Shared repeat saves/stages, exact condition lifetimes, target-turn schedu
 
 Deliver: Tasha damage WIS save with Advantage alongside scheduled turn-end save; source prevents self-ending Prone. One qualifying damage occurrence, independent packet settlement.
 
+Source check (2026-11-09): Extend the existing damage event (src/combat/combat_action.gd:1255 into SpellEffects.publish_event, src/spells/spell_effects.gd:303) with a save gate. Don't add a new damage hook.
+
 Acceptance: Real flat/ordered/off-turn typed damage: one source-defined qualifying occurrence produces one Advantage save; independent turn-end save remains. Success removes only this source; sibling Prone remains. Held/stale/duplicate chooser never rerolls or repays.
 
 Evidence: [shared_spell.gd](../../../src/spells/shared_spell.gd), [spell_encounter_lifecycle.gd](../../../src/spells/spell_encounter_lifecycle.gd), [shared-spells.md](../../../docs/mechanics/shared-spells.md).
 
-## CXM-11 — Restricted actions and Somatic cast failure (BUDGET)
+## CXM-13 — Restricted actions and Somatic cast failure (BUDGET)
 
 Owner: **S-160/S-142; S-021/S-237 reuse**. Prerequisites: accepted reuse only.
 
@@ -179,11 +232,13 @@ Reuse: CombatTurnBudget restricted actions, Action Surge Magic exclusion, ordina
 
 Deliver: Slow Action-or-Bonus/one attack/no Reactions/d4=1 Somatic failure; Haste extra restricted action/one attack/end lethargy; Stinking Cloud turn-local no Action/Bonus. Never convert restricted permission to general action.
 
+Source check (2026-11-09): Reuse is overstated: CombatTurnBudget tracks only Action Surge and magic_action (src/combat/combat_turn_budget.gd). Restricted-action permission is new.
+
 Acceptance: Real HUD with exhausted ordinary budgets: Haste cannot Magic/Extra Attack, Slow cannot spend both kinds or exceed one attack including substitutions. Capture one failure d4, retain prescribed costs through continuation. Exact lethargy ending and source-only permission removal.
 
 Evidence: [combat_turn_budget.gd](../../../src/combat/combat_turn_budget.gd), [ordinary-actions.md](../../../docs/mechanics/ordinary-actions.md), [cast-interruption-and-settlement.md](../../../docs/mechanics/cast-interruption-and-settlement.md).
 
-## CXM-12 — Qualifying off-turn spell windows (REACTION)
+## CXM-14 — Qualifying off-turn spell windows (REACTION)
 
 Owner: **S-041/S-042/S-134/S-135; S-115/S-143 reuse**. Prerequisites: accepted reuse only.
 
@@ -197,7 +252,7 @@ Acceptance: Actual off-turn HUD/AI weapons/spells/areas: sight/range/no-Reaction
 
 Evidence: [reaction_triggers.gd](../../../src/combat/reaction_triggers.gd), [spell_cast_reactions.gd](../../../src/spells/spell_cast_reactions.gd), [cast-interruption-and-settlement.md](../../../docs/mechanics/cast-interruption-and-settlement.md).
 
-## CXM-13 — Paid post-hit casts (POSTHIT)
+## CXM-15 — Paid post-hit casts (POSTHIT)
 
 Owner: **S-041/S-135/S-146; S-076/S-123 reuse**. Prerequisites: accepted reuse only.
 
@@ -207,13 +262,15 @@ Reuse: Captured hit/Attack units, permissions/payment, typed damage and critical
 
 Deliver: Immediate own qualifying hit Bonus casts and Pact-only Eldritch Smite. Initial damage joins same hit; recurring save/damage/lifetime remains independent. No second attack payment or unconditional smite.
 
+Source check (2026-11-09): Divine Smite (src/combat/combat_action.gd:2289) and Pact-only Eldritch Smite (src/characters/warlock_rules.gd:302) exist natively. Replace them; don't add a parallel post-hit cast.
+
 Acceptance: Normal multiattack hit/miss/critical: right weapon/turn/budget/source only, slot/free alternatives independent, cancel retains use. Same hit resumes once with correct critical initial dice and independent ticks/escape. Pact-only refuses ordinary slots.
 
 Evidence: [attack-unit-substitution.md](../../../docs/mechanics/attack-unit-substitution.md), [shared-spells.md](../../../docs/mechanics/shared-spells.md), [combat_action.gd](../../../src/combat/combat_action.gd).
 
 Conditional dependencies: REACTION: Only an intervening Reaction on the same captured hit; own-turn post-hit casting can use existing hit events.
 
-## CXM-14 — Copy actual damage without splitting (DAMAGE_COPY)
+## CXM-16 — Copy actual damage without splitting (DAMAGE_COPY)
 
 Owner: **S-114 continuation; S-111/S-112 receipt reuse**. Prerequisites: accepted reuse only.
 
@@ -223,13 +280,15 @@ Reuse: Final typed amount, DamageResponseRules causal/depth limits and independe
 
 Deliver: Warding Bond copy actual damage to caster; split/redirect cannot express copy. Rings/range/caster0/recast endings and feedback limit remain mandatory.
 
+Source check (2026-11-09): Add copy as another DamageLinkRules policy (src/combat/damage_link_rules.gd) next to split/redirect.
+
 Acceptance: Real mixed typed damage with resistance/immunity/TempHP; source-defined actual amount copied once, caster settles own defenses/concentration/0HP. Original is not reduced again. Range/caster0/removal stops copies; stale/two-source callbacks cannot loop.
 
 Evidence: [damage_response_rules.gd](../../../src/combat/damage_response_rules.gd), [shared-spells.md](../../../docs/mechanics/shared-spells.md), [combat_action.gd](../../../src/combat/combat_action.gd).
 
 Conditional dependencies: REACTION: Only optional interrupted damage choices on a selected caller; automatic Warding Bond copying has no Reaction cost.
 
-## CXM-15 — Heal from actual damage dealt (DAMAGE_HEAL)
+## CXM-17 — Heal from actual damage dealt (DAMAGE_HEAL)
 
 Owner: **S-114 continuation; S-034/S-125 reuse**. Prerequisites: accepted reuse only.
 
@@ -239,11 +298,13 @@ Reuse: Receipts distinguish raw/prevented/resolved/TempHP/HP loss; bounded count
 
 Deliver: Vampiric Touch half actual Necrotic damage dealt after defenses, exact initial/repeated attack, not raw roll fraction.
 
+Source check (2026-11-09): DamageResponseRules counter_heal (src/combat/damage_response_rules.gd:12) already heals from settled damage. Extend it for Vampiric Touch.
+
 Acceptance: Initial/repeat actual attacks, miss/immunity/resistance/TempHP/odd total; hold damage choice/0HP replacement then resume one heal with source rounding. No attack/cast replay; ended source offers no repeat action.
 
 Evidence: [damage_response_rules.gd](../../../src/combat/damage_response_rules.gd), [combat_action.gd](../../../src/combat/combat_action.gd), [shared-spells.md](../../../docs/mechanics/shared-spells.md).
 
-## CXM-16 — Reduction then optional paid redirection (DEFLECT)
+## CXM-18 — Reduction then optional paid redirection (DEFLECT)
 
 Owner: **S-109/S-114 continuation**. Prerequisites: accepted reuse only.
 
@@ -253,13 +314,15 @@ Reuse: Formula damage reduction, settled counters, cover/target queries and exac
 
 Deliver: Monk Reaction total reduction d10+DEX+level; only at0 optional Focus1 and visible5ft melee or60ft ranged/no Total Cover target; DEX save uses WIS DC, two Martial Arts dice+DEX triggering type.
 
+Source check (2026-11-09): Deflect Attacks reduction (src/combat/combat_action.gd:2128) and the Focus-paid redirect (:1380) are native. What remains is the sight, Total Cover and 60 ft checks, plus moving it to shared data.
+
 Acceptance: Real melee/ranged B/P/S/mixed attack,0/nonzero/no-Reaction/Focus and range/sight/cover edges. Reduction remains if redirect declined; target cancellation spends no Focus. Accepted save/damage happens once without original attack replay.
 
 Evidence: [damage_response_rules.gd](../../../src/combat/damage_response_rules.gd), [shared-spells.md](../../../docs/mechanics/shared-spells.md), [ordinary-actions.md](../../../docs/mechanics/ordinary-actions.md).
 
 Conditional dependencies: REACTION: Only exact incoming-attack choice scheduling; Hellish Rebuke/Counterspell/falling conversions are not gates.
 
-## CXM-17 — Scoped hits, next results and retargeting (RIDER)
+## CXM-19 — Scoped hits, next results and retargeting (RIDER)
 
 Owner: **S-076/S-077/S-080/S-086 continuation**. Prerequisites: accepted reuse only.
 
@@ -269,11 +332,13 @@ Reuse: Owned next-result grants, once-turn limits/modes, typed riders and repair
 
 Deliver: Weapon-only versus caster attack predicates, next-attack consumption, below-max/ally/reckless conditions and exact mark transfer after0. Finish remaining curse direct/delayed/aftermath/class-feature/monster/repeated-step producers without reopening repaired packets.
 
+Source check (2026-11-09): Native riders: Hunter's Mark (src/combat/combat_action.gd:1534), also hardcoded as target.marked_by_actor in src/combat/shared_step_executor.gd:552; Guiding Bolt, Divine Favor, Sneak Attack. Replace them. Only retargeting is new.
+
 Acceptance: Real eligible/unrelated/off-turn/critical attacks and spells; first-hit/next-attack/miss consumption follows source. Retarget legal later-turn Bonus only after marked target0. Multi-step/projectile hits neither drop nor multiply riders; source ending leaves siblings.
 
 Evidence: [captured-grants.md](../../../docs/mechanics/captured-grants.md), [source-end-rules.md](../../../docs/mechanics/source-end-rules.md), [combat_action.gd](../../../src/combat/combat_action.gd).
 
-## CXM-18 — Recipient benefits and captured formulas (BENEFIT)
+## CXM-20 — Recipient benefits and captured formulas (BENEFIT)
 
 Owner: **S-080/S-084/S-085/S-130/S-141 continuation**. Prerequisites: accepted reuse only.
 
@@ -283,11 +348,13 @@ Reuse: Fixed AC/walking-speed source carriers, base AC/score protections, fixed 
 
 Deliver: Nonself/multiple recipients and per-recipient parameters; paid-slot/casting-ability formulas. Aid fixed max_hp_source exists, upcast +5 current/max needs extension. Barkskin floor17, Mage Armor option, Heroism retained TempHP, Guidance skill and Resistance type/turn budget remain exact.
 
+Source check (2026-11-09): Aid, Barkskin, Heroism, Beacon of Hope, Magic Weapon and Enhance Ability already target others natively (src/spells/spell_effect_benefits.gd). The work is grant_source_benefits for other recipients. AC already has five carriers: converge on source_benefits and add no sixth.
+
 Acceptance: Normal target chooser with competing sources; slot3 Aid +10 current/max, expiry only own delta. Correct base/floor/equipment choices, independent recipient parameters, spent movement/TempHP replacement. Both checkpoints retain captured values and reject forged ones; no self-only approximation.
 
 Evidence: [source-benefit-carriers.md](../../../docs/mechanics/source-benefit-carriers.md), [source-owned-stat-protections.md](../../../docs/mechanics/source-owned-stat-protections.md), [monster-max-hp-sources.md](../../../docs/mechanics/monster-max-hp-sources.md).
 
-## CXM-19 — Captured durations and source endings (LIFETIME)
+## CXM-21 — Captured durations and source endings (LIFETIME)
 
 Owner: **S-070/S-080/S-086/S-087/S-141 continuation**. Prerequisites: accepted reuse only.
 
@@ -297,11 +364,13 @@ Reuse: Accepted flat-condition HUD duration/concentration, actor-specific rest-s
 
 Deliver: Other benefit/area/actor/item owners and room/AI/item/Reaction casts need captured settings and exact recipient endings. Long/recast/until-dispelled records require source-level validation; condition proof is not other-owner proof.
 
+Source check (2026-11-09): Record the paid cast level on every lifetime owner here; DISPEL depends on it.
+
 Acceptance: Actual noncondition owner altered duration/concentration, unchanged catalog and sibling values. Cast/action/range/item/rest/recipient-turn endings, unloaded rooms and clock jumps settle once. Both allowed saves retain deadline/paid level and reject stripped required state; no new checkpoint.
 
 Evidence: [source-end-rules.md](../../../docs/mechanics/source-end-rules.md), [source-benefit-carriers.md](../../../docs/mechanics/source-benefit-carriers.md), [created-actors-and-placement.md](../../../docs/mechanics/created-actors-and-placement.md).
 
-## CXM-20 — Exact weapon enhancements, bonds and curses (ITEM_MAGIC)
+## CXM-22 — Exact weapon enhancements, bonds and curses (ITEM_MAGIC)
 
 Owner: **S-161/S-162/S-126/S-127/S-202/S-203 continuation**. Prerequisites: COMPONENT.
 
@@ -311,11 +380,13 @@ Reuse: Bond/Release/Project/Dismiss controls, copy identity, linked loss causes,
 
 Deliver: Shillelagh/Magic Weapon/Sacred Weapon/pact copy, choices/hand/carry/recast ending. Remove Curse ends eligible creature/object curses; cursed-item curse remains while attunement breaks. No dormant magic catalog import.
 
+Source check (2026-11-09): Shillelagh (keyed by weapon definition ID, src/characters/character.gd:388), Magic Weapon, pact weapon and Remove Curse item breaking (src/characters/curse_rules.gd:46) are native. Key them to exact copies.
+
 Acceptance: Two identical copies independently selected, dual-role staff valid. Correct type choices on actual ordinary/Opportunity/command hosts; ending leaves catalog/sibling untouched. Drop/loss/bond uses exact cause; cursed item becomes removable with retained curse. Checkpoint preserves state.
 
 Evidence: [attack-profiles.md](../../../docs/mechanics/attack-profiles.md), [created-actors-and-placement.md](../../../docs/mechanics/created-actors-and-placement.md), [linked-removal-causes.md](../../../docs/mechanics/linked-removal-causes.md).
 
-## CXM-21 — Source weapon properties and masteries (WEAPON)
+## CXM-23 — Source weapon properties and masteries (WEAPON)
 
 Owner: **S-127; S-250/S-084/S-085 reuse**. Prerequisites: accepted reuse only.
 
@@ -325,13 +396,15 @@ Reuse: Range/Heavy, bounded damage-type routes, nonstacking Extra Attack and nat
 
 Deliver: Source-driven mastery eligibility/replacement, reach/property/hand/ability predicates on selected routes. Loading is not absent everywhere. Candidate S-255 hints do not select dormant magic templates.
 
+Source check (2026-11-09): Mastery is a hardcoded weapon-ID map (src/characters/fighter_rules.gd:8), so renamed weapons get none. Moving mastery into item data is the core work.
+
 Acceptance: Normal mastery acquisition/replacement and ordinary/Extra/Light/Nick/Cleave/Opportunity/selected creature attacks. Thrown versus Ranged, reach, hands/proficiency/exact copy; renamed item works. Upgrade switch creates/refunds no swings. Reuse unchanged range/Heavy checks.
 
 Evidence: [attack-profiles.md](../../../docs/mechanics/attack-profiles.md), [attack-and-ac-upgrades.md](../../../docs/mechanics/attack-and-ac-upgrades.md), [fighter_rules.gd](../../../src/characters/fighter_rules.gd).
 
 Conditional dependencies: AMMO: Only ammunition weapons and their actual shot routes; melee properties can proceed independently.
 
-## CXM-22 — Unarmed Grapple/Shove and exact relations (GRAPPLE)
+## CXM-24 — Unarmed Grapple/Shove and exact relations (GRAPPLE)
 
 Owner: **S-236; S-168/S-169/S-235 reuse**. Prerequisites: accepted reuse only.
 
@@ -341,11 +414,13 @@ Reuse: Accepted tether anchors/Escape/Rescue/Cut/source cleanup and shared Grapp
 
 Deliver: Actual Unarmed choices/free hand/size/reach/DC; dragging/end on incapacity/out-of-reach. Grappler Damage+Grapple once-turn and size exception. Rope/Net use same relations, distinct checks.
 
+Source check (2026-11-09): Reuse is overstated: Grappled only sets Speed 0 (src/combat/combat_action.gd:83). Attack Disadvantage against non-grapplers and Unarmed Grapple/Shove are new.
+
 Acceptance: Ordinary Unarmed chooser validates size/reach/hands and permitted STR/DEX DC. Two captors keep independent relations; incapacity/out-of-reach releases only matching grip. Drag costs/size exceptions, legal escape/help/cut and both checkpoint identities.
 
 Evidence: [tethers.md](../../../docs/mechanics/tethers.md), [core-rules-status.md](../../../docs/mechanics/core-rules-status.md), [ordinary-actions.md](../../../docs/mechanics/ordinary-actions.md).
 
-## CXM-23 — Fallback movement and actual jumps (MOVE)
+## CXM-25 — Fallback movement and actual jumps (MOVE)
 
 Owner: **S-239; S-179 reuse**. Prerequisites: accepted reuse only.
 
@@ -355,11 +430,13 @@ Reuse: Combat mode/surface/terrain queries and initial zero-spend refusal; form-
 
 Deliver: Double-cost fallback climb/swim, crawl/voluntary stand/STR or declared DEX jumps; Jump spends10ft once-turn for up to30ft, not teleport. Moving footprints/room hosts only concrete consumers.
 
+Source check (2026-11-09): Fallback climb/swim cost already exists in PhysicalFactsRules.attempt_movement_step (src/combat/physical_facts_rules.gd:734), but only checks call it. Wire it into production movement. Jump is native (src/combat/combat_state.gd:2793).
+
 Acceptance: Actual route at/under budget, running/standing jumps, DEX substitution, Prone/Speed0, hands/surface and larger creature passage. Refusal spends0; once-turn Jump/budget survives interruption; no overlap or invented OA immunity.
 
 Evidence: [physical-facts-space-and-movement.md](../../../docs/mechanics/physical-facts-space-and-movement.md), [ordinary-actions.md](../../../docs/mechanics/ordinary-actions.md).
 
-## CXM-24 — Post-hit, Reaction and compelled movement (GRANTED_MOVE)
+## CXM-26 — Post-hit, Reaction and compelled movement (GRANTED_MOVE)
 
 Owner: **S-241/S-183/S-269; S-179/S-148 reuse**. Prerequisites: accepted reuse only.
 
@@ -369,13 +446,15 @@ Reuse: Open Hand15ft Push and shared/Thunderwave push delivered; ordinary child 
 
 Deliver: Whispers target Reaction safe route; Command five orders/Fear Dash/drop; Champion/Fighter/Rogue half-Speed no-OA; Repelling Blast and charge history. Every source owns budget and OA policy.
 
+Source check (2026-11-09): Command's orders (src/combat/combat_state.gd:1258) and Repelling Blast (src/spells/spell_effect_application.gd) are native. Dissonant Whispers and Fear are new.
+
 Acceptance: Actual input/AI safe/blocked/no-exit routes; Reaction belongs to target. Whispers can provoke under movement rules; Push neither provokes nor spends voluntary movement. Half-Speed moves and forced hazard crossings settle once, stale post-hit choices cannot replay.
 
 Evidence: [physical-facts-space-and-movement.md](../../../docs/mechanics/physical-facts-space-and-movement.md), [attack-unit-substitution.md](../../../docs/mechanics/attack-unit-substitution.md), [combat_turn_budget.gd](../../../src/combat/combat_turn_budget.gd).
 
 Conditional dependencies: MOVE: Only an actual route requiring fallback climb/swim/jump/stand; floor movement reuses accepted S-179.
 
-## CXM-25 — Descent, falling damage and lost flight (FALL)
+## CXM-27 — Descent, falling damage and lost flight (FALL)
 
 Owner: **S-181; S-121/S-122/S-179 reuse**. Prerequisites: accepted reuse only.
 
@@ -385,13 +464,15 @@ Reuse: Altitude/clearance/legal placement, damage reductions and Reaction schedu
 
 Deliver: Actual fall/descent/landing: Feather Fall60ft/round, Levitate gentle end, flight loss, Slow Fall actual damage reduction. No universal3D map gate.
 
+Source check (2026-11-09): Falling damage is native in combat (src/combat/combat_state.gd:7006) and in rooms (src/dungeon/local_room_rules.gd:397). Feather Fall and Slow Fall hook these; no new fall path.
+
 Acceptance: Start real falling, accept/decline Reaction, land before/after expiry and compare actual damage. End flight at altitude/incapacity: legal landing/descent or fall, no telefrag. Slow Fall reduces5*Monk level at legal window; save only allowed resulting state.
 
 Evidence: [physical-facts-space-and-movement.md](../../../docs/mechanics/physical-facts-space-and-movement.md), [placement_rules.gd](../../../src/combat/placement_rules.gd), [core-rules-status.md](../../../docs/mechanics/core-rules-status.md).
 
 Conditional dependencies: REACTION: Only Feather Fall/Slow Fall's actual fall-trigger choice. MOVE: Only a new movement mode whose loss produces the selected fall.
 
-## CXM-26 — Bounded teleport, gas/stone access and return (PHASE)
+## CXM-28 — Bounded teleport, gas/stone access and return (PHASE)
 
 Owner: **S-177/S-178/S-180/S-181; S-121/S-122 reuse**. Prerequisites: accepted reuse only.
 
@@ -401,13 +482,15 @@ Reuse: Plane/location facts, legal arrivals, represented random overworld travel
 
 Deliver: Misty Step seen destination; Blink d6/plane/return; gas gaps/liquids/restrictions; stone volume/deformation expulsion. Fairy return policy unresolved; general planar travel outside.
 
+Source check (2026-11-09): Misty Step is already data-driven (a teleport effect with requires_sight, src/combat/travel_placement_rules.gd).
+
 Acceptance: Seen/blocked/wrong-plane destinations, cancellation costs0. Passage may not end illegally. Blink4–6/already-Ethereal ending/60ft perception and next-turn nearest legal return retain gear. Stone destruction/deformation damage/Prone/shunt once.
 
 Evidence: [physical-facts-space-and-movement.md](../../../docs/mechanics/physical-facts-space-and-movement.md), [created-actors-and-placement.md](../../../docs/mechanics/created-actors-and-placement.md).
 
 Conditional dependencies: FALL: Only gas/flight ending or stone expulsion that actually needs falling; Blink/Misty arrival uses existing placement.
 
-## CXM-27 — Selective crossings and occupant admission (BARRIER)
+## CXM-29 — Selective crossings and occupant admission (BARRIER)
 
 Owner: **S-185/S-186; S-184/S-122 reuse**. Prerequisites: accepted reuse only.
 
@@ -423,7 +506,7 @@ Evidence: [physical-facts-space-and-movement.md](../../../docs/mechanics/physica
 
 Conditional dependencies: PHASE: Only Magic Circle's intercepted teleport attempt; Hut/Wind ordinary crossings need no Blink/gas work.
 
-## CXM-28 — Exact object damage, targeting and ignition (OBJECT)
+## CXM-30 — Exact object damage, targeting and ignition (OBJECT)
 
 Owner: **S-032/S-091/S-098/S-099/S-119 continuation**. Prerequisites: accepted reuse only.
 
@@ -433,11 +516,13 @@ Reuse: Room/exact-part objects and CombatUtilize; Shatter no-save unattended non
 
 Deliver: Remaining single/area/projectile object selectors including collocated copies; actual eligible ignition. Unknown material/magic/equipment stays unknown. Heat Metal contact/drop/removal and Enlarge targets use exact objects.
 
+Source check (2026-11-09): Area object damage and ignition already exist (src/combat/combat_object_rules.gd:200).
+
 Acceptance: Real chooser differentiates creature/two objects at same cell and worn versus unattended. Unknown fact cannot invent outcome. Miss/save/cover/HP/destruction affects selected copy/geometry; no worn/carried burning. Reuse accepted Shatter/Thunderwave subset.
 
 Evidence: [shared-spells.md](../../../docs/mechanics/shared-spells.md), [ordinary-actions.md](../../../docs/mechanics/ordinary-actions.md), [local_room_shared_spells.gd](../../../src/dungeon/local_room_shared_spells.gd).
 
-## CXM-29 — Retained-object repair and corrosion (REPAIR)
+## CXM-31 — Retained-object repair and corrosion (REPAIR)
 
 Owner: **S-212/S-213; S-060/S-203/S-210 reuse**. Prerequisites: accepted reuse only.
 
@@ -453,7 +538,7 @@ Evidence: [exact-contents-and-parts.md](../../../docs/mechanics/exact-contents-a
 
 Conditional dependencies: OBJECT: Only a missing exact target/part or damage fact for this repair; room copy targeting already exists. Fireball ignition is not a gate.
 
-## CXM-30 — Real tool tasks and consulted context (TOOL)
+## CXM-32 — Real tool tasks and consulted context (TOOL)
 
 Owner: **S-237/S-238; S-036/S-094 reuse**. Prerequisites: accepted reuse only.
 
@@ -463,13 +548,15 @@ Reuse: Purpose checks/owned exact tool, tool-ID Help, room Utilize/Study and pro
 
 Deliver: Each tool ability/DC and actual task; relevant skill plus tool Advantage, consulted accurate topic Book+5, Crowbar/Costume predicates. Owning tool/proficiency is not completing task; unwritten recipe outputs stay dependencies.
 
+Source check (2026-11-09): Thieves' Tools lockpicking and Crowbar prying are native (src/dungeon/local_room_rules.gd:856). A Crowbar is required there, but in the SRD it grants Advantage.
+
 Acceptance: Ordinary tool/operation choice with correct/wrong variant/copy/proficiency/skill; failed paid attempt/time/matching Help once, cancel/stale0. Book must be consulted/accurate for real topic. Task changes actual lock/repair/knowledge state.
 
 Evidence: [purpose-aware-check-context.md](../../../docs/mechanics/purpose-aware-check-context.md), [ordinary-actions.md](../../../docs/mechanics/ordinary-actions.md).
 
 Conditional dependencies: OBJECT: Only the selected task's missing actual object mutation/target; existing Utilize supports independent tasks.
 
-## CXM-31 — Thrown items, Net, kits and potions (ITEM_ATTACK)
+## CXM-33 — Thrown items, Net, kits and potions (ITEM_ATTACK)
 
 Owner: **S-256/S-146/S-237; S-049/S-064 reuse**. Prerequisites: accepted reuse only.
 
@@ -485,7 +572,7 @@ Evidence: [attack-unit-substitution.md](../../../docs/mechanics/attack-unit-subs
 
 Conditional dependencies: QUANTITY: Only exact kit-use/portion counter needed by this item; discrete consumable copies reuse S-049. GRAPPLE: Only Net restraint/escape relation; Holy Water/potions are independent.
 
-## CXM-32 — Potion miscibility table and retained effects (MIX)
+## CXM-34 — Potion miscibility table and retained effects (MIX)
 
 Owner: **S-214/S-215; S-049/S-064 reuse**. Prerequisites: ITEM_ATTACK.
 
@@ -499,7 +586,7 @@ Acceptance: Actual two-potion mixing/use control with exact copies, seeded table
 
 Evidence: [shared-spells.md](../../../docs/mechanics/shared-spells.md), [event_resolver.gd](../../../src/events/event_resolver.gd), [inventory_copies.gd](../../../src/characters/inventory_copies.gd).
 
-## CXM-33 — Recoverable hazards and burning (HAZARD)
+## CXM-35 — Recoverable hazards and burning (HAZARD)
 
 Owner: **S-258; S-184/S-122 reuse**. Prerequisites: accepted reuse only.
 
@@ -509,13 +596,15 @@ Reuse: Accepted entry/crossing/turn/area movement receipts, room areas and place
 
 Deliver: Caltrops/Bearings level ground/first-entry/movement exceptions/ten-minute recover; Oil dousing/ground fire distinct from fuel; Web cubes/Ashvale custom1d4 heat. No generic area substitutes for source conditions.
 
+Source check (2026-11-09): Ashvale heat is already data-driven terrain (src/dungeon/local_room_rules.gd:406).
+
 Acceptance: Actual placement rejects bad ground unpaid; distinguish appearance/entry/area move/start/end and once-turn. Slow crossing exemption, recovery quantities/time, dousing+Fire ordering; no duplicate damage across sources. Checkpoint preserves remaining area/stock.
 
 Evidence: [physical-facts-space-and-movement.md](../../../docs/mechanics/physical-facts-space-and-movement.md), [spatial_trigger_rules.gd](../../../src/spells/spatial_trigger_rules.gd), [local_room_areas.gd](../../../src/dungeon/local_room_areas.gd).
 
 Conditional dependencies: QUANTITY: Only recoverable stock/fuel counter for the selected hazard. ITEM_ATTACK: Only Oil dousing/thrown ignition; caltrop placement uses accepted Utilize.
 
-## CXM-34 — Located light and hearing-only targeting (LIGHT)
+## CXM-36 — Located light and hearing-only targeting (LIGHT)
 
 Owner: **S-190/S-191 continuation; S-274 via DISPEL**. Prerequisites: accepted reuse only.
 
@@ -525,13 +614,15 @@ Reuse: Observer senses/light/concealment, OA hearing/noise, portable lights and 
 
 Deliver: Outline light/observer-specific advantage, object covering, flame/light movement controls, fuel/hood/cones. Mockery seen OR heard target. Map reveal is not sight.
 
+Source check (2026-11-09): Outlined Advantage exists natively (src/combat/combat_action.gd:625).
+
 Acceptance: Two real observers/sources; cover/uncover/extinguish/rekindle/hood proper budgets/radii. Advantage requires actual outline sight. Blinded/hearing-only versus Deafened/unseen Mockery uses known-location facts without global reveal. Reuse perception fixture subset.
 
 Evidence: [perception.md](../../../docs/mechanics/perception.md), [ordinary-actions.md](../../../docs/mechanics/ordinary-actions.md), [light_source_rules.gd](../../../src/characters/light_source_rules.gd).
 
 Conditional dependencies: OBJECT: Only a missing exact object-origin/cover control. QUANTITY: Only fuel-powered items; spell emitters need no general fuel work.
 
-## CXM-35 — Exact area, terrain and aura consumers (ZONE)
+## CXM-37 — Exact area, terrain and aura consumers (ZONE)
 
 Owner: **S-184/S-179/S-098/S-099; S-075 continuation**. Prerequisites: accepted reuse only.
 
@@ -541,13 +632,15 @@ Reuse: Accepted spatial policies, live AuraRules, exemptions, timed areas/light/
 
 Deliver: Wire exact appearance/entry/area-entry/start/end/per-distance policies and exclusions/speed/save/damage; vegetation/wind facts/endings and nonharm aura scope. Generic trigger existence is not every spell payload.
 
+Source check (2026-11-09): Spirit Guardians, Moonbeam, Spike Growth and other zones are native per-spell code (src/spells/combat_spell_zones.gd). This is replacement, not new wiring.
+
 Acceptance: Actual actor versus area movement and initial/wrong-turn events; once-turn differs from Spike each5ft. Guardians all nonexcluded creatures half Speed; Conjure no half on save. Gust flames/gas and storm/plant eligibility need facts. Cleanup/unloaded clock/checkpoint exact source no replay.
 
 Evidence: [physical-facts-space-and-movement.md](../../../docs/mechanics/physical-facts-space-and-movement.md), [condition-suppression-and-auras.md](../../../docs/mechanics/condition-suppression-and-auras.md), [combat_spell_zones.gd](../../../src/spells/combat_spell_zones.gd).
 
 Conditional dependencies: BENEFIT: Only the selected source speed/check/recipient benefit. LIGHT: Only the selected light/obscuration emitter; other area payloads use accepted perception.
 
-## CXM-36 — Borrowed senses and cast origins (REMOTE)
+## CXM-38 — Borrowed senses and cast origins (REMOTE)
 
 Owner: **S-192/S-193/S-145; S-190 reuse**. Prerequisites: accepted reuse only.
 
@@ -563,7 +656,7 @@ Evidence: [find-familiar-2024.md](../../../docs/mechanics/find-familiar-2024.md)
 
 Conditional dependencies: LIGHT: Only a missing sensor perception fact; accepted S-190 is reusable. REACTION: Only familiar Touch delivery scheduling not already covered by native controls.
 
-## CXM-37 — Fact-limited detection and masking (DETECT)
+## CXM-39 — Fact-limited detection and masking (DETECT)
 
 Owner: **S-194/S-195; S-190/S-219 reuse**. Prerequisites: accepted reuse only.
 
@@ -579,7 +672,7 @@ Evidence: [perception.md](../../../docs/mechanics/perception.md), [ordinary-acti
 
 Conditional dependencies: REMOTE: Only an actual independent sensor origin; caster-origin detection is independent.
 
-## CXM-38 — Language grants and bounded messages (LANGUAGE)
+## CXM-40 — Language grants and bounded messages (LANGUAGE)
 
 Owner: **S-218; S-232/S-219 reuse**. Prerequisites: accepted reuse only.
 
@@ -593,7 +686,7 @@ Acceptance: Normal creation/level grants and actual message UI: wrong language/r
 
 Evidence: [ordinary-actions.md](../../../docs/mechanics/ordinary-actions.md), [progression-choices.md](../../../docs/mechanics/progression-choices.md), [character.gd](../../../src/characters/character.gd).
 
-## CXM-39 — Authored answers, attitudes and divination history (KNOWLEDGE)
+## CXM-41 — Authored answers, attitudes and divination history (KNOWLEDGE)
 
 Owner: **S-219/S-209/S-214; S-188/S-237 reuse**. Prerequisites: accepted reuse only.
 
@@ -609,7 +702,7 @@ Evidence: [ordinary-actions.md](../../../docs/mechanics/ordinary-actions.md), [0
 
 Conditional dependencies: LANGUAGE: Only the selected communication route absent from accepted local speech. DETECT: Only answers derived from a selected detection source; Augury/authored questions need no remote-sense gate.
 
-## CXM-40 — Located images and per-observer disbelief (ILLUSION)
+## CXM-42 — Located images and per-observer disbelief (ILLUSION)
 
 Owner: **S-187/S-188; S-189 only selected outcome**. Prerequisites: accepted reuse only.
 
@@ -625,7 +718,7 @@ Evidence: [perception.md](../../../docs/mechanics/perception.md), [source-end-ru
 
 Conditional dependencies: KNOWLEDGE: Only the selected per-observer discovery/answer consequence; reuse existing Study receipts. OBJECT: Only a selected physical interaction target, not every damage spell.
 
-## CXM-41 — Exact locks and authorized persistent triggers (WARD)
+## CXM-43 — Exact locks and authorized persistent triggers (WARD)
 
 Owner: **S-230/S-184/S-203 continuation**. Prerequisites: accepted reuse only.
 
@@ -635,13 +728,15 @@ Reuse: Ordinary key/tool/break interactions, Alarm/object states and spatial rec
 
 Deliver: Arcane Lock closed target/password/authorization; Knock one lock/10min suppression/target noise; Alarm eight-hour permitted list/mental1mile/audible60ft10s; Mouth sensed30ft/message/repeat/end. Geometry/log is not full outcome.
 
+Source check (2026-11-09): Knock suppression (src/combat/combat_object_rules.gd:335) and Arcane Lock password/designated users (:373) are native. Missing: the password UI, Knock's noise, Magic Mouth.
+
 Acceptance: Real object/spell controls with two locks/wrong key/password/excluded actor. Knock exact source suppresses10min, emits300ft noise once. Alarm waking/recipient/sound limits and duration. Revisit/reload cannot retrigger same occurrence or respawn object.
 
 Evidence: [ordinary-actions.md](../../../docs/mechanics/ordinary-actions.md), [physical-facts-space-and-movement.md](../../../docs/mechanics/physical-facts-space-and-movement.md), [local_room_rules.gd](../../../src/dungeon/local_room_rules.gd).
 
 Conditional dependencies: OBJECT: Only a missing exact lock/object fact; ordinary room locks exist. LANGUAGE: Only the selected password/message route, not Sending/Tongues generally.
 
-## CXM-42 — Spell-level ending and light overlap (DISPEL)
+## CXM-44 — Spell-level ending and light overlap (DISPEL)
 
 Owner: **S-276/S-274; S-116/S-190 reuse**. Prerequisites: accepted reuse only.
 
@@ -657,7 +752,7 @@ Evidence: [shared_spell.gd](../../../src/spells/shared_spell.gd), [source-end-ru
 
 Conditional dependencies: LIFETIME: Only capture/validate source cast level on each owner actually being ended. LIGHT: Only opposite-kind area overlap producers; ordinary Dispel source ending independent.
 
-## CXM-43 — Store and release one exact cast (STORAGE)
+## CXM-45 — Store and release one exact cast (STORAGE)
 
 Owner: **S-150/S-151; S-135/S-142/S-184 reuse**. Prerequisites: accepted reuse only.
 
@@ -673,7 +768,7 @@ Evidence: [cast-interruption-and-settlement.md](../../../docs/mechanics/cast-int
 
 Conditional dependencies: WARD: Only exact Glyph trigger/source-location record. DISPEL: Only Glyph source ending by dispel; other light/curse owners do not gate storage.
 
-## CXM-44 — Long casts and fixed-location work (WORK)
+## CXM-46 — Long casts and fixed-location work (WORK)
 
 Owner: **S-066/S-067/S-136/S-142 continuation**. Prerequisites: accepted reuse only.
 
@@ -687,7 +782,7 @@ Acceptance: Normal timed cast move/lose Touch/incapacitate/interrupt then comple
 
 Evidence: [work-sites.md](../../../docs/mechanics/work-sites.md), [spell-slots-and-ritual-casting.md](../../../docs/mechanics/spell-slots-and-ritual-casting.md), [cast-interruption-and-settlement.md](../../../docs/mechanics/cast-interruption-and-settlement.md).
 
-## CXM-45 — Rest exceptions and benefit-only Short Rest (REST)
+## CXM-47 — Rest exceptions and benefit-only Short Rest (REST)
 
 Owner: **S-071/S-014/S-070 continuation**. Prerequisites: accepted reuse only.
 
@@ -703,7 +798,7 @@ Evidence: [shared-resource-pools.md](../../../docs/mechanics/shared-resource-poo
 
 Conditional dependencies: WORK: Only Prayer's ten-minute continuous-participant cast; no whole long-cast catalog gate.
 
-## CXM-46 — Exchange destinations, refunds and recovery extras (POOL)
+## CXM-48 — Exchange destinations, refunds and recovery extras (POOL)
 
 Owner: **S-052/S-053/S-054/S-055/S-059/S-062 continuation**. Prerequisites: accepted reuse only.
 
@@ -713,11 +808,13 @@ Reuse: Numeric pools, slot-to-numeric/dice/inventory exchange and result recover
 
 Deliver: Pool-to-created-slot, no-action/empty/per-turn/rest exceptions, secondary recovery effects and shared Second Wind/Mind/Shift pool. Numeric recovery alone does not supply Metabolism healing.
 
+Source check (2026-11-09): Created slots (src/characters/sorcerer_rules.gd:217), Wild Resurgence (src/characters/druid_rules.gd:180), Tactical Mind (src/characters/fighter_rules.gd:241) and the shared exchange (src/characters/resource_pool_rules.gd:312) exist. Arcane Recovery is the new piece.
+
 Acceptance: Real controls cancel/stale/insufficient/overcap and mixed pools: validate both sides first. Generated slots/caps/level6 exclusion, exact rest/turn/floor/locks; failure refund same source. Checkpoint retains remaining source quantities without replay.
 
 Evidence: [shared-resource-pools.md](../../../docs/mechanics/shared-resource-pools.md), [resource_pool_rules.gd](../../../src/characters/resource_pool_rules.gd), [spell-slots-and-ritual-casting.md](../../../docs/mechanics/spell-slots-and-ritual-casting.md).
 
-## CXM-47 — Actual intake, stock and exposure (SUPPLY)
+## CXM-49 — Actual intake, stock and exposure (SUPPLY)
 
 Owner: **S-197/S-200/S-201; S-199 reuse**. Prerequisites: accepted reuse only.
 
@@ -727,13 +824,15 @@ Reuse: Survival nourishment deadlines, camp/rest, measured quantities/clock and 
 
 Deliver: Physical intake versus magic nourishment, size pounds/gallons, spoilage/contamination/deprivation/recovery restrictions. Form/actor exceptions exact cause; servings/spring prose lack units.
 
+Source check (2026-11-09): Per-size food/water needs and deprivation exhaustion exist (src/characters/survival_rules.gd:6). Stock, spoilage and contamination are new.
+
 Acceptance: At actual daily deadlines consume source quantities; half/no-water/food exhaustion and recovery restrictions. Goodberry not water; created food45lb spoils24h, water30gal no invented expiry; Purify modifies existing stock. Clock jump/reload neither resets deprivation nor double-consumes.
 
 Evidence: [survival_rules.gd](../../../src/characters/survival_rules.gd), [rest_rules.gd](../../../src/characters/rest_rules.gd), [physical-facts-space-and-movement.md](../../../docs/mechanics/physical-facts-space-and-movement.md).
 
 Conditional dependencies: QUANTITY: Only selected physical intake/stock units. REST: Only missing recipient restriction; successful Long Rest lifecycle is already accepted.
 
-## CXM-48 — Environment breathing and suffocation (BREATH)
+## CXM-50 — Environment breathing and suffocation (BREATH)
 
 Owner: **S-205; S-200/S-201 reuse; S-204 only selected air consumer**. Prerequisites: accepted reuse only.
 
@@ -749,7 +848,7 @@ Evidence: [survival_rules.gd](../../../src/characters/survival_rules.gd), [physi
 
 Conditional dependencies: SUPPLY: Only shared cause-specific exposure/deadline plumbing, not hunger/foraging or all food rules.
 
-## CXM-49 — Bounded outputs and granted action controllers (CREATION)
+## CXM-51 — Bounded outputs and granted action controllers (CREATION)
 
 Owner: **S-049/S-064/S-160/S-161/S-162/S-199 continuation**. Prerequisites: accepted reuse only.
 
@@ -765,7 +864,7 @@ Evidence: [attack-unit-substitution.md](../../../docs/mechanics/attack-unit-subs
 
 Conditional dependencies: LIFETIME: Only the actual output/granted-action source ending. QUANTITY: Only food/water/batch outputs; spectral actions do not wait for gallons.
 
-## CXM-50 — Selected recipes and real world changes (CRAFT)
+## CXM-52 — Selected recipes and real world changes (CRAFT)
 
 Owner: **S-198/S-199; S-066/S-067 reuse**. Prerequisites: accepted reuse only.
 
@@ -781,7 +880,7 @@ Evidence: [work-sites.md](../../../docs/mechanics/work-sites.md), [purpose-aware
 
 Conditional dependencies: TOOL: Only this recipe's qualification/tool task. WORK: Only actual site/time host needed; existing work support reusable. CREATION: Only exact selected output-copy creation, not every magical controller.
 
-## CXM-51 — Source templates and shared monster actions (ACTOR)
+## CXM-53 — Source templates and shared monster actions (ACTOR)
 
 Owner: **S-154/S-155/S-126/S-134 continuation**. Prerequisites: accepted reuse only.
 
@@ -791,13 +890,15 @@ Reuse: Parameterized factory/footprints/placement/count choices, combat-room pos
 
 Deliver: Full printed stats/attacks/save-only/Multiattack/recharge/daily traits through shared executor, fixed bonuses/units. No second monster interpreter or ID registration. Trait names/metadata are not executable.
 
+Source check (2026-11-09): Build Multiattack on the existing extra-attack units, not a monster-only path.
+
 Acceptance: Renamed loaded statblock plus real selected blocks through ordinary spawn/form controls; printed bonus/DC/damage, Multiattack members, recharge once actual turn, daily/rest policy. Monster spells exact source/components/slot; legal footprints. Never merge/rebalance custom Crown with SRD or offer held swarm.
 
 Evidence: [created-actors-and-placement.md](../../../docs/mechanics/created-actors-and-placement.md), [data-driven-2024-monster-execution-plan.md](../../../docs/architecture/data-driven-2024-monster-execution-plan.md), [combat_state.gd](../../../src/combat/combat_state.gd).
 
 Conditional dependencies: WEAPON: Only the selected attack property/mastery absent from accepted profiles. REACTION: Only an actual Reaction trait; printed statistics/simple actions can proceed independently.
 
-## CXM-52 — Orders, attack substitution and mount policies (COMMAND)
+## CXM-54 — Orders, attack substitution and mount policies (COMMAND)
 
 Owner: **S-156/S-157/S-158; narrow in-band S-147 Chain consumer**. Prerequisites: accepted reuse only.
 
@@ -813,7 +914,7 @@ Evidence: [created-actors-and-placement.md](../../../docs/mechanics/created-acto
 
 Conditional dependencies: ACTOR: Only chosen actor template/action kinds. REMOTE: Only specified senses/Touch delivery; commands reuse existing actor authority.
 
-## CXM-53 — Source retained forms and equipment (FORM)
+## CXM-55 — Source retained forms and equipment (FORM)
 
 Owner: **S-163/S-164/S-141 continuation**. Prerequisites: accepted reuse only.
 
@@ -829,7 +930,7 @@ Evidence: [created-actors-and-placement.md](../../../docs/mechanics/created-acto
 
 Conditional dependencies: ACTOR: Only legal selected source stat/trait template. ARMOR: Only retained equipment/base-AC consumer. GRAPPLE: Only a selected form's actual grapple action, not all form selection.
 
-## CXM-54 — Source swallowing, space and cargo consumers (CONTAIN)
+## CXM-56 — Source swallowing, space and cargo consumers (CONTAIN)
 
 Owner: **S-170/S-171/S-172/S-167 reuse**. Prerequisites: accepted reuse only.
 
@@ -845,7 +946,7 @@ Evidence: [containment.md](../../../docs/mechanics/containment.md), [projected-v
 
 Conditional dependencies: FORM: Only when the swallowing creature is an acquired form. PHASE: Only Rope Trick's represented internal plane/access. BARRIER: Only Rope Trick's specified inside/outside effect barrier.
 
-## CXM-55 — Death, preservation, revival and delayed creation (REMAINS)
+## CXM-57 — Death, preservation, revival and delayed creation (REMAINS)
 
 Owner: **S-175/S-176; S-119/S-120/S-130/S-131 reuse**. Prerequisites: accepted reuse only.
 
@@ -855,13 +956,15 @@ Reuse: Corpse dead/downed identity/cause/gear, explicit/max0 death, lasting Unde
 
 Deliver: Repose exact deadline pause; Revivify same actor<=1min/excluded death/1HP/missing parts, unknown facts refuse. Wight actual-damage maxHP/cure and24h Zombie/cancel/control12. Lich revival held for policy.
 
+Source check (2026-11-09): The Gentle Repose clock pause (src/characters/corpse_rules.gd:56) and Revivify window/refusals (:73) are native. Wight max-HP drain and the delayed Zombie are new.
+
 Acceptance: Real death vs living0, just-before/after revive deadline with Repose/diamonds once, same gear/actor. Wight settled damage/max0/cancelled delayed creation/cap; Zombie exclusions/DC5+damage before defeat. Allowed reload cannot restart timers or recreate remains.
 
 Evidence: [party-recovery-2024.md](../../../docs/mechanics/party-recovery-2024.md), [animate-dead-2024.md](../../../docs/mechanics/animate-dead-2024.md), [monster-max-hp-sources.md](../../../docs/mechanics/monster-max-hp-sources.md).
 
 Conditional dependencies: ACTOR: Only delayed/created Zombie template; Revivify restores original actor. REPAIR: Only if an actual retained-piece fact is absent; revive refusal for missing parts does not require Mending.
 
-## CXM-56 — Casting sources, repertoires and costed edits (CAST)
+## CXM-58 — Casting sources, repertoires and costed edits (CAST)
 
 Owner: **S-134–S-142; S-126/S-127 continuation**. Prerequisites: accepted reuse only.
 
@@ -877,7 +980,7 @@ Evidence: [spell-permissions-and-preparation.md](../../../docs/mechanics/spell-p
 
 Conditional dependencies: COMPONENT: Only material/hand form absent for the selected permission/edit. POOL: Only exact cost/exchange needed by the selected option. ROLL: Only option's actual roll-choice host. LIFETIME: Only selected duration/concentration owner.
 
-## CXM-57 — Exact books, copying and rest preparation (BOOK)
+## CXM-59 — Exact books, copying and rest preparation (BOOK)
 
 Owner: **S-046/S-048/S-137/S-161/S-162 continuation**. Prerequisites: accepted reuse only.
 
@@ -887,13 +990,15 @@ Reuse: Source book/preparation permission, exact copies, work time and source/gr
 
 Deliver: Wizard initial6/+2/class-level/copy/loss/time/GP, Ritual Adept reading/Memorize rest; Savant free additions distinct. Tome on-person3 cantrips+2 rituals/rest conjure/replace/end, not ritual-only slot permission.
 
+Source check (2026-11-09): Wizard copying cost/time is native (src/characters/class_progression.gd:771), but it only reports hours and never spends campaign time.
+
 Acceptance: Normal book/preparation UI legal lists/levels; copy/pay once with actual book/time, interrupt no duplicated additions. Lose/replace book honors prepared/ritual source limits. Tome on-person ending/recreation exact source, no acquisition replay; chosen spells/costs recover.
 
 Evidence: [spell-permissions-and-preparation.md](../../../docs/mechanics/spell-permissions-and-preparation.md), [spell-slots-and-ritual-casting.md](../../../docs/mechanics/spell-slots-and-ritual-casting.md), [work-sites.md](../../../docs/mechanics/work-sites.md).
 
 Conditional dependencies: CAST: Only exact book-source preparation/permission, already accepted in bounded form. WORK: Only copying/replacement/ritual site and time, not all long spells.
 
-## CXM-58 — Complete parameters, replacements and feats (CHOICE)
+## CXM-60 — Complete parameters, replacements and feats (CHOICE)
 
 Owner: **S-045/S-046/S-049/S-050; S-233/S-242 reuse**. Prerequisites: accepted reuse only.
 
@@ -909,7 +1014,7 @@ Evidence: [progression-choices.md](../../../docs/mechanics/progression-choices.m
 
 Conditional dependencies: CAST: Only selected spell grant/parameter source. DICE: Only actual Savage Attacker/GWF feat effect proof. GRAPPLE: Only actual Grappler effect proof; acquiring other feats is independent.
 
-## CXM-59 — Permanent feature and resource acquisition (ACQUIRE)
+## CXM-61 — Permanent feature and resource acquisition (ACQUIRE)
 
 Owner: **S-047/S-048 continuation**. Prerequisites: accepted reuse only.
 
@@ -925,23 +1030,7 @@ Evidence: [permanent_progression_rules.gd](../../../src/characters/permanent_pro
 
 Conditional dependencies: PACK: Only concrete chosen equipment grant references; fixed primitive grants already accepted. CHOICE: Only parameter/choice kinds in the source being acquired.
 
-## CXM-60 — Background creation and origins (BACKGROUND)
-
-Owner: **S-231; S-233/S-242/S-047 reuse**. Prerequisites: accepted reuse only.
-
-Consumers: Acolyte/Criminal/Sage/Soldier; fixed Cleric/Wizard Initiate and chosen Gaming Set.
-
-Reuse: Four adapted candidates, ability/feat parameters, tool-source ownership and complete package map.
-
-Deliver: Production background type/loader/creation step, listed +2/+1 or+1/+1/+1, fixed feat/skills/tool/A-or50GP once. Prevent legacy species ASI stacking, no legacy rewrite.
-
-Acceptance: Normal four-seat creation each ability split/alternative/Back/Random/reset/stale confirm. Soldier set matches; fixed Initiate list with legal ability/spells. No revisited/reloaded double grants; both DTO source validation and legacy species boundary.
-
-Evidence: [progression-choices.md](../../../docs/mechanics/progression-choices.md), [permanent-progression.md](../../../docs/mechanics/permanent-progression.md).
-
-Conditional dependencies: PACK: Only selected A package; GP alternative independent. CHOICE: Only selected Origin feat parameters. ACQUIRE: Only once-only background source grants/validation.
-
-## CXM-61 — Nine species and total-level grants (SPECIES)
+## CXM-62 — Nine species and total-level grants (SPECIES)
 
 Owner: **S-232; S-045/S-139/S-047 reuse**. Prerequisites: accepted reuse only.
 
@@ -957,7 +1046,7 @@ Evidence: [progression-choices.md](../../../docs/mechanics/progression-choices.m
 
 Conditional dependencies: ACQUIRE: Only selected permanent and total-level trait receipt kinds. LANGUAGE: Only creation/class language grant state; no remote-message gate. FORM: Only actual Large/Form traits. FALL: Only flight/ending consumers. BACKGROUND: Only exclusive ownership of creation ability increases, not completion of all background content.
 
-## CXM-62 — Secondary classes through total5 (MULTI)
+## CXM-63 — Secondary classes through total5 (MULTI)
 
 Owner: **S-234; S-047/S-048/S-137/S-138 reuse**. Prerequisites: accepted reuse only.
 
@@ -973,7 +1062,7 @@ Evidence: [permanent-progression.md](../../../docs/mechanics/permanent-progressi
 
 Conditional dependencies: ACQUIRE: Only chosen secondary source/feature/subclass/resource kinds. CAST: Only actual caster contribution/repertoire; accepted entry gate and noncaster progress independent.
 
-## CXM-63 — Five-mile travel stages and terrain procedures (TRAVEL)
+## CXM-64 — Five-mile travel stages and terrain procedures (TRAVEL)
 
 Owner: **S-227/S-228; S-065/S-179/S-200 reuse**. Prerequisites: SUPPLY.
 
@@ -989,7 +1078,7 @@ Evidence: [overworld_state.gd](../../../src/overworld/overworld_state.gd), [hex_
 
 Conditional dependencies: COMMAND: Only mount/created actor travelers. FORM: Only effective form speed/body needs. KNOWLEDGE: Only selected navigation/foraging/forecast outcomes, after campaign facts exist.
 
-## CXM-64 — Positioned discovery, trigger and disarm (TRAP)
+## CXM-65 — Positioned discovery, trigger and disarm (TRAP)
 
 Owner: **S-229/S-230; OA Search/S-168/S-212 reuse**. Prerequisites: accepted reuse only.
 
@@ -1005,7 +1094,7 @@ Evidence: [ordinary-actions.md](../../../docs/mechanics/ordinary-actions.md), [l
 
 Conditional dependencies: WARD: Only matching exact lock state/key policy. TOOL: Only selected disarm/break task; no full tool catalog gate. REPAIR: Only actual broken piece facts, not general Mending.
 
-## CXM-65 — Table routing and nested continuations (EVENT)
+## CXM-66 — Table routing and nested continuations (EVENT)
 
 Owner: **S-214/S-215/S-217; existing event hosts reuse**. Prerequisites: accepted reuse only.
 
@@ -1021,25 +1110,9 @@ Evidence: [event_system.gd](../../../src/events/event_system.gd), [event_dialog.
 
 Conditional dependencies: KNOWLEDGE: Only a branch that grants/queries authored information. REST: Only inn/rest service; other table routing independent.
 
-## CXM-66 — Dungeon and generated-room delivery (CLEAR_REWARD)
-
-Owner: **S-216; S-049/S-048 reuse**. Prerequisites: accepted reuse only.
-
-Consumers: Three clear rewards/generated_loot_room/three fragments/four milestones/crown_goals active-character predicate.
-
-Reuse: cleared_dungeons/mark_dungeon_cleared, generated loot/room state, native payout and milestones. claim_reward is not their actual payment route.
-
-Deliver: Prove actual delivery/full-inventory before clear/claim, dungeon-clear distinct from generated room. Shared replacement consumes existing receipt, never pays beside native route.
-
-Acceptance: Real boss clear/loot pickup normal/full inventory/recipient; failure cannot lose reward or misleadingly claim. Reentry/both checkpoint relaunches never duplicate GP/items/levels. Three fragments plus actual Lich defeat; active/inactive policy remains explicit. Existing shortcut fixtures keep bounded purpose.
-
-Evidence: [game_manager.gd](../../../src/autoload/game_manager.gd), [local_room_view.gd](../../../src/dungeon/local_room_view.gd), [overworld_state.gd](../../../src/overworld/overworld_state.gd), [dungeon_generator.gd](../../../src/dungeon/dungeon_generator.gd).
-
-Conditional dependencies: PACK: Only reuse exact delivery preflight/receipt behavior if extended there; starting package catalog not required. EVENT: Only selected generated/event child that owns this reward; native dungeon clear independent.
-
 ## CXM-67 — Event and bounty victory settlement (EVENT_REWARD)
 
-Owner: **S-217; S-216 continuation**. Prerequisites: accepted reuse only.
+Owner: **S-217; S-216 continuation**. Prerequisites: CLEAR_REWARD.
 
 Consumers: Quest Board100GP/three-monster child; Fairy/event immediate reward branches.
 
@@ -1047,15 +1120,17 @@ Reuse: Immediate event item/gold/check branches and encounter identities; existi
 
 Deliver: Quest choice.reward has no established EventDialog consumer/bounty payment. Bind exact child victory/recipient without prepayment/resume duplicate/dungeon-monster collision. Immediate event branches separate.
 
+Source check (2026-11-09): Pay through the CLEAR_REWARD delivery helper.
+
 Acceptance: Actual bounty accept: defeat/flee/cancel0, only matching victory100GP once. Stale unrelated combat cannot claim; reopen/double callback/post-settlement allowed reload never repays. Immediate reward remains branch-owned, not later victory. No event/combat save checkpoint.
 
 Evidence: [event_dialog.gd](../../../src/ui/event_dialog.gd), [event_resolver.gd](../../../src/events/event_resolver.gd), [game_manager.gd](../../../src/autoload/game_manager.gd), [combat_state.gd](../../../src/combat/combat_state.gd).
 
-Conditional dependencies: EVENT: Only exact pending child-encounter/parent continuation. CLEAR_REWARD: Only common delivery preflight/receipt if extended; all three dungeon conversions not required.
+Conditional dependencies: EVENT: Only exact pending child-encounter/parent continuation.
 
 ## CXM-68 — Monster loot policy and payment route (MONSTER_REWARD)
 
-Owner: **S-216/S-217; campaign decision first**. Prerequisites: accepted reuse only.
+Owner: **S-216/S-217; campaign decision first**. Prerequisites: CLEAR_REWARD.
 
 Consumers: Ten encounters/42 direct occurrences, Lich repeated gold100/fragment, Wight/Ooze and item links.
 
@@ -1063,11 +1138,13 @@ Reuse: Loot metadata copied into entities; complete acquisition links. No generi
 
 Deliver: Decide whether/how metadata pays, recipient/full-inventory/chance/repeated entries/form-summon-respawn exclusions, then exact occurrence settlement. Metadata is not automatically owed drop.
 
+Source check (2026-11-09): Pay through the CLEAR_REWARD delivery helper.
+
 Acceptance: Pin policy and overlap before implementation. After decision real victory captured rolls once, exact GP/copies/recipient, intentional repeated entries preserved. Same victory reload never repays; forms/summons/defeat/flee only explicitly authorized. Metadata inspection never passes payment proof.
 
 Evidence: [combat_state.gd](../../../src/combat/combat_state.gd), [game_manager.gd](../../../src/autoload/game_manager.gd).
 
-Conditional dependencies: CLEAR_REWARD: Only collision/occurrence receipt contract at selected actual overlap. EVENT_REWARD: Only bounty overlap if loot policy selects same encounter; first resolve policy.
+Conditional dependencies: EVENT_REWARD: Only bounty overlap if loot policy selects same encounter; first resolve policy.
 
 ## CXM-69 — Companion origins and stable recruitment (COMPANION)
 

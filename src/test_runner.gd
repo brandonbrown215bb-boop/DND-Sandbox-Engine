@@ -159,6 +159,7 @@ func _ready() -> void:
 	_run_group("classes", func(): ClassToolProficiencyChecks.run(_assert))
 	_run_group("classes", func(): ClassToolItemChecks.run(_assert))
 	_run_group("classes", func(): SkilledFeatChecks.run(_assert)) # G4
+	_run_group("classes", func(): BackgroundChecks.run(_assert)) # CXM-04
 	_run_group("classes", func(): ClassSkillSelectionChecks.run(_assert)) # PR C
 	_run_group("cleric", func(): ClericChecks.run(_assert))
 	_run_group("combat", _test_ai_controller)
@@ -4144,6 +4145,34 @@ func _test_dungeon_lifecycle() -> void:
 	_assert(completed == boss and boss.is_cleared, "combat victory clears the resolved room")
 	_assert(dungeon.boss_defeated and dungeon.pending_combat_room_id == -1, "boss victory advances dungeon completion state")
 	_assert(int(GameManager.active_dungeon_state.get("pending_combat_room_id", -1)) == -1, "completed combat clears the pending room from active state")
+	# CXM-02: a full party is refused the clear reward before anything is paid or recorded.
+	PlayerManager.reset()
+	PartyManager.reset()
+	GameManager.cleared_dungeons.clear()
+	PlayerManager.add_player("Full")
+	PlayerManager.add_player("Roomy")
+	var full: Character = _fresh_char("Full Hero", "human", "fighter", {"STR":15,"DEX":14,"CON":13,"INT":12,"WIS":10,"CHA":8})
+	var roomy: Character = _fresh_char("Roomy Hero", "human", "fighter", {"STR":15,"DEX":14,"CON":13,"INT":12,"WIS":10,"CHA":8})
+	PlayerManager.set_player_character(0, full)
+	PartyManager.register_player_character(0, full)
+	while full.inventory.backpack.size() < Inventory.MAX_BACKPACK_SIZE: full.inventory.add_item("torch")
+	dungeon.dungeon_data = {"loot": [{"item_id": "crown_fragment"}, {"item_id": "gold_100"}]}
+	var gold_before := full.inventory.gold
+	_assert(not dungeon._pay_clear_reward(), "full backpack refuses the dungeon clear reward")
+	_assert(not GameManager.cleared_dungeons.has("ruins_of_ashvale") and full.inventory.count_item("crown_fragment") == 0 and full.inventory.gold == gold_before, "refused clear reward pays no item or gold and records no clear")
+	_assert(dungeon._clear_reward_pending(), "refused clear reward stays pending for retry")
+	PlayerManager.set_player_character(1, roomy)
+	PartyManager.register_player_character(1, roomy)
+	var roomy_gold := roomy.inventory.gold
+	_assert(dungeon._pay_clear_reward(), "clear reward goes to a party member with room")
+	_assert(roomy.inventory.count_item("crown_fragment") == 1 and roomy.inventory.gold == roomy_gold + 100 and full.inventory.count_item("crown_fragment") == 0, "whole clear reward lands on one recipient")
+	_assert(GameManager.cleared_dungeons.has("ruins_of_ashvale") and not dungeon._clear_reward_pending(), "paid clear reward records the clear")
+	_assert(not dungeon._pay_clear_reward() and roomy.inventory.count_item("crown_fragment") == 1, "recorded clear never pays twice")
+	var refused_give: Dictionary = EventResolver.apply_effects(full, [{"type": "give_item", "item_id": "potion_healing"}])[0]
+	_assert(refused_give.get("success", true) == false and full.inventory.count_item("potion_healing") == 0, "event give_item reports a full backpack instead of claiming delivery")
+	GameManager.cleared_dungeons.clear()
+	PlayerManager.reset()
+	PartyManager.reset()
 	dungeon.free()
 
 func _test_widgets() -> void:

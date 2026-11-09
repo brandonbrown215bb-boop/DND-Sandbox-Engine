@@ -21,7 +21,7 @@ def read(path):
 
 
 def digest(path):
-    return hashlib.sha256(path.read_bytes()).hexdigest()
+    return hashlib.sha256(path.read_bytes().replace(b"\r\n", b"\n")).hexdigest()  # same pin on CRLF checkouts
 
 
 def esc(value):

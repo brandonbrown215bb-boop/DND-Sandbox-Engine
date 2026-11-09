@@ -29,8 +29,16 @@
   },
   "starting_equipment": [
     "leather_armor",
-    "dagger"
+    "sickle",
+    "dagger",
+    "dagger",
+    "arcane_orb",
+    "book_occult_lore",
+    "scholars_pack"
   ],
+  "starting_gold": 15,
+  "starting_gold_alternative": 100,
+  "spellcasting_focus_kinds": ["arcane"],
   "subclass_level": 3,
   "legacy_subclass": "fiend_patron",
   "spell_list_ids": [

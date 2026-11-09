@@ -743,5 +743,8 @@
     ]
   },
   "starting_gold": 19,
-  "starting_gold_alternative": 90
+  "starting_gold_alternative": 90,
+  "starting_equipment_choices": [
+    {"key": "instrument", "label": "Musical Instrument", "from": ["lute", "bagpipes", "drum", "dulcimer", "flute", "horn", "lyre", "pan_flute", "shawm", "viol"]}
+  ]
 }

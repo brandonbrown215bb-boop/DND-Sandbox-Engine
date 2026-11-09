@@ -44,15 +44,15 @@ func _run() -> void:
 
 	for player_count in range(1, PlayerManager.MAX_PLAYERS + 1):
 		await _run_player_count(player_count)
-	await _run_class_equipment_smoke("Fighter", ["chain_mail", "shield", "longsword"])
+	await _run_class_equipment_smoke("Fighter", ["chain_mail", "greatsword", "flail", "javelin", "javelin", "javelin", "javelin", "javelin", "javelin", "javelin", "javelin", "dungeoneers_pack"])
 	await _run_class_equipment_smoke("Barbarian", ["greataxe", "handaxe", "handaxe", "handaxe", "handaxe", "explorers_pack"])
-	await _run_class_equipment_smoke("Rogue", ["leather_armor", "rapier", "shortbow", "dagger", "thieves_tools"])
-	await _run_class_equipment_smoke("Wizard", ["dagger", "spellbook"], ["fire_bolt", "magic_missile"])
-	await _run_class_equipment_smoke("Warlock", ["leather_armor", "dagger"])
-	await _run_class_equipment_smoke("Sorcerer", ["spear", "dagger", "dagger"])
+	await _run_class_equipment_smoke("Rogue", _kit(["leather_armor", ["dagger", 2], "shortsword", "shortbow", ["arrows", 20], "quiver", "thieves_tools", "burglars_pack"]))
+	await _run_class_equipment_smoke("Wizard", ["arcane_focus_quarterstaff", "dagger", "dagger", "robe", "spellbook", "scholars_pack"], ["fire_bolt", "magic_missile"])
+	await _run_class_equipment_smoke("Warlock", ["leather_armor", "sickle", "dagger", "dagger", "arcane_orb", "book_occult_lore", "scholars_pack"])
+	await _run_class_equipment_smoke("Sorcerer", ["spear", "dagger", "dagger", "arcane_crystal", "dungeoneers_pack"])
 	await _run_class_equipment_smoke("Cleric", ["chain_shirt", "shield", "mace", "holy_symbol", "priests_pack"], ["guidance", "sacred_flame", "bless", "cure_wounds"])
-	await _run_class_equipment_smoke("Paladin", ["chain_mail", "shield", "longsword"])
-	await _run_class_equipment_smoke("Ranger", ["leather_armor", "longbow", "shortsword"])
+	await _run_class_equipment_smoke("Paladin", ["chain_mail", "shield", "longsword", "javelin", "javelin", "javelin", "javelin", "javelin", "javelin", "holy_symbol", "priests_pack"])
+	await _run_class_equipment_smoke("Ranger", _kit(["studded_leather_armor", "scimitar", "shortsword", "longbow", ["arrows", 20], "quiver", "sprig_of_mistletoe", "explorers_pack"]))
 
 	print("--------------------------------------------------")
 	if failures.is_empty():
@@ -63,6 +63,17 @@ func _run() -> void:
 		for failure in failures:
 			print(" - %s" % failure)
 		get_tree().quit(1)
+
+
+## Expected kit list; an [id, count] entry repeats that id.
+func _kit(parts: Array) -> Array[String]:
+	var result: Array[String] = []
+	for part in parts:
+		if part is Array:
+			for _i in int(part[1]): result.append(str(part[0]))
+		else:
+			result.append(str(part))
+	return result
 
 
 func _run_player_count(player_count: int) -> void:
@@ -101,7 +112,7 @@ func _run_player_count(player_count: int) -> void:
 		creation.btn_next.pressed.emit()
 		await get_tree().process_frame
 
-	var overworld := await _wait_for_scene("Overworld")
+	var overworld := await _wait_for_scene("Overworld", 15.0) # the first, cold Overworld load can exceed 3 s on slow disks
 	_check(overworld != null, "%d-player creation reaches the overworld" % player_count)
 	_check(GameManager.current_state == GameManager.GameState.OVERWORLD, "%d-player start state is OVERWORLD" % player_count)
 	_check(GameManager.game_in_progress, "%d-player campaign is marked in progress" % player_count)
@@ -214,8 +225,8 @@ func _run_class_equipment_smoke(target_class: String, expected_equipment: Array[
 		_check(character.creation_choices.get("skills", []) == chosen and chosen.all(func(skill): return character.skill_proficiencies.count(skill) == 1), "normal %s owns its selected class skills once" % target_class)
 	if target_class == "Fighter":
 		_check(character.inventory.get_armor() == "chain_mail", "normal Fighter equips chain mail")
-		_check(character.inventory.get_equipped(Inventory.Slot.SHIELD) == "shield", "normal Fighter equips a shield")
-		_check(character.inventory.get_weapon() == "longsword", "normal Fighter equips a longsword")
+		_check(character.inventory.get_equipped(Inventory.Slot.SHIELD).is_empty(), "normal Fighter option A has no shield")
+		_check(character.inventory.get_weapon() == "greatsword" and character.inventory.gold == 4, "normal Fighter equips a greatsword and has 4 GP")
 		_check(character.fighter_training.get("skills", []).size() == 2 and character.creation_choices.get("skills", []) == character.fighter_training.get("skills", []), "normal Fighter keeps its preselected training skills as the class picks")
 	elif target_class == "Barbarian":
 		_check(character.inventory.get_armor().is_empty(), "normal Barbarian starts unarmored")
@@ -225,14 +236,14 @@ func _run_class_equipment_smoke(target_class: String, expected_equipment: Array[
 		_check(character.has_feature("barbarian_unarmored_defense") and character.get_ac() == expected_unarmored_ac, "normal Barbarian starts with Unarmored Defense")
 	elif target_class == "Rogue":
 		_check(character.inventory.get_armor() == "leather_armor", "normal Rogue equips leather armor")
-		_check(character.inventory.get_weapon() == "rapier", "normal Rogue equips a rapier")
-		_check(character.inventory.has_item("shortbow"), "normal Rogue carries a shortbow")
-		_check(character.inventory.has_item("dagger"), "normal Rogue carries a dagger")
+		_check(character.inventory.get_weapon() == "dagger" and character.inventory.gold == 8, "normal Rogue equips a dagger and has 8 GP")
+		_check(character.inventory.has_item("shortbow") and character.inventory.has_item("burglars_pack"), "normal Rogue carries a shortbow and a Burglar's Pack")
+		_check(character.inventory.has_item("dagger") and character.inventory.count_item("arrows") == 0, "normal Rogue carries a second dagger and its Arrows are in the Quiver")
 		_check(character.inventory.has_item("thieves_tools"), "normal Rogue carries thieves' tools")
 		_check(character.tool_proficiency_sources.get("thieves_tools", []) == ["class:rogue"] and character.skill_proficiencies.has("Stealth") and character.skill_proficiencies.has("Investigation"), "normal Rogue owns selected skills and class Thieves' Tools proficiency")
 	elif target_class == "Wizard":
 		_check(character.inventory.get_armor().is_empty(), "normal Wizard starts unarmored")
-		_check(character.inventory.get_weapon() == "dagger", "normal Wizard equips a dagger")
+		_check(character.inventory.get_weapon() == "arcane_focus_quarterstaff" and character.inventory.held_spellcasting_focus("wizard") == "arcane_focus_quarterstaff", "normal Wizard holds its arcane-focus Quarterstaff")
 		_check(character.inventory.has_item("spellbook"), "normal Wizard carries a spellbook")
 		_check(character.wizard_spellbook_pending == 6 and character.spell_choices_pending and "magic_missile" not in character.known_spells, "normal Wizard waits for spellbook and preparation choices")
 		CharacterSheet.show_sheet(character)
@@ -245,7 +256,7 @@ func _run_class_equipment_smoke(target_class: String, expected_equipment: Array[
 		CharacterSheet.close_sheet()
 	elif target_class == "Warlock":
 		_check(character.inventory.get_armor() == "leather_armor", "normal Warlock equips leather armor")
-		_check(character.inventory.get_weapon() == "dagger", "normal Warlock equips a dagger")
+		_check(character.inventory.get_weapon() == "sickle" and character.inventory.count_item("dagger") == 2, "normal Warlock equips a sickle and carries two Daggers")
 		character.level_up()
 		_check(character.has_feature("warlock_magical_cunning") and character.get_feature("warlock_magical_cunning").get("type", "") == "active", "normal Warlock gains Magical Cunning at level 2")
 	elif target_class == "Sorcerer":
@@ -268,9 +279,9 @@ func _run_class_equipment_smoke(target_class: String, expected_equipment: Array[
 		await _choose_sheet_style(character, "defense")
 		_check(character.feature_choices.get("paladin_fighting_style", []) == ["defense"] and character.get_ac() == 19, "normal Paladin gains Defense AC after choosing it")
 	elif target_class == "Ranger":
-		_check(character.inventory.get_armor() == "leather_armor", "normal Ranger equips leather armor")
-		_check(character.inventory.get_equipped(Inventory.Slot.SHIELD).is_empty() and character.inventory.has_item("shortsword"), "normal Ranger carries a shortsword and has no starting shield")
-		_check(character.inventory.get_weapon() == "longbow", "normal Ranger equips a longbow")
+		_check(character.inventory.get_armor() == "studded_leather_armor", "normal Ranger equips studded leather armor")
+		_check(character.inventory.get_equipped(Inventory.Slot.SHIELD).is_empty() and character.inventory.has_item("shortsword") and character.inventory.has_item("longbow"), "normal Ranger carries a shortsword and longbow and has no starting shield")
+		_check(character.inventory.get_weapon() == "scimitar" and character.inventory.gold == 7, "normal Ranger equips a scimitar and has 7 GP")
 		character.level_up()
 		_check(character.has_feature("ranger_fighting_style") and character.get_attack_style_bonus(DataLoader.get_item("longbow")) == 0 and not character.feature_choices.has("ranger_fighting_style"), "normal Ranger waits for a level-2 Fighting Style choice")
 		await _choose_sheet_style(character, "archery")

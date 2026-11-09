@@ -34,8 +34,18 @@
   "starting_equipment": [
     "chain_mail",
     "shield",
-    "longsword"
+    "longsword",
+    "javelin",
+    "javelin",
+    "javelin",
+    "javelin",
+    "javelin",
+    "javelin",
+    "holy_symbol",
+    "priests_pack"
   ],
+  "starting_gold": 9,
+  "starting_gold_alternative": 150,
   "spell_slots_by_level": {
     "1": [
       0

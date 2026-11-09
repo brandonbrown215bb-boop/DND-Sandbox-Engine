@@ -27,8 +27,13 @@
   "starting_equipment": [
     "spear",
     "dagger",
-    "dagger"
+    "dagger",
+    "arcane_crystal",
+    "dungeoneers_pack"
   ],
+  "starting_gold": 28,
+  "starting_gold_alternative": 50,
+  "spellcasting_focus_kinds": ["arcane"],
   "spell_list_ids": [
     "acid_splash",
     "alter_self",

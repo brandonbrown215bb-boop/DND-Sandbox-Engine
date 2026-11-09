@@ -12,6 +12,8 @@ var subclasses: Dictionary = {}
 var races: Dictionary = {}
 ## Batch 049: feats are a content type so species can grant them by id.
 var feats: Dictionary = {}
+## CXM-04: backgrounds are a content type (SRD 5.2.1 p.83).
+var backgrounds: Dictionary = {}
 var _loading_all := false
 var items: Dictionary = {}
 var spells: Dictionary = {}
@@ -256,7 +258,7 @@ func load_all_data() -> void:
 	_load_errors.clear()
 	_validation_warnings.clear()
 	_registered_sources.clear()
-	for registry in [classes, subclasses, races, feats, items, spells, monsters, events, campaigns]:
+	for registry in [classes, subclasses, races, feats, backgrounds, items, spells, monsters, events, campaigns]:
 		registry.clear()
 	_manifest = _read_manifest()
 
@@ -354,6 +356,7 @@ func _load_directory(base_path: String) -> void:
 	_load_content_type(base_path + "subclasses/", "subclass")
 	_load_content_type(base_path + "races/", "race")
 	_load_content_type(base_path + "feats/", "feat")
+	_load_content_type(base_path + "backgrounds/", "background")
 	_load_content_type(base_path + "items/", "item")
 	_load_content_type(base_path + "spells/", "spell")
 	_load_content_type(base_path + "monsters/", "monster")
@@ -492,6 +495,11 @@ func _validate_content(data: Dictionary, content_type: String, source: String) -
 		if owned_error.is_empty() and content_type == "race" and not _loading_all: owned_error = missing_feat_error(data, source) # Batch 050 bug 4 (single-file loads).
 		if not owned_error.is_empty():
 			_load_errors.append("%s in %s" % [owned_error, source])
+			return false
+	if content_type == "background":
+		var background_error := BackgroundRules.definition_error(data)
+		if not background_error.is_empty():
+			_load_errors.append("%s in %s" % [background_error, source])
 			return false
 	if content_type == "race":
 		var containment_error := ContainmentRules.policy_error(data.get("containment", {}))
@@ -680,6 +688,14 @@ func _validate_semantics(data: Dictionary, content_type: String, source: String)
 				tool_error = "tool_choices must pick from distinct tool ids not already granted"
 		if tool_error.is_empty() and data.has("starting_equipment_includes_tool_choice") and (not data["starting_equipment_includes_tool_choice"] is bool or (data["starting_equipment_includes_tool_choice"] and not data.has("tool_choices"))):
 			tool_error = "starting_equipment_includes_tool_choice must be a boolean and requires tool_choices"
+		if tool_error.is_empty() and data.has("starting_equipment_choices"): # CXM-03: one picked item per slot, added to option A.
+			var slots: Variant = data["starting_equipment_choices"]
+			if not slots is Array or slots.any(func(s): return not s is Dictionary or not s.get("key") is String or str(s.get("key")) in ["", "skills", "tools", "equipment", "ability_generation"] or not s.get("from") is Array or s.from.is_empty() or s.from.any(func(id): return not id is String or id.is_empty()) or s.from.size() != _unique_count(s.from)):
+				tool_error = "starting_equipment_choices must list keyed slots choosing from distinct item ids"
+		if tool_error.is_empty() and data.has("starting_equipment_alternatives"): # CXM-03: SRD option B kits beside option A and GP.
+			var alternatives: Variant = data["starting_equipment_alternatives"]
+			if not alternatives is Array or alternatives.any(func(a): return not a is Dictionary or not a.get("id") is String or str(a.get("id")) in ["", "equipment", "gold"] or not a.get("items") is Array or a.items.is_empty() or a.items.any(func(id): return not id is String or id.is_empty()) or not (a.get("gold", 0) is int or a.get("gold", 0) is float) or int(a.get("gold", 0)) < 0) or alternatives.size() != _unique_count(alternatives.map(func(a): return str(a.get("id", "")) if a is Dictionary else "")):
+				tool_error = "starting_equipment_alternatives must list distinct ids with item lists and non-negative gold"
 		if tool_error.is_empty() and data.has("spellcasting_focus_kinds") and (not data["spellcasting_focus_kinds"] is Array or data["spellcasting_focus_kinds"].any(func(k): return not k is String or k.is_empty())):
 			tool_error = "spellcasting_focus_kinds must list non-empty focus kind strings"
 		if not tool_error.is_empty():
@@ -1776,6 +1792,7 @@ func _get_registry(content_type: String) -> Dictionary:
 		"subclass": return subclasses
 		"race": return races
 		"feat": return feats
+		"background": return backgrounds
 		"item": return items
 		"spell": return spells
 		"monster": return monsters
@@ -1824,6 +1841,9 @@ func _validate_cross_references() -> void:
 		for tool_id in feats[feat_id].get("proficiency_choices", {}).get("tools", []):
 			if get_item(str(tool_id)).get("type", "") != "tool":
 				_load_errors.append("Feat '%s' references missing tool '%s'" % [feat_id, tool_id])
+	for background_id in backgrounds: # CXM-04: feat, tool and item references must resolve.
+		var background_error := BackgroundRules.reference_error(backgrounds[background_id])
+		if not background_error.is_empty(): _load_errors.append(background_error)
 	for id in subclasses:
 		var parent := str(subclasses[id].get("class_id", ""))
 		if not classes.has(parent):
@@ -2134,6 +2154,12 @@ func missing_feat_error(race: Dictionary, source: String) -> String:
 
 func get_feat(id: String) -> Dictionary:
 	return feats.get(id, {})
+
+func get_all_backgrounds() -> Array:
+	return _sorted_values(backgrounds)
+
+func get_background(id: String) -> Dictionary:
+	return backgrounds.get(id, {})
 
 func get_all_items() -> Array:
 	return _sorted_values(items)

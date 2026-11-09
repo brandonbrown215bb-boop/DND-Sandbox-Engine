@@ -666,5 +666,23 @@
     "range": 1,
     "value": 5,
     "spellcasting_focus_kind": "druidic"
+  },
+  {
+    "id": "arcane_focus_quarterstaff",
+    "weight": 4,
+    "name": "Arcane Focus (Quarterstaff)",
+    "description": "A staff carved to channel arcane magic. It is also a Quarterstaff, and a Sorcerer, Warlock or Wizard holding it can use it as a Spellcasting Focus.",
+    "type": "weapon",
+    "weapon_type": "simple",
+    "damage": "1d6",
+    "damage_type": "bludgeoning",
+    "properties": [
+      "versatile"
+    ],
+    "versatile_damage": "1d8",
+    "ability": "STR",
+    "range": 1,
+    "value": 5,
+    "spellcasting_focus_kind": "arcane"
   }
 ]

@@ -26,9 +26,18 @@
     ]
   },
   "starting_equipment": [
+    "arcane_focus_quarterstaff",
     "dagger",
-    "spellbook"
+    "dagger",
+    "robe",
+    "spellbook",
+    "scholars_pack"
   ],
+  "starting_gold": 5,
+  "starting_equipment_alternatives": [
+    {"id": "spellbook_and_gold", "label": "Spellbook", "gold": 55, "items": ["spellbook"]}
+  ],
+  "spellcasting_focus_kinds": ["arcane"],
   "spell_slots_by_level": {},
   "cantrips_known": [],
   "spell_list_ids": [

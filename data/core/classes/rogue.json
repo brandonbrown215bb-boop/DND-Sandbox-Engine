@@ -10,7 +10,9 @@
   "creation_proficiency_choices": true,
   "tool_proficiency_grants": ["thieves_tools"],
   "skill_choices": {"pick": 4, "from": ["Acrobatics", "Athletics", "Deception", "Insight", "Intimidation", "Investigation", "Perception", "Persuasion", "Sleight of Hand", "Stealth"]},
-  "starting_equipment": ["leather_armor", "rapier", "shortbow", "dagger", "thieves_tools"],
+  "starting_equipment": ["leather_armor", "dagger", "dagger", "shortsword", "shortbow", "arrows", "arrows", "arrows", "arrows", "arrows", "arrows", "arrows", "arrows", "arrows", "arrows", "arrows", "arrows", "arrows", "arrows", "arrows", "arrows", "arrows", "arrows", "arrows", "arrows", "quiver", "thieves_tools", "burglars_pack"],
+  "starting_gold": 8,
+  "starting_gold_alternative": 100,
   "spell_slots_by_character_level": {},
   "features_by_level": {
     "1": [

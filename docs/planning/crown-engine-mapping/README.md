@@ -13,6 +13,22 @@ using exact copies, budgets and clock. Remaining assignments stay queued. The
 mapping pass authorized planning only; it did not implement or enable content.
 General liquids/fuel, backgrounds, multiclassing and whole S-237 were not gates.
 
+## Source check, 2026-11-09
+
+The assignments were checked against `src/`. Most gaps are real. Many
+"Deliver" items already exist as native per-ID code, so they are replacement
+work. Each assignment's **Source check** line names those native paths, and
+assignments must not build a second path beside them. Changes from that review:
+
+- **CLEAR_REWARD moved to CXM-02** and owns the one deliver-or-refuse helper.
+  PACK, EVENT_REWARD and MONSTER_REWARD now hard-require it. This also fixes a
+  live defect: a dungeon clear with a full backpack can lose a fragment.
+- **BACKGROUND moved to CXM-04**, followed by its origin-feat consumers INIT
+  (Alert) and DICE (Savage Attacker). There is no background host yet, and only
+  Skilled is a loaded feat.
+- The [operation crosswalk](op-crosswalk.md) maps the authored operation names
+  to existing ops and lists the per-ID engine paths to retire.
+
 ## What is mapped
 
 | Written set | Unique records | Exact source retained |

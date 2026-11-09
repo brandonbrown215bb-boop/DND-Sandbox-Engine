@@ -55,9 +55,148 @@
       "proof_state": "No gameplay acceptance performed here; reuse only the registry's named verified boundaries."
     },
     {
-      "id": "ARMOR",
+      "id": "CLEAR_REWARD",
       "order": 2,
       "assignment": "CXM-02",
+      "title": "Dungeon and generated-room delivery",
+      "slice_owner": "S-216; S-049/S-048 reuse",
+      "reuse": "cleared_dungeons/mark_dungeon_cleared, generated loot/room state, native payout and milestones. claim_reward is not their actual payment route.",
+      "remaining": "Prove actual delivery/full-inventory before clear/claim, dungeon-clear distinct from generated room. Shared replacement consumes existing receipt, never pays beside native route.",
+      "prerequisites": [],
+      "concrete_consumers": "Three clear rewards/generated_loot_room/three fragments/four milestones/crown_goals active-character predicate.",
+      "acceptance": "Real boss clear/loot pickup normal/full inventory/recipient; failure cannot lose reward or misleadingly claim. Reentry/both checkpoint relaunches never duplicate GP/items/levels. Three fragments plus actual Lich defeat; active/inactive policy remains explicit. Existing shortcut fixtures keep bounded purpose.",
+      "evidence": [
+        "src/autoload/game_manager.gd",
+        "src/dungeon/local_room_view.gd",
+        "src/overworld/overworld_state.gd",
+        "src/dungeon/dungeon_generator.gd"
+      ],
+      "work_kinds": [
+        "engine_extension",
+        "content_wiring",
+        "gameplay_proof"
+      ],
+      "state": "planning_only",
+      "validation": "Live defect: dungeon clear marks itself cleared (src/dungeon/dungeon_state.gd:372) before paying, and ignores add_item returning false on a full backpack, so a fragment can be lost. The loot room (:281) and event give_item (src/events/event_resolver.gd:615) also ignore it, and gold_ is parsed separately in each route. Build one deliver-or-refuse helper here, preflighting with PermanentProgressionRules.can_fit. PACK, EVENT_REWARD and MONSTER_REWARD use it. Moved forward.",
+      "engine_state": "partial_contract_missing_or_unverified_named_hosts",
+      "proof_state": "No gameplay acceptance performed here; reuse only the registry's named verified boundaries.",
+      "conditional_prerequisites": {
+        "EVENT": "Only selected generated/event child that owns this reward; native dungeon clear independent."
+      }
+    },
+    {
+      "id": "PACK",
+      "order": 3,
+      "assignment": "CXM-03",
+      "title": "Exact starting alternatives and pack grants",
+      "slice_owner": "S-047/S-049/S-050; S-231 consumer",
+      "reuse": "G2 skill/tool choices, Monk tool copy, Explorer pack expansion, combined Druid Quarterstaff/focus, permanent-grant fit preflight/receipts.",
+      "remaining": "Wire16 full A/B/C/GP packages, six packs and linked choices once. No pack shell/contents double counting, invented Backpack fit, forced Amulet, Bard proficiency match or replay. Retained source conflicts remain explicit.",
+      "prerequisites": [
+        "CLEAR_REWARD"
+      ],
+      "concrete_consumers": "packages.json; all12 classes/four backgrounds, Bard/Monk/Soldier choices, Holy Symbol forms; Cleric A is7GP.",
+      "acceptance": "Normal creation each alternative plus Back/Random/seat reset: exact quantities/GP, Monk/Soldier match tool, Bard independent. Full grant refuses atomically when it cannot fit; expand once. Sell/consume then reload both DTOs: no recreation. Unknown weights remain unknown.",
+      "evidence": [
+        "docs/mechanics/permanent-progression.md",
+        "docs/mechanics/progression-choices.md",
+        "src/characters/inventory.gd"
+      ],
+      "work_kinds": [
+        "engine_extension",
+        "content_wiring",
+        "gameplay_proof"
+      ],
+      "state": "planning_only",
+      "validation": "Background packages need BACKGROUND, which has no host yet. Deliver grants through the CLEAR_REWARD deliver-or-refuse helper.",
+      "engine_state": "existing_contract_with_content_or_consumer_work",
+      "proof_state": "No gameplay acceptance performed here; reuse only the registry's named verified boundaries."
+    },
+    {
+      "id": "BACKGROUND",
+      "order": 4,
+      "assignment": "CXM-04",
+      "title": "Background creation and origins",
+      "slice_owner": "S-231; S-233/S-242/S-047 reuse",
+      "reuse": "Four adapted candidates, ability/feat parameters, tool-source ownership and complete package map.",
+      "remaining": "Production background type/loader/creation step, listed +2/+1 or+1/+1/+1, fixed feat/skills/tool/A-or50GP once. Prevent legacy species ASI stacking, no legacy rewrite.",
+      "prerequisites": [],
+      "concrete_consumers": "Acolyte/Criminal/Sage/Soldier; fixed Cleric/Wizard Initiate and chosen Gaming Set.",
+      "acceptance": "Normal four-seat creation each ability split/alternative/Back/Random/reset/stale confirm. Soldier set matches; fixed Initiate list with legal ability/spells. No revisited/reloaded double grants; both DTO source validation and legacy species boundary.",
+      "evidence": [
+        "docs/mechanics/progression-choices.md",
+        "docs/mechanics/permanent-progression.md"
+      ],
+      "work_kinds": [
+        "engine_extension",
+        "content_wiring",
+        "gameplay_proof"
+      ],
+      "state": "planning_only",
+      "validation": "No background host exists (src/ui/character_creation/character_creation.gd:628: no background step yet). The four SRD backgrounds are written only as candidates in preparation/crown-characters/backgrounds. Their origin feats (Alert, Magic Initiate, Savage Attacker) are not loaded. Moved forward because every new character needs it.",
+      "engine_state": "partial_contract_missing_or_unverified_named_hosts",
+      "proof_state": "No gameplay acceptance performed here; reuse only the registry's named verified boundaries.",
+      "conditional_prerequisites": {
+        "PACK": "Only selected A package; GP alternative independent.",
+        "CHOICE": "Only selected Origin feat parameters.",
+        "ACQUIRE": "Only once-only background source grants/validation."
+      }
+    },
+    {
+      "id": "INIT",
+      "order": 5,
+      "assignment": "CXM-05",
+      "title": "Immediate willing initiative exchange",
+      "slice_owner": "S-091 initiative owner extension; S-233 acquisition reuse",
+      "reuse": "Settled initiative/order, encounter identity, conditions and feat ownership; late/group rolls already delivered.",
+      "remaining": "Alert exact value swap immediately after owner rolls, willing same-combat ally, neither Incapacitated. Generic exchange not established; record narrow registry requirement at implementation, not a fabricated accepted S-ID.",
+      "prerequisites": [],
+      "concrete_consumers": "Alert /authored_operations/1; Criminal and legal Human/feat acquisitions.",
+      "acceptance": "Real initiative window accept swaps exact values/order once. Decline/nonconsent/incapacity/wrong combat/stale/late/double choice does nothing. Late/group actors cannot reopen old window. Pending choice remains transient.",
+      "evidence": [
+        "docs/mechanics/progression-choices.md",
+        "src/combat/combat_state.gd"
+      ],
+      "work_kinds": [
+        "engine_extension",
+        "content_wiring",
+        "gameplay_proof"
+      ],
+      "state": "planning_only",
+      "validation": "Alert is not loaded; it is Criminal's origin feat, so it moves forward with BACKGROUND.",
+      "engine_state": "missing_selected_generic_contract",
+      "proof_state": "No gameplay acceptance performed here; reuse only the registry's named verified boundaries."
+    },
+    {
+      "id": "DICE",
+      "order": 6,
+      "assignment": "CXM-06",
+      "title": "Natural thresholds and whole damage rolls",
+      "slice_owner": "S-240; S-123/S-124/S-125/S-126 reuse",
+      "reuse": "Captured natural/critical faces, remove/maximize/reroll/multiplier operations; native Champion/GWF/Savage Attacker comparison.",
+      "remaining": "Weapon/Unarmed natural19 critical; GWF eligible1/2 become3; Savage Attacker chooses one whole weapon roll, not selected dice. Potent Cantrip half damage on miss/save excludes extra effects. Exact dice/turn locks.",
+      "prerequisites": [],
+      "concrete_consumers": "Champion, GWF, Savage Attacker, Evoker Potent Cantrip, Fiendish Vigor, Empowered/Seeking Spell.",
+      "acceptance": "Natural18/19/20 versus modified19; two-handed/Versatile/one-hand, weapon/spell dice; two whole weapon rolls leave other riders untouched. Cantrip miss/save half never applies hit-only rider. Duplicate continuation neither rerolls nor repays.",
+      "evidence": [
+        "docs/mechanics/shared-spells.md",
+        "docs/mechanics/attack-profiles.md",
+        "src/combat/combat_action.gd"
+      ],
+      "work_kinds": [
+        "engine_extension",
+        "content_wiring",
+        "gameplay_proof"
+      ],
+      "state": "planning_only",
+      "validation": "Savage Attacker and Potent Cantrip exist nowhere in src/ or data/ (data/core/feats holds only skilled.json). Champion crit is already data-driven (modify_crit_range, src/characters/character.gd:1380). GWF is native (src/characters/fighter_rules.gd:306). Potent Cantrip's half damage reuses damage_scale_by_outcome (src/combat/shared_step_executor.gd:1131), not a new halving path.",
+      "engine_state": "partial_contract_missing_or_unverified_named_hosts",
+      "proof_state": "No gameplay acceptance performed here; reuse only the registry's named verified boundaries."
+    },
+    {
+      "id": "ARMOR",
+      "order": 7,
+      "assignment": "CXM-07",
       "title": "Worn penalties and legal base AC",
       "slice_owner": "S-251; S-085/S-252 reuse",
       "reuse": "Real don/doff and Shield Action; ProtectionRules/RuleUpgradeRules base alternatives and equipment queries.",
@@ -76,38 +215,14 @@
         "gameplay_proof"
       ],
       "state": "planning_only",
+      "validation": "Mage Armor base AC is native (src/characters/character.gd:1603). armor_proficiencies has no gameplay consumer, so untrained penalties and Shield training are genuinely new.",
       "engine_state": "partial_contract_missing_or_unverified_named_hosts",
       "proof_state": "No gameplay acceptance performed here; reuse only the registry's named verified boundaries."
     },
     {
-      "id": "PACK",
-      "order": 3,
-      "assignment": "CXM-03",
-      "title": "Exact starting alternatives and pack grants",
-      "slice_owner": "S-047/S-049/S-050; S-231 consumer",
-      "reuse": "G2 skill/tool choices, Monk tool copy, Explorer pack expansion, combined Druid Quarterstaff/focus, permanent-grant fit preflight/receipts.",
-      "remaining": "Wire16 full A/B/C/GP packages, six packs and linked choices once. No pack shell/contents double counting, invented Backpack fit, forced Amulet, Bard proficiency match or replay. Retained source conflicts remain explicit.",
-      "prerequisites": [],
-      "concrete_consumers": "packages.json; all12 classes/four backgrounds, Bard/Monk/Soldier choices, Holy Symbol forms; Cleric A is7GP.",
-      "acceptance": "Normal creation each alternative plus Back/Random/seat reset: exact quantities/GP, Monk/Soldier match tool, Bard independent. Full grant refuses atomically when it cannot fit; expand once. Sell/consume then reload both DTOs: no recreation. Unknown weights remain unknown.",
-      "evidence": [
-        "docs/mechanics/permanent-progression.md",
-        "docs/mechanics/progression-choices.md",
-        "src/characters/inventory.gd"
-      ],
-      "work_kinds": [
-        "engine_extension",
-        "content_wiring",
-        "gameplay_proof"
-      ],
-      "state": "planning_only",
-      "engine_state": "existing_contract_with_content_or_consumer_work",
-      "proof_state": "No gameplay acceptance performed here; reuse only the registry's named verified boundaries."
-    },
-    {
       "id": "CARRY",
-      "order": 4,
-      "assignment": "CXM-04",
+      "order": 8,
+      "assignment": "CXM-08",
       "title": "Capacity, mass and handling",
       "slice_owner": "S-266; S-196/S-210 reuse",
       "reuse": "Accepted non-nested compartments, attachments/transfers and vessel capacities; PhysicalFactsRules and exact copies.",
@@ -132,8 +247,8 @@
     },
     {
       "id": "QUANTITY",
-      "order": 5,
-      "assignment": "CXM-05",
+      "order": 9,
+      "assignment": "CXM-09",
       "title": "Measured portions and cumulative fuel",
       "slice_owner": "S-197; S-196/S-064 reuse",
       "reuse": "Exact copies, non-nested contents, clock/light owners; linked destruction cause already covers components/fuel.",
@@ -153,6 +268,7 @@
         "source_fact"
       ],
       "state": "planning_only",
+      "validation": "Native fuel consumes a whole fuel copy per lighting (src/characters/inventory.gd:938). Replace it; don't add a second fuel model.",
       "engine_state": "partial_contract_missing_or_unverified_named_hosts",
       "proof_state": "No gameplay acceptance performed here; reuse only the registry's named verified boundaries.",
       "conditional_prerequisites": {
@@ -161,8 +277,8 @@
     },
     {
       "id": "COMPONENT",
-      "order": 6,
-      "assignment": "CXM-06",
+      "order": 10,
+      "assignment": "CXM-10",
       "title": "Exact materials, hands and focus roles",
       "slice_owner": "S-134/S-135/S-136/S-142; S-049 reuse",
       "reuse": "Source/payment chooser, Ready prepaid materials, Chromatic Orb diamond; class-permitted held focus and same-hand M/S; exact copies.",
@@ -182,13 +298,14 @@
         "campaign_policy"
       ],
       "state": "planning_only",
+      "validation": "Focus compatibility is a hardcoded item-ID check (src/characters/inventory.gd:171); replace it with item data.",
       "engine_state": "partial_contract_missing_or_unverified_named_hosts",
       "proof_state": "No gameplay acceptance performed here; reuse only the registry's named verified boundaries."
     },
     {
       "id": "ROLL",
-      "order": 7,
-      "assignment": "CXM-07",
+      "order": 11,
+      "assignment": "CXM-11",
       "title": "Captured choices on remaining roll hosts",
       "slice_owner": "S-096/S-224/S-226; S-093/S-094/S-225 reuse",
       "reuse": "Owned bonuses/refunds/captured grants/rerolls, save condition modes and OA Help/purpose context; accepted weapon/shared-spell hosts.",
@@ -211,58 +328,9 @@
       "proof_state": "No gameplay acceptance performed here; reuse only the registry's named verified boundaries."
     },
     {
-      "id": "DICE",
-      "order": 8,
-      "assignment": "CXM-08",
-      "title": "Natural thresholds and whole damage rolls",
-      "slice_owner": "S-240; S-123/S-124/S-125/S-126 reuse",
-      "reuse": "Captured natural/critical faces, remove/maximize/reroll/multiplier operations; native Champion/GWF/Savage Attacker comparison.",
-      "remaining": "Weapon/Unarmed natural19 critical; GWF eligible1/2 become3; Savage Attacker chooses one whole weapon roll, not selected dice. Potent Cantrip half damage on miss/save excludes extra effects. Exact dice/turn locks.",
-      "prerequisites": [],
-      "concrete_consumers": "Champion, GWF, Savage Attacker, Evoker Potent Cantrip, Fiendish Vigor, Empowered/Seeking Spell.",
-      "acceptance": "Natural18/19/20 versus modified19; two-handed/Versatile/one-hand, weapon/spell dice; two whole weapon rolls leave other riders untouched. Cantrip miss/save half never applies hit-only rider. Duplicate continuation neither rerolls nor repays.",
-      "evidence": [
-        "docs/mechanics/shared-spells.md",
-        "docs/mechanics/attack-profiles.md",
-        "src/combat/combat_action.gd"
-      ],
-      "work_kinds": [
-        "engine_extension",
-        "content_wiring",
-        "gameplay_proof"
-      ],
-      "state": "planning_only",
-      "engine_state": "partial_contract_missing_or_unverified_named_hosts",
-      "proof_state": "No gameplay acceptance performed here; reuse only the registry's named verified boundaries."
-    },
-    {
-      "id": "INIT",
-      "order": 9,
-      "assignment": "CXM-09",
-      "title": "Immediate willing initiative exchange",
-      "slice_owner": "S-091 initiative owner extension; S-233 acquisition reuse",
-      "reuse": "Settled initiative/order, encounter identity, conditions and feat ownership; late/group rolls already delivered.",
-      "remaining": "Alert exact value swap immediately after owner rolls, willing same-combat ally, neither Incapacitated. Generic exchange not established; record narrow registry requirement at implementation, not a fabricated accepted S-ID.",
-      "prerequisites": [],
-      "concrete_consumers": "Alert /authored_operations/1; Criminal and legal Human/feat acquisitions.",
-      "acceptance": "Real initiative window accept swaps exact values/order once. Decline/nonconsent/incapacity/wrong combat/stale/late/double choice does nothing. Late/group actors cannot reopen old window. Pending choice remains transient.",
-      "evidence": [
-        "docs/mechanics/progression-choices.md",
-        "src/combat/combat_state.gd"
-      ],
-      "work_kinds": [
-        "engine_extension",
-        "content_wiring",
-        "gameplay_proof"
-      ],
-      "state": "planning_only",
-      "engine_state": "missing_selected_generic_contract",
-      "proof_state": "No gameplay acceptance performed here; reuse only the registry's named verified boundaries."
-    },
-    {
       "id": "REPEAT",
-      "order": 10,
-      "assignment": "CXM-10",
+      "order": 12,
+      "assignment": "CXM-12",
       "title": "Damage-triggered repeat saves",
       "slice_owner": "S-087/S-092; S-072 schedules reuse",
       "reuse": "Shared repeat saves/stages, exact condition lifetimes, target-turn scheduling and damage occurrence receipts.",
@@ -281,13 +349,14 @@
         "gameplay_proof"
       ],
       "state": "planning_only",
+      "validation": "Extend the existing damage event (src/combat/combat_action.gd:1255 into SpellEffects.publish_event, src/spells/spell_effects.gd:303) with a save gate. Don't add a new damage hook.",
       "engine_state": "partial_contract_missing_or_unverified_named_hosts",
       "proof_state": "No gameplay acceptance performed here; reuse only the registry's named verified boundaries."
     },
     {
       "id": "BUDGET",
-      "order": 11,
-      "assignment": "CXM-11",
+      "order": 13,
+      "assignment": "CXM-13",
       "title": "Restricted actions and Somatic cast failure",
       "slice_owner": "S-160/S-142; S-021/S-237 reuse",
       "reuse": "CombatTurnBudget restricted actions, Action Surge Magic exclusion, ordinary action outcomes and captured failure payment.",
@@ -306,13 +375,14 @@
         "gameplay_proof"
       ],
       "state": "planning_only",
+      "validation": "Reuse is overstated: CombatTurnBudget tracks only Action Surge and magic_action (src/combat/combat_turn_budget.gd). Restricted-action permission is new.",
       "engine_state": "partial_contract_missing_or_unverified_named_hosts",
       "proof_state": "No gameplay acceptance performed here; reuse only the registry's named verified boundaries."
     },
     {
       "id": "REACTION",
-      "order": 12,
-      "assignment": "CXM-12",
+      "order": 14,
+      "assignment": "CXM-14",
       "title": "Qualifying off-turn spell windows",
       "slice_owner": "S-041/S-042/S-134/S-135; S-115/S-143 reuse",
       "reuse": "ReactionTriggers attack/damage contexts, Counterspell stopping settlement, native Shield and exact Reaction/source payments.",
@@ -336,8 +406,8 @@
     },
     {
       "id": "POSTHIT",
-      "order": 13,
-      "assignment": "CXM-13",
+      "order": 15,
+      "assignment": "CXM-15",
       "title": "Paid post-hit casts",
       "slice_owner": "S-041/S-135/S-146; S-076/S-123 reuse",
       "reuse": "Captured hit/Attack units, permissions/payment, typed damage and critical provenance.",
@@ -356,6 +426,7 @@
         "gameplay_proof"
       ],
       "state": "planning_only",
+      "validation": "Divine Smite (src/combat/combat_action.gd:2289) and Pact-only Eldritch Smite (src/characters/warlock_rules.gd:302) exist natively. Replace them; don't add a parallel post-hit cast.",
       "engine_state": "partial_contract_missing_or_unverified_named_hosts",
       "proof_state": "No gameplay acceptance performed here; reuse only the registry's named verified boundaries.",
       "conditional_prerequisites": {
@@ -364,8 +435,8 @@
     },
     {
       "id": "DAMAGE_COPY",
-      "order": 14,
-      "assignment": "CXM-14",
+      "order": 16,
+      "assignment": "CXM-16",
       "title": "Copy actual damage without splitting",
       "slice_owner": "S-114 continuation; S-111/S-112 receipt reuse",
       "reuse": "Final typed amount, DamageResponseRules causal/depth limits and independent recipient defenses/concentration/defeat.",
@@ -384,6 +455,7 @@
         "gameplay_proof"
       ],
       "state": "planning_only",
+      "validation": "Add copy as another DamageLinkRules policy (src/combat/damage_link_rules.gd) next to split/redirect.",
       "engine_state": "missing_selected_generic_contract",
       "proof_state": "No gameplay acceptance performed here; reuse only the registry's named verified boundaries.",
       "conditional_prerequisites": {
@@ -392,8 +464,8 @@
     },
     {
       "id": "DAMAGE_HEAL",
-      "order": 15,
-      "assignment": "CXM-15",
+      "order": 17,
+      "assignment": "CXM-17",
       "title": "Heal from actual damage dealt",
       "slice_owner": "S-114 continuation; S-034/S-125 reuse",
       "reuse": "Receipts distinguish raw/prevented/resolved/TempHP/HP loss; bounded counter-heal/rounding owner.",
@@ -412,13 +484,14 @@
         "gameplay_proof"
       ],
       "state": "planning_only",
+      "validation": "DamageResponseRules counter_heal (src/combat/damage_response_rules.gd:12) already heals from settled damage. Extend it for Vampiric Touch.",
       "engine_state": "partial_contract_missing_or_unverified_named_hosts",
       "proof_state": "No gameplay acceptance performed here; reuse only the registry's named verified boundaries."
     },
     {
       "id": "DEFLECT",
-      "order": 16,
-      "assignment": "CXM-16",
+      "order": 18,
+      "assignment": "CXM-18",
       "title": "Reduction then optional paid redirection",
       "slice_owner": "S-109/S-114 continuation",
       "reuse": "Formula damage reduction, settled counters, cover/target queries and exact Focus/save modes.",
@@ -437,6 +510,7 @@
         "gameplay_proof"
       ],
       "state": "planning_only",
+      "validation": "Deflect Attacks reduction (src/combat/combat_action.gd:2128) and the Focus-paid redirect (:1380) are native. What remains is the sight, Total Cover and 60 ft checks, plus moving it to shared data.",
       "engine_state": "partial_contract_missing_or_unverified_named_hosts",
       "proof_state": "No gameplay acceptance performed here; reuse only the registry's named verified boundaries.",
       "conditional_prerequisites": {
@@ -445,8 +519,8 @@
     },
     {
       "id": "RIDER",
-      "order": 17,
-      "assignment": "CXM-17",
+      "order": 19,
+      "assignment": "CXM-19",
       "title": "Scoped hits, next results and retargeting",
       "slice_owner": "S-076/S-077/S-080/S-086 continuation",
       "reuse": "Owned next-result grants, once-turn limits/modes, typed riders and repaired Bestow Curse support-10 packet/paid-slot duration.",
@@ -465,13 +539,14 @@
         "gameplay_proof"
       ],
       "state": "planning_only",
+      "validation": "Native riders: Hunter's Mark (src/combat/combat_action.gd:1534), also hardcoded as target.marked_by_actor in src/combat/shared_step_executor.gd:552; Guiding Bolt, Divine Favor, Sneak Attack. Replace them. Only retargeting is new.",
       "engine_state": "partial_contract_missing_or_unverified_named_hosts",
       "proof_state": "No gameplay acceptance performed here; reuse only the registry's named verified boundaries."
     },
     {
       "id": "BENEFIT",
-      "order": 18,
-      "assignment": "CXM-18",
+      "order": 20,
+      "assignment": "CXM-20",
       "title": "Recipient benefits and captured formulas",
       "slice_owner": "S-080/S-084/S-085/S-130/S-141 continuation",
       "reuse": "Fixed AC/walking-speed source carriers, base AC/score protections, fixed max/current-HP sources, TempHP replacement and suppression.",
@@ -490,13 +565,14 @@
         "gameplay_proof"
       ],
       "state": "planning_only",
+      "validation": "Aid, Barkskin, Heroism, Beacon of Hope, Magic Weapon and Enhance Ability already target others natively (src/spells/spell_effect_benefits.gd). The work is grant_source_benefits for other recipients. AC already has five carriers: converge on source_benefits and add no sixth.",
       "engine_state": "partial_contract_missing_or_unverified_named_hosts",
       "proof_state": "No gameplay acceptance performed here; reuse only the registry's named verified boundaries."
     },
     {
       "id": "LIFETIME",
-      "order": 19,
-      "assignment": "CXM-19",
+      "order": 21,
+      "assignment": "CXM-21",
       "title": "Captured durations and source endings",
       "slice_owner": "S-070/S-080/S-086/S-087/S-141 continuation",
       "reuse": "Accepted flat-condition HUD duration/concentration, actor-specific rest-start expiry, source-end events and located aftermath VS-145.",
@@ -515,13 +591,14 @@
         "gameplay_proof"
       ],
       "state": "planning_only",
+      "validation": "Record the paid cast level on every lifetime owner here; DISPEL depends on it.",
       "engine_state": "partial_contract_missing_or_unverified_named_hosts",
       "proof_state": "No gameplay acceptance performed here; reuse only the registry's named verified boundaries."
     },
     {
       "id": "ITEM_MAGIC",
-      "order": 20,
-      "assignment": "CXM-20",
+      "order": 22,
+      "assignment": "CXM-22",
       "title": "Exact weapon enhancements, bonds and curses",
       "slice_owner": "S-161/S-162/S-126/S-127/S-202/S-203 continuation",
       "reuse": "Bond/Release/Project/Dismiss controls, copy identity, linked loss causes, damage-type choices and magical-property suppression/degradation.",
@@ -542,13 +619,14 @@
         "gameplay_proof"
       ],
       "state": "planning_only",
+      "validation": "Shillelagh (keyed by weapon definition ID, src/characters/character.gd:388), Magic Weapon, pact weapon and Remove Curse item breaking (src/characters/curse_rules.gd:46) are native. Key them to exact copies.",
       "engine_state": "partial_contract_missing_or_unverified_named_hosts",
       "proof_state": "No gameplay acceptance performed here; reuse only the registry's named verified boundaries."
     },
     {
       "id": "WEAPON",
-      "order": 21,
-      "assignment": "CXM-21",
+      "order": 23,
+      "assignment": "CXM-23",
       "title": "Source weapon properties and masteries",
       "slice_owner": "S-127; S-250/S-084/S-085 reuse",
       "reuse": "Range/Heavy, bounded damage-type routes, nonstacking Extra Attack and native Light/Nick/Cleave/Loading hosts.",
@@ -567,6 +645,7 @@
         "gameplay_proof"
       ],
       "state": "planning_only",
+      "validation": "Mastery is a hardcoded weapon-ID map (src/characters/fighter_rules.gd:8), so renamed weapons get none. Moving mastery into item data is the core work.",
       "engine_state": "partial_contract_missing_or_unverified_named_hosts",
       "proof_state": "No gameplay acceptance performed here; reuse only the registry's named verified boundaries.",
       "conditional_prerequisites": {
@@ -575,8 +654,8 @@
     },
     {
       "id": "GRAPPLE",
-      "order": 22,
-      "assignment": "CXM-22",
+      "order": 24,
+      "assignment": "CXM-24",
       "title": "Unarmed Grapple/Shove and exact relations",
       "slice_owner": "S-236; S-168/S-169/S-235 reuse",
       "reuse": "Accepted tether anchors/Escape/Rescue/Cut/source cleanup and shared Grappled consequences.",
@@ -595,13 +674,14 @@
         "gameplay_proof"
       ],
       "state": "planning_only",
+      "validation": "Reuse is overstated: Grappled only sets Speed 0 (src/combat/combat_action.gd:83). Attack Disadvantage against non-grapplers and Unarmed Grapple/Shove are new.",
       "engine_state": "partial_contract_missing_or_unverified_named_hosts",
       "proof_state": "No gameplay acceptance performed here; reuse only the registry's named verified boundaries."
     },
     {
       "id": "MOVE",
-      "order": 23,
-      "assignment": "CXM-23",
+      "order": 25,
+      "assignment": "CXM-25",
       "title": "Fallback movement and actual jumps",
       "slice_owner": "S-239; S-179 reuse",
       "reuse": "Combat mode/surface/terrain queries and initial zero-spend refusal; form-specific printed speeds.",
@@ -619,13 +699,14 @@
         "gameplay_proof"
       ],
       "state": "planning_only",
+      "validation": "Fallback climb/swim cost already exists in PhysicalFactsRules.attempt_movement_step (src/combat/physical_facts_rules.gd:734), but only checks call it. Wire it into production movement. Jump is native (src/combat/combat_state.gd:2793).",
       "engine_state": "partial_contract_missing_or_unverified_named_hosts",
       "proof_state": "No gameplay acceptance performed here; reuse only the registry's named verified boundaries."
     },
     {
       "id": "GRANTED_MOVE",
-      "order": 24,
-      "assignment": "CXM-24",
+      "order": 26,
+      "assignment": "CXM-26",
       "title": "Post-hit, Reaction and compelled movement",
       "slice_owner": "S-241/S-183/S-269; S-179/S-148 reuse",
       "reuse": "Open Hand15ft Push and shared/Thunderwave push delivered; ordinary child movement and actor budgets.",
@@ -644,6 +725,7 @@
         "gameplay_proof"
       ],
       "state": "planning_only",
+      "validation": "Command's orders (src/combat/combat_state.gd:1258) and Repelling Blast (src/spells/spell_effect_application.gd) are native. Dissonant Whispers and Fear are new.",
       "engine_state": "partial_contract_missing_or_unverified_named_hosts",
       "proof_state": "No gameplay acceptance performed here; reuse only the registry's named verified boundaries.",
       "conditional_prerequisites": {
@@ -652,8 +734,8 @@
     },
     {
       "id": "FALL",
-      "order": 25,
-      "assignment": "CXM-25",
+      "order": 27,
+      "assignment": "CXM-27",
       "title": "Descent, falling damage and lost flight",
       "slice_owner": "S-181; S-121/S-122/S-179 reuse",
       "reuse": "Altitude/clearance/legal placement, damage reductions and Reaction scheduling; speed fields alone are not fall execution.",
@@ -672,6 +754,7 @@
         "gameplay_proof"
       ],
       "state": "planning_only",
+      "validation": "Falling damage is native in combat (src/combat/combat_state.gd:7006) and in rooms (src/dungeon/local_room_rules.gd:397). Feather Fall and Slow Fall hook these; no new fall path.",
       "engine_state": "partial_contract_missing_or_unverified_named_hosts",
       "proof_state": "No gameplay acceptance performed here; reuse only the registry's named verified boundaries.",
       "conditional_prerequisites": {
@@ -681,8 +764,8 @@
     },
     {
       "id": "PHASE",
-      "order": 26,
-      "assignment": "CXM-26",
+      "order": 28,
+      "assignment": "CXM-28",
       "title": "Bounded teleport, gas/stone access and return",
       "slice_owner": "S-177/S-178/S-180/S-181; S-121/S-122 reuse",
       "reuse": "Plane/location facts, legal arrivals, represented random overworld travel and room/save-exit placement.",
@@ -700,6 +783,7 @@
         "gameplay_proof"
       ],
       "state": "planning_only",
+      "validation": "Misty Step is already data-driven (a teleport effect with requires_sight, src/combat/travel_placement_rules.gd).",
       "engine_state": "partial_contract_missing_or_unverified_named_hosts",
       "proof_state": "No gameplay acceptance performed here; reuse only the registry's named verified boundaries.",
       "conditional_prerequisites": {
@@ -708,8 +792,8 @@
     },
     {
       "id": "BARRIER",
-      "order": 27,
-      "assignment": "CXM-27",
+      "order": 29,
+      "assignment": "CXM-29",
       "title": "Selective crossings and occupant admission",
       "slice_owner": "S-185/S-186; S-184/S-122 reuse",
       "reuse": "Spatial receipts/geometry/occupancy, containment targeting and legal release.",
@@ -735,8 +819,8 @@
     },
     {
       "id": "OBJECT",
-      "order": 28,
-      "assignment": "CXM-28",
+      "order": 30,
+      "assignment": "CXM-30",
       "title": "Exact object damage, targeting and ignition",
       "slice_owner": "S-032/S-091/S-098/S-099/S-119 continuation",
       "reuse": "Room/exact-part objects and CombatUtilize; Shatter no-save unattended nonmagic area-object damage and Thunderwave object push/destruction.",
@@ -755,13 +839,14 @@
         "gameplay_proof"
       ],
       "state": "planning_only",
+      "validation": "Area object damage and ignition already exist (src/combat/combat_object_rules.gd:200).",
       "engine_state": "partial_contract_missing_or_unverified_named_hosts",
       "proof_state": "No gameplay acceptance performed here; reuse only the registry's named verified boundaries."
     },
     {
       "id": "REPAIR",
-      "order": 29,
-      "assignment": "CXM-29",
+      "order": 31,
+      "assignment": "CXM-31",
       "title": "Retained-object repair and corrosion",
       "slice_owner": "S-212/S-213; S-060/S-203/S-210 reuse",
       "reuse": "Exact copies/parts/object damage/destruction/magic loss and work clocks; native corrosion observation.",
@@ -788,8 +873,8 @@
     },
     {
       "id": "TOOL",
-      "order": 30,
-      "assignment": "CXM-30",
+      "order": 32,
+      "assignment": "CXM-32",
       "title": "Real tool tasks and consulted context",
       "slice_owner": "S-237/S-238; S-036/S-094 reuse",
       "reuse": "Purpose checks/owned exact tool, tool-ID Help, room Utilize/Study and proficiency-source ownership.",
@@ -808,6 +893,7 @@
         "source_fact"
       ],
       "state": "planning_only",
+      "validation": "Thieves' Tools lockpicking and Crowbar prying are native (src/dungeon/local_room_rules.gd:856). A Crowbar is required there, but in the SRD it grants Advantage.",
       "engine_state": "partial_contract_missing_or_unverified_named_hosts",
       "proof_state": "No gameplay acceptance performed here; reuse only the registry's named verified boundaries.",
       "conditional_prerequisites": {
@@ -816,8 +902,8 @@
     },
     {
       "id": "ITEM_ATTACK",
-      "order": 31,
-      "assignment": "CXM-31",
+      "order": 33,
+      "assignment": "CXM-33",
       "title": "Thrown items, Net, kits and potions",
       "slice_owner": "S-256/S-146/S-237; S-049/S-064 reuse",
       "reuse": "Bounded consumable Attack substitution, exact backpack copies, heal/stabilize and tethers.",
@@ -845,8 +931,8 @@
     },
     {
       "id": "MIX",
-      "order": 32,
-      "assignment": "CXM-32",
+      "order": 34,
+      "assignment": "CXM-34",
       "title": "Potion miscibility table and retained effects",
       "slice_owner": "S-214/S-215; S-049/S-064 reuse",
       "reuse": "Exact potion copies, source effects, captured table rolls and consumption/clock owners.",
@@ -872,8 +958,8 @@
     },
     {
       "id": "HAZARD",
-      "order": 33,
-      "assignment": "CXM-33",
+      "order": 35,
+      "assignment": "CXM-35",
       "title": "Recoverable hazards and burning",
       "slice_owner": "S-258; S-184/S-122 reuse",
       "reuse": "Accepted entry/crossing/turn/area movement receipts, room areas and placement.",
@@ -892,6 +978,7 @@
         "gameplay_proof"
       ],
       "state": "planning_only",
+      "validation": "Ashvale heat is already data-driven terrain (src/dungeon/local_room_rules.gd:406).",
       "engine_state": "partial_contract_missing_or_unverified_named_hosts",
       "proof_state": "No gameplay acceptance performed here; reuse only the registry's named verified boundaries.",
       "conditional_prerequisites": {
@@ -901,8 +988,8 @@
     },
     {
       "id": "LIGHT",
-      "order": 34,
-      "assignment": "CXM-34",
+      "order": 36,
+      "assignment": "CXM-36",
       "title": "Located light and hearing-only targeting",
       "slice_owner": "S-190/S-191 continuation; S-274 via DISPEL",
       "reuse": "Observer senses/light/concealment, OA hearing/noise, portable lights and real AI/roll targeting.",
@@ -921,6 +1008,7 @@
         "gameplay_proof"
       ],
       "state": "planning_only",
+      "validation": "Outlined Advantage exists natively (src/combat/combat_action.gd:625).",
       "engine_state": "partial_contract_missing_or_unverified_named_hosts",
       "proof_state": "No gameplay acceptance performed here; reuse only the registry's named verified boundaries.",
       "conditional_prerequisites": {
@@ -930,8 +1018,8 @@
     },
     {
       "id": "ZONE",
-      "order": 35,
-      "assignment": "CXM-35",
+      "order": 37,
+      "assignment": "CXM-37",
       "title": "Exact area, terrain and aura consumers",
       "slice_owner": "S-184/S-179/S-098/S-099; S-075 continuation",
       "reuse": "Accepted spatial policies, live AuraRules, exemptions, timed areas/light/obscuration.",
@@ -950,6 +1038,7 @@
         "gameplay_proof"
       ],
       "state": "planning_only",
+      "validation": "Spirit Guardians, Moonbeam, Spike Growth and other zones are native per-spell code (src/spells/combat_spell_zones.gd). This is replacement, not new wiring.",
       "engine_state": "partial_contract_missing_or_unverified_named_hosts",
       "proof_state": "No gameplay acceptance performed here; reuse only the registry's named verified boundaries.",
       "conditional_prerequisites": {
@@ -959,8 +1048,8 @@
     },
     {
       "id": "REMOTE",
-      "order": 36,
-      "assignment": "CXM-36",
+      "order": 38,
+      "assignment": "CXM-38",
       "title": "Borrowed senses and cast origins",
       "slice_owner": "S-192/S-193/S-145; S-190 reuse",
       "reuse": "Native familiar form/type menus, Bonus sight/Reaction Touch controls; exact actors, senses and source permissions.",
@@ -988,8 +1077,8 @@
     },
     {
       "id": "DETECT",
-      "order": 37,
-      "assignment": "CXM-37",
+      "order": 39,
+      "assignment": "CXM-39",
       "title": "Fact-limited detection and masking",
       "slice_owner": "S-194/S-195; S-190/S-219 reuse",
       "reuse": "Observer/plane/range facts, exact item/source state and bounded Study knowledge.",
@@ -1017,8 +1106,8 @@
     },
     {
       "id": "LANGUAGE",
-      "order": 38,
-      "assignment": "CXM-38",
+      "order": 40,
+      "assignment": "CXM-40",
       "title": "Language grants and bounded messages",
       "slice_owner": "S-218; S-232/S-219 reuse",
       "reuse": "OA local speech/verbal Help/hearing/Influence; saved languages and observer receipts.",
@@ -1042,8 +1131,8 @@
     },
     {
       "id": "KNOWLEDGE",
-      "order": 39,
-      "assignment": "CXM-39",
+      "order": 41,
+      "assignment": "CXM-41",
       "title": "Authored answers, attitudes and divination history",
       "slice_owner": "S-219/S-209/S-214; S-188/S-237 reuse",
       "reuse": "Study/Field Notes and Influence retry/fulfillment, language/hearing; ADR-0023 bounded campaign outcomes.",
@@ -1071,8 +1160,8 @@
     },
     {
       "id": "ILLUSION",
-      "order": 40,
-      "assignment": "CXM-40",
+      "order": 42,
+      "assignment": "CXM-42",
       "title": "Located images and per-observer disbelief",
       "slice_owner": "S-187/S-188; S-189 only selected outcome",
       "reuse": "Perception/Study, exact source ending and located records; ADR-0023 constrained realizations.",
@@ -1100,8 +1189,8 @@
     },
     {
       "id": "WARD",
-      "order": 41,
-      "assignment": "CXM-41",
+      "order": 43,
+      "assignment": "CXM-43",
       "title": "Exact locks and authorized persistent triggers",
       "slice_owner": "S-230/S-184/S-203 continuation",
       "reuse": "Ordinary key/tool/break interactions, Alarm/object states and spatial receipt/expiry owners.",
@@ -1120,6 +1209,7 @@
         "gameplay_proof"
       ],
       "state": "planning_only",
+      "validation": "Knock suppression (src/combat/combat_object_rules.gd:335) and Arcane Lock password/designated users (:373) are native. Missing: the password UI, Knock's noise, Magic Mouth.",
       "engine_state": "partial_contract_missing_or_unverified_named_hosts",
       "proof_state": "No gameplay acceptance performed here; reuse only the registry's named verified boundaries.",
       "conditional_prerequisites": {
@@ -1129,8 +1219,8 @@
     },
     {
       "id": "DISPEL",
-      "order": 42,
-      "assignment": "CXM-42",
+      "order": 44,
+      "assignment": "CXM-44",
       "title": "Spell-level ending and light overlap",
       "slice_owner": "S-276/S-274; S-116/S-190 reuse",
       "reuse": "Exact source removal/incoming negation, paid slot snapshots, light/obscuration owners.",
@@ -1158,8 +1248,8 @@
     },
     {
       "id": "STORAGE",
-      "order": 43,
-      "assignment": "CXM-43",
+      "order": 45,
+      "assignment": "CXM-45",
       "title": "Store and release one exact cast",
       "slice_owner": "S-150/S-151; S-135/S-142/S-184 reuse",
       "reuse": "Original cast snapshot/permissions/payment and ordered continuation; room object triggers/receipts.",
@@ -1187,8 +1277,8 @@
     },
     {
       "id": "WORK",
-      "order": 44,
-      "assignment": "CXM-44",
+      "order": 46,
+      "assignment": "CXM-46",
       "title": "Long casts and fixed-location work",
       "slice_owner": "S-066/S-067/S-136/S-142 continuation",
       "reuse": "Accepted work cell/helpers/incapacity/accrual/interruption and clock; bounded ritual normal time+10min.",
@@ -1212,8 +1302,8 @@
     },
     {
       "id": "REST",
-      "order": 45,
-      "assignment": "CXM-45",
+      "order": 47,
+      "assignment": "CXM-47",
       "title": "Rest exceptions and benefit-only Short Rest",
       "slice_owner": "S-071/S-014/S-070 continuation",
       "reuse": "Rest-start expiry/actor-specific rest including Trance4h duration, mixed Hit Dice and real Short/Long lifecycle accepted.",
@@ -1241,8 +1331,8 @@
     },
     {
       "id": "POOL",
-      "order": 46,
-      "assignment": "CXM-46",
+      "order": 48,
+      "assignment": "CXM-48",
       "title": "Exchange destinations, refunds and recovery extras",
       "slice_owner": "S-052/S-053/S-054/S-055/S-059/S-062 continuation",
       "reuse": "Numeric pools, slot-to-numeric/dice/inventory exchange and result recovery accepted; separate Channel/ordinary/Pact identities.",
@@ -1261,13 +1351,14 @@
         "gameplay_proof"
       ],
       "state": "planning_only",
+      "validation": "Created slots (src/characters/sorcerer_rules.gd:217), Wild Resurgence (src/characters/druid_rules.gd:180), Tactical Mind (src/characters/fighter_rules.gd:241) and the shared exchange (src/characters/resource_pool_rules.gd:312) exist. Arcane Recovery is the new piece.",
       "engine_state": "partial_contract_missing_or_unverified_named_hosts",
       "proof_state": "No gameplay acceptance performed here; reuse only the registry's named verified boundaries."
     },
     {
       "id": "SUPPLY",
-      "order": 47,
-      "assignment": "CXM-47",
+      "order": 49,
+      "assignment": "CXM-49",
       "title": "Actual intake, stock and exposure",
       "slice_owner": "S-197/S-200/S-201; S-199 reuse",
       "reuse": "Survival nourishment deadlines, camp/rest, measured quantities/clock and Exhaustion semantics.",
@@ -1287,6 +1378,7 @@
         "source_fact"
       ],
       "state": "planning_only",
+      "validation": "Per-size food/water needs and deprivation exhaustion exist (src/characters/survival_rules.gd:6). Stock, spoilage and contamination are new.",
       "engine_state": "partial_contract_missing_or_unverified_named_hosts",
       "proof_state": "No gameplay acceptance performed here; reuse only the registry's named verified boundaries.",
       "conditional_prerequisites": {
@@ -1296,8 +1388,8 @@
     },
     {
       "id": "BREATH",
-      "order": 48,
-      "assignment": "CXM-48",
+      "order": 50,
+      "assignment": "CXM-50",
       "title": "Environment breathing and suffocation",
       "slice_owner": "S-205; S-200/S-201 reuse; S-204 only selected air consumer",
       "reuse": "Actual type/size/environment/source protections and clock; no universal enclosed-air prerequisite for adaptation.",
@@ -1324,8 +1416,8 @@
     },
     {
       "id": "CREATION",
-      "order": 49,
-      "assignment": "CXM-49",
+      "order": 51,
+      "assignment": "CXM-51",
       "title": "Bounded outputs and granted action controllers",
       "slice_owner": "S-049/S-064/S-160/S-161/S-162/S-199 continuation",
       "reuse": "Exact copies/modes/children, located source-end objects and written force/image representations.",
@@ -1353,8 +1445,8 @@
     },
     {
       "id": "CRAFT",
-      "order": 50,
-      "assignment": "CXM-50",
+      "order": 52,
+      "assignment": "CXM-52",
       "title": "Selected recipes and real world changes",
       "slice_owner": "S-198/S-199; S-066/S-067 reuse",
       "reuse": "Qualified site/helper/time and exact materials; finite creation boundary map.",
@@ -1382,8 +1474,8 @@
     },
     {
       "id": "ACTOR",
-      "order": 51,
-      "assignment": "CXM-51",
+      "order": 53,
+      "assignment": "CXM-53",
       "title": "Source templates and shared monster actions",
       "slice_owner": "S-154/S-155/S-126/S-134 continuation",
       "reuse": "Parameterized factory/footprints/placement/count choices, combat-room position capture, exact actors and CombatState monster projection/cast paths.",
@@ -1403,6 +1495,7 @@
         "campaign_policy"
       ],
       "state": "planning_only",
+      "validation": "Build Multiattack on the existing extra-attack units, not a monster-only path.",
       "engine_state": "partial_contract_missing_or_unverified_named_hosts",
       "proof_state": "No gameplay acceptance performed here; reuse only the registry's named verified boundaries.",
       "conditional_prerequisites": {
@@ -1412,8 +1505,8 @@
     },
     {
       "id": "COMMAND",
-      "order": 52,
-      "assignment": "CXM-52",
+      "order": 54,
+      "assignment": "CXM-54",
       "title": "Orders, attack substitution and mount policies",
       "slice_owner": "S-156/S-157/S-158; narrow in-band S-147 Chain consumer",
       "reuse": "Exact command/cost/owner-group-independent initiative/default policies and native familiar/steed recovery accepted.",
@@ -1441,8 +1534,8 @@
     },
     {
       "id": "FORM",
-      "order": 53,
-      "assignment": "CXM-53",
+      "order": 55,
+      "assignment": "CXM-55",
       "title": "Source retained forms and equipment",
       "slice_owner": "S-163/S-164/S-141 continuation",
       "reuse": "Reversible retained-stat projections, equipment chooser and persistent-room exact ground transfers accepted; reversion does not refill/reacquire.",
@@ -1471,8 +1564,8 @@
     },
     {
       "id": "CONTAIN",
-      "order": 54,
-      "assignment": "CXM-54",
+      "order": 56,
+      "assignment": "CXM-56",
       "title": "Source swallowing, space and cargo consumers",
       "slice_owner": "S-170/S-171/S-172/S-167 reuse",
       "reuse": "VS-148–151 occupancy/capacity/internal harm/escape/moving release/vessel cargo are accepted.",
@@ -1500,8 +1593,8 @@
     },
     {
       "id": "REMAINS",
-      "order": 55,
-      "assignment": "CXM-55",
+      "order": 57,
+      "assignment": "CXM-57",
       "title": "Death, preservation, revival and delayed creation",
       "slice_owner": "S-175/S-176; S-119/S-120/S-130/S-131 reuse",
       "reuse": "Corpse dead/downed identity/cause/gear, explicit/max0 death, lasting Undead existence/control and aftermath records.",
@@ -1522,6 +1615,7 @@
         "campaign_policy"
       ],
       "state": "planning_only",
+      "validation": "The Gentle Repose clock pause (src/characters/corpse_rules.gd:56) and Revivify window/refusals (:73) are native. Wight max-HP drain and the delayed Zombie are new.",
       "engine_state": "partial_contract_missing_or_unverified_named_hosts",
       "proof_state": "No gameplay acceptance performed here; reuse only the registry's named verified boundaries.",
       "conditional_prerequisites": {
@@ -1531,8 +1625,8 @@
     },
     {
       "id": "CAST",
-      "order": 56,
-      "assignment": "CXM-56",
+      "order": 58,
+      "assignment": "CXM-58",
       "title": "Casting sources, repertoires and costed edits",
       "slice_owner": "S-134–S-142; S-126/S-127 continuation",
       "reuse": "Accepted permissions/payments/preparation/ordinary-Pact-fixed uses; free player HUD range/V-S/school/timing edits and flat-condition lifetime edits.",
@@ -1562,8 +1656,8 @@
     },
     {
       "id": "BOOK",
-      "order": 57,
-      "assignment": "CXM-57",
+      "order": 59,
+      "assignment": "CXM-59",
       "title": "Exact books, copying and rest preparation",
       "slice_owner": "S-046/S-048/S-137/S-161/S-162 continuation",
       "reuse": "Source book/preparation permission, exact copies, work time and source/grant receipts.",
@@ -1582,6 +1676,7 @@
         "gameplay_proof"
       ],
       "state": "planning_only",
+      "validation": "Wizard copying cost/time is native (src/characters/class_progression.gd:771), but it only reports hours and never spends campaign time.",
       "engine_state": "partial_contract_missing_or_unverified_named_hosts",
       "proof_state": "No gameplay acceptance performed here; reuse only the registry's named verified boundaries.",
       "conditional_prerequisites": {
@@ -1591,8 +1686,8 @@
     },
     {
       "id": "CHOICE",
-      "order": 58,
-      "assignment": "CXM-58",
+      "order": 60,
+      "assignment": "CXM-60",
       "title": "Complete parameters, replacements and feats",
       "slice_owner": "S-045/S-046/S-049/S-050; S-233/S-242 reuse",
       "reuse": "Generation/feat prerequisites/repeat-parameter controls, G2 all-class choices and real repeatable Skilled/source grants accepted.",
@@ -1620,8 +1715,8 @@
     },
     {
       "id": "ACQUIRE",
-      "order": 59,
-      "assignment": "CXM-59",
+      "order": 61,
+      "assignment": "CXM-61",
       "title": "Permanent feature and resource acquisition",
       "slice_owner": "S-047/S-048 continuation",
       "reuse": "Permanent proficiency/equipment/ability/maxHP grants, ordered class/character receipts and fit preflight; primary G2 native path.",
@@ -1648,38 +1743,9 @@
       }
     },
     {
-      "id": "BACKGROUND",
-      "order": 60,
-      "assignment": "CXM-60",
-      "title": "Background creation and origins",
-      "slice_owner": "S-231; S-233/S-242/S-047 reuse",
-      "reuse": "Four adapted candidates, ability/feat parameters, tool-source ownership and complete package map.",
-      "remaining": "Production background type/loader/creation step, listed +2/+1 or+1/+1/+1, fixed feat/skills/tool/A-or50GP once. Prevent legacy species ASI stacking, no legacy rewrite.",
-      "prerequisites": [],
-      "concrete_consumers": "Acolyte/Criminal/Sage/Soldier; fixed Cleric/Wizard Initiate and chosen Gaming Set.",
-      "acceptance": "Normal four-seat creation each ability split/alternative/Back/Random/reset/stale confirm. Soldier set matches; fixed Initiate list with legal ability/spells. No revisited/reloaded double grants; both DTO source validation and legacy species boundary.",
-      "evidence": [
-        "docs/mechanics/progression-choices.md",
-        "docs/mechanics/permanent-progression.md"
-      ],
-      "work_kinds": [
-        "engine_extension",
-        "content_wiring",
-        "gameplay_proof"
-      ],
-      "state": "planning_only",
-      "engine_state": "partial_contract_missing_or_unverified_named_hosts",
-      "proof_state": "No gameplay acceptance performed here; reuse only the registry's named verified boundaries.",
-      "conditional_prerequisites": {
-        "PACK": "Only selected A package; GP alternative independent.",
-        "CHOICE": "Only selected Origin feat parameters.",
-        "ACQUIRE": "Only once-only background source grants/validation."
-      }
-    },
-    {
       "id": "SPECIES",
-      "order": 61,
-      "assignment": "CXM-61",
+      "order": 62,
+      "assignment": "CXM-62",
       "title": "Nine species and total-level grants",
       "slice_owner": "S-232; S-045/S-139/S-047 reuse",
       "reuse": "Saved species/size/languages, source spell uses/stat/condition/sense contracts; retained old species.",
@@ -1710,8 +1776,8 @@
     },
     {
       "id": "MULTI",
-      "order": 62,
-      "assignment": "CXM-62",
+      "order": 63,
+      "assignment": "CXM-63",
       "title": "Secondary classes through total5",
       "slice_owner": "S-234; S-047/S-048/S-137/S-138 reuse",
       "reuse": "Existing all/any entry gate every current/new class permanent13, offer/confirm recheck/history; combined/Pact formulas.",
@@ -1738,8 +1804,8 @@
     },
     {
       "id": "TRAVEL",
-      "order": 63,
-      "assignment": "CXM-63",
+      "order": 64,
+      "assignment": "CXM-64",
       "title": "Five-mile travel stages and terrain procedures",
       "slice_owner": "S-227/S-228; S-065/S-179/S-200 reuse",
       "reuse": "Campaign hexes/legal arrival/events/clock/supplies and persistent position/milestones.",
@@ -1772,8 +1838,8 @@
     },
     {
       "id": "TRAP",
-      "order": 64,
-      "assignment": "CXM-64",
+      "order": 65,
+      "assignment": "CXM-65",
       "title": "Positioned discovery, trigger and disarm",
       "slice_owner": "S-229/S-230; OA Search/S-168/S-212 reuse",
       "reuse": "Observer room Search, key/tool/break/Help/persistence; custom INT13 trapped_chest branches.",
@@ -1804,8 +1870,8 @@
     },
     {
       "id": "EVENT",
-      "order": 65,
-      "assignment": "CXM-65",
+      "order": 66,
+      "assignment": "CXM-66",
       "title": "Table routing and nested continuations",
       "slice_owner": "S-214/S-215/S-217; existing event hosts reuse",
       "reuse": "Weighted EventSystem, canonical EventResolver checks/child-combat handoff; native town direct shop/generated direct trapped_chest remain real routes.",
@@ -1834,36 +1900,6 @@
       }
     },
     {
-      "id": "CLEAR_REWARD",
-      "order": 66,
-      "assignment": "CXM-66",
-      "title": "Dungeon and generated-room delivery",
-      "slice_owner": "S-216; S-049/S-048 reuse",
-      "reuse": "cleared_dungeons/mark_dungeon_cleared, generated loot/room state, native payout and milestones. claim_reward is not their actual payment route.",
-      "remaining": "Prove actual delivery/full-inventory before clear/claim, dungeon-clear distinct from generated room. Shared replacement consumes existing receipt, never pays beside native route.",
-      "prerequisites": [],
-      "concrete_consumers": "Three clear rewards/generated_loot_room/three fragments/four milestones/crown_goals active-character predicate.",
-      "acceptance": "Real boss clear/loot pickup normal/full inventory/recipient; failure cannot lose reward or misleadingly claim. Reentry/both checkpoint relaunches never duplicate GP/items/levels. Three fragments plus actual Lich defeat; active/inactive policy remains explicit. Existing shortcut fixtures keep bounded purpose.",
-      "evidence": [
-        "src/autoload/game_manager.gd",
-        "src/dungeon/local_room_view.gd",
-        "src/overworld/overworld_state.gd",
-        "src/dungeon/dungeon_generator.gd"
-      ],
-      "work_kinds": [
-        "engine_extension",
-        "content_wiring",
-        "gameplay_proof"
-      ],
-      "state": "planning_only",
-      "engine_state": "partial_contract_missing_or_unverified_named_hosts",
-      "proof_state": "No gameplay acceptance performed here; reuse only the registry's named verified boundaries.",
-      "conditional_prerequisites": {
-        "PACK": "Only reuse exact delivery preflight/receipt behavior if extended there; starting package catalog not required.",
-        "EVENT": "Only selected generated/event child that owns this reward; native dungeon clear independent."
-      }
-    },
-    {
       "id": "EVENT_REWARD",
       "order": 67,
       "assignment": "CXM-67",
@@ -1871,7 +1907,9 @@
       "slice_owner": "S-217; S-216 continuation",
       "reuse": "Immediate event item/gold/check branches and encounter identities; existing transient continuation concepts/exact inventory.",
       "remaining": "Quest choice.reward has no established EventDialog consumer/bounty payment. Bind exact child victory/recipient without prepayment/resume duplicate/dungeon-monster collision. Immediate event branches separate.",
-      "prerequisites": [],
+      "prerequisites": [
+        "CLEAR_REWARD"
+      ],
       "concrete_consumers": "Quest Board100GP/three-monster child; Fairy/event immediate reward branches.",
       "acceptance": "Actual bounty accept: defeat/flee/cancel0, only matching victory100GP once. Stale unrelated combat cannot claim; reopen/double callback/post-settlement allowed reload never repays. Immediate reward remains branch-owned, not later victory. No event/combat save checkpoint.",
       "evidence": [
@@ -1886,11 +1924,11 @@
         "gameplay_proof"
       ],
       "state": "planning_only",
+      "validation": "Pay through the CLEAR_REWARD delivery helper.",
       "engine_state": "partial_contract_missing_or_unverified_named_hosts",
       "proof_state": "No gameplay acceptance performed here; reuse only the registry's named verified boundaries.",
       "conditional_prerequisites": {
-        "EVENT": "Only exact pending child-encounter/parent continuation.",
-        "CLEAR_REWARD": "Only common delivery preflight/receipt if extended; all three dungeon conversions not required."
+        "EVENT": "Only exact pending child-encounter/parent continuation."
       }
     },
     {
@@ -1901,7 +1939,9 @@
       "slice_owner": "S-216/S-217; campaign decision first",
       "reuse": "Loot metadata copied into entities; complete acquisition links. No generic post-combat table settlement established. Dungeon/event payouts separate.",
       "remaining": "Decide whether/how metadata pays, recipient/full-inventory/chance/repeated entries/form-summon-respawn exclusions, then exact occurrence settlement. Metadata is not automatically owed drop.",
-      "prerequisites": [],
+      "prerequisites": [
+        "CLEAR_REWARD"
+      ],
       "concrete_consumers": "Ten encounters/42 direct occurrences, Lich repeated gold100/fragment, Wight/Ooze and item links.",
       "acceptance": "Pin policy and overlap before implementation. After decision real victory captured rolls once, exact GP/copies/recipient, intentional repeated entries preserved. Same victory reload never repays; forms/summons/defeat/flee only explicitly authorized. Metadata inspection never passes payment proof.",
       "evidence": [
@@ -1915,10 +1955,10 @@
         "gameplay_proof"
       ],
       "state": "planning_only",
+      "validation": "Pay through the CLEAR_REWARD delivery helper.",
       "engine_state": "partial_contract_missing_or_unverified_named_hosts",
       "proof_state": "No gameplay acceptance performed here; reuse only the registry's named verified boundaries.",
       "conditional_prerequisites": {
-        "CLEAR_REWARD": "Only collision/occurrence receipt contract at selected actual overlap.",
         "EVENT_REWARD": "Only bounty overlap if loot policy selects same encounter; first resolve policy."
       }
     },

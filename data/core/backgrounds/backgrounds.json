@@ -1,0 +1,70 @@
+[
+  {
+    "id": "acolyte",
+    "name": "Acolyte",
+    "description": "You served in a temple, performing rites and learning a little divine magic.",
+    "source": "SRD 5.2.1 p.83 Background Descriptions: Acolyte",
+    "source_note": "Book (prayers) is the generic Book; its topic is not represented. Holy Symbol is the generic record, not a chosen Amulet, Emblem or Reliquary.",
+    "ability_options": ["INT", "WIS", "CHA"],
+    "origin_feat": "magic_initiate|cleric",
+    "skills": ["Insight", "Religion"],
+    "tool_proficiency_grants": ["calligraphers_supplies"],
+    "starting_equipment": [
+      "calligraphers_supplies", "book", "holy_symbol",
+      "parchment", "parchment", "parchment", "parchment", "parchment", "parchment", "parchment", "parchment", "parchment", "parchment",
+      "robe"
+    ],
+    "starting_gold": 8,
+    "starting_gold_alternative": 50
+  },
+  {
+    "id": "criminal",
+    "name": "Criminal",
+    "description": "You made a living in the alleys, cutting purses and burgling shops.",
+    "source": "SRD 5.2.1 p.83 Background Descriptions: Criminal",
+    "ability_options": ["DEX", "CON", "INT"],
+    "origin_feat": "alert",
+    "skills": ["Sleight of Hand", "Stealth"],
+    "tool_proficiency_grants": ["thieves_tools"],
+    "starting_equipment": ["dagger", "dagger", "thieves_tools", "crowbar", "pouch", "pouch", "travelers_clothes"],
+    "starting_gold": 16,
+    "starting_gold_alternative": 50
+  },
+  {
+    "id": "sage",
+    "name": "Sage",
+    "description": "You spent your early years among libraries and manors, studying the multiverse and a little magic.",
+    "source": "SRD 5.2.1 p.83 Background Descriptions: Sage",
+    "source_note": "Book (history) is the generic Book; its topic is not represented.",
+    "ability_options": ["CON", "INT", "WIS"],
+    "origin_feat": "magic_initiate|wizard",
+    "skills": ["Arcana", "History"],
+    "tool_proficiency_grants": ["calligraphers_supplies"],
+    "starting_equipment": [
+      "quarterstaff", "calligraphers_supplies", "book",
+      "parchment", "parchment", "parchment", "parchment", "parchment", "parchment", "parchment", "parchment",
+      "robe"
+    ],
+    "starting_gold": 8,
+    "starting_gold_alternative": 50
+  },
+  {
+    "id": "soldier",
+    "name": "Soldier",
+    "description": "You trained for war from your first days as an adult, and battle is in your blood.",
+    "source": "SRD 5.2.1 p.83 Background Descriptions: Soldier",
+    "ability_options": ["STR", "DEX", "CON"],
+    "origin_feat": "savage_attacker",
+    "skills": ["Athletics", "Intimidation"],
+    "tool_choices": {"pick": 1, "from": ["dice_set", "dragonchess_set", "playing_card_set", "three_dragon_ante_set"]},
+    "starting_equipment_includes_tool_choice": true,
+    "starting_equipment": [
+      "spear", "shortbow",
+      "arrows", "arrows", "arrows", "arrows", "arrows", "arrows", "arrows", "arrows", "arrows", "arrows",
+      "arrows", "arrows", "arrows", "arrows", "arrows", "arrows", "arrows", "arrows", "arrows", "arrows",
+      "healers_kit", "quiver", "travelers_clothes"
+    ],
+    "starting_gold": 14,
+    "starting_gold_alternative": 50
+  }
+]

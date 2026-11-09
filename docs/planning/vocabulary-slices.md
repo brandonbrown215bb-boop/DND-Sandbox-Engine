@@ -3647,7 +3647,7 @@ only how features are chosen, gated, granted and saved.
 
 | Slice | Status | Parents | Scope | Depends on |
 |---|---|---|---|---|
-| S-231 — Background acquisition at creation | Planned | V-025, V-026, V-027, STA-01 | Background content type and creation step. The step grants the ability increase (+2/+1 or +1/+1/+1 from the 3 listed, cap 20), the Origin feat, 2 skills, a fixed tool or a category choice, and equipment A or GP, with receipts and saved validation (SRD p.83). | S-047, S-049, S-050 |
+| S-231 — Background acquisition at creation | Partial CXM-04 2026-11-09 ([boundary](#background-acquisition-at-creation)) | V-025, V-026, V-027, STA-01 | Background content type and creation step. The step grants the ability increase (+2/+1 or +1/+1/+1 from the 3 listed, cap 20), the Origin feat, 2 skills, a fixed tool or a category choice, and equipment A or GP, with receipts and saved validation (SRD p.83). | S-047, S-049, S-050 |
 | S-232 — Species and language creation choices | Planned | V-025, V-027 | Lineage, ancestry and legacy choice; spellcasting ability chosen at selection; size choice; species skill choice; Human Versatile Origin feat; Common + 2 languages (SRD p.20, pp.84–86). Character-level 3/5 grants reuse S-048 and S-139. | S-045, S-048, S-139 |
 | S-233 — Feat prerequisite kinds and repeat rules | Verified ([boundary](#five-quick-wins)) | V-025 | Class-level and named-feature prerequisites (Fighting Style, Spellcasting), the repeatable flag, and distinct-parameter repeats such as the Magic Initiate list (SRD pp.87–88). | S-049, S-050 |
 | S-234 — Multiclass entry prerequisites | Planned | V-025, V-026 | 13+ in the primary ability of the new class and every current class (all-of / any-of), checked before a class is offered, with the exact failing score reported (SRD p.24). G3 evidence (`CrownMulticlassEntryChecks`, neutral loaded fixtures): offer list, actual confirm, Class Progression panel, all/any, 12/13, permanent vs projected, stale confirm without cost, acquired class after a score drop, malformed declarations, checkpoint history. Not accepted: unreachable in production until a real class opts into `permanent_progression`. | S-047 |
@@ -3942,3 +3942,35 @@ expansion, monster ammunition inventories and fired-ammunition corrosion are
 outside this proof; destroyed pieces must be excluded when that consumer is
 wired. General liquids, whole S-237/S-238, backgrounds and multiclassing are not
 gates. Syntax and recovery policy live in [ammunition](../mechanics/ammunition.md).
+
+## Dungeon reward delivery or refusal
+
+**S-216 / CXM-02 partial, 2026-11-09.** `Inventory.grant_bundle` delivers a
+reward bundle whole or not at all; `gold_N` loot entries pay coins. Dungeon
+clears and generated loot rooms give the whole bundle to the first active member
+with room. A dungeon is added to `cleared_dungeons` only after its reward is
+paid. That fixes the defect where a full backpack recorded the clear but lost
+the fragment. A refused clear leaves the boss defeated and the reward pending;
+clicking the boss room (or re-entering) retries it. A refused chest stays
+uncleared. Event `give_item` now reports a full backpack instead of claiming
+delivery, but does not hold the item; that is EVENT_REWARD.
+
+Checked by the `world` logic group (full/roomy recipient, no partial payment,
+no double payment) and the dungeon/Crown/event integration scenarios. Not yet
+proven: a real boss clear with a full party, checkpoint relaunch while a reward
+is pending, and the active/inactive recipient policy.
+
+## Background acquisition at creation
+
+**S-231 / CXM-04 partial, 2026-11-09.** Backgrounds are a loaded content type
+with a creation step. Acolyte, Criminal, Sage and Soldier grant the chosen
++2/+1 or +1/+1/+1 increase, two skills, the fixed or chosen tool, the kit or
+50 GP and the fixed Origin feat, once, validated whole before any grant. A
+character with a background takes no legacy species ability bonuses; one
+without is unchanged. Syntax, save checks and limits live in
+[progression choices](../mechanics/progression-choices.md#backgrounds-cxm-04--s-231).
+
+Checked by the `classes` logic group and the `background_creation_flow`
+scenario with its fresh-process reload. Not delivered: the rules of Alert
+(CXM-05), Savage Attacker (CXM-06) and Magic Initiate's spells and casting
+ability (CXM-60); those feats are owned but do nothing yet.

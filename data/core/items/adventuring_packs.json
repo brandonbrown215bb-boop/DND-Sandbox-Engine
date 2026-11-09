@@ -65,5 +65,35 @@
     "value": 5,
     "rules_source": "dnd-2024-srd-5.2.1",
     "rules_status": "2024-gameplay-partial"
+  },
+  {
+    "id": "dungeoneers_pack",
+    "name": "Dungeoneer's Pack",
+    "type": "tool",
+    "description": "A Backpack, Caltrops, Crowbar, two Oil flasks, ten days of Rations, Rope, Tinderbox, ten Torches, and a Waterskin. Carried as one bundle.",
+    "pack_contents": [{"item_id": "backpack", "quantity": 1}, {"item_id": "caltrops", "quantity": 1}, {"item_id": "crowbar", "quantity": 1}, {"item_id": "oil_flask", "quantity": 2}, {"item_id": "rations", "quantity": 10}, {"item_id": "rope", "quantity": 1}, {"item_id": "tinderbox", "quantity": 1}, {"item_id": "torch", "quantity": 10}, {"item_id": "waterskin", "quantity": 1}],
+    "value": 12,
+    "rules_source": "dnd-2024-srd-5.2.1",
+    "rules_status": "2024-gameplay-partial"
+  },
+  {
+    "id": "burglars_pack",
+    "name": "Burglar's Pack",
+    "type": "tool",
+    "description": "A Backpack, Ball Bearings, Bell, ten Candles, Crowbar, Hooded Lantern, seven Oil flasks, five days of Rations, Rope, Tinderbox, and a Waterskin. Carried as one bundle.",
+    "pack_contents": [{"item_id": "backpack", "quantity": 1}, {"item_id": "ball_bearings", "quantity": 1}, {"item_id": "bell", "quantity": 1}, {"item_id": "candle", "quantity": 10}, {"item_id": "crowbar", "quantity": 1}, {"item_id": "lantern_hooded", "quantity": 1}, {"item_id": "oil_flask", "quantity": 7}, {"item_id": "rations", "quantity": 5}, {"item_id": "rope", "quantity": 1}, {"item_id": "tinderbox", "quantity": 1}, {"item_id": "waterskin", "quantity": 1}],
+    "value": 16,
+    "rules_source": "dnd-2024-srd-5.2.1",
+    "rules_status": "2024-gameplay-partial"
+  },
+  {
+    "id": "scholars_pack",
+    "name": "Scholar's Pack",
+    "type": "tool",
+    "description": "A Backpack, Book (lore), Ink, Ink Pen, Lamp, ten Oil flasks, ten sheets of Parchment, and a Tinderbox. Carried as one bundle.",
+    "pack_contents": [{"item_id": "backpack", "quantity": 1}, {"item_id": "book", "quantity": 1}, {"item_id": "ink", "quantity": 1}, {"item_id": "ink_pen", "quantity": 1}, {"item_id": "lamp", "quantity": 1}, {"item_id": "oil_flask", "quantity": 10}, {"item_id": "parchment", "quantity": 10}, {"item_id": "tinderbox", "quantity": 1}],
+    "value": 40,
+    "rules_source": "dnd-2024-srd-5.2.1",
+    "rules_status": "2024-gameplay-partial"
   }
 ]

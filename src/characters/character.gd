@@ -415,6 +415,10 @@ var feat_proficiency_choices: Dictionary = {}
 var creation_choices: Dictionary = {}
 ## Batch 051: the Origin feat chosen at creation (SRD 5.2.1 p.83).
 var origin_feat: String = ""
+## CXM-04: the background chosen at creation and its picks
+## ({"abilities", "tools", "equipment"}). Empty on legacy characters.
+var background_id: String = ""
+var background_choices: Dictionary = {}
 ## Ordered acquired classes, pending milestone levels and once-only permanent receipts.
 var permanent_progression: Dictionary = {}
 var weapon_proficiencies: Array[String] = []
@@ -1106,7 +1110,7 @@ func use_uncanny_metabolism() -> Dictionary:
 
 
 ## Initialize a character from race and class data.
-func initialize(p_name: String, p_race_id: String, p_class_id: String, scores: AbilityScores, starting_equipment_choice: String = "equipment", selected_creation_choices: Dictionary = {}) -> void:
+func initialize(p_name: String, p_race_id: String, p_class_id: String, scores: AbilityScores, starting_equipment_choice: String = "equipment", selected_creation_choices: Dictionary = {}, p_background_id: String = "", p_background_choices: Dictionary = {}) -> void:
 	if not permanent_progression.is_empty(): return # Creation is not a repeatable acquisition.
 	if not class_id.is_empty(): return # Confirmed creation (and its starting items) is granted once per character.
 	var managed := PermanentProgressionRules.enabled(p_class_id)
@@ -1122,6 +1126,12 @@ func initialize(p_name: String, p_race_id: String, p_class_id: String, scores: A
 		choices["equipment"] = starting_equipment_choice
 		if not ClassProgression.creation_choices_error(p_class_id, p_race_id, choices).is_empty():
 			return # Validate before changing character or granting inventory.
+	var equipment_choices: Dictionary = choices if not choices.is_empty() else {"equipment": "equipment"}
+	if not p_background_id.is_empty():
+		# shortcut: a managed (permanent_progression) class kit isn't counted in the background fit check; only fixtures use one. Count its receipts when a core class opts in.
+		var class_items: Array = [] if managed else ClassProgression.creation_starting_equipment(p_class_id, equipment_choices)
+		if not BackgroundRules.creation_error(p_background_id, p_background_choices, scores, p_race_id, choices.get("skills", []), class_items).is_empty():
+			return # CXM-04: a background is granted whole or not at all.
 	spell_repertoire_state.clear()
 	character_name = p_name
 	race_id = p_race_id
@@ -1137,8 +1147,13 @@ func initialize(p_name: String, p_race_id: String, p_class_id: String, scores: A
 	weapon_proficiencies.assign([] if managed else class_data.get("weapon_proficiencies", []))
 	armor_proficiencies.assign([] if managed else class_data.get("armor_proficiencies", []))
 
-	# Apply racial bonuses
-	ability_scores.apply_racial_bonuses(race_data)
+	# CXM-04: a background owns the creation ability increases. Legacy species
+	# bonuses apply only to characters made without one, so the two never stack.
+	if p_background_id.is_empty():
+		ability_scores.apply_racial_bonuses(race_data)
+	else:
+		for ability in p_background_choices.abilities:
+			ability_scores.set_score(str(ability), ability_scores.get_permanent_score(str(ability)) + int(p_background_choices.abilities[ability]))
 
 	# Apply racial traits
 	speed = int(race_data.get("speed", 6))
@@ -1194,16 +1209,8 @@ func initialize(p_name: String, p_race_id: String, p_class_id: String, scores: A
 		ClassProgression.grant_creation_tools(self, choices)
 
 	# Starting equipment
-	var starting_equipment: Array = [] if managed else ClassProgression.creation_starting_equipment(class_id, choices if not choices.is_empty() else {"equipment": "equipment"})
-	if not managed and class_id == "bard":
-		starting_equipment.append(str(choices.get("instrument", "lute")))
-	if not managed and class_id == "barbarian" and starting_equipment_choice == "gold":
-		inventory.gold = 75
-	elif not managed and not choices.is_empty() and starting_equipment_choice == "gold" and class_data.has("starting_gold_alternative"):
-		inventory.gold = int(class_data["starting_gold_alternative"])
-	else:
-		inventory.add_starting_equipment(starting_equipment)
-		inventory.gold = 0 if managed else int(class_data.get("starting_gold", 0))
+	inventory.add_starting_equipment([] if managed else ClassProgression.creation_starting_equipment(class_id, equipment_choices))
+	inventory.gold = 0 if managed else ClassProgression.creation_starting_gold(class_id, equipment_choices)
 
 	# Calculate initial HP: hit die max + CON modifier
 	var hit_die_sides := _parse_hit_die(class_data.get("hit_die", "d8"))
@@ -1225,6 +1232,7 @@ func initialize(p_name: String, p_race_id: String, p_class_id: String, scores: A
 	# Unlock level 1 features
 	_unlock_features_for_level(1)
 	OwnedFeatureSources.sync(self) # Batch 049: species and species-granted feat features.
+	if not p_background_id.is_empty(): BackgroundRules.apply(self, p_background_id, p_background_choices)
 	weapon_masteries.clear()
 	if not managed and class_id == "fighter":
 		for mastery_id in fighter_training.get("masteries", []):
@@ -2739,6 +2747,8 @@ func to_dict() -> Dictionary:
 		"feat_proficiency_choices": feat_proficiency_choices.duplicate(true),
 		"creation_choices": creation_choices.duplicate(true),
 		"origin_feat": origin_feat,
+		"background_id": background_id,
+		"background_choices": background_choices.duplicate(true),
 		"weapon_proficiencies": weapon_proficiencies,
 		"armor_proficiencies": armor_proficiencies,
 		"traits": traits.duplicate(true),
@@ -2901,6 +2911,9 @@ func from_dict(data: Dictionary) -> void:
 		for score in generation["results"]: generated_results.append(int(score))
 		generation["results"] = generated_results
 	origin_feat = str(data.get("origin_feat", "")) if data.get("origin_feat", "") is String and FeatRules.saved_error(data).is_empty() else ""
+	background_id = str(data.get("background_id", "")) if BackgroundRules.saved_error(data).is_empty() else ""
+	background_choices = data.get("background_choices", {}).duplicate(true) if not background_id.is_empty() else {}
+	for ability in background_choices.get("abilities", {}): background_choices.abilities[ability] = int(background_choices.abilities[ability]) # JSON numbers arrive as floats.
 	feat_proficiency_choices = data.get("feat_proficiency_choices", {}).duplicate(true) if data.get("feat_proficiency_choices", {}) is Dictionary and FeatRules.saved_error(data).is_empty() else {}
 	for val in data.get("skill_proficiencies", []):
 		skill_proficiencies.append(str(val))

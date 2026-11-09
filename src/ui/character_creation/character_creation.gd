@@ -1,10 +1,10 @@
 ## Character Creation State UI Controller
 ## Coordinates the step-by-step hot-seat character creation for all players.
-## Steps: Race -> Class -> Ability Scores (Point Buy) -> Equipment -> Summary.
+## Steps: Race -> Class -> Background -> Ability Scores -> Equipment -> Summary.
 extends Control
 
 # Step enums
-enum CreationStep { RACE, CLASS, STATS, EQUIPMENT, SUMMARY }
+enum CreationStep { RACE, CLASS, BACKGROUND, STATS, EQUIPMENT, SUMMARY }
 
 # Node references
 @onready var title_label: Label = $Panel/MarginContainer/VBoxContainer/Header/TitleLabel
@@ -59,12 +59,16 @@ var _standard_method_button: Button
 var _random_method_button: Button
 var _point_buy_method_button: Button
 var selected_equipment: Array[String] = []
-var barbarian_starting_equipment_choice := "equipment"
 var cleric_creation_choices := {"skills": ["", ""], "tools": [], "equipment": "equipment"}
 var cleric_divine_order := ""
 var bard_creation_choices := {"skills": ["", "", ""], "tools": ["", "", ""], "instrument": "", "equipment": "equipment"}
 ## G2: source-defined skill/tool picks for other classes that opt in by data.
 var class_creation_choices := {}
+## CXM-04: the chosen background and its picks (see BackgroundRules.choices_error).
+var selected_background_id := ""
+var background_choices := {"abilities": {}, "tools": [], "equipment": "equipment"}
+var _background_panel: ScrollContainer
+var _background_list: VBoxContainer
 
 # List of loaded data
 var races_data: Array = []
@@ -114,9 +118,9 @@ func _build_grimoire_spread() -> void:
 	var steps := HBoxContainer.new()
 	outer.add_child(steps)
 	outer.move_child(steps, 1)
-	for index in 5:
+	for index in 6:
 		var button := Button.new()
-		button.text = ["Species", "Class", "Abilities", "Equipment", "Review"][index]
+		button.text = ["Species", "Class", "Background", "Abilities", "Equipment", "Review"][index]
 		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		button.custom_minimum_size.y = 44
 		button.pressed.connect(func():
@@ -168,6 +172,11 @@ func _build_grimoire_spread() -> void:
 	_live_summary = Label.new()
 	_live_summary.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	box.add_child(_live_summary)
+	_background_panel = equip_panel.duplicate() # Same scrolling list layout as the equipment step.
+	_background_panel.name = "BackgroundPanel"
+	_background_list = _background_panel.get_child(0)
+	_background_list.name = "BackgroundList"
+	equip_panel.add_sibling(_background_panel)
 	race_grid.columns = 2
 	class_grid.columns = 2
 	for grid in [race_grid, class_grid]:
@@ -189,23 +198,31 @@ func _refresh_spread() -> void:
 	if _detail_text == null: return
 	var race := DataLoader.get_race(selected_race_id)
 	var cls := DataLoader.get_character_class(selected_class_id)
-	var selection: Dictionary = race if current_step == CreationStep.RACE else cls
+	var background := DataLoader.get_background(selected_background_id)
+	var selection: Dictionary = race if current_step == CreationStep.RACE else background if current_step == CreationStep.BACKGROUND else cls
 	_detail_title.text = str(selection.get("name", "Your adventurer"))
 	_detail_text.text = str(selection.get("description", "Select an option to see what it gives your character."))
 	if current_step == CreationStep.RACE:
-		var benefits: Array[String] = []
-		for ability in race.get("ability_bonuses", {}):
-			benefits.append("%s +%s" % [ability, race.ability_bonuses[ability]])
-		if not benefits.is_empty(): _detail_text.text += "\n\n" + ", ".join(benefits)
+		pass # CXM-04: ability increases come from the background, so legacy species bonuses aren't advertised.
+	elif current_step == CreationStep.BACKGROUND:
+		if not background.is_empty():
+			var kit: Array[String] = []
+			var kit_counts := _gear_counts(background.get("starting_equipment", []))
+			for id in kit_counts: kit.append(_gear_label(id, kit_counts[id]))
+			if background.get("starting_equipment_includes_tool_choice", false) == true: kit.append("your chosen tool")
+			var tool_text := ", ".join(_instrument_names(background.get("tool_proficiency_grants", [])))
+			if background.has("tool_choices"): tool_text = "one of " + ", ".join(_instrument_names(background.tool_choices.from))
+			_detail_text.text += "\n\nAbility scores: %s (+2 and +1, or +1 to each)\nOrigin feat: %s\nSkills: %s\nTool proficiency: %s\n\nEquipment\n%s and %d GP, or %d GP" % [", ".join(background.ability_options), FeatRules.label(str(background.origin_feat)), ", ".join(background.skills), tool_text, ", ".join(kit), int(background.starting_gold), int(background.starting_gold_alternative)]
 	elif not cls.is_empty():
 		_detail_text.text = str(CLASS_INTROS.get(selected_class_id, cls.get("description", "")))
 		var armor: Array = cls.get("armor_proficiencies", [])
 		_detail_text.text += "\n\nPrimary ability: %s\nHit die: %s\nArmor training: %s" % [cls.get("primary_ability", "See class details"), cls.get("hit_die", ""), ", ".join(armor) if not armor.is_empty() else "None"]
 		var gear: Array[String] = []
-		for id in _starting_gear_ids():
-			gear.append(str(DataLoader.get_item(id).get("name", id)))
+		var gear_counts := _gear_counts(_starting_gear_ids())
+		for id in gear_counts:
+			gear.append(_gear_label(id, gear_counts[id]))
 		_detail_text.text += "\n\nStarting equipment\n" + ", ".join(gear)
-	_live_summary.text = "%s\n%s · %s\n%s" % [selected_name, race.get("name", "Species pending"), cls.get("name", "Class pending"), "Starting gear: %d items" % _starting_gear_ids().size()]
+	_live_summary.text = "%s\n%s · %s · %s\n%s" % [selected_name, race.get("name", "Species pending"), cls.get("name", "Class pending"), background.get("name", "Background pending"), "Starting gear: %d items" % (_starting_gear_ids().size() + _background_gear_ids().size())]
 
 
 func _start_player_creation() -> void:
@@ -225,9 +242,10 @@ func _start_player_creation() -> void:
 	_ability_generation_assignments.clear()
 	selected_origin_feat = ""
 	origin_feat_picks = []
+	selected_background_id = ""
+	background_choices = {"abilities": {}, "tools": [], "equipment": "equipment"}
 	if _generation_assignment_row != null: _generation_assignment_row.hide()
 	selected_equipment.clear()
-	barbarian_starting_equipment_choice = "equipment"
 	cleric_creation_choices = {"skills": ["", ""], "tools": [], "equipment": "equipment"}
 	cleric_divine_order = ""
 	bard_creation_choices = {"skills": ["", "", ""], "tools": ["", "", ""], "instrument": "", "equipment": "equipment"}
@@ -242,6 +260,7 @@ func _update_step_ui() -> void:
 	# Hide all step panels
 	race_panel.visible = false
 	class_panel.visible = false
+	_background_panel.visible = false
 	stats_panel.visible = false
 	equip_panel.visible = false
 	summary_panel.visible = false
@@ -262,17 +281,21 @@ func _update_step_ui() -> void:
 			step_label.text = "Step 2: Choose Class"
 			class_panel.visible = true
 			_build_class_selection_ui()
+		CreationStep.BACKGROUND:
+			step_label.text = "Step 3: Choose Background"
+			_background_panel.visible = true
+			_build_background_ui()
 		CreationStep.STATS:
-			step_label.text = "Step 3: Distribute Ability Scores (Point Buy)"
+			step_label.text = "Step 4: Distribute Ability Scores (Point Buy)"
 			stats_panel.visible = true
 			_build_stats_point_buy_ui()
 		CreationStep.EQUIPMENT:
-			step_label.text = "Step 4: Skills, Instruments and Equipment" if selected_class_id == "bard" else "Step 4: Divine Order, Skills and Equipment" if selected_class_id == "cleric" else "Step 4: Starting Equipment"
+			step_label.text = "Step 5: Skills, Instruments and Equipment" if selected_class_id == "bard" else "Step 5: Divine Order, Skills and Equipment" if selected_class_id == "cleric" else "Step 5: Starting Equipment"
 			equip_panel.visible = true
 			_build_equipment_ui()
 			_refresh_spread()
 		CreationStep.SUMMARY:
-			step_label.text = "Step 5: Review Summary"
+			step_label.text = "Step 6: Review Summary"
 			summary_panel.visible = true
 			_build_summary_ui()
 	for index in _step_buttons.size():
@@ -292,6 +315,8 @@ func _check_next_step_validity() -> void:
 			is_valid = not selected_race_id.is_empty()
 		CreationStep.CLASS:
 			is_valid = not selected_class_id.is_empty()
+		CreationStep.BACKGROUND:
+			is_valid = BackgroundRules.choices_error(selected_background_id, background_choices).is_empty()
 		CreationStep.STATS:
 			is_valid = _ability_choice_error().is_empty()
 		CreationStep.EQUIPMENT:
@@ -570,7 +595,104 @@ func _class_choices() -> Dictionary:
 
 func _creation_choice_error() -> String:
 	var error := _class_choice_error()
+	if error.is_empty(): error = _background_error()
 	return error if not error.is_empty() else _origin_feat_error()
+
+
+## CXM-04: the Background step can't be passed without a legal background. Only
+## a direct step jump (tests) reaches Confirm without one; that character is
+## made the legacy way, with species ability bonuses and no background.
+func _background_error() -> String:
+	if selected_background_id.is_empty(): return ""
+	var class_skills: Array = _creation_choices().get("skills", []) if ClassProgression.uses_creation_choices(selected_class_id) else []
+	return BackgroundRules.creation_error(selected_background_id, background_choices, selected_stats, selected_race_id, class_skills, _starting_gear_ids())
+
+
+func _background_gear_ids() -> Array:
+	return BackgroundRules.starting_items(selected_background_id, background_choices)
+
+
+func _select_background(id: String) -> void:
+	if id != selected_background_id:
+		var data := DataLoader.get_background(id)
+		selected_background_id = id
+		var tools: Array = []
+		tools.resize(int(data.get("tool_choices", {}).get("pick", 0)))
+		tools.fill("")
+		background_choices = {"abilities": {}, "tools": tools, "equipment": "equipment"}
+		var class_skills: Array = _creation_choices().get("skills", []) if ClassProgression.uses_creation_choices(selected_class_id) else []
+		for index in class_skills.size(): # A class pick the background now gives must be chosen again.
+			if class_skills[index] in data.skills: class_skills[index] = ""
+	_update_step_ui()
+
+
+func _build_background_ui() -> void:
+	for child in _background_list.get_children():
+		_background_list.remove_child(child)
+		child.queue_free()
+	var grid := GridContainer.new()
+	grid.columns = 2
+	_background_list.add_child(grid)
+	for record in DataLoader.get_all_backgrounds():
+		var id := str(record.id)
+		var button := Button.new()
+		button.name = "Background_%s" % id
+		button.text = str(record.name)
+		button.alignment = HORIZONTAL_ALIGNMENT_LEFT
+		button.custom_minimum_size = Vector2(0, 48)
+		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		button.theme_type_variation = "PrimaryButton" if id == selected_background_id else "Button"
+		button.tooltip_text = str(record.get("description", ""))
+		button.pressed.connect(func(): _select_background(id))
+		grid.add_child(button)
+	var data := DataLoader.get_background(selected_background_id)
+	if data.is_empty(): return
+	var status := Label.new()
+	status.name = "BackgroundStatus"
+	status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	status.text = BackgroundRules.choices_error(selected_background_id, background_choices)
+	_background_list.add_child(status)
+	var changed := func():
+		status.text = BackgroundRules.choices_error(selected_background_id, background_choices)
+		_check_next_step_validity()
+		_refresh_spread()
+	var increases := OptionButton.new()
+	increases.name = "BackgroundAbilities"
+	increases.add_item("Choose your ability score increases")
+	increases.set_item_metadata(0, {})
+	for spread in BackgroundRules.ability_spreads(selected_background_id):
+		increases.add_item(", ".join(spread.keys().map(func(ability): return "%s +%d" % [ability, spread[ability]])))
+		increases.set_item_metadata(increases.item_count - 1, spread)
+		if spread == background_choices.abilities: increases.select(increases.item_count - 1)
+	increases.item_selected.connect(func(index: int):
+		background_choices["abilities"] = increases.get_item_metadata(index).duplicate()
+		changed.call()
+	)
+	_background_list.add_child(increases)
+	for index in background_choices.tools.size():
+		var selector := OptionButton.new()
+		selector.name = "BackgroundTool%d" % (index + 1)
+		selector.add_item("Choose a tool proficiency")
+		selector.set_item_metadata(0, "")
+		for tool_id in data.tool_choices.from:
+			selector.add_item(str(DataLoader.get_item(tool_id).get("name", tool_id)))
+			selector.set_item_metadata(selector.item_count - 1, tool_id)
+			if background_choices.tools[index] == tool_id: selector.select(selector.item_count - 1)
+		selector.item_selected.connect(func(item_index: int):
+			background_choices.tools[index] = str(selector.get_item_metadata(item_index))
+			changed.call()
+		)
+		_background_list.add_child(selector)
+	var equipment := OptionButton.new()
+	equipment.name = "BackgroundEquipment"
+	equipment.add_item("Equipment and %d GP" % int(data.starting_gold))
+	equipment.add_item("%d GP" % int(data.starting_gold_alternative))
+	equipment.select(1 if background_choices.equipment == "gold" else 0)
+	equipment.item_selected.connect(func(index: int):
+		background_choices["equipment"] = "gold" if index == 1 else "equipment"
+		changed.call()
+	)
+	_background_list.add_child(equipment)
 
 
 func _class_choice_error() -> String:
@@ -585,6 +707,19 @@ func _class_choice_error() -> String:
 	return ClassProgression.creation_choices_error(selected_class_id, selected_race_id, _creation_choices()) if ClassProgression.uses_creation_choices(selected_class_id) else ""
 
 
+## Item id -> copies, in first-seen order, so 20 Arrows show as one row.
+func _gear_counts(ids: Array) -> Dictionary:
+	var counts := {}
+	for id in ids:
+		counts[str(id)] = int(counts.get(str(id), 0)) + 1
+	return counts
+
+
+func _gear_label(id: String, count: int) -> String:
+	var item_name := str(DataLoader.get_item(id).get("name", id))
+	return item_name if count == 1 else "%s ×%d" % [item_name, count]
+
+
 func _starting_gear_ids() -> Array:
 	if PermanentProgressionRules.enabled(selected_class_id):
 		var gear: Array = []
@@ -596,25 +731,16 @@ func _starting_gear_ids() -> Array:
 		return gear
 	if _equipment_mode() == "gold":
 		return []
-	var gear: Array = ClassProgression.creation_starting_equipment(selected_class_id, _creation_choices() if ClassProgression.uses_creation_choices(selected_class_id) else {})
-	if selected_class_id == "bard" and not str(bard_creation_choices["instrument"]).is_empty():
-		gear.append(str(bard_creation_choices["instrument"]))
-	return gear
+	return ClassProgression.creation_starting_equipment(selected_class_id, _creation_choices() if ClassProgression.uses_creation_choices(selected_class_id) else {})
 
 
-## Equipment-versus-GP option: Barbarian keeps its own selector; other
-## creation-choice classes read the generic class-data choice.
+## Equipment-versus-GP option from the class-data choice.
 func _equipment_mode() -> String:
-	if selected_class_id == "barbarian":
-		return barbarian_starting_equipment_choice
 	return str(_creation_choices()["equipment"]) if ClassProgression.uses_creation_choices(selected_class_id) else "equipment"
 
 
 func _starting_gold() -> int:
-	if selected_class_id == "barbarian":
-		return 75 if barbarian_starting_equipment_choice == "gold" else 15
-	var data := DataLoader.get_character_class(selected_class_id)
-	return int(data.get("starting_gold_alternative", 0)) if _creation_choices()["equipment"] == "gold" else int(data.get("starting_gold", 0))
+	return ClassProgression.creation_starting_gold(selected_class_id, _creation_choices()) + BackgroundRules.starting_gold(selected_background_id, background_choices)
 
 
 func _instrument_names(ids: Array) -> Array[String]:
@@ -661,6 +787,14 @@ func _origin_feat_error() -> String:
 	return FeatRules.proficiency_picks_error(_origin_feat_probe(), str(FeatRules.selection(selected_origin_feat).feat_id), _origin_feat_pick_dict())
 
 func _build_origin_feat_choice() -> void:
+	if not selected_background_id.is_empty(): # CXM-04: the background fixes the Origin feat.
+		selected_origin_feat = ""
+		origin_feat_picks = []
+		var fixed := Label.new()
+		fixed.name = "BackgroundOriginFeat"
+		fixed.text = "Origin feat from your background: %s" % FeatRules.label(str(DataLoader.get_background(selected_background_id).origin_feat))
+		equip_list.add_child(fixed)
+		return
 	var probe := _origin_feat_probe()
 	var options := FeatRules.options(probe, "origin")
 	if options.is_empty():
@@ -756,7 +890,7 @@ func _build_class_creation_choices() -> void:
 				selector.add_item(str(value) if field == "skills" else str(DataLoader.get_item(value).get("name", value)))
 				var item_index := selector.item_count - 1
 				selector.set_item_metadata(item_index, value)
-				if field == "skills" and value in DataLoader.get_race(selected_race_id).get("proficiencies", []):
+				if field == "skills" and (value in DataLoader.get_race(selected_race_id).get("proficiencies", []) or value in DataLoader.get_background(selected_background_id).get("skills", [])):
 					selector.set_item_disabled(item_index, true)
 				if field == "tools" and value in data.get("tool_proficiency_grants", []):
 					selector.set_item_disabled(item_index, true)
@@ -768,37 +902,49 @@ func _build_class_creation_choices() -> void:
 				_check_next_step_validity()
 			)
 			equip_list.add_child(selector)
-	if not data.has("starting_gold_alternative") or selected_class_id == "barbarian":
-		return # Full equipment-pack choices are outside G2; Barbarian keeps its own A/B selector.
-	var equipment := OptionButton.new()
-	equipment.name = "%sStartingEquipment" % selected_class_id.capitalize()
-	equipment.add_item("Equipment and %d GP" % int(data["starting_gold"]))
-	equipment.add_item("%d GP" % int(data["starting_gold_alternative"]))
-	equipment.select(1 if _creation_choices()["equipment"] == "gold" else 0)
-	equipment.item_selected.connect(func(index: int):
-		_creation_choices()["equipment"] = "gold" if index == 1 else "equipment"
-		_build_equipment_ui()
-		_check_next_step_validity()
-		_refresh_spread()
-	)
-	equip_list.add_child(equipment)
-	if selected_class_id == "bard" and _creation_choices()["equipment"] == "equipment":
-		var instrument := OptionButton.new()
-		instrument.name = "BardStartingInstrument"
-		instrument.add_item("Choose your starting instrument")
-		instrument.set_item_metadata(0, "")
-		for id in data["tool_choices"]["from"]:
-			instrument.add_item(str(DataLoader.get_item(id).get("name", id)))
-			instrument.set_item_metadata(instrument.item_count - 1, id)
-			if id == _creation_choices()["instrument"]:
-				instrument.select(instrument.item_count - 1)
-		instrument.item_selected.connect(func(index: int):
-			_creation_choices()["instrument"] = str(instrument.get_item_metadata(index))
+	var options := ClassProgression.equipment_options(selected_class_id)
+	if options.size() > 1: # classes with one kit show no selector
+		var equipment := OptionButton.new()
+		equipment.name = "%sStartingEquipment" % selected_class_id.capitalize()
+		for option in options:
+			var gold := ClassProgression.creation_starting_gold(selected_class_id, {"equipment": option})
+			if option == "gold":
+				equipment.add_item("%d GP" % gold)
+			elif option == "equipment":
+				equipment.add_item("Equipment and %d GP" % gold)
+			else:
+				var label := "Alternative equipment"
+				for alternative in data.get("starting_equipment_alternatives", []):
+					if alternative.id == option: label = str(alternative.get("label", label))
+				equipment.add_item("%s and %d GP" % [label, gold])
+		equipment.select(maxi(0, options.find(_creation_choices()["equipment"])))
+		equipment.item_selected.connect(func(index: int):
+			_creation_choices()["equipment"] = options[index]
 			_build_equipment_ui()
 			_check_next_step_validity()
 			_refresh_spread()
 		)
-		equip_list.add_child(instrument)
+		equip_list.add_child(equipment)
+	if _creation_choices()["equipment"] != "equipment":
+		return
+	for slot in data.get("starting_equipment_choices", []):
+		var key := str(slot.key)
+		var picker := OptionButton.new()
+		picker.name = "%sStarting%s" % [selected_class_id.capitalize(), key.capitalize().replace(" ", "")]
+		picker.add_item("Choose your starting %s" % str(slot.get("label", key)).to_lower())
+		picker.set_item_metadata(0, "")
+		for id in slot.from:
+			picker.add_item(str(DataLoader.get_item(id).get("name", id)))
+			picker.set_item_metadata(picker.item_count - 1, id)
+			if id == _creation_choices().get(key, ""):
+				picker.select(picker.item_count - 1)
+		picker.item_selected.connect(func(index: int):
+			_creation_choices()[key] = str(picker.get_item_metadata(index))
+			_build_equipment_ui()
+			_check_next_step_validity()
+			_refresh_spread()
+		)
+		equip_list.add_child(picker)
 
 
 func _build_equipment_ui() -> void:
@@ -813,25 +959,10 @@ func _build_equipment_ui() -> void:
 		equip_list.add_child(status)
 
 	# Keep class choices in this existing equipment step.
-	var cls := DataLoader.get_character_class(selected_class_id)
 	var gear_list: Array = _starting_gear_ids()
 	if ClassProgression.uses_creation_choices(selected_class_id):
 		_build_class_creation_choices()
 	_build_origin_feat_choice()
-	if selected_class_id == "barbarian":
-		var choice := OptionButton.new()
-		choice.name = "BarbarianStartingEquipment"
-		choice.add_item("Equipment and 15 GP")
-		choice.add_item("75 GP")
-		choice.select(1 if barbarian_starting_equipment_choice == "gold" else 0)
-		choice.item_selected.connect(func(index: int):
-			barbarian_starting_equipment_choice = "gold" if index == 1 else "equipment"
-			_build_equipment_ui()
-			_refresh_spread()
-		)
-		equip_list.add_child(choice)
-		if barbarian_starting_equipment_choice == "gold":
-			gear_list = []
 
 	selected_equipment.clear()
 	for gear_id in gear_list:
@@ -839,13 +970,14 @@ func _build_equipment_ui() -> void:
 
 	var info_lbl := Label.new()
 	info_lbl.text = "Your class provides the following starting gear:"
-	if selected_class_id in ["barbarian", "bard", "cleric"]:
+	if ClassProgression.equipment_options(selected_class_id).size() > 1:
 		info_lbl.text = "Starting gold: %d GP" % _starting_gold()
 	equip_list.add_child(info_lbl)
 
-	for gear_id in selected_equipment:
+	var gear_counts := _gear_counts(selected_equipment)
+	for gear_id in gear_counts:
 		var item := DataLoader.get_item(gear_id)
-		var item_name: String = item.get("name", gear_id)
+		var item_name: String = _gear_label(gear_id, gear_counts[gear_id])
 		var item_desc: String = item.get("description", "")
 		
 		var panel := PanelContainer.new()
@@ -864,6 +996,20 @@ func _build_equipment_ui() -> void:
 		hbox.add_child(desc_lbl)
 
 		equip_list.add_child(panel)
+	if not selected_background_id.is_empty():
+		var background_gear := Label.new()
+		background_gear.name = "BackgroundGear"
+		background_gear.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		background_gear.text = "Your %s background adds: %s" % [DataLoader.get_background(selected_background_id).name, _background_gear_text()]
+		equip_list.add_child(background_gear)
+
+
+func _background_gear_text() -> String:
+	var parts: Array[String] = []
+	var counts := _gear_counts(_background_gear_ids())
+	for id in counts: parts.append(_gear_label(id, counts[id]))
+	parts.append("%d GP" % BackgroundRules.starting_gold(selected_background_id, background_choices))
+	return ", ".join(parts)
 
 
 func _build_summary_ui() -> void:
@@ -880,13 +1026,13 @@ func _build_summary_ui() -> void:
 		var base := selected_stats.get_score(ability)
 		
 		# Show racial bonus if any
-		var racial_bonus: int = int(race_data.get("ability_bonuses", {}).get(ability, 0))
+		var racial_bonus: int = int(race_data.get("ability_bonuses", {}).get(ability, 0)) if selected_background_id.is_empty() else int(background_choices.abilities.get(ability, 0))
 		var total := base + racial_bonus
 		var mod := AbilityScores.get_modifier(total)
 
 		stats_text += "%s: %d (%s) " % [ability, total, AbilityScores.format_modifier(mod)]
 		if racial_bonus > 0:
-			stats_text += "[color=%s](+%d Species)[/color]" % [UiThemeProfile.current().color("state/success").to_html(), racial_bonus]
+			stats_text += "[color=%s](+%d %s)[/color]" % [UiThemeProfile.current().color("state/success").to_html(), racial_bonus, "Species" if selected_background_id.is_empty() else "Background"]
 		stats_text += "\n"
 	
 	summary_stats_label.text = stats_text
@@ -902,13 +1048,17 @@ func _build_summary_ui() -> void:
 		summary_stats_label.text += "\nSkills: %s\nTool proficiencies: %s" % [", ".join(_class_choices()["skills"]), ", ".join(_instrument_names(tools))]
 	# Render items list
 	var equip_text := ""
-	for gear_id in selected_equipment:
-		var item := DataLoader.get_item(gear_id)
-		equip_text += "- %s (%s)\n" % [item.get("name", gear_id), item.get("description", "")]
+	var gear_counts := _gear_counts(selected_equipment)
+	for gear_id in gear_counts:
+		equip_text += "- %s (%s)\n" % [_gear_label(gear_id, gear_counts[gear_id]), DataLoader.get_item(gear_id).get("description", "")]
 	summary_equip_label.text = equip_text
+	if not selected_background_id.is_empty():
+		var background := DataLoader.get_background(selected_background_id)
+		summary_stats_label.text += "\nBackground: %s\nOrigin feat: %s\nBackground skills: %s\nBackground tool: %s" % [background.name, FeatRules.label(str(background.origin_feat)), ", ".join(background.skills), ", ".join(_instrument_names(background.get("tool_proficiency_grants", []) + background_choices.tools))]
+		summary_equip_label.text += "%s background: %s\n" % [background.name, _background_gear_text()]
 	if PermanentProgressionRules.enabled(selected_class_id) and not _creation_choice_error().is_empty():
 		summary_equip_label.text += _creation_choice_error()
-	if selected_class_id == "barbarian" or ClassProgression.uses_creation_choices(selected_class_id):
+	if ClassProgression.uses_creation_choices(selected_class_id):
 		summary_equip_label.text += "Gold: %d GP" % _starting_gold()
 
 
@@ -942,14 +1092,14 @@ func _confirm_and_save_character() -> void:
 		_update_step_ui()
 		return
 	var character := Character.new()
-	character.initialize(selected_name, selected_race_id, selected_class_id, selected_stats.duplicate_scores(), _equipment_mode(), _creation_choices() if ClassProgression.uses_creation_choices(selected_class_id) else {})
+	character.initialize(selected_name, selected_race_id, selected_class_id, selected_stats.duplicate_scores(), _equipment_mode(), _creation_choices() if ClassProgression.uses_creation_choices(selected_class_id) else {}, selected_background_id, background_choices)
 	character.creation_choices["ability_generation"] = _ability_generation_record()
 	if character.class_id != selected_class_id:
 		return
 	
 	if selected_class_id == "cleric":
 		ClassProgression.choose_feature_option(character, "cleric_divine_order", cleric_divine_order)
-	if not selected_origin_feat.is_empty() and not FeatRules.choose_origin(character, selected_origin_feat, _origin_feat_pick_dict()).success:
+	if selected_background_id.is_empty() and not selected_origin_feat.is_empty() and not FeatRules.choose_origin(character, selected_origin_feat, _origin_feat_pick_dict()).success:
 		current_step = CreationStep.EQUIPMENT # Refused before the character joins the party.
 		_update_step_ui()
 		return
@@ -979,6 +1129,13 @@ func _on_randomize_pressed() -> void:
 	var random_class: Dictionary = classes_data.pick_random()
 	selected_race_id = random_race["id"]
 	selected_class_id = random_class["id"]
+	# CXM-04: a random background with random legal picks.
+	var random_background: Dictionary = DataLoader.get_all_backgrounds().pick_random() if not DataLoader.backgrounds.is_empty() else {}
+	selected_background_id = str(random_background.get("id", ""))
+	var random_tools: Array = random_background.get("tool_choices", {}).get("from", []).duplicate()
+	random_tools.shuffle()
+	background_choices = {"abilities": BackgroundRules.ability_spreads(selected_background_id).pick_random() if not random_background.is_empty() else {}, "tools": random_tools.slice(0, int(random_background.get("tool_choices", {}).get("pick", 0))), "equipment": ["equipment", "gold"].pick_random()}
+	var taken_skills: Array = random_race.get("proficiencies", []) + random_background.get("skills", [])
 
 	# Randomize using a method permitted by this campaign.
 	var allowed_methods: Array = GameManager.active_campaign.get("ability_generation_methods", ["point_buy", "standard_array", "random_4d6"])
@@ -1015,27 +1172,28 @@ func _on_randomize_pressed() -> void:
 	if selected_class_id == "bard":
 		bard_creation_choices = ClassProgression.default_creation_choices("bard", selected_race_id)
 		var skill_options: Array = random_class["skill_choices"]["from"].duplicate()
-		var racial: Array = random_race.get("proficiencies", [])
-		skill_options = skill_options.filter(func(skill): return skill not in racial)
+		skill_options = skill_options.filter(func(skill): return skill not in taken_skills)
 		skill_options.shuffle()
 		var tool_options: Array = random_class["tool_choices"]["from"].duplicate()
 		tool_options.shuffle()
 		bard_creation_choices["skills"] = skill_options.slice(0, 3)
 		bard_creation_choices["tools"] = tool_options.slice(0, 3)
-		bard_creation_choices["instrument"] = tool_options.pick_random()
 
 	if selected_class_id == "cleric":
 		cleric_creation_choices = ClassProgression.default_creation_choices("cleric", selected_race_id)
+		cleric_creation_choices["skills"] = random_class["skill_choices"]["from"].filter(func(skill): return skill not in taken_skills).slice(0, int(random_class["skill_choices"]["pick"]))
 		cleric_divine_order = ["protector", "thaumaturge"].pick_random()
 	if selected_class_id not in ["bard", "cleric"] and ClassProgression.uses_creation_choices(selected_class_id):
 		class_creation_choices = {}
 		var picks := _class_choices()
-		var skill_pool: Array = random_class.get("skill_choices", {}).get("from", []).filter(func(skill): return skill not in random_race.get("proficiencies", []))
+		var skill_pool: Array = random_class.get("skill_choices", {}).get("from", []).filter(func(skill): return skill not in taken_skills)
 		skill_pool.shuffle()
 		picks["skills"] = skill_pool.slice(0, picks["skills"].size())
 		var tool_pool: Array = random_class.get("tool_choices", {}).get("from", []).filter(func(tool): return tool not in random_class.get("tool_proficiency_grants", []))
 		tool_pool.shuffle()
 		picks["tools"] = tool_pool.slice(0, picks["tools"].size())
+	for slot in random_class.get("starting_equipment_choices", []):
+		_creation_choices()[slot.key] = slot.from.pick_random()
 	# Select starting equipment
 	selected_equipment.clear()
 	var gear_list: Array = _starting_gear_ids()

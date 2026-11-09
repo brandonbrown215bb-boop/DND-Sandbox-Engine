@@ -1,0 +1,34 @@
+[
+  {
+    "id": "alert",
+    "name": "Alert",
+    "category": "origin",
+    "effects_pending": true,
+    "description": "Add your Proficiency Bonus to Initiative, and swap Initiative with one willing ally right after you roll.",
+    "source": "SRD 5.2.1 p.87 Origin Feats: Alert",
+    "source_note": "Acquisition record only. The Initiative rules belong to CXM-05.",
+    "features": []
+  },
+  {
+    "id": "magic_initiate",
+    "name": "Magic Initiate",
+    "category": "origin",
+    "repeatable": true,
+    "repeatable_parameter_options": ["cleric", "druid", "wizard"],
+    "effects_pending": true,
+    "description": "Learn two cantrips and one level 1 spell from the chosen class's spell list.",
+    "source": "SRD 5.2.1 p.87 Origin Feats: Magic Initiate",
+    "source_note": "Acquisition record only. The spell choices, casting ability and free casting belong to CXM-60.",
+    "features": []
+  },
+  {
+    "id": "savage_attacker",
+    "name": "Savage Attacker",
+    "category": "origin",
+    "effects_pending": true,
+    "description": "Once per turn when you hit with a weapon, roll its damage dice twice and use either roll.",
+    "source": "SRD 5.2.1 p.87 Origin Feats: Savage Attacker",
+    "source_note": "Acquisition record only. The damage roll rule belongs to CXM-06.",
+    "features": []
+  }
+]
