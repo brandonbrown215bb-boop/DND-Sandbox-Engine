@@ -1,0 +1,143 @@
+{
+  "format": "crown-spell-candidate/1",
+  "id": "chill_touch",
+  "name": "Chill Touch",
+  "level": 0,
+  "status": "written_unverified_not_loaded",
+  "source": {
+    "authority": "SRD 5.2.1",
+    "url": "https://media.dndbeyond.com/compendium-images/srd/5.2/SRD_CC_v5.2.1.pdf",
+    "sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      115
+    ],
+    "header": {
+      "Casting Time": "Action",
+      "Range": "Touch",
+      "Components": "V, S",
+      "Duration": "Instantaneous"
+    },
+    "attribution": "System Reference Document 5.2.1, Wizards of the Coast LLC; CC BY 4.0."
+  },
+  "casting": {
+    "casting_time": "Action",
+    "kind": "action",
+    "seconds": null,
+    "ritual_available": false,
+    "range": {
+      "source": "Touch",
+      "kind": "touch",
+      "feet": 5
+    },
+    "components": [
+      "V",
+      "S"
+    ],
+    "material": null,
+    "duration": "Instantaneous",
+    "concentration": false,
+    "spell_lists": [
+      "sorcerer",
+      "warlock",
+      "wizard"
+    ]
+  },
+  "authored_intent": "Melee spell attack; Necrotic damage and source-owned healing prevention through end of caster next turn; character-level scaling.",
+  "rules": [
+    {
+      "id": "r001",
+      "text": "Channeling the chill of the grave, make a melee spell attack against a target within reach."
+    },
+    {
+      "id": "r002",
+      "text": "On a hit, the target takes 1d10 Necrotic damage, and it can’t regain Hit Points until the end of your next turn."
+    },
+    {
+      "id": "r003",
+      "text": "Cantrip Upgrade."
+    },
+    {
+      "id": "r004",
+      "text": "The damage increases by 1d10 when you reach levels 5 (2d10), 11 (3d10), and 17 (4d10)."
+    }
+  ],
+  "authored_operations": [
+    {
+      "operation": "shared_definition_reference",
+      "parameters": {
+        "definition": "runtime_draft.definition"
+      },
+      "status": "shared_definition_reference_unverified",
+      "required_source_rules": [
+        "r001",
+        "r002",
+        "r003",
+        "r004"
+      ]
+    }
+  ],
+  "runtime_draft": {
+    "origin": "existing_shared_definition",
+    "definition": {
+      "attack_type": "melee_spell",
+      "casting_time": "action",
+      "classes": [
+        "sorcerer",
+        "warlock",
+        "wizard"
+      ],
+      "components": [
+        "V",
+        "S"
+      ],
+      "concentration": false,
+      "damage": "1d10",
+      "damage_type": "necrotic",
+      "description": "Channeling the chill of the grave, make a melee spell attack against a target within reach. On a hit, the target takes 1d10 Necrotic damage, and it can’t regain Hit Points until the end of your next turn. Cantrip Upgrade. The damage increases by 1d10 when you reach levels 5 (2d10), 11 (3d10), and 17 (4d10).",
+      "duration": "Instantaneous",
+      "duration_seconds": 12.0,
+      "effects": [
+        {
+          "condition": "healing_prevented",
+          "expiry": {
+            "boundary": "caster_turn_end",
+            "turns": 2.0
+          },
+          "on_spell_hit": true,
+          "type": "grant_condition"
+        }
+      ],
+      "execution": "shared",
+      "id": "chill_touch",
+      "level": 0,
+      "name": "Chill Touch",
+      "range": 1,
+      "range_kind": "touch",
+      "rules_source": "SRD 5.2.1",
+      "rules_status": "authoring-draft-unverified",
+      "scaling": {
+        "11": "3d10",
+        "17": "4d10",
+        "5": "2d10"
+      },
+      "school": "necromancy",
+      "target": "single"
+    },
+    "fragments": {},
+    "coverage": "Unverified. Neither a full definition nor a fragment certifies all source rules or controls. Required extensions are not silently waived."
+  },
+  "required_extensions": [],
+  "audit": {
+    "source": "docs/audits/spells.md",
+    "batch": "088-1",
+    "production_definition_at_authoring": "res://data/core/spells/crown_sc_01_support_01.json#2",
+    "baseline_execution": "shared",
+    "source_revision": "2a19eb1d",
+    "existing_conversion_label": "converted"
+  },
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile every source rule and required extension, then implement and verify through production paths before any deliberate promotion. Keep native behavior until covered."
+  }
+}

@@ -1,0 +1,192 @@
+{
+  "format": "crown-spell-candidate/1",
+  "id": "calm_emotions",
+  "name": "Calm Emotions",
+  "level": 2,
+  "status": "written_unverified_not_loaded",
+  "source": {
+    "authority": "SRD 5.2.1",
+    "url": "https://media.dndbeyond.com/compendium-images/srd/5.2/SRD_CC_v5.2.1.pdf",
+    "sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      114
+    ],
+    "header": {
+      "Casting Time": "Action",
+      "Range": "60 feet",
+      "Components": "V, S",
+      "Duration": "Concentration, up to 1 minute"
+    },
+    "attribution": "System Reference Document 5.2.1, Wizards of the Coast LLC; CC BY 4.0."
+  },
+  "casting": {
+    "casting_time": "Action",
+    "kind": "action",
+    "seconds": null,
+    "ritual_available": false,
+    "range": {
+      "source": "60 feet",
+      "kind": "distance",
+      "feet": 60
+    },
+    "components": [
+      "V",
+      "S"
+    ],
+    "material": null,
+    "duration": "Concentration, up to 1 minute",
+    "concentration": true,
+    "spell_lists": [
+      "bard",
+      "cleric"
+    ]
+  },
+  "authored_intent": "Humanoids in chosen sphere make CHA saves; choose suppression/immunity or indifference toward individually chosen creatures; damage/witness ending and post-duration attitudes are recipient-specific.",
+  "rules": [
+    {
+      "id": "r001",
+      "text": "Each Humanoid in a 20-foot-radius Sphere centered on a point you choose within range must succeed on a Charisma saving throw or be affected by one of the following effects (choose for each creature): • The creature has Immunity to the Charmed and Frightened conditions until the spell ends."
+    },
+    {
+      "id": "r002",
+      "text": "If the creature was already Charmed or Frightened, those conditions are suppressed for the duration. • The creature becomes Indifferent about creatures of your choice that it’s Hostile toward."
+    },
+    {
+      "id": "r003",
+      "text": "This indifference ends if the target takes damage or witnesses its allies taking damage."
+    },
+    {
+      "id": "r004",
+      "text": "When the spell ends, the creature’s attitude returns to normal."
+    }
+  ],
+  "authored_operations": [
+    {
+      "operation": "per_recipient_condition_or_attitude",
+      "parameters": {
+        "recipients": {
+          "type": "humanoid",
+          "sphere_radius_feet": 20
+        },
+        "save": "CHA",
+        "choices": {
+          "suppression": {
+            "immune": [
+              "charmed",
+              "frightened"
+            ],
+            "suppress_existing": true
+          },
+          "indifference": {
+            "toward": "separately_chosen_creatures_per_recipient",
+            "ends_on": [
+              "target_damage",
+              "witnessed_allied_damage"
+            ],
+            "restore_attitude_on_end": true
+          }
+        }
+      },
+      "status": "authoring_declaration_not_a_registered_opcode",
+      "required_source_rules": [
+        "r001",
+        "r002",
+        "r003",
+        "r004"
+      ]
+    }
+  ],
+  "runtime_draft": {
+    "origin": "existing_shared_definition",
+    "definition": {
+      "area_radius": 4.0,
+      "attack_type": "none",
+      "casting_time": "action",
+      "classes": [
+        "bard",
+        "cleric"
+      ],
+      "components": [
+        "V",
+        "S"
+      ],
+      "concentration": true,
+      "description": "Each Humanoid in a 20-foot-radius Sphere centered on a point you choose within range must succeed on a Charisma saving throw or be affected by one of the following effects (choose for each creature): • The creature has Immunity to the Charmed and Frightened conditions until the spell ends. If the creature was already Charmed or Frightened, those conditions are suppressed for the duration. • The creature becomes Indifferent about creatures of your choice that it’s Hostile toward. This indifference ends if the target takes damage or witnesses its allies taking damage. When the spell ends, the creature’s attitude returns to normal.",
+      "duration": "Concentration, up to 1 minute",
+      "duration_seconds": 60,
+      "effects": [
+        {
+          "radius": 4.0,
+          "shape": "sphere",
+          "type": "area_selection"
+        },
+        {
+          "choice_per_target": true,
+          "condition_options": [
+            "calmed",
+            "calmed_indifferent"
+          ],
+          "on_failed_save": true,
+          "type": "grant_condition"
+        }
+      ],
+      "execution": "shared",
+      "id": "calm_emotions",
+      "level": 2,
+      "name": "Calm Emotions",
+      "range": 12,
+      "rules_source": "SRD 5.2.1",
+      "rules_status": "authoring-draft-unverified",
+      "save": "CHA",
+      "school": "enchantment",
+      "target": "area",
+      "target_creature_types": [
+        "humanoid"
+      ]
+    },
+    "fragments": {},
+    "coverage": "Unverified. Neither a full definition nor a fragment certifies all source rules or controls. Required extensions are not silently waived."
+  },
+  "required_extensions": [
+    {
+      "group": "attitude_scopes",
+      "requirement": "Preserve separate per-recipient chosen creatures, suppression and witness rules; current Calm Emotions common scope is explicitly partial.",
+      "spell_specific_intent": "Humanoids in chosen sphere make CHA saves; choose suppression/immunity or indifference toward individually chosen creatures; damage/witness ending and post-duration attitudes are recipient-specific.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003",
+        "r004"
+      ],
+      "existing_owner_to_reuse": "src/combat/influence_rules.gd",
+      "slice_references": "S-074/S-075/S-190/S-219",
+      "disposition": "requires_mapping_or_host_completion",
+      "note": "This is an authored handoff requirement, not a fresh runtime failure or claim that the whole referenced slice is missing."
+    },
+    {
+      "group": "retained_conversion_limit",
+      "requirement": "Support a separate indifference scope per affected creature if required by the selected source clauses; current controls choose one shared set. Preserve prepayment cancellation and explicit choices for late arrivals.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003",
+        "r004"
+      ],
+      "disposition": "recorded_partial_or_blocked_consumer",
+      "queue_status": "partial: per-creature modes, suppression, witnessing and common scope migrated"
+    }
+  ],
+  "audit": {
+    "source": "docs/audits/spells.md",
+    "batch": "088-3",
+    "production_definition_at_authoring": "res://data/core/spells/crown_sc_07.json#3",
+    "baseline_execution": "shared",
+    "source_revision": "2a19eb1d",
+    "existing_conversion_label": "partial: per-creature modes, suppression, witnessing and common scope migrated"
+  },
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile every source rule and required extension, then implement and verify through production paths before any deliberate promotion. Keep native behavior until covered."
+  }
+}

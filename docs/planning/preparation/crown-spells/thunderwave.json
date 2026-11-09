@@ -1,0 +1,170 @@
+{
+  "format": "crown-spell-candidate/1",
+  "id": "thunderwave",
+  "name": "Thunderwave",
+  "level": 1,
+  "status": "written_unverified_not_loaded",
+  "source": {
+    "authority": "SRD 5.2.1",
+    "url": "https://media.dndbeyond.com/compendium-images/srd/5.2/SRD_CC_v5.2.1.pdf",
+    "sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      169
+    ],
+    "header": {
+      "Casting Time": "Action",
+      "Range": "Self",
+      "Components": "V, S",
+      "Duration": "Instantaneous"
+    },
+    "attribution": "System Reference Document 5.2.1, Wizards of the Coast LLC; CC BY 4.0."
+  },
+  "casting": {
+    "casting_time": "Action",
+    "kind": "action",
+    "seconds": null,
+    "ritual_available": false,
+    "range": {
+      "source": "Self",
+      "kind": "self",
+      "feet": 0
+    },
+    "components": [
+      "V",
+      "S"
+    ],
+    "material": null,
+    "duration": "Instantaneous",
+    "concentration": false,
+    "spell_lists": [
+      "bard",
+      "druid",
+      "sorcerer",
+      "wizard"
+    ]
+  },
+  "authored_intent": "Self 15-foot cube; CON-half Thunder and failed-save 10-foot push; full-contained unsecured objects also pushed; boom audible 300 feet; higher slots scale damage.",
+  "rules": [
+    {
+      "id": "r001",
+      "text": "You unleash a wave of thunderous energy."
+    },
+    {
+      "id": "r002",
+      "text": "Each creature in a 15-foot Cube originating from you makes a Constitution saving throw."
+    },
+    {
+      "id": "r003",
+      "text": "On a failed save, a creature takes 2d8 Thunder damage and is pushed 10 feet away from you."
+    },
+    {
+      "id": "r004",
+      "text": "On a successful save, a creature takes half as much damage only."
+    },
+    {
+      "id": "r005",
+      "text": "In addition, unsecured objects that are entirely within the Cube are pushed 10 feet away from you, and a thunderous boom is audible within 300 feet."
+    },
+    {
+      "id": "r006",
+      "text": "Using a Higher-Level Spell Slot."
+    },
+    {
+      "id": "r007",
+      "text": "The damage increases by 1d8 for each spell slot level above 1."
+    }
+  ],
+  "authored_operations": [
+    {
+      "operation": "shared_definition_reference",
+      "parameters": {
+        "definition": "runtime_draft.definition"
+      },
+      "status": "shared_definition_reference_unverified",
+      "required_source_rules": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006",
+        "r007"
+      ]
+    }
+  ],
+  "runtime_draft": {
+    "origin": "existing_shared_definition",
+    "definition": {
+      "area_object_push": {
+        "distance": 2.0,
+        "scope": "unsecured"
+      },
+      "attack_type": "none",
+      "casting_time": "action",
+      "classes": [
+        "bard",
+        "druid",
+        "sorcerer",
+        "wizard"
+      ],
+      "components": [
+        "V",
+        "S"
+      ],
+      "concentration": false,
+      "damage": "2d8",
+      "damage_type": "thunder",
+      "description": "You unleash a wave of thunderous energy. Each creature in a 15-foot Cube originating from you makes a Constitution saving throw. On a failed save, a creature takes 2d8 Thunder damage and is pushed 10 feet away from you. On a successful save, a creature takes half as much damage only. In addition, unsecured objects that are entirely within the Cube are pushed 10 feet away from you, and a thunderous boom is audible within 300 feet. Using a Higher-Level Spell Slot. The damage increases by 1d8 for each spell slot level above 1.",
+      "duration": "Instantaneous",
+      "effect_noise": {
+        "origin": "caster",
+        "range_feet": 300.0,
+        "volume": "loud"
+      },
+      "effects": [
+        {
+          "shape": "cube",
+          "size": 3.0,
+          "type": "area_selection"
+        },
+        {
+          "distance": 2.0,
+          "on_failed_save": true,
+          "type": "push"
+        }
+      ],
+      "execution": "shared",
+      "half_on_save": true,
+      "id": "thunderwave",
+      "level": 1,
+      "name": "Thunderwave",
+      "range": 0,
+      "rules_source": "SRD 5.2.1",
+      "rules_status": "authoring-draft-unverified",
+      "save": "CON",
+      "school": "evocation",
+      "target": "area",
+      "upcast": {
+        "damage_per_level": "1d8",
+        "starting_level": 1.0
+      },
+      "range_kind": "self"
+    },
+    "fragments": {},
+    "coverage": "Unverified. Neither a full definition nor a fragment certifies all source rules or controls. Required extensions are not silently waived."
+  },
+  "required_extensions": [],
+  "audit": {
+    "source": "docs/audits/spells.md",
+    "batch": "088-2",
+    "production_definition_at_authoring": "res://data/core/spells/core_spells.json#9",
+    "baseline_execution": "shared",
+    "source_revision": "2a19eb1d",
+    "existing_conversion_label": "converted"
+  },
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile every source rule and required extension, then implement and verify through production paths before any deliberate promotion. Keep native behavior until covered."
+  }
+}

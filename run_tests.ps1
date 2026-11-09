@@ -279,6 +279,7 @@ if ($runIntegration) {
 		spatial_trigger_flow = "spatial_trigger_reload"
 		world_search_flow = "world_search_reload"
 		influence_flow = "influence_reload"
+		ammunition_flow = "ammunition_reload"
 		quick_wins_flow = "quick_wins_reload"
         cast_lifetime_flow = "cast_lifetime_reload"
         batch_067_weapon_damage_choice_flow = "batch_067_weapon_damage_choice_reload"

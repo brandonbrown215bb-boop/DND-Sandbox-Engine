@@ -1,0 +1,53 @@
+{
+  "schema": "crown-equipment-candidate/1",
+  "id": "pouch",
+  "name": "Pouch",
+  "kind": "gear",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring intent only; not registered engine syntax.",
+  "rules": {
+    "authority": "SRD 5.2.1",
+    "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      95,
+      99
+    ],
+    "section": "Pouch",
+    "text": "Holds up to 6 pounds within one-fifth of a cubic foot.",
+    "source_context": "../source-pages.json"
+  },
+  "definition": {
+    "id": "pouch",
+    "name": "Pouch",
+    "weight_lb": 1,
+    "cost_gp": 0.5,
+    "capacity_lb": 6,
+    "capacity_cubic_feet": 0.2
+  },
+  "authored_operations": [
+    "Holds up to 6 pounds within one-fifth of a cubic foot."
+  ],
+  "retained_runtime_seeds": [],
+  "manifest_overrides": [],
+  "required_mapping": [
+    "containers"
+  ],
+  "consumers": [
+    {
+      "package_id": "criminal",
+      "option": "A",
+      "quantity": 2,
+      "source": "docs/planning/preparation/crown-characters/backgrounds/criminal.json"
+    }
+  ],
+  "unsupported_behavior": [
+    {
+      "group": "containers",
+      "requirement": "Map actual capacity, contents and transfer units; retain unknown empty weights and full-versus-empty weight facts. Reuse bounded container owners rather than declaring all capacity absent."
+    },
+    {
+      "group": "definition",
+      "requirement": "No exact current item seed at this candidate identity. This authored record is not a loaded definition; map or promote deliberately later."
+    }
+  ]
+}

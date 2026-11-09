@@ -1,0 +1,239 @@
+{
+  "schema": "crown-creature-candidate/1",
+  "id": "srd_swarm_of_ravens",
+  "name": "Swarm of Ravens",
+  "kind": "srd_statblock",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring intent only; not registered engine syntax. Mapping requirements do not assert the whole referenced engine slice is absent.",
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile all source clauses, mappings and source differences before later production-path verification. Keep native paths until replacements cover them."
+  },
+  "source": {
+    "authority": "SRD 5.2.1",
+    "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      362
+    ],
+    "text": "Swarm of Ravens\nMedium Swarm of Tiny Beasts, Unaligned\nAC 12 Initiative +2 (12)\nHP 11 (2d8 + 2)\nSpeed 10 ft., Fly 50 ft.\nMOD SAVE MOD SAVE MOD SAVE\nStr 6 −2 −2 Dex 14 +2 +2 Con 12 +1 +1\nInt 5 −3 −3 WIS 12 +1 +1 Cha 6 −2 −2\nSkills Perception +5\nResistances Bludgeoning, Piercing, Slashing\nImmunities Charmed, Frightened, Grappled, Paralyzed,\nPetrified, Prone, Restrained, Stunned\nSenses Passive Perception 15\nLanguages None\nCR 1/4 (XP 50; PB +2)\nTraits\nSwarm. The swarm can occupy another creature’s\nspace and vice versa, and the swarm can move through\nany opening large enough for a Tiny raven. The swarm\ncan’t regain Hit Points or gain Temporary Hit Points.\nActions\nBeaks. Melee Attack Roll: +4, reach 5 ft. Hit: 5 (1d6\n+ 2) Piercing damage, or 2 (1d4) Piercing damage if the\nswarm is Bloodied.\nCacophony (Recharge 6). Wisdom Saving Throw: DC\n10, one creature in the swarm’s space. Failure: The\ntarget has the Deafened condition until the start of the\nswarm’s next turn. While Deafened, the target also has\nDisadvantage on ability checks and attack rolls.",
+    "transcription": "Two-column extraction; line breaks retained. Whole selected page context is in source-pages.json. No stat correction inferred from donor data."
+  },
+  "statistics": {
+    "identity_line": "Medium Swarm of Tiny Beasts, Unaligned",
+    "AC": "12 Initiative +2 (12)",
+    "HP": "11 (2d8 + 2)",
+    "Speed": "10 ft., Fly 50 ft.",
+    "Skills": "Perception +5",
+    "Resistances": "Bludgeoning, Piercing, Slashing",
+    "Immunities": "Charmed, Frightened, Grappled, Paralyzed,\nPetrified, Prone, Restrained, Stunned",
+    "Senses": "Passive Perception 15",
+    "Languages": "None",
+    "CR": "1/4 (XP 50; PB +2)",
+    "ability_scores": {
+      "STR": 6,
+      "DEX": 14,
+      "CON": 12,
+      "INT": 5,
+      "WIS": 12,
+      "CHA": 6
+    },
+    "saving_throw_modifiers": {
+      "STR": -2,
+      "DEX": 2,
+      "CON": 1,
+      "INT": -3,
+      "WIS": 1,
+      "CHA": -2
+    },
+    "initiative_modifier": 2,
+    "initiative_score_printed": 12,
+    "armor_class": 12,
+    "movement_feet": {
+      "walk": 10,
+      "fly": 50
+    }
+  },
+  "authored_operations": [
+    {
+      "key": "b001",
+      "name": "Swarm",
+      "source_section": "Traits",
+      "full_rule": "Swarm. The swarm can occupy another creature’s\nspace and vice versa, and the swarm can move through\nany opening large enough for a Tiny raven. The swarm\ncan’t regain Hit Points or gain Temporary Hit Points.",
+      "budget": "passive_or_declared_trigger",
+      "steps": [
+        {
+          "intent": "Represent actual size/space, climb/swim/fly and breathing, jumps, straight-line charge history, opportunity exceptions, web surfaces and legal release.",
+          "mapping_group": "movement"
+        }
+      ],
+      "parameters_from_rule": {
+        "attack_bonus": [],
+        "save_dc": [],
+        "distances_feet": [],
+        "dice": []
+      },
+      "blockers": [
+        "map_movement"
+      ],
+      "ending_and_identity": "Exact actor/action/target/source instance; use every qualifier and ending in full_rule, not only extracted parameters.",
+      "behavior_plan": {
+        "budget": "passive_or_declared_trigger",
+        "source_outcomes": {},
+        "shared_space": true,
+        "gap": "One constituent Tiny animal",
+        "healing": false,
+        "temporary_hp_gain": false,
+        "eligibility": "Held; not offered as individual animal form"
+      }
+    },
+    {
+      "key": "b002",
+      "name": "Beaks",
+      "source_section": "Actions",
+      "full_rule": "Beaks. Melee Attack Roll: +4, reach 5 ft. Hit: 5 (1d6\n+ 2) Piercing damage, or 2 (1d4) Piercing damage if the\nswarm is Bloodied.",
+      "budget": "action",
+      "steps": [
+        {
+          "intent": "Resolve declared roll or save, targets, range/reach, damage packets, multiattack choice, riders and exact action budget. A save-only action is not a weapon hit rider.",
+          "mapping_group": "attacks"
+        }
+      ],
+      "parameters_from_rule": {
+        "attack_bonus": [
+          4
+        ],
+        "save_dc": [],
+        "distances_feet": [
+          5
+        ],
+        "dice": [
+          "1d6\n+ 2",
+          "1d4"
+        ]
+      },
+      "blockers": [
+        "map_attacks"
+      ],
+      "ending_and_identity": "Exact actor/action/target/source instance; use every qualifier and ending in full_rule, not only extracted parameters.",
+      "behavior_plan": {
+        "budget": "action",
+        "source_outcomes": {
+          "hit": "5 (1d6 + 2) Piercing damage, or 2 (1d4) Piercing damage if the swarm is Bloodied."
+        },
+        "resolution": "attack_roll",
+        "attack_kind": "melee",
+        "damage_and_riders": "5 (1d6 + 2) Piercing damage, or 2 (1d4) Piercing damage if the swarm is Bloodied.",
+        "permission": "ordinary familiar cannot attack; invocation exceptions must grant this exact attack or Attack action, not every Actions entry"
+      }
+    },
+    {
+      "key": "b003",
+      "name": "Cacophony (Recharge 6)",
+      "source_section": "Actions",
+      "full_rule": "Cacophony (Recharge 6). Wisdom Saving Throw: DC\n10, one creature in the swarm’s space. Failure: The\ntarget has the Deafened condition until the start of the\nswarm’s next turn. While Deafened, the target also has\nDisadvantage on ability checks and attack rolls.",
+      "budget": "action",
+      "steps": [
+        {
+          "intent": "Resolve declared roll or save, targets, range/reach, damage packets, multiattack choice, riders and exact action budget. A save-only action is not a weapon hit rider.",
+          "mapping_group": "attacks"
+        },
+        {
+          "intent": "Preserve immunity, source identity, thresholds, repeat saves, explicit ending events and target-relative deadlines.",
+          "mapping_group": "conditions"
+        },
+        {
+          "intent": "Charge exact source-owned action/reaction/use once; preserve recharge dice, daily and Long Rest schedules as separately authored rules.",
+          "mapping_group": "resources"
+        },
+        {
+          "intent": "Apply conditional Advantage/Disadvantage or roll adjustment only to the qualifying exact check/save/attack and its declared window.",
+          "mapping_group": "rolls"
+        }
+      ],
+      "parameters_from_rule": {
+        "attack_bonus": [],
+        "save_dc": [],
+        "distances_feet": [],
+        "dice": []
+      },
+      "blockers": [
+        "map_attacks",
+        "map_conditions",
+        "map_resources",
+        "map_rolls"
+      ],
+      "ending_and_identity": "Exact actor/action/target/source instance; use every qualifier and ending in full_rule, not only extracted parameters.",
+      "behavior_plan": {
+        "budget": "action",
+        "source_outcomes": {
+          "failure": "The target has the Deafened condition until the start of the swarm’s next turn. While Deafened, the target also has Disadvantage on ability checks and attack rolls."
+        },
+        "recharge": "d6 turn start,6 restores",
+        "target": "One creature in swarm space",
+        "save": {
+          "ability": "WIS",
+          "dc": 10
+        },
+        "failure": "Deafened until swarm next turn start; while Deafened also Disadvantage on checks and attacks",
+        "resolution": "save_only_action; no preliminary attack roll"
+      }
+    }
+  ],
+  "retained_definitions": [
+    {
+      "path": "data/core/monsters/imported_monsters.json",
+      "sha256": "f57bee1e93f185a89575bed3d8b2b610b53cfd3b7f2eb56448d1dd64a0126c5f",
+      "pointer": "/383",
+      "payload": {
+        "id": "swarm_of_ravens",
+        "name": "Swarm of Ravens",
+        "hit_points": "7d8 - 7",
+        "armor_class": 12,
+        "speed": 2,
+        "ability_scores": {
+          "STR": 6,
+          "DEX": 14,
+          "CON": 8,
+          "INT": 3,
+          "WIS": 12,
+          "CHA": 6
+        },
+        "attacks": [
+          {
+            "name": "Claws",
+            "ability": "STR",
+            "damage": "1d6",
+            "range": 1,
+            "damage_type": "slashing"
+          }
+        ],
+        "ai_behavior": "aggressive"
+      },
+      "manifest_declarations": []
+    }
+  ],
+  "selection": {
+    "wild_shape_druid_levels_2_3": false,
+    "wild_shape_druid_levels_4_5": false,
+    "normal_familiar": false,
+    "pact_of_chain_special": false,
+    "animate_dead_output": false,
+    "held_swarm": true,
+    "encounter_comparison_only": false
+  },
+  "acquisition_links": [
+    "selection-links.json"
+  ],
+  "blockers": [
+    "map_statistics",
+    "map_attacks",
+    "map_conditions",
+    "map_movement",
+    "map_resources",
+    "map_rolls",
+    "selection_swarm_adjudication"
+  ],
+  "source_reconciliation": "Official body is authoritative for this SRD candidate. Retained donor payloads are comparison/reuse seeds, including legacy values and manifest winners; do not merge their statistics or traits by ID. Direct Crown encounters retain separate candidates.",
+  "equipment_links": []
+}

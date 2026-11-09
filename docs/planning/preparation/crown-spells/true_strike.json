@@ -1,0 +1,151 @@
+{
+  "format": "crown-spell-candidate/1",
+  "id": "true_strike",
+  "name": "True Strike",
+  "level": 0,
+  "status": "written_unverified_not_loaded",
+  "source": {
+    "authority": "SRD 5.2.1",
+    "url": "https://media.dndbeyond.com/compendium-images/srd/5.2/SRD_CC_v5.2.1.pdf",
+    "sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      171
+    ],
+    "header": {
+      "Casting Time": "Action",
+      "Range": "Self",
+      "Components": "S, M (a weapon with which you have proficiency and that is worth 1+ CP)",
+      "Duration": "Instantaneous"
+    },
+    "attribution": "System Reference Document 5.2.1, Wizards of the Coast LLC; CC BY 4.0."
+  },
+  "casting": {
+    "casting_time": "Action",
+    "kind": "action",
+    "seconds": null,
+    "ritual_available": false,
+    "range": {
+      "source": "Self",
+      "kind": "self",
+      "feet": 0
+    },
+    "components": [
+      "S",
+      "M"
+    ],
+    "material": "a weapon with which you have proficiency and that is worth 1+ CP",
+    "duration": "Instantaneous",
+    "concentration": false,
+    "spell_lists": [
+      "bard",
+      "sorcerer",
+      "warlock",
+      "wizard"
+    ]
+  },
+  "authored_intent": "Attack using exact held proficient weapon and its normal range; casting ability instead of STR/DEX; normal or Radiant damage; extra Radiant dice at character levels 5/11/17; material weapon worth at least 1 CP.",
+  "rules": [
+    {
+      "id": "r001",
+      "text": "Guided by a flash of magical insight, you make one attack with the weapon used in the spell’s casting."
+    },
+    {
+      "id": "r002",
+      "text": "The attack uses your spellcasting ability for the attack and damage rolls instead of using Strength or Dexterity."
+    },
+    {
+      "id": "r003",
+      "text": "If the attack deals damage, it can be Radiant damage or the weapon’s normal damage type (your choice)."
+    },
+    {
+      "id": "r004",
+      "text": "Cantrip Upgrade."
+    },
+    {
+      "id": "r005",
+      "text": "Whether you deal Radiant damage or the weapon’s normal damage type, the attack deals extra Radiant damage when you reach levels 5 (1d6), 11 (2d6), and 17 (3d6)."
+    }
+  ],
+  "authored_operations": [
+    {
+      "operation": "shared_definition_reference",
+      "parameters": {
+        "definition": "runtime_draft.definition"
+      },
+      "status": "shared_definition_reference_unverified",
+      "required_source_rules": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005"
+      ]
+    }
+  ],
+  "runtime_draft": {
+    "origin": "existing_shared_definition",
+    "definition": {
+      "attack_type": "none",
+      "casting_time": "action",
+      "classes": [
+        "bard",
+        "sorcerer",
+        "warlock",
+        "wizard"
+      ],
+      "components": [
+        "S",
+        "M"
+      ],
+      "concentration": false,
+      "description": "Guided by a flash of magical insight, you make one attack with the weapon used in the spell’s casting. The attack uses your spellcasting ability for the attack and damage rolls instead of using Strength or Dexterity. If the attack deals damage, it can be Radiant damage or the weapon’s normal damage type (your choice). Cantrip Upgrade. Whether you deal Radiant damage or the weapon’s normal damage type, the attack deals extra Radiant damage when you reach levels 5 (1d6), 11 (2d6), and 17 (3d6).",
+      "duration": "Instantaneous",
+      "effects": [
+        {
+          "ability": "spellcasting",
+          "damage_type_options": [
+            "weapon",
+            "radiant"
+          ],
+          "extra_damage": {
+            "by_character_level": {
+              "11": "2d6",
+              "17": "3d6",
+              "5": "1d6"
+            },
+            "type": "radiant"
+          },
+          "type": "weapon_attack",
+          "weapon": "equipped_proficient_material"
+        }
+      ],
+      "execution": "shared",
+      "id": "true_strike",
+      "level": 0,
+      "material": "a weapon with which you have proficiency and that is worth 1+ CP",
+      "name": "True Strike",
+      "range": 0,
+      "rules_source": "SRD 5.2.1",
+      "rules_status": "authoring-draft-unverified",
+      "school": "divination",
+      "target": "single",
+      "range_kind": "self"
+    },
+    "fragments": {},
+    "coverage": "Unverified. Neither a full definition nor a fragment certifies all source rules or controls. Required extensions are not silently waived."
+  },
+  "required_extensions": [],
+  "audit": {
+    "source": "docs/audits/spells.md",
+    "batch": "088-8",
+    "production_definition_at_authoring": "res://data/core/spells/core_spells.json#18",
+    "baseline_execution": "shared",
+    "source_revision": "2a19eb1d",
+    "existing_conversion_label": "converted"
+  },
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile every source rule and required extension, then implement and verify through production paths before any deliberate promotion. Keep native behavior until covered."
+  }
+}

@@ -1,0 +1,76 @@
+{
+  "schema": "crown-equipment-candidate/1",
+  "id": "torch",
+  "name": "Torch",
+  "kind": "gear",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring intent only; not registered engine syntax.",
+  "rules": {
+    "authority": "SRD 5.2.1",
+    "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      95,
+      100
+    ],
+    "section": "Torch",
+    "text": "Burns 1 hour with Bright Light 20 feet and Dim Light an additional 20 feet. With the Attack action it is a Simple Melee weapon that deals 1 Fire damage on a hit.",
+    "source_context": "../source-pages.json"
+  },
+  "definition": {
+    "id": "torch",
+    "name": "Torch",
+    "weight_lb": 1,
+    "cost_gp": 0.01,
+    "duration_seconds": 3600,
+    "bright_feet": 20,
+    "additional_dim_feet": 20,
+    "attack_damage": 1,
+    "attack_damage_type": "fire"
+  },
+  "authored_operations": [
+    "Burns 1 hour with Bright Light 20 feet and Dim Light an additional 20 feet. With the Attack action it is a Simple Melee weapon that deals 1 Fire damage on a hit."
+  ],
+  "retained_runtime_seeds": [
+    {
+      "path": "data/core/items/consumables.json",
+      "array_index": 3,
+      "file_sha256": "045f413d89391312c1e3a175351f90427accde8f21b8d087abc1d6c5d9c3ec2d",
+      "definition": {
+        "id": "torch",
+        "weight": 1,
+        "name": "Torch",
+        "description": "A Torch burns for 1 hour, casting Bright Light in a 20-foot radius and Dim Light for an additional 20 feet.",
+        "type": "consumable",
+        "action_cost": "bonus_action",
+        "effects": [],
+        "light_source": {
+          "bright_radius_feet": 20,
+          "dim_radius_feet": 40,
+          "duration_seconds": 3600
+        },
+        "value": 1
+      }
+    }
+  ],
+  "manifest_overrides": [],
+  "required_mapping": [
+    "light_fuel"
+  ],
+  "consumers": [
+    {
+      "pack_id": "explorers_pack",
+      "quantity": 10
+    },
+    {
+      "pack_id": "dungeoneers_pack",
+      "quantity": 10
+    }
+  ],
+  "unsupported_behavior": [
+    {
+      "group": "light_fuel",
+      "requirement": "Map Bonus Action ignition/hood controls, cumulative fuel, extinguish/rekindle, cone/radius light and Torch attack through actual room/combat hosts. Retained light_source fields are incomplete rules."
+    }
+  ],
+  "reconciliation_note": "Seed price/attack/light behavior requires reconciliation against 1 CP, 1 Fire hit and one-hour source."
+}

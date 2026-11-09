@@ -1,0 +1,61 @@
+{
+  "schema": "crown-character-candidate/1",
+  "id": "eldritch_mind",
+  "name": "Eldritch Mind",
+  "kind": "invocation",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "scope": {
+    "total_character_level_maximum": 5
+  },
+  "operation_language": "authoring intent only; not registered engine syntax",
+  "runtime_support": "Retained definitions are reuse material, not proof of full rules. Every authored operation needs contract mapping and later production-path verification before promotion.",
+  "minimum_warlock_level": 1,
+  "rules": {
+    "authority": "SRD 5.2.1",
+    "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      72
+    ],
+    "text": "Eldritch Mind\nYou have Advantage on Constitution saving throws\nthat you make to maintain Concentration."
+  },
+  "prerequisites": {
+    "warlock_level": 1,
+    "invocations": [],
+    "cantrip_parameter": null
+  },
+  "repeatable": false,
+  "authored_operations": [
+    {
+      "trigger": "CON save to maintain Concentration",
+      "cost": "none",
+      "effects": [
+        "Advantage on that save"
+      ],
+      "ending_and_identity": "Exact invocation source owns permission; normal spell endings still apply; remove only its grants when replaced.",
+      "required_extension_groups": [
+        "rolls"
+      ]
+    }
+  ],
+  "retained_runtime_fragment": {
+    "id": "eldritch_mind",
+    "name": "Eldritch Mind",
+    "minimum_level": 1,
+    "effects": [
+      {
+        "type": "concentration_save_advantage"
+      }
+    ]
+  },
+  "unsupported_behavior": [
+    {
+      "groups": [
+        "rolls"
+      ],
+      "requirement": "Advantage on that save",
+      "status": "mapping_and_production_host_verification_required"
+    }
+  ],
+  "source_revision": "2a19eb1d (existing working-tree definitions and recovered drafts read on 2026-11-08)",
+  "reused_input_hashes": {}
+}

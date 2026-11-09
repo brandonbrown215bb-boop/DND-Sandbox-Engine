@@ -1,0 +1,149 @@
+{
+  "schema": "crown-creature-candidate/1",
+  "id": "srd_hawk",
+  "name": "Hawk",
+  "kind": "srd_statblock",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring intent only; not registered engine syntax. Mapping requirements do not assert the whole referenced engine slice is absent.",
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile all source clauses, mappings and source differences before later production-path verification. Keep native paths until replacements cover them."
+  },
+  "source": {
+    "authority": "SRD 5.2.1",
+    "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      355
+    ],
+    "text": "Hawk\nTiny Beast, Unaligned\nAC 13 Initiative +3 (13)\nHP 1 (1d4 − 1)\nSpeed 10 ft., Fly 60 ft.\nMOD SAVE MOD SAVE MOD SAVE\nStr 5 −3 −3 Dex 16 +3 +3 Con 8 −1 −1\nInt 2 −4 −4 WIS 14 +2 +2 Cha 6 −2 −2\nSkills Perception +6\nSenses Passive Perception 16\nLanguages None\nCR 0 (XP 10; PB +2)\nActions\nTalons. Melee Attack Roll: +5, reach 5 ft. Hit: 1 Slash-\ning damage.",
+    "transcription": "Two-column extraction; line breaks retained. Whole selected page context is in source-pages.json. No stat correction inferred from donor data."
+  },
+  "statistics": {
+    "identity_line": "Tiny Beast, Unaligned",
+    "AC": "13 Initiative +3 (13)",
+    "HP": "1 (1d4 − 1)",
+    "Speed": "10 ft., Fly 60 ft.",
+    "Skills": "Perception +6",
+    "Senses": "Passive Perception 16",
+    "Languages": "None",
+    "CR": "0 (XP 10; PB +2)",
+    "ability_scores": {
+      "STR": 5,
+      "DEX": 16,
+      "CON": 8,
+      "INT": 2,
+      "WIS": 14,
+      "CHA": 6
+    },
+    "saving_throw_modifiers": {
+      "STR": -3,
+      "DEX": 3,
+      "CON": -1,
+      "INT": -4,
+      "WIS": 2,
+      "CHA": -2
+    },
+    "initiative_modifier": 3,
+    "initiative_score_printed": 13,
+    "armor_class": 13,
+    "movement_feet": {
+      "walk": 10,
+      "fly": 60
+    }
+  },
+  "authored_operations": [
+    {
+      "key": "b001",
+      "name": "Talons",
+      "source_section": "Actions",
+      "full_rule": "Talons. Melee Attack Roll: +5, reach 5 ft. Hit: 1 Slashing damage.",
+      "budget": "action",
+      "steps": [
+        {
+          "intent": "Resolve declared roll or save, targets, range/reach, damage packets, multiattack choice, riders and exact action budget. A save-only action is not a weapon hit rider.",
+          "mapping_group": "attacks"
+        }
+      ],
+      "parameters_from_rule": {
+        "attack_bonus": [
+          5
+        ],
+        "save_dc": [],
+        "distances_feet": [
+          5
+        ],
+        "dice": []
+      },
+      "blockers": [
+        "map_attacks"
+      ],
+      "ending_and_identity": "Exact actor/action/target/source instance; use every qualifier and ending in full_rule, not only extracted parameters.",
+      "behavior_plan": {
+        "budget": "action",
+        "source_outcomes": {
+          "hit": "1 Slashing damage."
+        },
+        "resolution": "attack_roll",
+        "attack_kind": "melee",
+        "damage_and_riders": "1 Slashing damage.",
+        "permission": "ordinary familiar cannot attack; invocation exceptions must grant this exact attack or Attack action, not every Actions entry"
+      }
+    }
+  ],
+  "retained_definitions": [
+    {
+      "path": "data/core/monsters/imported_monsters.json",
+      "sha256": "f57bee1e93f185a89575bed3d8b2b610b53cfd3b7f2eb56448d1dd64a0126c5f",
+      "pointer": "/217",
+      "payload": {
+        "id": "hawk",
+        "name": "Hawk",
+        "size": "tiny",
+        "creature_type": "beast",
+        "challenge_rating": 0,
+        "can_fly": true,
+        "hit_points": "1d4 - 1",
+        "armor_class": 13,
+        "speed": 2,
+        "ability_scores": {
+          "STR": 5,
+          "DEX": 16,
+          "CON": 8,
+          "INT": 2,
+          "WIS": 14,
+          "CHA": 6
+        },
+        "attacks": [
+          {
+            "name": "Claws",
+            "ability": "STR",
+            "damage": "1d6",
+            "range": 1,
+            "damage_type": "slashing"
+          }
+        ],
+        "ai_behavior": "aggressive"
+      },
+      "manifest_declarations": []
+    }
+  ],
+  "selection": {
+    "wild_shape_druid_levels_2_3": false,
+    "wild_shape_druid_levels_4_5": false,
+    "normal_familiar": true,
+    "pact_of_chain_special": false,
+    "animate_dead_output": false,
+    "held_swarm": false,
+    "encounter_comparison_only": false
+  },
+  "acquisition_links": [
+    "selection-links.json"
+  ],
+  "blockers": [
+    "map_statistics",
+    "map_attacks"
+  ],
+  "source_reconciliation": "Official body is authoritative for this SRD candidate. Retained donor payloads are comparison/reuse seeds, including legacy values and manifest winners; do not merge their statistics or traits by ID. Direct Crown encounters retain separate candidates.",
+  "equipment_links": []
+}

@@ -1,0 +1,167 @@
+{
+  "format": "crown-spell-candidate/1",
+  "id": "illusory_script",
+  "name": "Illusory Script",
+  "level": 1,
+  "status": "written_unverified_not_loaded",
+  "source": {
+    "authority": "SRD 5.2.1",
+    "url": "https://media.dndbeyond.com/compendium-images/srd/5.2/SRD_CC_v5.2.1.pdf",
+    "sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      142
+    ],
+    "header": {
+      "Casting Time": "1 minute or Ritual",
+      "Range": "Touch",
+      "Components": "S, M (ink worth 10+ GP, which the spell consumes)",
+      "Duration": "10 days"
+    },
+    "attribution": "System Reference Document 5.2.1, Wizards of the Coast LLC; CC BY 4.0."
+  },
+  "casting": {
+    "casting_time": "1 minute or Ritual",
+    "kind": "timed",
+    "seconds": 60,
+    "ritual_available": true,
+    "range": {
+      "source": "Touch",
+      "kind": "touch",
+      "feet": 5
+    },
+    "components": [
+      "S",
+      "M"
+    ],
+    "material": "ink worth 10+ GP, which the spell consumes",
+    "duration": "10 days",
+    "concentration": false,
+    "spell_lists": [
+      "bard",
+      "warlock",
+      "wizard"
+    ]
+  },
+  "authored_intent": "One-minute cast, consumed 10-GP ink; exact written message and selected readers; others see unreadable script or alternate message in known language; Truesight reads original; dispelling erases both.",
+  "rules": [
+    {
+      "id": "r001",
+      "text": "You write on parchment, paper, or another suitable material and imbue it with an illusion that lasts for the duration."
+    },
+    {
+      "id": "r002",
+      "text": "To you and any creatures you designate when you cast the spell, the writing appears normal, seems to be written in your hand, and conveys whatever meaning you intended when you wrote the text."
+    },
+    {
+      "id": "r003",
+      "text": "To all others, the writing appears as if it were written in an unknown or magical script that is unintelligible."
+    },
+    {
+      "id": "r004",
+      "text": "Alternatively, the illusion can alter the meaning, handwriting, and language of the text, though the language must be one you know."
+    },
+    {
+      "id": "r005",
+      "text": "If the spell is dispelled, the original script and the illusion both disappear."
+    },
+    {
+      "id": "r006",
+      "text": "A creature that has Truesight can read the hidden message."
+    }
+  ],
+  "authored_operations": [
+    {
+      "operation": "enchant_written_message",
+      "parameters": {
+        "authorized_readers": "caster_and_chosen_at_cast",
+        "others_choices": [
+          "unintelligible_script",
+          "alternate_meaning_handwriting_known_language"
+        ],
+        "truesight": "read_hidden_message",
+        "dispel": "erase_original_and_illusion"
+      },
+      "status": "authoring_declaration_not_a_registered_opcode",
+      "required_source_rules": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006"
+      ]
+    }
+  ],
+  "runtime_draft": {
+    "origin": "proposed_operations",
+    "definition": null,
+    "fragments": {},
+    "coverage": "Unverified. Neither a full definition nor a fragment certifies all source rules or controls. Required extensions are not silently waived."
+  },
+  "required_extensions": [
+    {
+      "group": "illusions",
+      "requirement": "Represent exact appearance/senses/location, interactions and Study checks; retain observer-specific disbelief, permitted changes and real consequences.",
+      "spell_specific_intent": "One-minute cast, consumed 10-GP ink; exact written message and selected readers; others see unreadable script or alternate message in known language; Truesight reads original; dispelling erases both.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006"
+      ],
+      "existing_owner_to_reuse": "src/combat/combat_perception.gd",
+      "slice_references": "S-187/S-188/S-189/S-195",
+      "disposition": "requires_mapping_or_host_completion",
+      "note": "This is an authored handoff requirement, not a fresh runtime failure or claim that the whole referenced slice is missing."
+    },
+    {
+      "group": "communication",
+      "requirement": "Reuse represented language/hearing where applicable, then implement the spell-specific recipients, range, content, answers, secrecy and source lifetime.",
+      "spell_specific_intent": "One-minute cast, consumed 10-GP ink; exact written message and selected readers; others see unreadable script or alternate message in known language; Truesight reads original; dispelling erases both.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006"
+      ],
+      "existing_owner_to_reuse": "src/combat/communication_rules.gd",
+      "slice_references": "S-194/S-218/S-219",
+      "disposition": "requires_mapping_or_host_completion",
+      "note": "This is an authored handoff requirement, not a fresh runtime failure or claim that the whole referenced slice is missing."
+    },
+    {
+      "group": "long_cast",
+      "requirement": "Preserve the source casting duration, participants, ritual extension, interruption and once-only payment; do not replace a timed cast with an Action.",
+      "spell_specific_intent": "One-minute cast, consumed 10-GP ink; exact written message and selected readers; others see unreadable script or alternate message in known language; Truesight reads original; dispelling erases both.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006"
+      ],
+      "existing_owner_to_reuse": "src/spells/cast_interruption_rules.gd",
+      "slice_references": "S-066/S-067/S-134",
+      "disposition": "requires_mapping_or_host_completion",
+      "note": "This is an authored handoff requirement, not a fresh runtime failure or claim that the whole referenced slice is missing."
+    }
+  ],
+  "audit": {
+    "source": "docs/audits/spells.md",
+    "batch": "088-7",
+    "production_definition_at_authoring": "res://data/core/spells/imported_spells.json#103",
+    "baseline_execution": "native",
+    "source_revision": "2a19eb1d",
+    "existing_conversion_label": "queued"
+  },
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile every source rule and required extension, then implement and verify through production paths before any deliberate promotion. Keep native behavior until covered."
+  }
+}

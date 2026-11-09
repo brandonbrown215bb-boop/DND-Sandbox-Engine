@@ -1,0 +1,80 @@
+{
+  "schema": "crown-equipment-candidate/1",
+  "id": "oil_flask",
+  "name": "Oil",
+  "kind": "gear",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring intent only; not registered engine syntax.",
+  "rules": {
+    "authority": "SRD 5.2.1",
+    "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      95,
+      99
+    ],
+    "section": "Oil",
+    "text": "Douse creature/object: replace one Attack-action attack by throwing a flask within 20 feet, Dexterity save DC 8 + Dexterity modifier + PB or covered for 1 minute; Fire damage before drying adds 5 Fire damage. Douse level ground: Utilize, 5-foot square within 5 feet; when lit burns until end of turn 2 rounds later (12 seconds), 5 Fire on entry or turn end, at most once per turn. Fuel: each flask gives 6 cumulative hours in Lamp/Lantern; Utilize extinguishes, later rekindling spends remaining fuel.",
+    "source_context": "../source-pages.json"
+  },
+  "definition": {
+    "id": "oil_flask",
+    "name": "Oil",
+    "weight_lb": 1,
+    "cost_gp": 0.1,
+    "fuel_seconds_per_flask": 21600,
+    "dousing_duration_seconds": 60,
+    "ground_duration_seconds": 12
+  },
+  "authored_operations": [
+    "Douse creature/object: replace one Attack-action attack by throwing a flask within 20 feet, Dexterity save DC 8 + Dexterity modifier + PB or covered for 1 minute; Fire damage before drying adds 5 Fire damage. Douse level ground: Utilize, 5-foot square within 5 feet; when lit burns until end of turn 2 rounds later (12 seconds), 5 Fire on entry or turn end, at most once per turn. Fuel: each flask gives 6 cumulative hours in Lamp/Lantern; Utilize extinguishes, later rekindling spends remaining fuel."
+  ],
+  "retained_runtime_seeds": [
+    {
+      "path": "data/core/items/srd_gear.json",
+      "array_index": 28,
+      "file_sha256": "ed873f9a0967f5bb6e20241428e4f53b92c011fa547321af69798ece822b57d4",
+      "definition": {
+        "id": "oil_flask",
+        "weight": 1,
+        "name": "Oil (Flask)",
+        "description": "A flask of lamp oil. Can be splashed and ignited for 5 fire damage, or used to refuel a lantern.",
+        "type": "consumable",
+        "action_cost": "action",
+        "effects": [],
+        "value": 1
+      }
+    }
+  ],
+  "manifest_overrides": [],
+  "required_mapping": [
+    "oil"
+  ],
+  "consumers": [
+    {
+      "pack_id": "explorers_pack",
+      "quantity": 2
+    },
+    {
+      "pack_id": "entertainers_pack",
+      "quantity": 8
+    },
+    {
+      "pack_id": "dungeoneers_pack",
+      "quantity": 2
+    },
+    {
+      "pack_id": "burglars_pack",
+      "quantity": 7
+    },
+    {
+      "pack_id": "scholars_pack",
+      "quantity": 10
+    }
+  ],
+  "unsupported_behavior": [
+    {
+      "group": "oil",
+      "requirement": "Keep three distinct uses: attack replacement dousing, placed burning ground with once-per-turn damage, and six cumulative hours of fuel. Map durations and same-turn ordering without guessing unknown target facts."
+    }
+  ]
+}

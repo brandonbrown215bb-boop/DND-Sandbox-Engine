@@ -1,0 +1,187 @@
+{
+  "format": "crown-spell-candidate/1",
+  "id": "alarm",
+  "name": "Alarm",
+  "level": 1,
+  "status": "written_unverified_not_loaded",
+  "source": {
+    "authority": "SRD 5.2.1",
+    "url": "https://media.dndbeyond.com/compendium-images/srd/5.2/SRD_CC_v5.2.1.pdf",
+    "sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      107
+    ],
+    "header": {
+      "Casting Time": "1 minute or Ritual",
+      "Range": "30 feet",
+      "Components": "V, S, M (a bell and silver wire)",
+      "Duration": "8 hours"
+    },
+    "attribution": "System Reference Document 5.2.1, Wizards of the Coast LLC; CC BY 4.0."
+  },
+  "casting": {
+    "casting_time": "1 minute or Ritual",
+    "kind": "timed",
+    "seconds": 60,
+    "ritual_available": true,
+    "range": {
+      "source": "30 feet",
+      "kind": "distance",
+      "feet": 30
+    },
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "a bell and silver wire",
+    "duration": "8 hours",
+    "concentration": false,
+    "spell_lists": [
+      "ranger",
+      "wizard"
+    ]
+  },
+  "authored_intent": "Choose door, window or at-most-20-foot cube; mark permitted creatures; a creature touching/entering triggers mental notification within one mile or audible bell within 60 feet; no invented minimum size; waking, 10-second sound and eight-hour source.",
+  "rules": [
+    {
+      "id": "r001",
+      "text": "You set an alarm against intrusion."
+    },
+    {
+      "id": "r002",
+      "text": "Choose a door, a window, or an area within range that is no larger than a 20-foot Cube."
+    },
+    {
+      "id": "r003",
+      "text": "Until the spell ends, an alarm alerts you whenever a creature touches or enters the warded area."
+    },
+    {
+      "id": "r004",
+      "text": "When you cast the spell, you can designate creatures that won’t set off the alarm."
+    },
+    {
+      "id": "r005",
+      "text": "You also choose whether the alarm is audible or mental: Audible Alarm."
+    },
+    {
+      "id": "r006",
+      "text": "The alarm produces the sound of a handbell for 10 seconds within 60 feet of the warded area."
+    },
+    {
+      "id": "r007",
+      "text": "Mental Alarm."
+    },
+    {
+      "id": "r008",
+      "text": "You are alerted by a mental ping if you are within 1 mile of the warded area."
+    },
+    {
+      "id": "r009",
+      "text": "This ping awakens you if you’re asleep."
+    }
+  ],
+  "authored_operations": [
+    {
+      "operation": "ward_entry",
+      "parameters": {
+        "shape_choices": [
+          "door",
+          "window",
+          {
+            "cube_edge_feet_max": 20
+          }
+        ],
+        "exclude_chosen_creatures": true,
+        "trigger": [
+          "creature_touches",
+          "creature_enters"
+        ],
+        "notification_choices": {
+          "mental": {
+            "range_miles": 1,
+            "wakes_caster": true
+          },
+          "audible": {
+            "range_feet": 60,
+            "seconds": 10,
+            "sound": "handbell"
+          }
+        }
+      },
+      "status": "authoring_declaration_not_a_registered_opcode",
+      "required_source_rules": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006",
+        "r007",
+        "r008",
+        "r009"
+      ]
+    }
+  ],
+  "runtime_draft": {
+    "origin": "proposed_operations",
+    "definition": null,
+    "fragments": {},
+    "coverage": "Unverified. Neither a full definition nor a fragment certifies all source rules or controls. Required extensions are not silently waived."
+  },
+  "required_extensions": [
+    {
+      "group": "wards_and_triggers",
+      "requirement": "Bind an exact object/area and trigger policy, authorized actors, consequences and source end; a condition marker or detection message is not the effect.",
+      "spell_specific_intent": "Choose door, window or at-most-20-foot cube; mark permitted creatures; a creature touching/entering triggers mental notification within one mile or audible bell within 60 feet; no invented minimum size; waking, 10-second sound and eight-hour source.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006",
+        "r007",
+        "r008",
+        "r009"
+      ],
+      "existing_owner_to_reuse": "src/spells/spell_effects.gd",
+      "slice_references": "S-150/S-151/S-184/S-203",
+      "disposition": "requires_mapping_or_host_completion",
+      "note": "This is an authored handoff requirement, not a fresh runtime failure or claim that the whole referenced slice is missing."
+    },
+    {
+      "group": "long_cast",
+      "requirement": "Preserve the source casting duration, participants, ritual extension, interruption and once-only payment; do not replace a timed cast with an Action.",
+      "spell_specific_intent": "Choose door, window or at-most-20-foot cube; mark permitted creatures; a creature touching/entering triggers mental notification within one mile or audible bell within 60 feet; no invented minimum size; waking, 10-second sound and eight-hour source.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006",
+        "r007",
+        "r008",
+        "r009"
+      ],
+      "existing_owner_to_reuse": "src/spells/cast_interruption_rules.gd",
+      "slice_references": "S-066/S-067/S-134",
+      "disposition": "requires_mapping_or_host_completion",
+      "note": "This is an authored handoff requirement, not a fresh runtime failure or claim that the whole referenced slice is missing."
+    }
+  ],
+  "audit": {
+    "source": "docs/audits/spells.md",
+    "batch": "088-7",
+    "production_definition_at_authoring": "res://data/core/spells/imported_spells.json#3",
+    "baseline_execution": "native",
+    "source_revision": "2a19eb1d",
+    "existing_conversion_label": "queued"
+  },
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile every source rule and required extension, then implement and verify through production paths before any deliberate promotion. Keep native behavior until covered."
+  }
+}

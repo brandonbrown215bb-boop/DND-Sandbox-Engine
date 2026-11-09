@@ -1,0 +1,60 @@
+{
+  "schema": "crown-world-candidate/1",
+  "id": "tower_of_the_lich",
+  "name": "Tower of the Lich",
+  "kind": "dungeons",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring declarations only; not registered engine opcodes.",
+  "required_extensions": [
+    "travel",
+    "locks_traps",
+    "objects",
+    "hazards",
+    "objectives_rewards"
+  ],
+  "authored_operations": [
+    {
+      "operation": "generate_once_then_restore",
+      "requirement": "Reuse generated layout and current room/local-room state; preserve duplicate monster-pool entries as weights, boss identity/modifiers and all reward occurrences."
+    },
+    {
+      "operation": "resolve_boss_victory",
+      "requirement": "Only victorious pending boss combat clears this dungeon; claim its clear once, pay authored loot once to actual recipient and trigger declared milestone. Defeat does not clear it."
+    }
+  ],
+  "blockers": [
+    "Boss name/bonus_hp metadata needs consumer mapping; do not assume generation of monster_ids applies it. Retain complete seed without rebalance.",
+    "Normal gameplay, inventory capacity and save/revisit payment are not verified by this writing pass."
+  ],
+  "retained_input": {
+    "path": "data/core/campaigns/the_lost_crown.json",
+    "sha256": "3352b2d22be36e68591bfdf4ec73b8201f2bec6c69a3a60b0c8beb7d5074db44",
+    "pointer": "/dungeons/tower_of_the_lich",
+    "payload": {
+      "name": "Tower of the Lich",
+      "description": "The Lich King's stronghold. Only the bravest heroes dare enter. The final fragment — and the Lich King himself — await at the top.",
+      "difficulty": 3,
+      "room_count": 7,
+      "milestone_enter": "enter_dungeon_3",
+      "milestone_clear": null,
+      "monster_pool": [
+        "skeleton",
+        "zombie",
+        "wight",
+        "wight"
+      ],
+      "boss": {
+        "monster_id": "lich_king",
+        "name": "The Lich King"
+      },
+      "loot": [
+        {
+          "item_id": "crown_fragment"
+        }
+      ],
+      "event_table": "dungeon_events"
+    }
+  },
+  "generation_candidate": "../generation/sequential_dungeon.json",
+  "reward_candidate": "../rewards/tower_of_the_lich_clear.json"
+}

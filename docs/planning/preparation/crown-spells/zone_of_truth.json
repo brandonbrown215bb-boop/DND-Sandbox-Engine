@@ -1,0 +1,157 @@
+{
+  "format": "crown-spell-candidate/1",
+  "id": "zone_of_truth",
+  "name": "Zone of Truth",
+  "level": 2,
+  "status": "written_unverified_not_loaded",
+  "source": {
+    "authority": "SRD 5.2.1",
+    "url": "https://media.dndbeyond.com/compendium-images/srd/5.2/SRD_CC_v5.2.1.pdf",
+    "sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      175
+    ],
+    "header": {
+      "Casting Time": "Action",
+      "Range": "60 feet",
+      "Components": "V, S",
+      "Duration": "10 minutes"
+    },
+    "attribution": "System Reference Document 5.2.1, Wizards of the Coast LLC; CC BY 4.0."
+  },
+  "casting": {
+    "casting_time": "Action",
+    "kind": "action",
+    "seconds": null,
+    "ritual_available": false,
+    "range": {
+      "source": "60 feet",
+      "kind": "distance",
+      "feet": 60
+    },
+    "components": [
+      "V",
+      "S"
+    ],
+    "material": null,
+    "duration": "10 minutes",
+    "concentration": false,
+    "spell_lists": [
+      "bard",
+      "cleric",
+      "paladin"
+    ]
+  },
+  "authored_intent": "15-foot sphere; entry/turn-start CHA save; caster knows each result; failed target cannot deliberately lie in area but may refuse/evasively answer; ten-minute non-Concentration duration.",
+  "rules": [
+    {
+      "id": "r001",
+      "text": "You create a magical zone that guards against deception in a 15-foot-radius Sphere centered on a point within range."
+    },
+    {
+      "id": "r002",
+      "text": "Until the spell ends, a creature that enters the spell’s area for the first time on a turn or starts its turn there makes a Charisma saving throw."
+    },
+    {
+      "id": "r003",
+      "text": "On a failed save, a creature can’t speak a deliberate lie while in the radius."
+    },
+    {
+      "id": "r004",
+      "text": "You know whether a creature succeeds or fails on this save."
+    },
+    {
+      "id": "r005",
+      "text": "An affected creature is aware of the spell and can avoid answering questions to which it would normally respond with a lie."
+    },
+    {
+      "id": "r006",
+      "text": "Such a creature can be evasive yet must be truthful."
+    }
+  ],
+  "authored_operations": [
+    {
+      "operation": "create_truth_volume",
+      "parameters": {
+        "sphere_radius_feet": 15,
+        "save": {
+          "events": [
+            "first_entry_on_turn",
+            "target_turn_start"
+          ],
+          "ability": "CHA",
+          "caster_knows_result": true
+        },
+        "failed_save": {
+          "cannot": "deliberate_lie_while_inside",
+          "target_knows": true,
+          "may_refuse_or_evade": true
+        }
+      },
+      "status": "authoring_declaration_not_a_registered_opcode",
+      "required_source_rules": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006"
+      ]
+    }
+  ],
+  "runtime_draft": {
+    "origin": "proposed_operations",
+    "definition": null,
+    "fragments": {},
+    "coverage": "Unverified. Neither a full definition nor a fragment certifies all source rules or controls. Required extensions are not silently waived."
+  },
+  "required_extensions": [
+    {
+      "group": "communication",
+      "requirement": "Reuse represented language/hearing where applicable, then implement the spell-specific recipients, range, content, answers, secrecy and source lifetime.",
+      "spell_specific_intent": "15-foot sphere; entry/turn-start CHA save; caster knows each result; failed target cannot deliberately lie in area but may refuse/evasively answer; ten-minute non-Concentration duration.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006"
+      ],
+      "existing_owner_to_reuse": "src/combat/communication_rules.gd",
+      "slice_references": "S-194/S-218/S-219",
+      "disposition": "requires_mapping_or_host_completion",
+      "note": "This is an authored handoff requirement, not a fresh runtime failure or claim that the whole referenced slice is missing."
+    },
+    {
+      "group": "zones",
+      "requirement": "Mount source-defined recurring and moving area effects with independent appearance/entry/movement/start/end triggers, exclusions and once-per-turn receipts; area_selection is geometry only.",
+      "spell_specific_intent": "15-foot sphere; entry/turn-start CHA save; caster knows each result; failed target cannot deliberately lie in area but may refuse/evasively answer; ten-minute non-Concentration duration.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006"
+      ],
+      "existing_owner_to_reuse": "src/spells/combat_spell_zones.gd",
+      "slice_references": "S-080/S-087/S-184/S-190",
+      "disposition": "requires_mapping_or_host_completion",
+      "note": "This is an authored handoff requirement, not a fresh runtime failure or claim that the whole referenced slice is missing."
+    }
+  ],
+  "audit": {
+    "source": "docs/audits/spells.md",
+    "batch": "088-7",
+    "production_definition_at_authoring": "res://data/core/spells/imported_spells.json#198",
+    "baseline_execution": "native",
+    "source_revision": "2a19eb1d",
+    "existing_conversion_label": "queued"
+  },
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile every source rule and required extension, then implement and verify through production paths before any deliberate promotion. Keep native behavior until covered."
+  }
+}

@@ -1,0 +1,166 @@
+{
+  "format": "crown-spell-candidate/1",
+  "id": "hex",
+  "name": "Hex",
+  "level": 1,
+  "status": "written_unverified_not_loaded",
+  "source": {
+    "authority": "SRD 5.2.1",
+    "url": "https://media.dndbeyond.com/compendium-images/srd/5.2/SRD_CC_v5.2.1.pdf",
+    "sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      140
+    ],
+    "header": {
+      "Casting Time": "Bonus Action",
+      "Range": "90 feet",
+      "Components": "V, S, M (the petrified eye of a newt)",
+      "Duration": "Concentration, up to 1 hour"
+    },
+    "attribution": "System Reference Document 5.2.1, Wizards of the Coast LLC; CC BY 4.0."
+  },
+  "casting": {
+    "casting_time": "Bonus Action",
+    "kind": "bonus_action",
+    "seconds": null,
+    "ritual_available": false,
+    "range": {
+      "source": "90 feet",
+      "kind": "distance",
+      "feet": 90
+    },
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "the petrified eye of a newt",
+    "duration": "Concentration, up to 1 hour",
+    "concentration": true,
+    "spell_lists": [
+      "warlock"
+    ]
+  },
+  "authored_intent": "Bonus Action curse seen creature; chosen-ability check Disadvantage and caster attack-hit +1d6 Necrotic; later-turn Bonus Action transfer after 0 HP; slot 2 gives four hours, 3–4 eight hours, 5+ twenty-four-hour Concentration.",
+  "rules": [
+    {
+      "id": "r001",
+      "text": "You place a curse on a creature that you can see within range."
+    },
+    {
+      "id": "r002",
+      "text": "Until the spell ends, you deal an extra 1d6 Necrotic damage to the target whenever you hit it with an attack roll."
+    },
+    {
+      "id": "r003",
+      "text": "Also, choose one ability when you cast the spell."
+    },
+    {
+      "id": "r004",
+      "text": "The target has Disadvantage on ability checks made with the chosen ability."
+    },
+    {
+      "id": "r005",
+      "text": "If the target drops to 0 Hit Points before this spell ends, you can take a Bonus Action on a later turn to curse a new creature."
+    },
+    {
+      "id": "r006",
+      "text": "Using a Higher-Level Spell Slot."
+    },
+    {
+      "id": "r007",
+      "text": "Your Concentration can last longer with a spell slot of level 2 (up to 4 hours), 3–4 (up to 8 hours), or 5+ (24 hours)."
+    }
+  ],
+  "authored_operations": [
+    {
+      "operation": "create_transferable_attack_mark",
+      "parameters": {
+        "target": "seen_creature",
+        "rider": {
+          "trigger": "caster_attack_hit",
+          "damage": "1d6",
+          "type": "necrotic"
+        },
+        "choose_ability_check_disadvantage": true,
+        "transfer": {
+          "qualifier": "previous_target_zero_hp",
+          "action": "bonus_action_on_later_turn"
+        },
+        "slot_duration_hours": {
+          "1": 1,
+          "2": 4,
+          "3-4": 8,
+          "5+": 24
+        }
+      },
+      "status": "authoring_declaration_not_a_registered_opcode",
+      "required_source_rules": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006",
+        "r007"
+      ]
+    }
+  ],
+  "runtime_draft": {
+    "origin": "proposed_operations",
+    "definition": null,
+    "fragments": {},
+    "coverage": "Unverified. Neither a full definition nor a fragment certifies all source rules or controls. Required extensions are not silently waived."
+  },
+  "required_extensions": [
+    {
+      "group": "attack_riders",
+      "requirement": "Bind damage or next-result benefits to eligible hit/roll occurrences, casting source and expiry; retain packet damage types, critical behavior and consumption.",
+      "spell_specific_intent": "Bonus Action curse seen creature; chosen-ability check Disadvantage and caster attack-hit +1d6 Necrotic; later-turn Bonus Action transfer after 0 HP; slot 2 gives four hours, 3–4 eight hours, 5+ twenty-four-hour Concentration.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006",
+        "r007"
+      ],
+      "existing_owner_to_reuse": "src/combat/combat_action.gd",
+      "slice_references": "S-076/S-077/S-109/S-126/S-127",
+      "disposition": "requires_mapping_or_host_completion",
+      "note": "This is an authored handoff requirement, not a fresh runtime failure or claim that the whole referenced slice is missing."
+    },
+    {
+      "group": "retargeting",
+      "requirement": "Retain the original cast/payment/duration and qualifying zero-HP receipt while paying only the declared Bonus Action to select the new legal target.",
+      "spell_specific_intent": "Bonus Action curse seen creature; chosen-ability check Disadvantage and caster attack-hit +1d6 Necrotic; later-turn Bonus Action transfer after 0 HP; slot 2 gives four hours, 3–4 eight hours, 5+ twenty-four-hour Concentration.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006",
+        "r007"
+      ],
+      "existing_owner_to_reuse": "src/spells/spell_effects.gd",
+      "slice_references": "S-076/S-077/S-141",
+      "disposition": "requires_mapping_or_host_completion",
+      "note": "This is an authored handoff requirement, not a fresh runtime failure or claim that the whole referenced slice is missing."
+    }
+  ],
+  "audit": {
+    "source": "docs/audits/spells.md",
+    "batch": "088-4",
+    "production_definition_at_authoring": "res://data/core/spells/imported_spells.json#97",
+    "baseline_execution": "native",
+    "source_revision": "2a19eb1d",
+    "existing_conversion_label": "queued"
+  },
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile every source rule and required extension, then implement and verify through production paths before any deliberate promotion. Keep native behavior until covered."
+  }
+}

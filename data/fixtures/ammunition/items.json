@@ -1,0 +1,175 @@
+[
+  {
+    "id": "fixture:ammo_arrow",
+    "name": "Odd arrow",
+    "type": "ammunition",
+    "ammunition_kind": "arrow",
+    "weight": 0.05,
+    "value": 1,
+    "purchase_quantity": 20
+  },
+  {
+    "id": "fixture:ammo_bolt",
+    "name": "Odd bolt",
+    "type": "ammunition",
+    "ammunition_kind": "bolt",
+    "weight": 0.05,
+    "value": 1,
+    "purchase_quantity": 20
+  },
+  {
+    "id": "fixture:ammo_stone",
+    "name": "Odd stone",
+    "type": "ammunition",
+    "ammunition_kind": "stone",
+    "weight": 0.05,
+    "value": 1,
+    "purchase_quantity": 20
+  },
+  {
+    "id": "fixture:ammo_bullet",
+    "name": "Odd bullet",
+    "type": "ammunition",
+    "ammunition_kind": "bullet",
+    "weight": 0.05,
+    "value": 1,
+    "purchase_quantity": 20
+  },
+  {
+    "id": "fixture:ammo_needle",
+    "name": "Odd needle",
+    "type": "ammunition",
+    "ammunition_kind": "needle",
+    "weight": 0.05,
+    "value": 1,
+    "purchase_quantity": 20
+  },
+  {
+    "id": "fixture:ammo_bow",
+    "name": "Odd bow",
+    "type": "weapon",
+    "weapon_type": "simple",
+    "ammunition_kind": "arrow",
+    "properties": [
+      "ranged",
+      "ammunition",
+      "two_handed"
+    ],
+    "damage": "1",
+    "damage_type": "piercing",
+    "ability": "DEX",
+    "range": 12,
+    "normal_range_feet": 60,
+    "long_range_feet": 240,
+    "fixed_damage": true,
+    "attack_bonus_override": -100,
+    "weight": 2,
+    "value": 100
+  },
+  {
+    "id": "fixture:ammo_crossbow",
+    "name": "Odd crossbow",
+    "type": "weapon",
+    "weapon_type": "simple",
+    "ammunition_kind": "bolt",
+    "properties": [
+      "ranged",
+      "ammunition",
+      "two_handed",
+      "loading"
+    ],
+    "damage": "1",
+    "damage_type": "piercing",
+    "ability": "DEX",
+    "range": 12,
+    "normal_range_feet": 60,
+    "long_range_feet": 240,
+    "fixed_damage": true,
+    "attack_bonus_override": -100,
+    "weight": 2,
+    "value": 100
+  },
+  {
+    "id": "fixture:ammo_sling",
+    "name": "Odd sling",
+    "type": "weapon",
+    "weapon_type": "simple",
+    "ammunition_kind": "stone",
+    "properties": [
+      "ranged",
+      "ammunition"
+    ],
+    "damage": "1",
+    "damage_type": "piercing",
+    "ability": "DEX",
+    "range": 12,
+    "normal_range_feet": 60,
+    "long_range_feet": 240,
+    "fixed_damage": true,
+    "attack_bonus_override": -100,
+    "weight": 2,
+    "value": 100
+  },
+  {
+    "id": "fixture:ammo_pistol",
+    "name": "Odd pistol",
+    "type": "weapon",
+    "weapon_type": "simple",
+    "ammunition_kind": "bullet",
+    "properties": [
+      "ranged",
+      "ammunition",
+      "loading"
+    ],
+    "damage": "1",
+    "damage_type": "piercing",
+    "ability": "DEX",
+    "range": 12,
+    "normal_range_feet": 60,
+    "long_range_feet": 240,
+    "fixed_damage": true,
+    "attack_bonus_override": -100,
+    "weight": 2,
+    "value": 100
+  },
+  {
+    "id": "fixture:ammo_blowgun",
+    "name": "Odd blowgun",
+    "type": "weapon",
+    "weapon_type": "simple",
+    "ammunition_kind": "needle",
+    "properties": [
+      "ranged",
+      "ammunition",
+      "loading"
+    ],
+    "damage": "1",
+    "damage_type": "piercing",
+    "ability": "DEX",
+    "range": 12,
+    "normal_range_feet": 60,
+    "long_range_feet": 240,
+    "fixed_damage": true,
+    "attack_bonus_override": -100,
+    "weight": 2,
+    "value": 100
+  },
+  {
+    "id": "fixture:ammo_quiver",
+    "name": "Odd Quiver",
+    "type": "wondrous",
+    "container": {
+      "compartments": [
+        {
+          "id": "pieces",
+          "item_types": [
+            "ammunition"
+          ],
+          "max_count": 20
+        }
+      ]
+    },
+    "weight": 1,
+    "value": 100
+  }
+]

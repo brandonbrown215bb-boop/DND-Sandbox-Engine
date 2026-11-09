@@ -1,0 +1,313 @@
+{
+  "schema": "crown-character-candidate/1",
+  "id": "soldier",
+  "name": "Soldier",
+  "kind": "background",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "scope": {
+    "total_character_level_maximum": 5
+  },
+  "operation_language": "authoring intent only; not registered engine syntax",
+  "runtime_support": "Retained definitions are reuse material, not proof of full rules. Every authored operation needs contract mapping and later production-path verification before promotion.",
+  "reused_from": [
+    "docs/planning/crown-backgrounds/candidates.json",
+    "docs/planning/crown-backgrounds/README.md"
+  ],
+  "retained_candidate": {
+    "id": "soldier",
+    "name": "Soldier",
+    "source_quote": "Soldier\nAbility Scores: Strength, Dexterity, Constitution\nFeat: Savage Attacker (see “Feats”)\nSkill Proficiencies: Athletics and Intimidation\nTool Proficiency: Choose one kind of Gaming Set (see “Equipment”)\nEquipment: Choose A or B: (A) Spear, Shortbow, 20 Arrows, Gaming Set (same as above), Healer’s Kit, Quiver, Traveler’s Clothes, 14 GP; or (B) 50 GP",
+    "ability_options": [
+      "STR",
+      "DEX",
+      "CON"
+    ],
+    "origin_feat": {
+      "feat_id": "savage_attacker",
+      "parameter": null
+    },
+    "skills": [
+      "Athletics",
+      "Intimidation"
+    ],
+    "tool_proficiency": {
+      "choose_one_of": [
+        "dice_set",
+        "dragonchess_set",
+        "playing_card_set",
+        "three_dragon_ante_set"
+      ],
+      "choice_key": "gaming_set",
+      "note": "SRD p.94 Gaming Set variants: Dice, dragonchess, playing cards, three-dragon ante. None are loaded; candidate IDs are proposals."
+    },
+    "equipment_options": {
+      "A": {
+        "items": [
+          {
+            "source_text": "Spear",
+            "quantity": 1,
+            "item_id": "spear"
+          },
+          {
+            "source_text": "Shortbow",
+            "quantity": 1,
+            "item_id": "shortbow"
+          },
+          {
+            "source_text": "Arrows",
+            "quantity": 20,
+            "item_id": null,
+            "note": "No loaded Arrow ammunition item (SRD p.96: Arrows, 20 per Quiver unit)."
+          },
+          {
+            "source_text": "Gaming Set (same as above)",
+            "quantity": 1,
+            "item_id": null,
+            "note": "Must equal the chosen gaming_set proficiency; no gaming set items loaded.",
+            "same_as_choice": "gaming_set"
+          },
+          {
+            "source_text": "Healer’s Kit",
+            "quantity": 1,
+            "item_id": "healers_kit"
+          },
+          {
+            "source_text": "Quiver",
+            "quantity": 1,
+            "item_id": null,
+            "note": "No loaded Quiver item."
+          },
+          {
+            "source_text": "Traveler’s Clothes",
+            "quantity": 1,
+            "item_id": null,
+            "note": "No loaded Traveler's Clothes item."
+          }
+        ],
+        "gp": 14
+      },
+      "B": {
+        "items": [],
+        "gp": 50
+      }
+    },
+    "source": {
+      "document": "SRD 5.2.1",
+      "file": "SRD_CC_v5.2.1.pdf",
+      "pdf_page": 83,
+      "printed_page": 83,
+      "section": "Character Origins > Background Descriptions"
+    }
+  },
+  "definition": {
+    "id": "soldier",
+    "name": "Soldier",
+    "ability_options": [
+      "STR",
+      "DEX",
+      "CON"
+    ],
+    "origin_feat": {
+      "feat_id": "savage_attacker",
+      "parameter": null
+    },
+    "skills": [
+      "Athletics",
+      "Intimidation"
+    ],
+    "tool_proficiency": {
+      "choose_one_of": [
+        "dice_set",
+        "dragonchess_set",
+        "playing_card_set",
+        "three_dragon_ante_set"
+      ],
+      "choice_key": "gaming_set",
+      "note": "All four named Gaming Set item IDs exist in current core source; linked proficiency/item choice still requires the background host."
+    },
+    "equipment_options": {
+      "A": {
+        "items": [
+          {
+            "source_text": "Spear",
+            "quantity": 1,
+            "item_id": "spear"
+          },
+          {
+            "source_text": "Shortbow",
+            "quantity": 1,
+            "item_id": "shortbow"
+          },
+          {
+            "source_text": "Arrows",
+            "quantity": 20,
+            "item_id": null,
+            "note": "No loaded Arrow ammunition item (SRD p.96: Arrows, 20 per Quiver unit)."
+          },
+          {
+            "source_text": "Gaming Set (same as above)",
+            "quantity": 1,
+            "item_id": null,
+            "note": "Resolve item from chosen gaming_set; all four source item IDs now exist. Do not grant a separate arbitrary Gaming Set.",
+            "same_as_choice": "gaming_set"
+          },
+          {
+            "source_text": "Healer’s Kit",
+            "quantity": 1,
+            "item_id": "healers_kit"
+          },
+          {
+            "source_text": "Quiver",
+            "quantity": 1,
+            "item_id": null,
+            "note": "No loaded Quiver item."
+          },
+          {
+            "source_text": "Traveler’s Clothes",
+            "quantity": 1,
+            "item_id": null,
+            "note": "No loaded Traveler's Clothes item."
+          }
+        ],
+        "gp": 14
+      },
+      "B": {
+        "items": [],
+        "gp": 50
+      }
+    }
+  },
+  "ability_rule": {
+    "source": {
+      "pdf_page": 83,
+      "printed_page": 83
+    },
+    "quote": "A background lists three of your character’s ability scores. Increase one by 2 and another one by 1, or increase all three by 1. None of these increases can raise a score above 20.",
+    "patterns": [
+      [
+        2,
+        1
+      ],
+      [
+        1,
+        1,
+        1
+      ]
+    ],
+    "cap": 20
+  },
+  "source": {
+    "authority": "SRD 5.2.1",
+    "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      83
+    ],
+    "text": "Soldier\nAbility Scores: Strength, Dexterity, Constitution\nFeat: Savage Attacker (see “Feats”)\nSkill Proficiencies: Athletics and Intimidation\nTool Proficiency: Choose one kind of Gaming Set (see “Equipment”)\nEquipment: Choose A or B: (A) Spear, Shortbow, 20 Arrows, Gaming Set (same as above), Healer’s Kit, Quiver, Traveler’s Clothes, 14 GP; or (B) 50 GP"
+  },
+  "authored_operations": [
+    {
+      "trigger": "Creation confirm",
+      "effects": [
+        "Choose+2/+1 to distinct listed abilities OR+1 to all3, cap20",
+        "Grant fixed background Origin feat; Acolyte fixes Cleric list, Sage fixes Wizard list but each still chooses legal casting ability and spells",
+        "Grant two fixed skills and fixed/chosen tool from candidate",
+        "Choose equipment A with exact quantities and GP OR50 GP; Soldier item equals chosen Gaming Set"
+      ],
+      "required_extension_groups": [
+        "progression",
+        "choices",
+        "items",
+        "casting"
+      ],
+      "ending_and_identity": "Whole package validates before committing; separate source receipts; restore applies no grants."
+    }
+  ],
+  "feat_candidate": "../feats/savage_attacker.json",
+  "item_reconciliation": [
+    {
+      "source_text": "Spear",
+      "item_id": "spear",
+      "present_in_core_source_inventory": true,
+      "resolution": "Source record exists; this static lookup does not certify loaded behavior."
+    },
+    {
+      "source_text": "Shortbow",
+      "item_id": "shortbow",
+      "present_in_core_source_inventory": true,
+      "resolution": "Source record exists; this static lookup does not certify loaded behavior."
+    },
+    {
+      "source_text": "Arrows",
+      "item_id": null,
+      "present_in_core_source_inventory": false,
+      "resolution": "Resolve exact item/content facts before promotion; null remains explicit, never substitute unrelated item."
+    },
+    {
+      "source_text": "Gaming Set (same as above)",
+      "item_id": null,
+      "present_in_core_source_inventory": false,
+      "resolution": "Resolve exact item/content facts before promotion; null remains explicit, never substitute unrelated item."
+    },
+    {
+      "source_text": "Healer’s Kit",
+      "item_id": "healers_kit",
+      "present_in_core_source_inventory": true,
+      "resolution": "Source record exists; this static lookup does not certify loaded behavior."
+    },
+    {
+      "source_text": "Quiver",
+      "item_id": null,
+      "present_in_core_source_inventory": false,
+      "resolution": "Resolve exact item/content facts before promotion; null remains explicit, never substitute unrelated item."
+    },
+    {
+      "source_text": "Traveler’s Clothes",
+      "item_id": null,
+      "present_in_core_source_inventory": false,
+      "resolution": "Resolve exact item/content facts before promotion; null remains explicit, never substitute unrelated item."
+    },
+    {
+      "source_text": "Gaming Set",
+      "from_same_choice": "gaming_set",
+      "options": {
+        "dice_set": {
+          "present_in_core_source_inventory": true,
+          "runtime_item_id": "dice_set"
+        },
+        "dragonchess_set": {
+          "present_in_core_source_inventory": true,
+          "runtime_item_id": "dragonchess_set"
+        },
+        "playing_card_set": {
+          "present_in_core_source_inventory": true,
+          "runtime_item_id": "playing_card_set"
+        },
+        "three_dragon_ante_set": {
+          "present_in_core_source_inventory": true,
+          "runtime_item_id": "three_dragon_ante_set"
+        }
+      },
+      "resolution": "Existing definitions recovered; missing capability is linking one selected proficiency to its equipment copy, not missing Gaming Set source records."
+    }
+  ],
+  "unsupported_behavior": [
+    {
+      "groups": [
+        "progression",
+        "choices"
+      ],
+      "requirement": "S-231 background content/creation host with fixed parameterized feat, ability patterns, equipment alternative and atomic source-owned grants remains required. Existing class tools and Skilled acquisition are reuse, not work to restart."
+    },
+    {
+      "groups": [
+        "items"
+      ],
+      "requirement": "Retain Book topic prayers/history; exact Parchment quantities; ordinary Pouch vs Component Pouch; Traveler’s Clothes, Arrows, Quiver; Soldier chosen Gaming Set and its matching item. Holy Symbol form remains explicit Amulet/Emblem/Reliquary selection or unresolved generic mapping, never silently chosen."
+    }
+  ],
+  "source_revision": "2a19eb1d (existing working-tree definitions and recovered drafts read on 2026-11-08)",
+  "reused_input_hashes": {
+    "docs/planning/crown-backgrounds/candidates.json": "5993552dd5ae7b247f7b0c72a10c57809b6c49618448cdb8d02fcfbd0311243c",
+    "docs/planning/crown-backgrounds/README.md": "356e543b6e0411bc1d7afcd4313ec92f83d005de59d5104a90ed0912a4a2e7dd"
+  }
+}

@@ -1,0 +1,70 @@
+{
+  "schema": "crown-world-candidate/1",
+  "id": "sequential_dungeon",
+  "name": "Sequential dungeon layout",
+  "kind": "generation",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring declarations only; not registered engine opcodes.",
+  "required_extensions": [
+    "travel",
+    "objectives_rewards"
+  ],
+  "authored_operations": [
+    {
+      "operation": "generate_layout",
+      "room_count_from": "dungeon.room_count",
+      "entrance": {
+        "id": 0,
+        "coordinate": [
+          0,
+          0
+        ],
+        "visited": true,
+        "cleared": true
+      },
+      "direction": "shuffle four cardinal directions; choose first; advance in this direction for every later room",
+      "intermediate_distribution": [
+        {
+          "random_interval": "[0,0.5)",
+          "type": "combat",
+          "count_inclusive": [
+            1,
+            3
+          ],
+          "pool": "dungeon.monster_pool; pick with replacement; duplicates retain weight"
+        },
+        {
+          "random_interval": "[0.5,0.7)",
+          "type": "trap",
+          "event_id": "trapped_chest"
+        },
+        {
+          "random_interval": "[0.7,0.9)",
+          "type": "loot",
+          "items": [
+            "gold_100"
+          ],
+          "independent_optional": {
+            "item": "potion_healing",
+            "probability": 0.5
+          }
+        },
+        {
+          "random_interval": "[0.9,1)",
+          "type": "empty"
+        }
+      ],
+      "tactical_override": "An intermediate room with tactical_rooms[str(i)] becomes EMPTY; clear generated monsters, loot and event. Its authored local room owns encounter/objects.",
+      "final_room": "BOSS, id room_count-1, dungeon.boss.monster_id only; preserve configuration separately."
+    }
+  ],
+  "blockers": [
+    "Generation code selects boss monster_id only. Campaign bonus_hp/name and event_table fields are not automatically consumed by this generator. No rolled layout is a hand-authored permanent dungeon map."
+  ],
+  "current_owner_pins": [
+    {
+      "path": "src/dungeon/dungeon_generator.gd",
+      "sha256": "88af7259bb15ebdba9e864b6fc59468d6a262946f7bde20ac33d8cb64921ca7e"
+    }
+  ]
+}

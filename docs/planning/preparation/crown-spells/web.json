@@ -1,0 +1,211 @@
+{
+  "format": "crown-spell-candidate/1",
+  "id": "web",
+  "name": "Web",
+  "level": 2,
+  "status": "written_unverified_not_loaded",
+  "source": {
+    "authority": "SRD 5.2.1",
+    "url": "https://media.dndbeyond.com/compendium-images/srd/5.2/SRD_CC_v5.2.1.pdf",
+    "sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      174
+    ],
+    "header": {
+      "Casting Time": "Action",
+      "Range": "60 feet",
+      "Components": "V, S, M (a bit of spiderweb)",
+      "Duration": "Concentration, up to 1 hour"
+    },
+    "attribution": "System Reference Document 5.2.1, Wizards of the Coast LLC; CC BY 4.0."
+  },
+  "casting": {
+    "casting_time": "Action",
+    "kind": "action",
+    "seconds": null,
+    "ritual_available": false,
+    "range": {
+      "source": "60 feet",
+      "kind": "distance",
+      "feet": 60
+    },
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "a bit of spiderweb",
+    "duration": "Concentration, up to 1 hour",
+    "concentration": true,
+    "spell_lists": [
+      "sorcerer",
+      "wizard"
+    ]
+  },
+  "authored_intent": "20-foot cube Light Obscurement and Difficult Terrain; require anchors/layered support; first entry/start-turn DEX save or Restrained; action Athletics escape; burning 5-foot cubes and 2d4 turn-start Fire.",
+  "rules": [
+    {
+      "id": "r001",
+      "text": "You conjure a mass of sticky webbing at a point within range."
+    },
+    {
+      "id": "r002",
+      "text": "The webs fill a 20-foot Cube there for the duration."
+    },
+    {
+      "id": "r003",
+      "text": "The webs are Difficult Terrain, and the area within them is Lightly Obscured."
+    },
+    {
+      "id": "r004",
+      "text": "If the webs aren’t anchored between two solid masses (such as walls or trees) or layered across a floor, wall, or ceiling, the web collapses on itself, and the spell ends at the start of your next turn."
+    },
+    {
+      "id": "r005",
+      "text": "Webs layered over a flat surface have a depth of 5 feet."
+    },
+    {
+      "id": "r006",
+      "text": "The first time a creature enters the webs on a turn or starts its turn there, it must succeed on a Dexterity saving throw or have the Restrained condition while in the webs or until it breaks free."
+    },
+    {
+      "id": "r007",
+      "text": "A creature Restrained by the webs can take an action to make a Strength (Athletics) check against your spell save DC."
+    },
+    {
+      "id": "r008",
+      "text": "If it succeeds, it is no longer Restrained."
+    },
+    {
+      "id": "r009",
+      "text": "The webs are flammable."
+    },
+    {
+      "id": "r010",
+      "text": "Any 5-foot Cube of webs exposed to fire burns away in 1 round, dealing 2d4 Fire damage to any creature that starts its turn in the fire."
+    }
+  ],
+  "authored_operations": [
+    {
+      "operation": "create_burnable_restraint_volume",
+      "parameters": {
+        "cube_feet": 20,
+        "difficult_terrain": true,
+        "obscurement": "light",
+        "support": "between_two_solids_or_layered_on_floor_wall_ceiling",
+        "unsupported": "collapse_and_end_at_caster_next_turn_start",
+        "layer_depth_feet": 5,
+        "save": {
+          "events": [
+            "first_entry_on_turn",
+            "target_turn_start"
+          ],
+          "ability": "DEX",
+          "failure": "restrained_while_in_web_or_until_escape"
+        },
+        "escape": {
+          "action": "action",
+          "check": "STR_Athletics",
+          "dc": "caster_spell_dc"
+        },
+        "burning": {
+          "cube_feet": 5,
+          "burn_away_rounds": 1,
+          "turn_start_damage": "2d4",
+          "type": "fire"
+        }
+      },
+      "status": "authoring_declaration_not_a_registered_opcode",
+      "required_source_rules": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006",
+        "r007",
+        "r008",
+        "r009",
+        "r010"
+      ]
+    }
+  ],
+  "runtime_draft": {
+    "origin": "fragments_only",
+    "definition": null,
+    "fragments": {
+      "entry_or_start_turn_save": {
+        "save": "DEX",
+        "effects": [
+          {
+            "type": "grant_condition",
+            "condition": "restrained",
+            "on_failed_save": true
+          }
+        ]
+      },
+      "burning_cube_start_turn_damage": {
+        "damage": "2d4",
+        "damage_type": "fire"
+      }
+    },
+    "coverage": "Unverified. Neither a full definition nor a fragment certifies all source rules or controls. Required extensions are not silently waived."
+  },
+  "required_extensions": [
+    {
+      "group": "zones",
+      "requirement": "Mount source-defined recurring and moving area effects with independent appearance/entry/movement/start/end triggers, exclusions and once-per-turn receipts; area_selection is geometry only.",
+      "spell_specific_intent": "20-foot cube Light Obscurement and Difficult Terrain; require anchors/layered support; first entry/start-turn DEX save or Restrained; action Athletics escape; burning 5-foot cubes and 2d4 turn-start Fire.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006",
+        "r007",
+        "r008",
+        "r009",
+        "r010"
+      ],
+      "existing_owner_to_reuse": "src/spells/combat_spell_zones.gd",
+      "slice_references": "S-080/S-087/S-184/S-190",
+      "disposition": "requires_mapping_or_host_completion",
+      "note": "This is an authored handoff requirement, not a fresh runtime failure or claim that the whole referenced slice is missing."
+    },
+    {
+      "group": "tethers",
+      "requirement": "Bind each restrained target and exact anchor/cast; source-defined Athletics/STR checks, helper costs, fire/escape and cleanup need their actual controls.",
+      "spell_specific_intent": "20-foot cube Light Obscurement and Difficult Terrain; require anchors/layered support; first entry/start-turn DEX save or Restrained; action Athletics escape; burning 5-foot cubes and 2d4 turn-start Fire.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006",
+        "r007",
+        "r008",
+        "r009",
+        "r010"
+      ],
+      "existing_owner_to_reuse": "src/characters/tether_rules.gd",
+      "slice_references": "S-144/S-168/S-169",
+      "disposition": "requires_mapping_or_host_completion",
+      "note": "This is an authored handoff requirement, not a fresh runtime failure or claim that the whole referenced slice is missing."
+    }
+  ],
+  "audit": {
+    "source": "docs/audits/spells.md",
+    "batch": "088-3",
+    "production_definition_at_authoring": "res://data/core/spells/imported_spells.json#194",
+    "baseline_execution": "native",
+    "source_revision": "2a19eb1d",
+    "existing_conversion_label": "queued"
+  },
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile every source rule and required extension, then implement and verify through production paths before any deliberate promotion. Keep native behavior until covered."
+  }
+}

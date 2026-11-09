@@ -1,0 +1,38 @@
+{
+  "schema": "crown-world-candidate/1",
+  "id": "rest_time",
+  "name": "Rest Time",
+  "kind": "procedures",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring declarations only; not registered engine opcodes.",
+  "required_extensions": [
+    "rest_time"
+  ],
+  "authored_operations": [
+    {
+      "operation": "resolve_rest_time",
+      "requirement": "Coordinate campaign seconds, cast/work durations, Short/Long Rest lifecycle, interruption, daily limits, resource/Hit Dice recovery and exactly owned expiry. Preserve exceptions such as Trance, Aspect of the Moon and spell rest-like benefits without manufacturing a completed rest or resetting a separate resource."
+    }
+  ],
+  "blockers": [
+    "Event rest currently calls reset_rest_features; that is not proof of eight-hour Long Rest or the full shared rest lifecycle. Inn healing/rest/blessing order is retained pending explicit campaign-event mapping. Numeric event turns are not automatically seconds or combat rounds."
+  ],
+  "slices": "S-014/S-065/S-066/S-067/S-070/S-071",
+  "source_context_pages": [
+    13,
+    184,
+    186
+  ],
+  "source_context": "../source-pages.json",
+  "current_owner_pins": [
+    {
+      "path": "src/characters/rest_rules.gd",
+      "sha256": "1548c49c6bdfa520a588e53915527c1b3b56e60f5f23d00468943dfaa0368595"
+    },
+    {
+      "path": "src/autoload/game_manager.gd",
+      "sha256": "800f520c33496c30f2c2e40524adc17e3568fa8c9faa91f44ecfc95d914244e9"
+    }
+  ],
+  "reuse_boundary": "Existing accepted pieces remain accepted at their documented limits; these requirements do not mark the entire slices missing."
+}

@@ -1,0 +1,322 @@
+{
+  "schema": "crown-character-candidate/1",
+  "id": "circle_of_the_land",
+  "name": "Circle of the Land",
+  "kind": "subclass",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "scope": {
+    "total_character_level_maximum": 5
+  },
+  "operation_language": "authoring intent only; not registered engine syntax",
+  "runtime_support": "Retained definitions are reuse material, not proof of full rules. Every authored operation needs contract mapping and later production-path verification before promotion.",
+  "class_id": "druid",
+  "class_level": 3,
+  "features": [
+    {
+      "id": "circle_of_the_land_circle_of_the_land_spells",
+      "name": "Circle of the Land Spells",
+      "class_level": 3,
+      "rules": {
+        "authority": "SRD 5.2.1",
+        "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+        "pages": [
+          46
+        ],
+        "text": "Level 3: Circle of the Land Spells\nWhenever you finish a Long Rest, choose one type\nof land: arid, polar, temperate, or tropical. Consult\nthe table below that corresponds to the chosen\ntype; you have the spells listed for your Druid level\nand lower prepared. Arid Land\nDruid Level Circle Spells\n3 Blur, Burning Hands, Fire Bolt\n5 Fireball\n7 Blight\n9 Wall of Stone\nPolar Land\nDruid Level Circle Spells\n3 Fog Cloud, Hold Person, Ray of Frost\n5 Sleet Storm\n7 Ice Storm\n9 Cone of Cold\nTemperate Land\nDruid Level Circle Spells\n3 Misty Step, Shocking Grasp, Sleep\n5 Lightning Bolt\n7 Freedom of Movement\n9 Tree Stride\nTropical Land\nDruid Level Circle Spells\n3 Acid Splash, Ray of Sickness, Web\n5 Stinking Cloud\n7 Polymorph\n9 Insect Plague"
+      },
+      "revised_reference_entries": [
+        "Whenever you finish a {@variantrule Long Rest|XPHB}, choose one type of land: arid, polar, temperate, or tropical. Consult the table below that corresponds to the chosen type; you have the spells listed for your Druid level and lower prepared.",
+        {
+          "type": "table",
+          "caption": "Arid Land",
+          "colLabels": [
+            "Druid Level",
+            "Circle Spells"
+          ],
+          "colStyles": [
+            "col-1 text-center",
+            "col-11"
+          ],
+          "rows": [
+            [
+              "3rd",
+              "{@spell Blur|XPHB}, {@spell Burning Hands|XPHB}, {@spell Fire Bolt|XPHB}"
+            ],
+            [
+              "5th",
+              "{@spell Fireball|XPHB}"
+            ],
+            [
+              "7th",
+              "{@spell Blight|XPHB}"
+            ],
+            [
+              "9th",
+              "{@spell Wall of Stone|XPHB}"
+            ]
+          ]
+        },
+        {
+          "type": "table",
+          "caption": "Polar Land",
+          "colLabels": [
+            "Druid Level",
+            "Circle Spells"
+          ],
+          "colStyles": [
+            "col-1 text-center",
+            "col-11"
+          ],
+          "rows": [
+            [
+              "3rd",
+              "{@spell Fog Cloud|XPHB}, {@spell Hold Person|XPHB}, {@spell Ray of Frost|XPHB}"
+            ],
+            [
+              "5th",
+              "{@spell Sleet Storm|XPHB}"
+            ],
+            [
+              "7th",
+              "{@spell Ice Storm|XPHB}"
+            ],
+            [
+              "9th",
+              "{@spell Cone of Cold|XPHB}"
+            ]
+          ]
+        },
+        {
+          "type": "table",
+          "caption": "Temperate Land",
+          "colLabels": [
+            "Druid Level",
+            "Circle Spells"
+          ],
+          "colStyles": [
+            "col-1 text-center",
+            "col-11"
+          ],
+          "rows": [
+            [
+              "3rd",
+              "{@spell Misty Step|XPHB}, {@spell Shocking Grasp|XPHB}, {@spell Sleep|XPHB}"
+            ],
+            [
+              "5th",
+              "{@spell Lightning Bolt|XPHB}"
+            ],
+            [
+              "7th",
+              "{@spell Freedom of Movement|XPHB}"
+            ],
+            [
+              "9th",
+              "{@spell Tree Stride|XPHB}"
+            ]
+          ]
+        },
+        {
+          "type": "table",
+          "caption": "Tropical Land",
+          "colLabels": [
+            "Druid Level",
+            "Circle Spells"
+          ],
+          "colStyles": [
+            "col-1 text-center",
+            "col-11"
+          ],
+          "rows": [
+            [
+              "3rd",
+              "{@spell Acid Splash|XPHB}, {@spell Ray of Sickness|XPHB}, {@spell Web|XPHB}"
+            ],
+            [
+              "5th",
+              "{@spell Stinking Cloud|XPHB}"
+            ],
+            [
+              "7th",
+              "{@spell Polymorph|XPHB}"
+            ],
+            [
+              "9th",
+              "{@spell Insect Plague|XPHB}"
+            ]
+          ]
+        }
+      ],
+      "authored_operations": [
+        {
+          "trigger": "Class level3 and5; Land selection on Long Rest",
+          "cost": "Normal spell costs except explicit grant elsewhere",
+          "effects": [
+            "Always prepare exact in-band table spells without counting class limit; grant as own-class spells",
+            "Land selects Arid, Polar, Temperate or Tropical after Long Rest; use current class-level rows"
+          ],
+          "ending_and_identity": "Exact subclass ownership; replace only old land grants",
+          "required_extension_groups": [
+            "casting",
+            "choices"
+          ]
+        }
+      ],
+      "unsupported_behavior": [
+        {
+          "groups": [
+            "casting",
+            "choices"
+          ],
+          "requirement": {
+            "trigger": "Class level3 and5; Land selection on Long Rest",
+            "cost": "Normal spell costs except explicit grant elsewhere",
+            "effects": [
+              "Always prepare exact in-band table spells without counting class limit; grant as own-class spells",
+              "Land selects Arid, Polar, Temperate or Tropical after Long Rest; use current class-level rows"
+            ],
+            "ending": "Exact subclass ownership; replace only old land grants"
+          },
+          "mapping_boundary": "Map this complete sequence to shared contracts; retained native behavior and fragments do not certify it.",
+          "status": "unmapped_or_unverified_candidate"
+        }
+      ]
+    },
+    {
+      "id": "circle_of_the_land_land_s_aid",
+      "name": "Land’s Aid",
+      "class_level": 3,
+      "rules": {
+        "authority": "SRD 5.2.1",
+        "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+        "pages": [
+          46
+        ],
+        "text": "Level 3: Land’s Aid\nAs a Magic action, you can expend a use of your Wild\nShape and choose a point within 60 feet of yourself.\nVitality-giving flowers and life-draining thorns\nappear for a moment in a 10-foot-radius Sphere centered on that point. Each creature of your choice in\nthe Sphere must make a Constitution saving throw\nagainst your spell save DC, taking 2d6 Necrotic\ndamage on a failed save or half as much damage on\na successful one. One creature of your choice in that\narea regains 2d6 Hit Points.\nThe damage and healing increase by 1d6 when\nyou reach Druid levels 10 (3d6) and 14 (4d6)."
+      },
+      "revised_reference_entries": [
+        "As a {@action Magic|XPHB} action, you can expend a use of your Wild Shape and choose a point within 60 feet of yourself. Vitality-giving flowers and life-draining thorns appear for a moment in a 10-foot-radius {@variantrule Sphere [Area of Effect]|XPHB|Sphere} centered on that point. Each creature of your choice in the {@variantrule Sphere [Area of Effect]|XPHB|Sphere} must make a Constitution saving throw against your spell save DC, taking {@damage 2d6} Necrotic damage on a failed save or half as much damage on a successful one. One creature of your choice in that area regains {@dice 2d6} {@variantrule Hit Points|XPHB}.",
+        "The damage and healing increase by {@dice 1d6} when you reach Druid levels 10 ({@dice 3d6}) and 14 ({@dice 4d6})."
+      ],
+      "authored_operations": [
+        {
+          "trigger": "Magic action choose point within60 feet",
+          "cost": "one Wild Shape use",
+          "effects": [
+            "10-foot-radius Sphere; chosen creatures CON save for2d6 Necrotic, half success",
+            "One creature of choice in area heals2d6; increase at later levels excluded"
+          ],
+          "ending_and_identity": "Exact source owns the grant/state; remove temporary effects at the declared ending; never replay acquisition on restore.",
+          "required_extension_groups": [
+            "resources",
+            "allocation",
+            "rolls"
+          ]
+        }
+      ],
+      "unsupported_behavior": [
+        {
+          "groups": [
+            "resources",
+            "allocation",
+            "rolls"
+          ],
+          "requirement": {
+            "trigger": "Magic action choose point within60 feet",
+            "cost": "one Wild Shape use",
+            "effects": [
+              "10-foot-radius Sphere; chosen creatures CON save for2d6 Necrotic, half success",
+              "One creature of choice in area heals2d6; increase at later levels excluded"
+            ],
+            "ending": "Exact source owns the grant/state; remove temporary effects at the declared ending; never replay acquisition on restore."
+          },
+          "mapping_boundary": "Map this complete sequence to shared contracts; retained native behavior and fragments do not certify it.",
+          "status": "unmapped_or_unverified_candidate"
+        }
+      ]
+    }
+  ],
+  "reused_from": [
+    "_staging/subclass-staging/staged/circle_of_the_land.json",
+    "reference/2024/classes/druid.json"
+  ],
+  "retained_runtime_seed": {
+    "id": "circle_of_the_land",
+    "name": "Circle of the Land",
+    "class_id": "druid",
+    "rights": "srd_ok",
+    "rules_status": "2024-partial",
+    "features_by_level": {
+      "3": [
+        {
+          "id": "circle_of_the_land_circle_of_the_land_spells",
+          "name": "Circle of the Land Spells",
+          "description": "Whenever you finish a Long Rest, choose one type of land: arid, polar, temperate, or tropical. Consult the table below that corresponds to the chosen type; you have the spells listed for your Druid level and lower prepared.",
+          "type": "passive",
+          "effects": [],
+          "rules_source": "dnd-2024-srd-5.2.1",
+          "rules_status": "reference-only",
+          "enabled": false
+        },
+        {
+          "id": "circle_of_the_land_land_s_aid",
+          "name": "Land's Aid",
+          "description": "As a Magic action, you can expend a use of your Wild Shape and choose a point within 60 feet of yourself. Vitality-giving flowers and life-draining thorns appear for a moment in a 10-foot-radius Effect] centered on… The damage and healing increase by 1d6 when you reach Druid lev…",
+          "type": "active",
+          "effects": [],
+          "rules_source": "dnd-2024-srd-5.2.1",
+          "rules_status": "reference-only",
+          "enabled": false,
+          "action_cost": "action"
+        }
+      ]
+    }
+  },
+  "always_prepared_spells_by_class_level": {
+    "arid": {
+      "3": [
+        "blur",
+        "burning_hands",
+        "fire_bolt"
+      ],
+      "5": [
+        "fireball"
+      ]
+    },
+    "polar": {
+      "3": [
+        "fog_cloud",
+        "hold_person",
+        "ray_of_frost"
+      ],
+      "5": [
+        "sleet_storm"
+      ]
+    },
+    "temperate": {
+      "3": [
+        "misty_step",
+        "shocking_grasp",
+        "sleep"
+      ],
+      "5": [
+        "lightning_bolt"
+      ]
+    },
+    "tropical": {
+      "3": [
+        "acid_splash",
+        "ray_of_sickness",
+        "web"
+      ],
+      "5": [
+        "stinking_cloud"
+      ]
+    }
+  },
+  "source_revision": "2a19eb1d (existing working-tree definitions and recovered drafts read on 2026-11-08)",
+  "reused_input_hashes": {
+    "_staging/subclass-staging/staged/circle_of_the_land.json": "dfe5b13b5a9429140d70bd77b95ea9f633d4270ddb563c83085e7fa6776b0637",
+    "reference/2024/classes/druid.json": "18c6dac35c48cbd91d3268b5d28a8204517678bb25a66eac4e1c89a88521fd99"
+  }
+}

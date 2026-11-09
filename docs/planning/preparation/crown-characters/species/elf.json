@@ -1,0 +1,254 @@
+{
+  "schema": "crown-character-candidate/1",
+  "id": "elf",
+  "name": "Elf",
+  "kind": "species",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "scope": {
+    "total_character_level_maximum": 5
+  },
+  "operation_language": "authoring intent only; not registered engine syntax",
+  "runtime_support": "Retained definitions are reuse material, not proof of full rules. Every authored operation needs contract mapping and later production-path verification before promotion.",
+  "rules": {
+    "authority": "SRD 5.2.1",
+    "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      84,
+      85
+    ],
+    "text": "Elf\nCreature Type: Humanoid\nSize: Medium (about 5–6 feet tall)\nSpeed: 30 feet\nAs an Elf, you have these special traits.\nDarkvision.\nYou have Darkvision with a range of\n60 feet.\nElven Lineage.\nYou are part of a lineage that\ngrants you supernatural abilities. Choose a lineage\nfrom the Elven Lineages table. You gain the level 1\nbenefit of that lineage.\nWhen you reach character levels 3 and 5, you\nlearn a higher-level spell, as shown on the table.\nYou always have that spell prepared. You can cast it\nonce without a spell slot, and you regain the ability\nto cast it in that way when you finish a Long Rest.\nYou can also cast the spell using any spell slots you\nhave of the appropriate level.\nIntelligence, Wisdom, or Charisma is your spellcasting ability for the spells you cast with this trait\n(choose the ability when you select the lineage).\nFey Ancestry.\nYou have Advantage on saving\nthrows you make to avoid or end the Charmed\ncondition.\nKeen Senses.\nYou have proficiency in the Insight,\nPerception, or Survival skill.\nTrance.\nYou don’t need to sleep, and magic can’t\nput you to sleep. You can finish a Long Rest in 4\nhours if you spend those hours in a trancelike meditation, during which you retain consciousness.",
+    "table_context_pages": [
+      85
+    ]
+  },
+  "definition": {
+    "size": [
+      "Medium"
+    ],
+    "speed_feet": 30,
+    "darkvision_feet": 60,
+    "choices": {
+      "lineage": [
+        "drow",
+        "high_elf",
+        "wood_elf"
+      ],
+      "spellcasting_ability": [
+        "INT",
+        "WIS",
+        "CHA"
+      ],
+      "skill": [
+        "Insight",
+        "Perception",
+        "Survival"
+      ]
+    },
+    "lineages": {
+      "drow": {
+        "darkvision_feet": 120,
+        "cantrip": "dancing_lights",
+        "3": "faerie_fire",
+        "5": "darkness"
+      },
+      "high_elf": {
+        "cantrip": "prestidigitation",
+        "cantrip_replacement": "one Wizard cantrip after Long Rest",
+        "3": "detect_magic",
+        "5": "misty_step"
+      },
+      "wood_elf": {
+        "speed_feet": 35,
+        "cantrip": "druidcraft",
+        "3": "longstrider",
+        "5": "pass_without_trace"
+      }
+    },
+    "creature_type": "Humanoid",
+    "ability_score_increases": {},
+    "languages": {
+      "fixed": [
+        "Common"
+      ],
+      "choose": 2,
+      "from": [
+        "Common Sign Language",
+        "Draconic",
+        "Dwarvish",
+        "Elvish",
+        "Giant",
+        "Gnomish",
+        "Goblin",
+        "Halfling",
+        "Orc"
+      ],
+      "source": "creation p20; species supplies no fixed ancestral language"
+    }
+  },
+  "authored_operations": [
+    {
+      "name": "Base species and creation grants",
+      "trigger": "Creation confirmation",
+      "cost": "One species; listed size and language choices",
+      "effects": [
+        "Humanoid creature type",
+        "Choose listed size; use declared Speed in feet; no fixed species ASIs",
+        "Know Common and choose two Standard Languages",
+        "Darkvision 60 feet; lineage override applies; execute observer-specific sight rather than an overworld vision bonus"
+      ],
+      "required_extension_groups": [
+        "progression",
+        "choices",
+        "languages",
+        "movement",
+        "world"
+      ],
+      "ending_and_identity": "Save exact selected species/size/languages; grant once; preserve legacy records separately."
+    },
+    {
+      "name": "Fey Ancestry",
+      "trigger": "Save to avoid/end Charmed",
+      "cost": "none",
+      "effects": [
+        "Advantage on save"
+      ],
+      "required_extension_groups": [
+        "rolls"
+      ],
+      "ending_and_identity": "Exact species/selected trait source; respect source ending; permanent grants once at actual character level."
+    },
+    {
+      "name": "Keen Senses",
+      "trigger": "Creation",
+      "cost": "one skill choice",
+      "effects": [
+        "Grant chosen Insight/Perception/Survival proficiency"
+      ],
+      "required_extension_groups": [
+        "choices"
+      ],
+      "ending_and_identity": "Exact species/selected trait source; respect source ending; permanent grants once at actual character level."
+    },
+    {
+      "name": "Trance",
+      "trigger": "Rest or magical sleep",
+      "cost": "none",
+      "effects": [
+        "No sleep needed; magic cannot put owner to sleep;4-hour conscious meditation Long Rest"
+      ],
+      "required_extension_groups": [
+        "world"
+      ],
+      "ending_and_identity": "Exact species/selected trait source; respect source ending; permanent grants once at actual character level."
+    },
+    {
+      "name": "Lineage/legacy spell grants",
+      "trigger": "Character levels1,3,5 regardless of class allocation",
+      "cost": "Each levelled spell separately once per Long Rest without slot, OR appropriate available slot; normal casting costs",
+      "effects": [
+        "Grant chosen cantrip and always-prepared spells using INT/WIS/CHA selected at lineage/legacy acquisition; no class spell-list requirement",
+        "Do not consume free use when slot mode selected; do not grant free spell slots"
+      ],
+      "required_extension_groups": [
+        "choices",
+        "casting",
+        "resources"
+      ]
+    }
+  ],
+  "reused_from": [
+    "data/core/races/elf.json"
+  ],
+  "retained_runtime_seed": {
+    "id": "elf",
+    "name": "Elf",
+    "description": "Elves are a graceful people with keen senses and a deep connection to nature and magic.",
+    "ability_bonuses": {
+      "DEX": 2,
+      "INT": 1
+    },
+    "speed": 6,
+    "size": "medium",
+    "languages": [
+      "Common",
+      "Elvish"
+    ],
+    "proficiencies": [
+      "Perception"
+    ],
+    "traits": [
+      {
+        "id": "darkvision",
+        "name": "Darkvision",
+        "description": "You can see in dim light within 60 feet as if it were bright light. Grants +1 vision range on the overworld.",
+        "effects": [
+          {
+            "type": "vision_bonus",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "id": "fey_ancestry",
+        "name": "Fey Ancestry",
+        "description": "You have advantage on saving throws against being charmed, and magic can't put you to sleep.",
+        "effects": [
+          {
+            "type": "save_advantage",
+            "condition": "charmed"
+          },
+          {
+            "type": "immunity",
+            "condition": "magical_sleep"
+          }
+        ]
+      },
+      {
+        "id": "trance",
+        "name": "Trance",
+        "description": "Elves don't need to sleep. During rest events, you remain alert and can keep watch.",
+        "effects": [
+          {
+            "type": "rest_advantage",
+            "long_rest_duration_seconds": 14400
+          }
+        ]
+      },
+      {
+        "id": "elf_weapon_training",
+        "name": "Elf Weapon Training",
+        "description": "You have proficiency with longswords, shortswords, shortbows, and longbows.",
+        "effects": [
+          {
+            "type": "weapon_proficiency",
+            "weapons": [
+              "longsword",
+              "shortsword",
+              "shortbow",
+              "longbow"
+            ]
+          }
+        ]
+      }
+    ],
+    "darkvision": true,
+    "darkvision_feet": 60
+  },
+  "unsupported_behavior": [
+    {
+      "groups": [
+        "casting",
+        "choices",
+        "resources",
+        "rolls",
+        "world"
+      ],
+      "requirement": "2024 choices, character-level grants and full named trait outcomes must map to shared hosts. Legacy seed is comparison material only: never inherit its fixed ASIs, old weapon grants or other unselected traits.",
+      "status": "mapping_and_host_verification_required"
+    }
+  ],
+  "source_revision": "2a19eb1d (existing working-tree definitions and recovered drafts read on 2026-11-08)",
+  "reused_input_hashes": {
+    "data/core/races/elf.json": "83a1b0fd1d35774d11d6b9770413de0145ba1b163356166fbe8b36fa00496965"
+  }
+}

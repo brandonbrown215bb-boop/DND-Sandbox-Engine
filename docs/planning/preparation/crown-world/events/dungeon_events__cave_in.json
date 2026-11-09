@@ -1,0 +1,70 @@
+{
+  "schema": "crown-world-candidate/1",
+  "id": "dungeon_events__cave_in",
+  "name": "Cave-In!",
+  "kind": "events",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring declarations only; not registered engine opcodes.",
+  "required_extensions": [
+    "discovery",
+    "hazards",
+    "objectives_rewards"
+  ],
+  "authored_operations": [
+    {
+      "operation": "resolve_authored_check",
+      "seed_pointer": "/check",
+      "check": {
+        "ability": "DEX",
+        "dc": 14
+      },
+      "requirement": "Keep ability, skill/context, DC and optional familiar Help exactly. Choose actor and actual context; settle one branch once; never silently convert an ability check into a saving throw."
+    },
+    {
+      "operation": "settle_ordered_branch",
+      "seed_pointer": "/failure/effects",
+      "effects": [
+        {
+          "type": "damage",
+          "value": "3d6",
+          "damage_type": "bludgeoning"
+        }
+      ],
+      "condition": null,
+      "requirement": "Retain order, exact quantities/formulas, recipient, costs, branch descriptions and occurrence identity; no repeated payment when a child resumes."
+    }
+  ],
+  "blockers": [],
+  "retained_input": {
+    "path": "data/core/events/dungeon_events.json",
+    "sha256": "db368f21178462a95f0bb78028ec8e10441f6467e4a6bb7b3843d6ecaeb20d35",
+    "pointer": "/events/3",
+    "payload": {
+      "id": "cave_in",
+      "name": "Cave-In!",
+      "weight": 15,
+      "description": "The ceiling groans ominously. Dust rains down and then — CRASH!",
+      "type": "skill_check",
+      "check": {
+        "ability": "DEX",
+        "dc": 14
+      },
+      "success": {
+        "description": "You roll out of the way as tons of rubble crash down behind you."
+      },
+      "failure": {
+        "description": "Rocks pummel you before you can escape!",
+        "effects": [
+          {
+            "type": "damage",
+            "value": "3d6",
+            "damage_type": "bludgeoning"
+          }
+        ]
+      }
+    }
+  },
+  "authority": "Custom Crown campaign event, not an SRD trap/NPC/spell replacement",
+  "table_id": "dungeon_events",
+  "occurrence_policy": "Table may roll again; same in-flight occurrence must not reroll/reapply on reopen. Campaign-specific uniqueness beyond generated room claims is unresolved, not silently global once-per-event-ID."
+}

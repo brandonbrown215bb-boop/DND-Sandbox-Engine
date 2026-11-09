@@ -1,0 +1,1406 @@
+{
+  "schema": "crown-character-candidate/1",
+  "id": "paladin",
+  "name": "Paladin",
+  "kind": "class",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "scope": {
+    "total_character_level_maximum": 5
+  },
+  "operation_language": "authoring intent only; not registered engine syntax",
+  "runtime_support": "Retained definitions are reuse material, not proof of full rules. Every authored operation needs contract mapping and later production-path verification before promotion.",
+  "source": {
+    "authority": "SRD 5.2.1",
+    "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      53
+    ],
+    "text": "Paladin\nCore Paladin Traits\nPrimary Ability Strength and Charisma\nHit Point Die D10 per Paladin level\nSaving Throw\nProficiencies\nWisdom and Charisma\nSkill Proficiencies Choose 2: Athletics, Insight,\nIntimidation, Medicine,\nPersuasion, or Religion\nWeapon Proficiencies Simple and Martial weapons\nArmor Training Light, Medium, and Heavy armor and Shields\nStarting Equipment Choose A or B: (A) Chain Mail,\nShield, Longsword, 6 Javelins,\nHoly Symbol, Priest’s Pack,\nand 9 GP; or (B) 150 GP\nBecoming a Paladin …\nAs a Level 1 Character\n• Gain all the traits in the Core Paladin Traits table.\nPaladin Features\nProficiency\nBonus Level Class Features\n1 +2 Lay On Hands, Spellcasting,\nWeapon Mastery\n2 +2 Fighting Style, Paladin’s Smite\n3 +2 Channel Divinity, Paladin Subclass\n4 +2 Ability Score Improvement\n5 +3 Extra Attack, Faithful Steed\n6 +3 Aura of Protection\n7 +3 Subclass feature\n8 +3 Ability Score Improvement\n9 +4 Abjure Foes\n10 +4 Aura of Courage\n11 +4 Radiant Strikes\n12 +4 Ability Score Improvement\n13 +5 —\n14 +5 Restoring Touch\n15 +5 Subclass feature\n16 +5 Ability Score Improvement\n17 +6 —\n18 +6 Aura Expansion\n19 +6 Epic Boon\n20 +6 Subclass feature\n• Gain the Paladin’s level 1 features, which are\nlisted in the Paladin Features table.\nAs a Multiclass Character\n• Gain the following traits from the Core Paladin\nTraits table: Hit Point Die, proficiency with Martial weapons, and training with Light and Medium\narmor and Shields.\n• Gain the Paladin’s level 1 features, which are\nlisted in the Paladin Features table. See the multiclassing rules in “Character Creation” to determine your available spell slots.\nPaladin Class Features\nAs a Paladin, you gain the following class features\nwhen you reach the specified Paladin levels. These\nfeatures are listed in the Paladin Features table."
+  },
+  "reused_from": [
+    "data/core/classes/paladin.json",
+    "reference/2024/classes/paladin.json",
+    "docs/mechanics/paladin-2024.md"
+  ],
+  "acquisition": {
+    "starting_traits": {
+      "armor": [
+        "light",
+        "medium",
+        "heavy",
+        "shield"
+      ],
+      "weapons": [
+        "simple",
+        "martial"
+      ],
+      "skills": [
+        {
+          "choose": {
+            "from": [
+              "athletics",
+              "insight",
+              "intimidation",
+              "medicine",
+              "persuasion",
+              "religion"
+            ],
+            "count": 2
+          }
+        }
+      ]
+    },
+    "multiclass_donor": {
+      "proficienciesGained": {
+        "armor": [
+          "light",
+          "medium",
+          "shield"
+        ],
+        "weapons": [
+          "martial"
+        ]
+      }
+    },
+    "hit_die": {
+      "number": 1,
+      "faces": 10
+    },
+    "primary_ability": [
+      {
+        "str": true,
+        "cha": true
+      }
+    ],
+    "saving_throws": [
+      "wis",
+      "cha"
+    ],
+    "grant_policy": "First total level: full Core Traits and level1 features. Later class entry: only source multiclass traits plus all class level1 features; no starting gear or saving throws. Explicit resolved grants in multiclass.json.",
+    "starting_equipment_donor": {
+      "additionalFromBackground": true,
+      "defaultData": [
+        {
+          "A": [
+            {
+              "item": "chain mail|xphb"
+            },
+            {
+              "item": "shield|xphb"
+            },
+            {
+              "item": "longsword|xphb"
+            },
+            {
+              "item": "javelin|xphb",
+              "quantity": 6
+            },
+            {
+              "item": "holy symbol|xphb"
+            },
+            {
+              "item": "priest's pack|xphb"
+            },
+            {
+              "value": 900
+            }
+          ],
+          "B": [
+            {
+              "value": 15000
+            }
+          ]
+        }
+      ],
+      "entries": [
+        "{@i Choose A or B:} (A) {@item Chain Mail|XPHB}, {@item Shield|XPHB}, {@item Longsword|XPHB}, 6 {@item Javelin|XPHB|Javelins}, {@item Holy Symbol|XPHB}, {@item Priest's Pack|XPHB}, and 9 GP; or (B) 150 GP"
+      ]
+    },
+    "starting_equipment": {
+      "A": {
+        "gp": 9,
+        "items": [
+          {
+            "source_item_key": "chain_mail",
+            "quantity": 1
+          },
+          {
+            "source_item_key": "shield",
+            "quantity": 1
+          },
+          {
+            "source_item_key": "longsword",
+            "quantity": 1
+          },
+          {
+            "source_item_key": "javelin",
+            "quantity": 6
+          },
+          {
+            "source_item_key": "holy_symbol",
+            "quantity": 1
+          },
+          {
+            "source_item_key": "priests_pack",
+            "quantity": 1
+          }
+        ]
+      },
+      "B": {
+        "gp": 150,
+        "items": []
+      }
+    },
+    "equipment_mapping_notes": [
+      "source_item_key is an authoring identity, not automatically a resolved loaded item. Later inventory reconciliation records missing/choice links.",
+      "Monk chosen_tool is the same single Artisan’s Tool OR Musical Instrument chosen for proficiency. Bard instrument is a separate equipment choice.",
+      "Holy Symbol form is a choice or unresolved generic mapping; no silent form substitution."
+    ],
+    "multiclass_grants": {
+      "all": [
+        "STR",
+        "CHA"
+      ],
+      "armor": [
+        "light",
+        "medium",
+        "shields"
+      ],
+      "weapons": [
+        "martial"
+      ],
+      "score_minimum": 13,
+      "hit_die": "d10",
+      "features": "All own-class level1 features plus later features at own-class thresholds; subclass at class3, feat entitlement at class4. See class candidate.",
+      "starting_equipment": [],
+      "saving_throws": []
+    }
+  },
+  "weapon_mastery": {
+    "counts_by_class_level": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "eligible_weapons": "weapon kinds with which owner has proficiency",
+    "replacement": "chosen kinds after Long Rest"
+  },
+  "level_hit_points": {
+    "first_total_level": "maximum class Hit Die + permanent CON modifier",
+    "later_levels": "roll class Hit Die OR use fixed average rounded up; add permanent CON modifier; minimum1 HP",
+    "fixed_average": 6,
+    "hit_dice": "Add one Hit Die of this class type; preserve separate types",
+    "project_policy": "Current bounded permanent progression uses fixed level_hit_points and existing level-up living-character heal; rolled advancement is unsupported there, not silently removed from source."
+  },
+  "features": [
+    {
+      "id": "paladin_lay_on_hands",
+      "name": "Lay On Hands",
+      "class_level": 1,
+      "rules": {
+        "authority": "SRD 5.2.1",
+        "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+        "pages": [
+          53,
+          54
+        ],
+        "text": "Level 1: Lay On Hands\nYour blessed touch can heal wounds. You have a\npool of healing power that replenishes when you\nfinish a Long Rest. With that pool, you can restore a\ntotal number of Hit Points equal to five times your\nPaladin level.\nChannel\nDivinity\nPrepared\nSpells\n—Spell Slots per Spell Level—\n1 2 3 4 5\n— 2 2 — — — —\n— 3 2 — — — —\n2 4 3 — — — —\n2 5 3 — — — —\n2 6 4 2 — — —\n2 6 4 2 — — —\n2 7 4 3 — — —\n2 7 4 3 — — —\n2 9 4 3 2 — —\n2 9 4 3 2 — —\n3 10 4 3 3 — —\n3 10 4 3 3 — —\n3 11 4 3 3 1 —\n3 11 4 3 3 1 —\n3 12 4 3 3 2 —\n3 12 4 3 3 2 —\n3 14 4 3 3 3 1\n3 14 4 3 3 3 1\n3 15 4 3 3 3 2\n3 15 4 3 3 3 2\nAs a Bonus Action, you can touch a creature\n(which could be yourself) and draw power from the\npool of healing to restore a number of Hit Points to\nthat creature, up to the maximum amount remaining in the pool.\nYou can also expend 5 Hit Points from the pool of\nhealing power to remove the Poisoned condition\nfrom the creature; those points don’t also restore\nHit Points to the creature."
+      },
+      "revised_reference_entries": [
+        "Your blessed touch can heal wounds. You have a pool of healing power that replenishes when you finish a {@variantrule Long Rest|XPHB}. With that pool, you can restore a total number of {@variantrule Hit Points|XPHB} equal to five times your Paladin level.",
+        "As a {@variantrule Bonus Action|XPHB}, you can touch a creature (which could be yourself) and draw power from the pool of healing to restore a number of {@variantrule Hit Points|XPHB} to that creature, up to the maximum amount remaining in the pool.",
+        "You can also expend 5 {@variantrule Hit Points|XPHB} from the pool of healing power to remove the {@condition Poisoned|XPHB} condition from the creature; those points don't also restore {@variantrule Hit Points|XPHB} to the creature."
+      ],
+      "authored_operations": [
+        {
+          "trigger": "Bonus Action; touch creature, including self",
+          "cost": "Pool=5*Paladin level; Long Rest all",
+          "effects": [
+            "Allocate healing up to remaining pool",
+            "Alternatively spend5 to remove Poisoned; no HP restored by that spend"
+          ],
+          "ending_and_identity": "Exact source owns the grant/state; remove temporary effects at the declared ending; never replay acquisition on restore.",
+          "required_extension_groups": [
+            "resources",
+            "conditions"
+          ]
+        }
+      ],
+      "unsupported_behavior": [
+        {
+          "groups": [
+            "resources",
+            "conditions"
+          ],
+          "requirement": {
+            "trigger": "Bonus Action; touch creature, including self",
+            "cost": "Pool=5*Paladin level; Long Rest all",
+            "effects": [
+              "Allocate healing up to remaining pool",
+              "Alternatively spend5 to remove Poisoned; no HP restored by that spend"
+            ],
+            "ending": "Exact source owns the grant/state; remove temporary effects at the declared ending; never replay acquisition on restore."
+          },
+          "mapping_boundary": "Map this complete sequence to shared contracts; retained native behavior and fragments do not certify it.",
+          "status": "unmapped_or_unverified_candidate"
+        }
+      ]
+    },
+    {
+      "id": "paladin_spellcasting",
+      "name": "Spellcasting",
+      "class_level": 1,
+      "rules": {
+        "authority": "SRD 5.2.1",
+        "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+        "pages": [
+          54
+        ],
+        "text": "Level 1: Spellcasting\nYou have learned to cast spells through prayer and\nmeditation. See “Spells” for the rules on spellcasting. The information below details how you use\nthose rules with Paladin spells, which appear in the\nPaladin spell list later in the class’s description.\nSpell Slots.\nThe Paladin Features table shows\nhow many spell slots you have to cast your level 1+\nspells. You regain all expended slots when you finish a Long Rest.\nPrepared Spells of Level 1+\n. You prepare the\nlist of level 1+ spells that are available for you to\ncast with this feature. To start, choose two level\n1 Paladin spells.\nHeroism\nand\nSearing Smite\nare\nrecommended.\nThe number of spells on your list increases as\nyou gain Paladin levels, as shown in the Prepared\nSpells column of the Paladin Features table. Whenever that number increases, choose additional\nPaladin spells until the number of spells on your\nlist matches the number in the Paladin Features\ntable. The chosen spells must be of a level for which\nyou have spell slots. For example, if you’re a level 5\nPaladin, your list of prepared spells can include six\nPaladin spells of level 1 or 2 in any combination.\nIf another Paladin feature gives you spells that\nyou always have prepared, those spells don’t count\nagainst the number of spells you can prepare with\nthis feature, but those spells otherwise count as\nPaladin spells for you.\nChanging Your Prepared Spells.\nWhenever you\nfinish a Long Rest, you can replace one spell on your\nlist with another Paladin spell for which you have\nspell slots.\nSpellcasting Ability.\nCharisma is your spellcasting ability for your Paladin spells.\nSpellcasting Focus.\nYou can use a Holy Symbol as\na Spellcasting Focus for your Paladin spells."
+      },
+      "revised_reference_entries": [
+        "You have learned to cast spells through prayer and meditation. See {@book chapter 7|XPHB|7} for the rules on spellcasting. The information below details how you use those rules with Paladin spells, which appear in the {@filter Paladin spell list|spells|class=Paladin} later in the class's description.",
+        {
+          "type": "entries",
+          "entries": [
+            {
+              "type": "entries",
+              "name": "Spell Slots",
+              "entries": [
+                "The Paladin Features table shows how many spell slots you have to cast your level 1+ spells. You regain all expended slots when you finish a {@variantrule Long Rest|XPHB}."
+              ]
+            },
+            {
+              "type": "entries",
+              "name": "Prepared Spells of Level 1+",
+              "entries": [
+                "You prepare the list of level 1+ spells that are available for you to cast with this feature. To start, choose two {@filter level 1 Paladin spells|spells|class=Paladin|level=1}. {@spell Heroism|XPHB} and {@spell Searing Smite|XPHB} are recommended.",
+                "The number of spells on your list increases as you gain Paladin levels, as shown in the Prepared Spells column of the Paladin Features table. Whenever that number increases, choose additional Paladin spells until the number of spells on your list matches the number in the Paladin Features table. The chosen spells must be of a level for which you have spell slots. For example, if you're a level 5 Paladin, your list of prepared spells can include six Paladin spells of level 1 or 2 in any combination.",
+                "If another Paladin feature gives you spells that you always have prepared, those spells don't count against the number of spells you can prepare with this feature, but those spells otherwise count as Paladin spells for you."
+              ]
+            },
+            {
+              "type": "entries",
+              "name": "Changing Your Prepared Spells",
+              "entries": [
+                "Whenever you finish a {@variantrule Long Rest|XPHB}, you can replace one spell on your list with another Paladin spell for which you have spell slots."
+              ]
+            },
+            {
+              "type": "entries",
+              "name": "Spellcasting Ability",
+              "entries": [
+                "Charisma is your spellcasting ability for your Paladin spells."
+              ]
+            },
+            {
+              "type": "entries",
+              "name": "Spellcasting Focus",
+              "entries": [
+                "You can use a {@item Holy Symbol|XPHB} as a {@variantrule Spellcasting Focus|XPHB} for your Paladin spells."
+              ]
+            }
+          ]
+        }
+      ],
+      "authored_operations": [
+        {
+          "trigger": "Acquire class; class-level advancement; legal preparation/replacement window",
+          "cost": "Actual action, slot, components and source permission for each cast",
+          "effects": [
+            "Use class casting package in this candidate; own-class preparation eligibility even with higher multiclass slots",
+            "Preserve source cantrip replacement and preparation rules, chosen ability, focus and always-prepared exclusions"
+          ],
+          "ending_and_identity": "Distinct class source, ordinary/Pact/free/created slots and cast identities; rests recover declared pools once",
+          "required_extension_groups": [
+            "casting",
+            "choices",
+            "resources"
+          ]
+        }
+      ],
+      "unsupported_behavior": [
+        {
+          "groups": [
+            "casting",
+            "choices",
+            "resources"
+          ],
+          "requirement": {
+            "trigger": "Acquire class; class-level advancement; legal preparation/replacement window",
+            "cost": "Actual action, slot, components and source permission for each cast",
+            "effects": [
+              "Use class casting package in this candidate; own-class preparation eligibility even with higher multiclass slots",
+              "Preserve source cantrip replacement and preparation rules, chosen ability, focus and always-prepared exclusions"
+            ],
+            "ending": "Distinct class source, ordinary/Pact/free/created slots and cast identities; rests recover declared pools once"
+          },
+          "mapping_boundary": "Map this complete sequence to shared contracts; retained native behavior and fragments do not certify it.",
+          "status": "unmapped_or_unverified_candidate"
+        }
+      ]
+    },
+    {
+      "id": "paladin_weapon_mastery",
+      "name": "Weapon Mastery",
+      "class_level": 1,
+      "rules": {
+        "authority": "SRD 5.2.1",
+        "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+        "pages": [
+          54
+        ],
+        "text": "Level 1: Weapon Mastery\nYour training with weapons allows you to use the\nmastery properties of two kinds of weapons of your\nchoice with which you have proficiency, such as\nLongswords and Javelins.\nBrEakinG your oatH\nA Paladin tries to hold to the highest standards of\nconduct, but even the most dedicated are fallible.\nSometimes a Paladin transgresses their oath.\nA Paladin who has broken a vow typically seeks\nabsolution, spending an all-night vigil as a sign of penitence or undertaking a fast. After a rite of forgiveness, the Paladin starts fresh.\nIf your Paladin unrepentantly violates their oath,\ntalk to your GM. Your Paladin should probably take a\nmore appropriate subclass or even abandon the class\nand adopt another one.\nWhenever you finish a Long Rest, you can change\nthe kinds of weapons you chose. For example, you\ncould switch to using the mastery properties of Halberds and Flails."
+      },
+      "revised_reference_entries": [
+        "Your training with weapons allows you to use the {@variantrule weapon mastery properties|XPHB|mastery properties} of two kinds of {@filter weapons|items|type=simple weapon;martial weapon} of your choice with which you have proficiency, such as {@item Longsword|XPHB|Longswords} and {@item Javelin|XPHB|Javelins}.",
+        "Whenever you finish a {@variantrule Long Rest|XPHB}, you can change the kinds of weapons you chose. For example, you could switch to using the {@variantrule weapon mastery properties|XPHB|mastery properties} of {@item Halberd|XPHB|Halberds} and {@item Flail|XPHB|Flails}."
+      ],
+      "authored_operations": [
+        {
+          "trigger": "Acquire/replace selected weapon kinds",
+          "cost": "none",
+          "effects": [
+            "Grant only legal class-listed weapon masteries; counts and replacement window from source; exact mastery property executes on its qualifying attack"
+          ],
+          "ending_and_identity": "Exact source owns the grant/state; remove temporary effects at the declared ending; never replay acquisition on restore.",
+          "required_extension_groups": [
+            "choices",
+            "attacks"
+          ]
+        }
+      ],
+      "unsupported_behavior": [
+        {
+          "groups": [
+            "choices",
+            "attacks"
+          ],
+          "requirement": {
+            "trigger": "Acquire/replace selected weapon kinds",
+            "cost": "none",
+            "effects": [
+              "Grant only legal class-listed weapon masteries; counts and replacement window from source; exact mastery property executes on its qualifying attack"
+            ],
+            "ending": "Exact source owns the grant/state; remove temporary effects at the declared ending; never replay acquisition on restore."
+          },
+          "mapping_boundary": "Map this complete sequence to shared contracts; retained native behavior and fragments do not certify it.",
+          "status": "unmapped_or_unverified_candidate"
+        }
+      ]
+    },
+    {
+      "id": "paladin_fighting_style",
+      "name": "Fighting Style",
+      "class_level": 2,
+      "rules": {
+        "authority": "SRD 5.2.1",
+        "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+        "pages": [
+          54
+        ],
+        "text": "Level 2: Fighting Style\nYou gain a Fighting Style feat of your choice (see\n“Feats” for feats). Instead of choosing one of those\nfeats, you can choose the option below.\nBlessed Warrior.\nYou learn two Cleric cantrips of\nyour choice (see the Cleric class’s section for a list\nof Cleric spells).\nGuidance\nand\nSacred Flame\nare recommended. The chosen cantrips count as Paladin\nspells for you, and Charisma is your spellcasting\nability for them. Whenever you gain a Paladin level,\nyou can replace one of these cantrips with another\nCleric cantrip."
+      },
+      "revised_reference_entries": [
+        "You gain a {@filter Fighting Style feat|feats|category=FS} of your choice. Instead of choosing one of those feats, you can choose the option below.",
+        {
+          "type": "entries",
+          "entries": [
+            {
+              "type": "refFeat",
+              "feat": "Blessed Warrior|XPHB"
+            }
+          ]
+        }
+      ],
+      "authored_operations": [
+        {
+          "trigger": "Acquire Paladin2",
+          "cost": "none",
+          "effects": [
+            "Choose one of the four SRD Fighting Style feats",
+            "Instead may choose Blessed Warrior: two Cleric cantrips using CHA as Paladin spells; replace one on each Paladin level gain"
+          ],
+          "ending_and_identity": "Exact source owns the grant/state; remove temporary effects at the declared ending; never replay acquisition on restore.",
+          "required_extension_groups": [
+            "choices",
+            "casting",
+            "attacks"
+          ]
+        }
+      ],
+      "unsupported_behavior": [
+        {
+          "groups": [
+            "choices",
+            "casting",
+            "attacks"
+          ],
+          "requirement": {
+            "trigger": "Acquire Paladin2",
+            "cost": "none",
+            "effects": [
+              "Choose one of the four SRD Fighting Style feats",
+              "Instead may choose Blessed Warrior: two Cleric cantrips using CHA as Paladin spells; replace one on each Paladin level gain"
+            ],
+            "ending": "Exact source owns the grant/state; remove temporary effects at the declared ending; never replay acquisition on restore."
+          },
+          "mapping_boundary": "Map this complete sequence to shared contracts; retained native behavior and fragments do not certify it.",
+          "status": "unmapped_or_unverified_candidate"
+        }
+      ]
+    },
+    {
+      "id": "paladin_paladins_smite",
+      "name": "Paladin’s Smite",
+      "class_level": 2,
+      "rules": {
+        "authority": "SRD 5.2.1",
+        "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+        "pages": [
+          54
+        ],
+        "text": "Level 2: Paladin’s Smite\nYou always have the\nDivine Smite\nspell prepared. In\naddition, you can cast it without expending a spell\nslot, but you must finish a Long Rest before you can\ncast it in this way again."
+      },
+      "revised_reference_entries": [
+        "You always have the {@spell Divine Smite|XPHB} spell prepared. In addition, you can cast it without expending a spell slot, but you must finish a {@variantrule Long Rest|XPHB} before you can cast it in this way again."
+      ],
+      "authored_operations": [
+        {
+          "trigger": "Grant at Paladin2; Divine Smite qualifying post-hit Bonus Action",
+          "cost": "one free cast per Long Rest; otherwise legal slot",
+          "effects": [
+            "Always prepare Divine Smite without counting prepared limit",
+            "Use full spell timing/target/slot rules, not unconditional weapon damage"
+          ],
+          "ending_and_identity": "Exact source owns the grant/state; remove temporary effects at the declared ending; never replay acquisition on restore.",
+          "required_extension_groups": [
+            "casting",
+            "reactions"
+          ]
+        }
+      ],
+      "unsupported_behavior": [
+        {
+          "groups": [
+            "casting",
+            "reactions"
+          ],
+          "requirement": {
+            "trigger": "Grant at Paladin2; Divine Smite qualifying post-hit Bonus Action",
+            "cost": "one free cast per Long Rest; otherwise legal slot",
+            "effects": [
+              "Always prepare Divine Smite without counting prepared limit",
+              "Use full spell timing/target/slot rules, not unconditional weapon damage"
+            ],
+            "ending": "Exact source owns the grant/state; remove temporary effects at the declared ending; never replay acquisition on restore."
+          },
+          "mapping_boundary": "Map this complete sequence to shared contracts; retained native behavior and fragments do not certify it.",
+          "status": "unmapped_or_unverified_candidate"
+        }
+      ]
+    },
+    {
+      "id": "paladin_channel_divinity",
+      "name": "Channel Divinity",
+      "class_level": 3,
+      "rules": {
+        "authority": "SRD 5.2.1",
+        "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+        "pages": [
+          54,
+          55
+        ],
+        "text": "Level 3: Channel Divinity\nYou can channel divine energy directly from the\nOuter Planes, using it to fuel magical effects. You\nstart with one such effect: Divine Sense, which is\ndescribed below. Other Paladin features give additional Channel Divinity effect options. Each time\nyou use this class’s Channel Divinity, you choose\nwhich effect from this class to create.\nYou can use this class’s Channel Divinity twice.\nYou regain one of its expended uses when you finish\na Short Rest, and you regain all expended uses when\nyou finish a Long Rest. You gain an additional use\nwhen you reach Paladin level 11.\nIf a Channel Divinity effect requires a saving\nthrow, the DC equals the spell save DC from this\nclass’s Spellcasting feature.\nDivine Sense.\nAs a Bonus Action, you can open\nyour awareness to detect Celestials, Fiends, and\nUndead. For the next 10 minutes or until you have\nthe Incapacitated condition, you know the location\nof any creature of those types within 60 feet of\nyourself, and you know its creature type. Within\nthe same radius, you also detect the presence of any\nplace or object that has been consecrated or desecrated, as with the\nHallow\nspell."
+      },
+      "revised_reference_entries": [
+        "You can channel divine energy directly from the Outer Planes, using it to fuel magical effects. You start with one such effect: Divine Sense, which is described below. Other Paladin features give additional Channel Divinity effect options. Each time you use this class's Channel Divinity, you choose which effect from this class to create.",
+        "You can use this class's Channel Divinity twice. You regain one of its expended uses when you finish a {@variantrule Short Rest|XPHB}, and you regain all expended uses when you finish a {@variantrule Long Rest|XPHB}. You gain an additional use when you reach Paladin level 11.",
+        "If a Channel Divinity effect requires a saving throw, the DC equals the spell save DC from this class's Spellcasting feature.",
+        {
+          "type": "entries",
+          "entries": [
+            {
+              "type": "refClassFeature",
+              "classFeature": "Divine Sense|Paladin|XPHB|3|XPHB"
+            }
+          ]
+        }
+      ],
+      "authored_operations": [
+        {
+          "trigger": "Bonus Action at Paladin3",
+          "cost": "one Paladin Channel Divinity; pool2; Short Rest+1, Long Rest all",
+          "effects": [
+            "For10 minutes or until Incapacitated: know location and type of Celestials/Fiends/Undead within60 feet",
+            "Detect consecrated/desecrated places/objects as Hallow"
+          ],
+          "ending_and_identity": "Paladin Channel Divinity is separate from Cleric pool.",
+          "required_extension_groups": [
+            "resources",
+            "world"
+          ]
+        }
+      ],
+      "unsupported_behavior": [
+        {
+          "groups": [
+            "resources",
+            "world"
+          ],
+          "requirement": {
+            "trigger": "Bonus Action at Paladin3",
+            "cost": "one Paladin Channel Divinity; pool2; Short Rest+1, Long Rest all",
+            "effects": [
+              "For10 minutes or until Incapacitated: know location and type of Celestials/Fiends/Undead within60 feet",
+              "Detect consecrated/desecrated places/objects as Hallow"
+            ],
+            "ending": "Paladin Channel Divinity is separate from Cleric pool."
+          },
+          "mapping_boundary": "Map this complete sequence to shared contracts; retained native behavior and fragments do not certify it.",
+          "status": "unmapped_or_unverified_candidate"
+        }
+      ]
+    },
+    {
+      "id": "paladin_paladin_subclass",
+      "name": "Paladin Subclass",
+      "class_level": 3,
+      "rules": {
+        "authority": "SRD 5.2.1",
+        "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+        "pages": [
+          55
+        ],
+        "text": "Level 3: Paladin Subclass\nYou gain a Paladin subclass of your choice. The Oath\nof Devotion subclass is detailed after this class’s description. A subclass is a specialization that grants\nyou features at certain Paladin levels. For the rest\nof your career, you gain each of your subclass’s features that are of your Paladin level or lower."
+      },
+      "revised_reference_entries": [
+        "You gain a Paladin subclass of your choice. A subclass is a specialization that grants you features at certain Paladin levels. For the rest of your career, you gain each of your subclass's features that are of your Paladin level or lower.",
+        {
+          "type": "inset",
+          "name": "Breaking Your Oath",
+          "entries": [
+            "A Paladin tries to hold to the highest standards of conduct, but even the most dedicated are fallible. Sometimes a Paladin transgresses their oath.",
+            "A Paladin who has broken a vow typically seeks absolution, spending an all-night vigil as a sign of penitence or undertaking a fast. After a rite of forgiveness, the Paladin starts fresh.",
+            "If your Paladin unrepentantly violates their oath, talk to your DM. Your Paladin should probably take a more appropriate subclass or even abandon the class and adopt another one."
+          ]
+        }
+      ],
+      "authored_operations": [
+        {
+          "trigger": "Class level3",
+          "cost": "one subclass choice",
+          "effects": [
+            "Grant selected SRD subclass in-band features at actual class thresholds; no level6+ grants"
+          ],
+          "ending_and_identity": "Permanent exact subclass ownership; acquisition once",
+          "required_extension_groups": [
+            "progression",
+            "choices"
+          ]
+        }
+      ],
+      "unsupported_behavior": [
+        {
+          "groups": [
+            "progression",
+            "choices"
+          ],
+          "requirement": {
+            "trigger": "Class level3",
+            "cost": "one subclass choice",
+            "effects": [
+              "Grant selected SRD subclass in-band features at actual class thresholds; no level6+ grants"
+            ],
+            "ending": "Permanent exact subclass ownership; acquisition once"
+          },
+          "mapping_boundary": "Map this complete sequence to shared contracts; retained native behavior and fragments do not certify it.",
+          "status": "unmapped_or_unverified_candidate"
+        }
+      ]
+    },
+    {
+      "id": "paladin_ability_score_improvement",
+      "name": "Ability Score Improvement",
+      "class_level": 4,
+      "rules": {
+        "authority": "SRD 5.2.1",
+        "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+        "pages": [
+          55
+        ],
+        "text": "Level 4: Ability Score Improvement\nYou gain the Ability Score Improvement feat (see\n“Feats”) or another feat of your choice for which you\nqualify. You gain this feature again at Paladin levels\n8, 12, and 16."
+      },
+      "revised_reference_entries": [
+        "You gain the {@feat Ability Score Improvement|XPHB} feat or another {@5etools feat|feats.html} of your choice for which you qualify. You gain this feature again at Paladin levels 8, 12, and 16."
+      ],
+      "authored_operations": [
+        {
+          "trigger": "Class level 4 entitlement",
+          "cost": "one entitlement",
+          "effects": [
+            "Choose ASI or another qualifying feat; validate chosen feat category/prerequisites; source owns grant once"
+          ],
+          "ending_and_identity": "Exact source owns the grant/state; remove temporary effects at the declared ending; never replay acquisition on restore.",
+          "required_extension_groups": [
+            "choices",
+            "progression"
+          ]
+        }
+      ],
+      "unsupported_behavior": [
+        {
+          "groups": [
+            "choices",
+            "progression"
+          ],
+          "requirement": {
+            "trigger": "Class level 4 entitlement",
+            "cost": "one entitlement",
+            "effects": [
+              "Choose ASI or another qualifying feat; validate chosen feat category/prerequisites; source owns grant once"
+            ],
+            "ending": "Exact source owns the grant/state; remove temporary effects at the declared ending; never replay acquisition on restore."
+          },
+          "mapping_boundary": "Map this complete sequence to shared contracts; retained native behavior and fragments do not certify it.",
+          "status": "unmapped_or_unverified_candidate"
+        }
+      ]
+    },
+    {
+      "id": "paladin_extra_attack",
+      "name": "Extra Attack",
+      "class_level": 5,
+      "rules": {
+        "authority": "SRD 5.2.1",
+        "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+        "pages": [
+          55
+        ],
+        "text": "Level 5: Extra Attack\nYou can attack twice instead of once whenever you\ntake the Attack action on your turn."
+      },
+      "revised_reference_entries": [
+        "You can attack twice instead of once whenever you take the {@action Attack|XPHB} action on your turn."
+      ],
+      "authored_operations": [
+        {
+          "trigger": "Attack action on own turn",
+          "cost": "Attack action",
+          "effects": [
+            "Attack count becomes 2; does not add to another Extra Attack or Thirsting Blade"
+          ],
+          "ending_and_identity": "Exact source owns the grant/state; remove temporary effects at the declared ending; never replay acquisition on restore.",
+          "required_extension_groups": [
+            "attacks"
+          ]
+        }
+      ],
+      "unsupported_behavior": [
+        {
+          "groups": [
+            "attacks"
+          ],
+          "requirement": {
+            "trigger": "Attack action on own turn",
+            "cost": "Attack action",
+            "effects": [
+              "Attack count becomes 2; does not add to another Extra Attack or Thirsting Blade"
+            ],
+            "ending": "Exact source owns the grant/state; remove temporary effects at the declared ending; never replay acquisition on restore."
+          },
+          "mapping_boundary": "Map this complete sequence to shared contracts; retained native behavior and fragments do not certify it.",
+          "status": "unmapped_or_unverified_candidate"
+        }
+      ]
+    },
+    {
+      "id": "paladin_faithful_steed",
+      "name": "Faithful Steed",
+      "class_level": 5,
+      "rules": {
+        "authority": "SRD 5.2.1",
+        "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+        "pages": [
+          55
+        ],
+        "text": "Level 5: Faithful Steed\nYou can call on the aid of an otherworldly steed. You\nalways have the\nFind Steed\nspell prepared.\nYou can also cast the spell once without expending a spell slot, and you regain the ability to do so\nwhen you finish a Long Rest."
+      },
+      "revised_reference_entries": [
+        "You can call on the aid of an otherworldly steed. You always have the {@spell Find Steed|XPHB} spell prepared.",
+        "You can also cast the spell once without expending a spell slot, and you regain the ability to do so when you finish a {@variantrule Long Rest|XPHB}."
+      ],
+      "authored_operations": [
+        {
+          "trigger": "Acquire Paladin5",
+          "cost": "one free cast per Long Rest; otherwise legal slots",
+          "effects": [
+            "Always prepare Find Steed",
+            "Full casting/arrival/form/command/travel/lifetime rules; class-linked free cast"
+          ],
+          "ending_and_identity": "Exact source owns the grant/state; remove temporary effects at the declared ending; never replay acquisition on restore.",
+          "required_extension_groups": [
+            "forms",
+            "casting"
+          ]
+        }
+      ],
+      "unsupported_behavior": [
+        {
+          "groups": [
+            "forms",
+            "casting"
+          ],
+          "requirement": {
+            "trigger": "Acquire Paladin5",
+            "cost": "one free cast per Long Rest; otherwise legal slots",
+            "effects": [
+              "Always prepare Find Steed",
+              "Full casting/arrival/form/command/travel/lifetime rules; class-linked free cast"
+            ],
+            "ending": "Exact source owns the grant/state; remove temporary effects at the declared ending; never replay acquisition on restore."
+          },
+          "mapping_boundary": "Map this complete sequence to shared contracts; retained native behavior and fragments do not certify it.",
+          "status": "unmapped_or_unverified_candidate"
+        }
+      ]
+    }
+  ],
+  "casting": {
+    "ability": "cha",
+    "prepared_counts_by_class_level": [
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
+    "cantrips_by_class_level": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "ordinary_slots_by_class_level": [
+      [
+        2,
+        0,
+        0
+      ],
+      [
+        2,
+        0,
+        0
+      ],
+      [
+        3,
+        0,
+        0
+      ],
+      [
+        3,
+        0,
+        0
+      ],
+      [
+        4,
+        2,
+        0
+      ]
+    ],
+    "pact_slots_by_class_level": [],
+    "pact_slot_tuple": "[number of slots, slot level]",
+    "prepared_change": "one after Long Rest",
+    "cantrip_change": "one on own-class level gain",
+    "spell_list": "SRD own-class list at spell levels0–3; spell-candidates index retains exact authoritative lists",
+    "spellbook": null,
+    "spell_choices": {
+      "0": [],
+      "1": [
+        "bless",
+        "command",
+        "cure_wounds",
+        "detect_evil_and_good",
+        "detect_magic",
+        "detect_poison_and_disease",
+        "divine_favor",
+        "divine_smite",
+        "heroism",
+        "protection_from_evil_and_good",
+        "purify_food_and_drink",
+        "searing_smite",
+        "shield_of_faith"
+      ],
+      "2": [
+        "aid",
+        "find_steed",
+        "gentle_repose",
+        "lesser_restoration",
+        "locate_object",
+        "magic_weapon",
+        "prayer_of_healing",
+        "protection_from_poison",
+        "shining_smite",
+        "warding_bond",
+        "zone_of_truth"
+      ],
+      "3": [
+        "create_food_and_water",
+        "daylight",
+        "dispel_magic",
+        "magic_circle",
+        "remove_curse",
+        "revivify"
+      ]
+    },
+    "spell_choice_policy": "These are SRD list memberships through spell level3, not permission to prepare above own-class slot progression; always-prepared and feat/species permissions are additional source grants."
+  },
+  "retained_runtime_seed": {
+    "id": "paladin",
+    "name": "Paladin",
+    "description": "Paladin class. Source: PHB.",
+    "hit_die": "d10",
+    "primary_ability": "STR",
+    "multiclass_prerequisite": {
+      "all": [
+        "STR",
+        "CHA"
+      ]
+    },
+    "saving_throw_proficiencies": [
+      "WIS",
+      "CHA"
+    ],
+    "armor_proficiencies": [
+      "light",
+      "medium",
+      "heavy",
+      "shields"
+    ],
+    "weapon_proficiencies": [
+      "simple",
+      "martial"
+    ],
+    "creation_proficiency_choices": true,
+    "skill_choices": {
+      "pick": 2,
+      "from": [
+        "Athletics",
+        "Insight",
+        "Intimidation",
+        "Medicine",
+        "Persuasion",
+        "Religion"
+      ]
+    },
+    "starting_equipment": [
+      "chain_mail",
+      "shield",
+      "longsword"
+    ],
+    "spell_slots_by_level": {
+      "1": [
+        0
+      ],
+      "2": [
+        2
+      ],
+      "3": [
+        3
+      ],
+      "4": [
+        3
+      ],
+      "5": [
+        4,
+        2
+      ]
+    },
+    "cantrips_known": [],
+    "spells_known_by_level": {
+      "1": [],
+      "2": [],
+      "3": [],
+      "4": [],
+      "5": []
+    },
+    "features_by_level": {
+      "1": [
+        {
+          "id": "paladin_lay_on_hands",
+          "name": "Lay on Hands",
+          "type": "active",
+          "description": "Bonus Action touch healing pool; level × 5, Long Rest recovery. Spend 5 pool points to remove Poisoned; those points do not also restore Hit Points.",
+          "effects": [],
+          "rules_source": "dnd-2024-srd-5.2.1",
+          "action_cost": "bonus_action",
+          "uses": 1,
+          "uses_per": "long_rest"
+        },
+        {
+          "id": "paladin_spellcasting",
+          "name": "Spellcasting",
+          "type": "passive",
+          "description": "Charisma-based prepared half-caster spells; eligible spell list is curated to loaded spell records.",
+          "effects": [
+            {
+              "type": "spellcasting",
+              "ability": "CHA",
+              "spell_lists": [
+                "paladin"
+              ],
+              "default_prepared_spells": [
+                "heroism",
+                "searing_smite"
+              ],
+              "capacity_by_level": {
+                "1": {
+                  "cantrips": 0,
+                  "prepared_spells": 2
+                },
+                "2": {
+                  "cantrips": 0,
+                  "prepared_spells": 3
+                },
+                "3": {
+                  "cantrips": 0,
+                  "prepared_spells": 4
+                },
+                "4": {
+                  "cantrips": 0,
+                  "prepared_spells": 5
+                },
+                "5": {
+                  "cantrips": 0,
+                  "prepared_spells": 6
+                },
+                "6": {
+                  "cantrips": 0,
+                  "prepared_spells": 6
+                },
+                "7": {
+                  "cantrips": 0,
+                  "prepared_spells": 7
+                },
+                "8": {
+                  "cantrips": 0,
+                  "prepared_spells": 7
+                },
+                "9": {
+                  "cantrips": 0,
+                  "prepared_spells": 9
+                },
+                "10": {
+                  "cantrips": 0,
+                  "prepared_spells": 9
+                },
+                "11": {
+                  "cantrips": 0,
+                  "prepared_spells": 10
+                },
+                "12": {
+                  "cantrips": 0,
+                  "prepared_spells": 10
+                },
+                "13": {
+                  "cantrips": 0,
+                  "prepared_spells": 11
+                },
+                "14": {
+                  "cantrips": 0,
+                  "prepared_spells": 11
+                },
+                "15": {
+                  "cantrips": 0,
+                  "prepared_spells": 12
+                },
+                "16": {
+                  "cantrips": 0,
+                  "prepared_spells": 12
+                },
+                "17": {
+                  "cantrips": 0,
+                  "prepared_spells": 14
+                },
+                "18": {
+                  "cantrips": 0,
+                  "prepared_spells": 14
+                },
+                "19": {
+                  "cantrips": 0,
+                  "prepared_spells": 15
+                },
+                "20": {
+                  "cantrips": 0,
+                  "prepared_spells": 15
+                }
+              }
+            }
+          ],
+          "rules_source": "dnd-2024-srd-5.2.1",
+          "rules_status": "2024-supported"
+        },
+        {
+          "id": "paladin_weapon_mastery",
+          "name": "Weapon Mastery",
+          "type": "passive",
+          "description": "Choose two proficient weapon types; mastery choices use the shared saved Weapon Mastery path.",
+          "effects": [
+            {
+              "type": "weapon_mastery",
+              "capacity_by_level": {
+                "1": 2
+              }
+            }
+          ],
+          "rules_source": "dnd-2024-srd-5.2.1",
+          "rules_status": "2024-supported"
+        }
+      ],
+      "2": [
+        {
+          "id": "paladin_fighting_style",
+          "name": "Fighting Style",
+          "type": "passive",
+          "description": "Choose one 2024 Fighting Style option or Blessed Warrior. Its saved choice uses shared style effects and the Paladin spell-selection path.",
+          "effects": [
+            {
+              "type": "feature_choice",
+              "options": [
+                {
+                  "id": "archery",
+                  "name": "Archery",
+                  "effects": [
+                    {
+                      "type": "fighting_style",
+                      "style": "archery"
+                    }
+                  ]
+                },
+                {
+                  "id": "defense",
+                  "name": "Defense",
+                  "effects": [
+                    {
+                      "type": "fighting_style",
+                      "style": "defense"
+                    }
+                  ]
+                },
+                {
+                  "id": "great_weapon_fighting",
+                  "name": "Great Weapon Fighting",
+                  "effects": [
+                    {
+                      "type": "fighting_style",
+                      "style": "great_weapon_fighting"
+                    }
+                  ]
+                },
+                {
+                  "id": "two_weapon_fighting",
+                  "name": "Two-Weapon Fighting",
+                  "effects": [
+                    {
+                      "type": "fighting_style",
+                      "style": "two_weapon_fighting"
+                    }
+                  ]
+                },
+                {
+                  "id": "blessed_warrior",
+                  "name": "Blessed Warrior",
+                  "effects": [
+                    {
+                      "type": "spellcasting_capacity_bonus",
+                      "kind": "cantrips",
+                      "amount": 2
+                    },
+                    {
+                      "type": "spell_list_expansion",
+                      "spell_lists": [
+                        "cleric"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "rules_source": "dnd-2024-srd-5.2.1",
+          "rules_status": "2024-supported"
+        },
+        {
+          "id": "paladin_paladins_smite",
+          "name": "Paladin’s Smite",
+          "type": "passive",
+          "description": "Divine Smite is always prepared and can be cast once without a spell slot per Long Rest. Cast it as a Bonus Action immediately after a melee hit.",
+          "effects": [
+            {
+              "type": "always_prepared_spells",
+              "spells": [
+                "divine_smite"
+              ]
+            },
+            {
+              "type": "spell_free_cast",
+              "spells": [
+                "divine_smite"
+              ],
+              "uses": 1,
+              "uses_per": "long_rest"
+            }
+          ],
+          "rules_source": "dnd-2024-srd-5.2.1",
+          "rules_status": "2024-supported"
+        }
+      ],
+      "3": [
+        {
+          "id": "paladin_channel_divinity",
+          "name": "Channel Divinity",
+          "type": "resource",
+          "description": "Channel Divinity has two uses, regains one on a Short Rest and all on a Long Rest; level 11 raises capacity to three.",
+          "effects": [],
+          "rules_source": "dnd-2024-srd-5.2.1",
+          "rules_status": "2024-supported",
+          "uses_by_level": {
+            "11": 3
+          },
+          "uses_per": "long_rest",
+          "short_rest_recovery": 1,
+          "uses": 2
+        },
+        {
+          "id": "paladin_sacred_oath",
+          "name": "Paladin Subclass",
+          "type": "passive",
+          "description": "Choose a Sacred Oath. Selection uses the shared subclass path; oath features are a separate progression.",
+          "effects": [],
+          "rules_source": "dnd-2024-srd-5.2.1",
+          "rules_status": "reference-only",
+          "enabled": false
+        },
+        {
+          "id": "paladin_channel_divinity_divine_sense",
+          "name": "Channel Divinity: Divine Sense",
+          "type": "active",
+          "description": "As a Bonus Action, detect Celestials, Fiends, and Undead within 60 feet for 10 minutes using a Channel Divinity use.",
+          "action_cost": "bonus_action",
+          "resource_id": "paladin_channel_divinity",
+          "resource_cost": 1,
+          "resolver": "paladin_rules",
+          "effects": [
+            {
+              "type": "divine_sense",
+              "duration_minutes": 10,
+              "creature_types": [
+                "celestial",
+                "fiend",
+                "undead"
+              ]
+            }
+          ],
+          "enabled": true,
+          "rules_source": "dnd-2024-srd-5.2.1",
+          "rules_status": "2024-partial"
+        }
+      ],
+      "4": [
+        {
+          "id": "paladin_ability_improvement_4",
+          "name": "Ability Score Improvement",
+          "type": "passive",
+          "description": "",
+          "effects": [
+            {
+              "type": "asi"
+            }
+          ],
+          "rules_source": "dnd-2024-srd-5.2.1",
+          "rules_status": "2024-supported"
+        }
+      ],
+      "5": [
+        {
+          "id": "paladin_extra_attack",
+          "name": "Extra Attack",
+          "type": "passive",
+          "description": "",
+          "effects": [
+            {
+              "type": "extra_attack",
+              "count": 1
+            }
+          ],
+          "rules_source": "dnd-2024-srd-5.2.1",
+          "rules_status": "2024-supported"
+        },
+        {
+          "id": "paladin_faithful_steed",
+          "name": "Faithful Steed",
+          "type": "passive",
+          "description": "Find Steed is always prepared and can be cast once without a spell slot per Long Rest. Casting summons or replaces a persistent Otherworldly Steed whose AC and Hit Points scale with the spell slot.",
+          "effects": [
+            {
+              "type": "always_prepared_spells",
+              "spells": [
+                "find_steed"
+              ]
+            },
+            {
+              "type": "spell_free_cast",
+              "spells": [
+                "find_steed"
+              ],
+              "uses": 1,
+              "uses_per": "long_rest"
+            }
+          ],
+          "rules_source": "dnd-2024-srd-5.2.1",
+          "rules_status": "2024-partial",
+          "enabled": true
+        }
+      ]
+    },
+    "spell_slots_by_character_level": {
+      "1": [
+        2
+      ],
+      "2": [
+        2
+      ],
+      "3": [
+        3
+      ],
+      "4": [
+        3
+      ],
+      "5": [
+        4,
+        2
+      ]
+    },
+    "subclass_level": 3,
+    "spell_list_ids": [
+      "aid",
+      "aura_of_life",
+      "aura_of_vitality",
+      "banishment",
+      "bless",
+      "blinding_smite",
+      "command",
+      "compelled_duel",
+      "create_food_and_water",
+      "crusaders_mantle",
+      "cure_wounds",
+      "daylight",
+      "death_ward",
+      "detect_evil_and_good",
+      "detect_magic",
+      "detect_poison_and_disease",
+      "dispel_evil_and_good",
+      "dispel_magic",
+      "divine_favor",
+      "divine_smite",
+      "elemental_weapon",
+      "find_steed",
+      "geas",
+      "gentle_repose",
+      "greater_restoration",
+      "heroism",
+      "lesser_restoration",
+      "locate_creature",
+      "locate_object",
+      "magic_circle",
+      "magic_weapon",
+      "prayer_of_healing",
+      "protection_from_evil_and_good",
+      "protection_from_poison",
+      "purify_food_and_drink",
+      "raise_dead",
+      "remove_curse",
+      "revivify",
+      "searing_smite",
+      "shield_of_faith",
+      "shining_smite",
+      "thunderous_smite",
+      "warding_bond",
+      "wrathful_smite",
+      "zone_of_truth"
+    ],
+    "rules_status": "2024-partial"
+  },
+  "required_extensions": [
+    "progression",
+    "choices",
+    "casting"
+  ],
+  "equipment_resolution": [
+    {
+      "option": "A",
+      "source_item_key": "chain_mail",
+      "quantity": 1,
+      "runtime_item_id": "chain_mail",
+      "status": "source_definition_exists_not_gameplay_verified",
+      "requirement": "Preserve quantity, exact source item facts and complete pack contents"
+    },
+    {
+      "option": "A",
+      "source_item_key": "shield",
+      "quantity": 1,
+      "runtime_item_id": "shield",
+      "status": "source_definition_exists_not_gameplay_verified",
+      "requirement": "Preserve quantity, exact source item facts and complete pack contents"
+    },
+    {
+      "option": "A",
+      "source_item_key": "longsword",
+      "quantity": 1,
+      "runtime_item_id": "longsword",
+      "status": "source_definition_exists_not_gameplay_verified",
+      "requirement": "Preserve quantity, exact source item facts and complete pack contents"
+    },
+    {
+      "option": "A",
+      "source_item_key": "javelin",
+      "quantity": 6,
+      "runtime_item_id": "javelin",
+      "status": "source_definition_exists_not_gameplay_verified",
+      "requirement": "Preserve quantity, exact source item facts and complete pack contents"
+    },
+    {
+      "option": "A",
+      "source_item_key": "holy_symbol",
+      "quantity": 1,
+      "runtime_item_id": "holy_symbol",
+      "status": "source_definition_exists_not_gameplay_verified",
+      "requirement": "Preserve quantity, exact source item facts and complete pack contents"
+    },
+    {
+      "option": "A",
+      "source_item_key": "priests_pack",
+      "quantity": 1,
+      "runtime_item_id": "priests_pack",
+      "status": "source_definition_exists_not_gameplay_verified",
+      "requirement": "Preserve quantity, exact source item facts and complete pack contents"
+    }
+  ],
+  "unsupported_behavior": [
+    {
+      "groups": [
+        "progression",
+        "items"
+      ],
+      "requirement": "Complete starting/multiclass acquisition, choices and equipment quantities/GP; candidate equipment_resolution retains every unresolved item or choice. No opt-in or native-path replacement is authorized by this candidate."
+    }
+  ],
+  "source_revision": "2a19eb1d (existing working-tree definitions and recovered drafts read on 2026-11-08)",
+  "reused_input_hashes": {
+    "data/core/classes/paladin.json": "4bb849c23de1ca736851bb2b386ed85abf0c32893d3df8a2709fe0409e5b9b14",
+    "reference/2024/classes/paladin.json": "1c3578448c400d63531ba994a43bbb52b76e6fa6bf72b471a26fdfa20042c753",
+    "docs/mechanics/paladin-2024.md": "3139e1bc01394212ab92dac7e9b7d3f3ffc14cb712fb12e3f82f64b791149b3c"
+  }
+}

@@ -14,6 +14,37 @@ The scope below remains unchanged.
 
 ## Source and inventory evidence
 
+The subsequent [cross-set mapping](crown-engine-mapping/README.md) covers the
+complete written sets below, preserving this scope and their source/blocker
+pointers. Its [bounded queue](crown-engine-mapping/assignments.md) starts with
+CXM-01/S-249 ammunition; mapping is planning, not runtime or gameplay acceptance.
+
+The subsequent [creature/actor candidates](preparation/crown-creatures/README.md)
+write all ten encounters, three companions and complete individual in-band SRD
+form/created-actor sets with explicit campaign/SRD separation. There are 39/46
+Wild Shape choices at Druid 2/4, 24 normal familiar forms and seven additional
+Pact forms; four low-CR swarm blocks remain written but held for adjudication.
+Full rules, selection/acquisition links, source/donor pins and blockers stay
+outside production. This does not update the runtime baseline below or certify
+monster rewards. World/event/object candidates are now written below.
+
+The subsequent [remaining reachable-item candidates](preparation/crown-reachable-items/README.md)
+add 73 source-backed/custom-policy candidates and reuse 29 package candidates
+for shop/reward/companion items, spell materials and physical creations. They
+map all 183 spells' Material requirements. The current-source shop trace finds
+66 leads, including `diamond_50gp` and `druidic_focus_quarterstaff` beyond the
+older 64-ID export; this is not a new loaded availability measurement.
+Creature and world candidates are now written and mapped; runtime delivery remains.
+No production gaps are accepted by either writing pass.
+
+The [package-equipment candidates](preparation/crown-equipment/README.md) now
+write the starting gear and dependencies of the twelve class/four background
+packages: 105 candidates, six complete packs and all legal linked tool/form
+choices. They remain outside production with explicit mapping blockers.
+The subsequent reachable-item pass above covers merchant/loot and component
+authoring. Creature/world candidates are written separately; no writing pass changes
+the investigated runtime baseline below.
+
 - SRD 5.2.1 is the authority. The existing
   [spell clause audit and inventory](../audits/spells.md),
   [acquisition audit](../reviews/progression-acquisition-audit.md),
@@ -39,6 +70,12 @@ The scope below remains unchanged.
   not the older CSV. The batch column below points to the source-clause audit.
 
 ## Classes and subclasses
+
+The [2026-11-08 character/origin candidates](preparation/crown-characters/README.md)
+now write the complete selected class/subclass, invocation, Metamagic, species,
+background and feat sets outside production. They reuse the definitions and
+recovered drafts identified below. This is authoring only; the investigated
+runtime gaps in this dated checklist do not become accepted behavior.
 
 Each row requires the full level-1–5 base package, legal source-owned choices,
 multiclass entry/grants and the named subclass's in-band clauses. Existing
@@ -85,6 +122,15 @@ by a chooser; complete their source clauses through the generic engine.
 
 ## Campaign and world inventory
 
+The final [world/event/object writing pass](preparation/crown-world/README.md)
+now retains the full inventory below outside production: map and dungeons, all
+four event tables/29 events including the nested child, generated traps/loot,
+nine tactical objects, hazards/supplies, milestones, objectives and rewards.
+Its source/consumer pins and world routes reuse all prior candidate sets.
+Monster loot metadata does not prove payment; quest-board bounty metadata has
+no payment consumer. Catalog writing is complete; cross-set mapping, runtime
+work and gameplay proof remain.
+
 Authority: [the loaded campaign](../../data/core/campaigns/the_lost_crown.json),
 [DungeonGenerator](../../src/dungeon/dungeon_generator.gd),
 [overworld/rest consumers](../../src/overworld/overworld_state.gd),
@@ -112,6 +158,12 @@ curated subsets, not proof that all legal SRD forms and their traits are covered
 Source-pin the remaining legal options when completing the form package rather
 than importing every loaded monster or accepting a hardcoded four-form cap.
 
+The subsequent [creature selectors](preparation/crown-creatures/selection-links.json)
+now enumerate the complete source-backed individual SRD choices outside loading.
+Their source inventory also records excluded types/CRs/flight and held swarms.
+This closes the written-set discovery boundary, not the runtime chooser or
+stat-block/trait integration gaps described above.
+
 Campaign-check gap: `test_crown_smoke` and `test_final_encounter_round_trip` in
 [the harness](../../src/viewport_harness.gd) shortcut victories; the relaunch
 probes stage progress. Preserve those bounded checks and add the normal
@@ -122,9 +174,10 @@ results alone cannot certify normal resources, level-up choices or balance.
 
 The production predicate admitted **64** IDs in the pinned export. This is an
 availability inventory, not proof of each item rule or of affordability at every
-point in the campaign. Musket and Pistol are current non-SRD exposure to resolve
-under the existing SRD milestone policy; their presence does not add supplements
-to the target. Higher-grade healing potions are included because they are sold.
+point in the campaign. Source correction from the subsequent item-writing pass:
+Musket and Pistol are present in the SRD 5.2.1 Weapons table on p.91; the older
+non-SRD label was incorrect. Their availability is unchanged. Higher-grade
+healing potions are included because they are sold.
 
 `antidote`, `battleaxe`, `black_pearl_powder_500gp`, `blowgun`, `breastplate`, `chain_mail`, `chain_shirt`, `club`, `dagger`, `dart`, `diamond_300gp`, `flail`, `gentle_repose_copper`, `glaive`, `greataxe`, `greatclub`, `greatsword`, `halberd`, `half_plate_armor`, `hand_crossbow`, `handaxe`, `heavy_crossbow`, `hide_armor`, `incense_10gp`, `javelin`, `lance`, `lantern_bullseye`, `leather_armor`, `light_crossbow`, `light_hammer`, `longbow`, `longsword`, `mace`, `maul`, `morningstar`, `mushroom_powder_25gp`, `musket`, `net`, `padded_armor`, `pearl_100gp`, `pike`, `pistol`, `plate_armor`, `potion_greater_healing`, `potion_healing`, `potion_superior_healing`, `potion_supreme_healing`, `quarterstaff`, `rapier`, `ring_mail`, `scale_mail`, `scimitar`, `shield`, `shortbow`, `shortsword`, `sickle`, `sling`, `spear`, `splint_armor`, `studded_leather_armor`, `trident`, `war_pick`, `warhammer`, `whip`.
 

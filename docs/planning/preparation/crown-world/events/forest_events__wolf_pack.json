@@ -1,0 +1,109 @@
+{
+  "schema": "crown-world-candidate/1",
+  "id": "forest_events__wolf_pack",
+  "name": "Hungry Wolf Pack",
+  "kind": "events",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring declarations only; not registered engine opcodes.",
+  "required_extensions": [
+    "discovery",
+    "objectives_rewards"
+  ],
+  "authored_operations": [
+    {
+      "operation": "settle_ordered_branch",
+      "seed_pointer": "/choices/0/effects",
+      "effects": [
+        {
+          "type": "start_combat",
+          "monsters": [
+            "wolf",
+            "wolf",
+            "wolf"
+          ]
+        }
+      ],
+      "condition": null,
+      "requirement": "Retain order, exact quantities/formulas, recipient, costs, branch descriptions and occurrence identity; no repeated payment when a child resumes."
+    },
+    {
+      "operation": "resolve_authored_check",
+      "seed_pointer": "/choices/1/check",
+      "check": {
+        "ability": "CHA",
+        "dc": 13
+      },
+      "requirement": "Keep ability, skill/context, DC and optional familiar Help exactly. Choose actor and actual context; settle one branch once; never silently convert an ability check into a saving throw."
+    },
+    {
+      "operation": "settle_ordered_branch",
+      "seed_pointer": "/choices/1/failure/effects",
+      "effects": [
+        {
+          "type": "start_combat",
+          "monsters": [
+            "wolf",
+            "wolf",
+            "wolf"
+          ]
+        }
+      ],
+      "condition": null,
+      "requirement": "Retain order, exact quantities/formulas, recipient, costs, branch descriptions and occurrence identity; no repeated payment when a child resumes."
+    }
+  ],
+  "blockers": [],
+  "retained_input": {
+    "path": "data/core/events/forest_events.json",
+    "sha256": "d4510f0da5ad26db2611a506fb58c79c35247610ac61ea39be48d30824feac09",
+    "pointer": "/events/4",
+    "payload": {
+      "id": "wolf_pack",
+      "name": "Hungry Wolf Pack",
+      "weight": 15,
+      "description": "Low growls echo through the trees. A pack of wolves emerges, eyes gleaming with hunger.",
+      "type": "choice",
+      "choices": [
+        {
+          "text": "Stand your ground and fight",
+          "effects": [
+            {
+              "type": "start_combat",
+              "monsters": [
+                "wolf",
+                "wolf",
+                "wolf"
+              ]
+            }
+          ]
+        },
+        {
+          "text": "Try to scare them off",
+          "check": {
+            "ability": "CHA",
+            "dc": 13
+          },
+          "success": {
+            "description": "You roar and wave your arms. The wolves whimper and scatter into the undergrowth."
+          },
+          "failure": {
+            "description": "The wolves are not impressed. They attack!",
+            "effects": [
+              {
+                "type": "start_combat",
+                "monsters": [
+                  "wolf",
+                  "wolf",
+                  "wolf"
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "authority": "Custom Crown campaign event, not an SRD trap/NPC/spell replacement",
+  "table_id": "forest_events",
+  "occurrence_policy": "Table may roll again; same in-flight occurrence must not reroll/reapply on reopen. Campaign-specific uniqueness beyond generated room claims is unresolved, not silently global once-per-event-ID."
+}

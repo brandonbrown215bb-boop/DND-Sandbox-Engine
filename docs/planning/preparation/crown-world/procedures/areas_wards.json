@@ -1,0 +1,37 @@
+{
+  "schema": "crown-world-candidate/1",
+  "id": "areas_wards",
+  "name": "Areas Wards",
+  "kind": "procedures",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring declarations only; not registered engine opcodes.",
+  "required_extensions": [
+    "areas_wards"
+  ],
+  "authored_operations": [
+    {
+      "operation": "resolve_areas_wards",
+      "requirement": "Persist exact cast/object/area source, geometry, origin, plane, selected recipients/exemptions, authorization, stored spell/slot level, trigger ledger and independent expiry. Resolve appearance, moving-area membership, creature crossing, start/end and delayed aftermath under their own rules. Glyph releases its stored eligible spell once and retains movement/dispel endings."
+    }
+  ],
+  "blockers": [
+    "Existing areas, Alarm and located aftermath are reuse points. Geometry selection or a logged alarm is not every spell effect. Full stored-spell, sensor, permanent ward and dispel-level consumers still require cross-set mapping; no per-spell ID handler."
+  ],
+  "slices": "S-070/S-141/S-150/S-151/S-184/S-203",
+  "source_context_pages": [
+    11,
+    178
+  ],
+  "source_context": "../source-pages.json",
+  "current_owner_pins": [
+    {
+      "path": "src/dungeon/local_room_areas.gd",
+      "sha256": "bdbed96a41046f7ca92f22feba94013291d86ce0d6d50e446f1c2c9814ff92fd"
+    },
+    {
+      "path": "src/dungeon/local_room_shared_spells.gd",
+      "sha256": "420ebdf67a8e04c8d254aa81f81ae503a2133f5b8323632bc59d904211966fbb"
+    }
+  ],
+  "reuse_boundary": "Existing accepted pieces remain accepted at their documented limits; these requirements do not mark the entire slices missing."
+}

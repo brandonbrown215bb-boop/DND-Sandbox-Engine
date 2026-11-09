@@ -1,0 +1,443 @@
+{
+  "schema": "crown-creature-candidate/1",
+  "id": "srd_quasit",
+  "name": "Quasit",
+  "kind": "srd_statblock",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring intent only; not registered engine syntax. Mapping requirements do not assert the whole referenced engine slice is absent.",
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile all source clauses, mappings and source differences before later production-path verification. Keep native paths until replacements cover them."
+  },
+  "source": {
+    "authority": "SRD 5.2.1",
+    "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      317
+    ],
+    "text": "Quasit\nTiny Fiend (Demon), Chaotic Evil\nAC 13 Initiative +3 (13)\nHP 25 (10d4)\nSpeed 40 ft.\nMOD SAVE MOD SAVE MOD SAVE\nStr 5 −3 −3 Dex 17 +3 +3 Con 10 +0 +0\nInt 7 −2 −2 WIS 10 +0 +0 Cha 10 +0 +0\nSkills Stealth +5\nResistances Cold, Fire, Lightning\nImmunities Poison; Poisoned\nSenses Darkvision 120 ft.; Passive Perception 10\nLanguages Abyssal, Common\nCR 1 (XP 200; PB +2)\nTraits\nMagic Resistance. The quasit has Advantage on saving\nthrows against spells and other magical effects.\nActions\nRend. Melee Attack Roll: +5, reach 5 ft. Hit: 5 (1d4 + 3)\nSlashing damage, and the target has the Poisoned con-\ndition until the start of the quasit’s next turn.\nInvisibility. The quasit casts Invisibility on itself, requir-\ning no spell components and using Charisma as the\nspellcasting ability.\nScare (1/Day). Wisdom Saving Throw: DC 10, one\ncreature within 20 feet. Failure: The target has the\nFrightened condition. At the end of each of its turns, the\ntarget repeats the save, ending the effect on itself on a\nsuccess. After 1 minute, it succeeds automatically.\nShape-Shift. The quasit shape-shifts to resemble a bat\n(Speed 10 ft., Fly 40 ft.), a centipede (40 ft., Climb 40\nft.), or a toad (40 ft., Swim 40 ft.), or it returns to its\ntrue form. Its game statistics are the same in each form,\nexcept for its Speed. Any equipment it is wearing or\ncarrying isn’t transformed.",
+    "transcription": "Two-column extraction; line breaks retained. Whole selected page context is in source-pages.json. No stat correction inferred from donor data."
+  },
+  "statistics": {
+    "identity_line": "Tiny Fiend (Demon), Chaotic Evil",
+    "AC": "13 Initiative +3 (13)",
+    "HP": "25 (10d4)",
+    "Speed": "40 ft.",
+    "Skills": "Stealth +5",
+    "Resistances": "Cold, Fire, Lightning",
+    "Immunities": "Poison; Poisoned",
+    "Senses": "Darkvision 120 ft.; Passive Perception 10",
+    "Languages": "Abyssal, Common",
+    "CR": "1 (XP 200; PB +2)",
+    "ability_scores": {
+      "STR": 5,
+      "DEX": 17,
+      "CON": 10,
+      "INT": 7,
+      "WIS": 10,
+      "CHA": 10
+    },
+    "saving_throw_modifiers": {
+      "STR": -3,
+      "DEX": 3,
+      "CON": 0,
+      "INT": -2,
+      "WIS": 0,
+      "CHA": 0
+    },
+    "initiative_modifier": 3,
+    "initiative_score_printed": 13,
+    "armor_class": 13,
+    "movement_feet": {
+      "walk": 40
+    }
+  },
+  "authored_operations": [
+    {
+      "key": "b001",
+      "name": "Magic Resistance",
+      "source_section": "Traits",
+      "full_rule": "Magic Resistance. The quasit has Advantage on saving\nthrows against spells and other magical effects.",
+      "budget": "passive_or_declared_trigger",
+      "steps": [
+        {
+          "intent": "Apply conditional Advantage/Disadvantage or roll adjustment only to the qualifying exact check/save/attack and its declared window.",
+          "mapping_group": "rolls"
+        }
+      ],
+      "parameters_from_rule": {
+        "attack_bonus": [],
+        "save_dc": [],
+        "distances_feet": [],
+        "dice": []
+      },
+      "blockers": [
+        "map_rolls"
+      ],
+      "ending_and_identity": "Exact actor/action/target/source instance; use every qualifier and ending in full_rule, not only extracted parameters.",
+      "behavior_plan": {
+        "budget": "passive_or_declared_trigger",
+        "source_outcomes": {},
+        "trigger": "Saving throw against spell or other magical effect",
+        "roll_adjustment": "advantage"
+      }
+    },
+    {
+      "key": "b002",
+      "name": "Rend",
+      "source_section": "Actions",
+      "full_rule": "Rend. Melee Attack Roll: +5, reach 5 ft. Hit: 5 (1d4 + 3)\nSlashing damage, and the target has the Poisoned condition until the start of the quasit’s next turn.",
+      "budget": "action",
+      "steps": [
+        {
+          "intent": "Resolve declared roll or save, targets, range/reach, damage packets, multiattack choice, riders and exact action budget. A save-only action is not a weapon hit rider.",
+          "mapping_group": "attacks"
+        },
+        {
+          "intent": "Preserve immunity, source identity, thresholds, repeat saves, explicit ending events and target-relative deadlines.",
+          "mapping_group": "conditions"
+        }
+      ],
+      "parameters_from_rule": {
+        "attack_bonus": [
+          5
+        ],
+        "save_dc": [],
+        "distances_feet": [
+          5
+        ],
+        "dice": [
+          "1d4 + 3"
+        ]
+      },
+      "blockers": [
+        "map_attacks",
+        "map_conditions"
+      ],
+      "ending_and_identity": "Exact actor/action/target/source instance; use every qualifier and ending in full_rule, not only extracted parameters.",
+      "behavior_plan": {
+        "budget": "action",
+        "source_outcomes": {
+          "hit": "5 (1d4 + 3) Slashing damage, and the target has the Poisoned condition until the start of the quasit’s next turn."
+        },
+        "resolution": "attack_roll",
+        "attack_kind": "melee",
+        "damage_and_riders": "5 (1d4 + 3) Slashing damage, and the target has the Poisoned condition until the start of the quasit’s next turn.",
+        "permission": "ordinary familiar cannot attack; invocation exceptions must grant this exact attack or Attack action, not every Actions entry"
+      }
+    },
+    {
+      "key": "b003",
+      "name": "Invisibility",
+      "source_section": "Actions",
+      "full_rule": "Invisibility. The quasit casts Invisibility on itself, requiring no spell components and using Charisma as the\nspellcasting ability.",
+      "budget": "action",
+      "steps": [
+        {
+          "intent": "Use the linked spell with exact ability/components/target permission, Concentration, budgets and endings; not a permanent trait replacement.",
+          "mapping_group": "casting"
+        }
+      ],
+      "parameters_from_rule": {
+        "attack_bonus": [],
+        "save_dc": [],
+        "distances_feet": [],
+        "dice": []
+      },
+      "blockers": [
+        "map_casting"
+      ],
+      "ending_and_identity": "Exact actor/action/target/source instance; use every qualifier and ending in full_rule, not only extracted parameters.",
+      "behavior_plan": {
+        "budget": "action",
+        "source_outcomes": {},
+        "cast": "invisibility",
+        "target": "self",
+        "components": [],
+        "spellcasting_ability": "CHA",
+        "policy": "Use linked spell duration/Concentration/endings; not permanent passive Invisible"
+      }
+    },
+    {
+      "key": "b004",
+      "name": "Scare (1/Day)",
+      "source_section": "Actions",
+      "full_rule": "Scare (1/Day). Wisdom Saving Throw: DC 10, one\ncreature within 20 feet. Failure: The target has the\nFrightened condition. At the end of each of its turns, the\ntarget repeats the save, ending the effect on itself on a\nsuccess. After 1 minute, it succeeds automatically.",
+      "budget": "action",
+      "steps": [
+        {
+          "intent": "Resolve declared roll or save, targets, range/reach, damage packets, multiattack choice, riders and exact action budget. A save-only action is not a weapon hit rider.",
+          "mapping_group": "attacks"
+        },
+        {
+          "intent": "Preserve immunity, source identity, thresholds, repeat saves, explicit ending events and target-relative deadlines.",
+          "mapping_group": "conditions"
+        },
+        {
+          "intent": "Charge exact source-owned action/reaction/use once; preserve recharge dice, daily and Long Rest schedules as separately authored rules.",
+          "mapping_group": "resources"
+        }
+      ],
+      "parameters_from_rule": {
+        "attack_bonus": [],
+        "save_dc": [
+          10
+        ],
+        "distances_feet": [
+          20
+        ],
+        "dice": []
+      },
+      "blockers": [
+        "map_attacks",
+        "map_conditions",
+        "map_resources"
+      ],
+      "ending_and_identity": "Exact actor/action/target/source instance; use every qualifier and ending in full_rule, not only extracted parameters.",
+      "behavior_plan": {
+        "budget": "action",
+        "source_outcomes": {
+          "failure": "The target has the Frightened condition. At the end of each of its turns, the target repeats the save, ending the effect on itself on a success. After 1 minute, it succeeds automatically."
+        },
+        "uses": 1,
+        "target": "Creature within20 feet",
+        "save": {
+          "ability": "WIS",
+          "dc": 10
+        },
+        "failure": "Frightened",
+        "repeat": "At each target turn end; success ends",
+        "automatic_success_after_seconds": 60,
+        "resolution": "save_only_action; no preliminary attack roll"
+      }
+    },
+    {
+      "key": "b005",
+      "name": "Shape-Shift",
+      "source_section": "Actions",
+      "full_rule": "Shape-Shift. The quasit shape-shifts to resemble a bat\n(Speed 10 ft., Fly 40 ft.), a centipede (40 ft., Climb 40\nft.), or a toad (40 ft., Swim 40 ft.), or it returns to its\ntrue form. Its game statistics are the same in each form,\nexcept for its Speed. Any equipment it is wearing or\ncarrying isn’t transformed.",
+      "budget": "action",
+      "steps": [
+        {
+          "intent": "Resolve complete eligibility and chosen known forms, template parameters, command/turn policy and drop/merge/wear state; do not recreate or refill original actors on restore.",
+          "mapping_group": "forms"
+        },
+        {
+          "intent": "Exact carried copies, corrosion penalties/destruction and Mending, temporary tack separation and dropped equipment; loot metadata is not a paid reward.",
+          "mapping_group": "items"
+        },
+        {
+          "intent": "Represent actual size/space, climb/swim/fly and breathing, jumps, straight-line charge history, opportunity exceptions, web surfaces and legal release.",
+          "mapping_group": "movement"
+        }
+      ],
+      "parameters_from_rule": {
+        "attack_bonus": [],
+        "save_dc": [],
+        "distances_feet": [
+          10,
+          40,
+          40,
+          40,
+          40
+        ],
+        "dice": []
+      },
+      "blockers": [
+        "map_forms",
+        "map_items",
+        "map_movement"
+      ],
+      "ending_and_identity": "Exact actor/action/target/source instance; use every qualifier and ending in full_rule, not only extracted parameters.",
+      "behavior_plan": {
+        "budget": "action",
+        "source_outcomes": {},
+        "resolution": "resemblance_only",
+        "retained": "All current statblock facts except listed Speeds; exact equipment unchanged",
+        "forms": {
+          "bat": {
+            "walk": 10,
+            "fly": 40
+          },
+          "centipede": {
+            "walk": 40,
+            "climb": 40
+          },
+          "toad": {
+            "walk": 40,
+            "swim": 40
+          }
+        },
+        "true_form": "Restore this exact actor template movement; no full animal-stat substitution"
+      }
+    }
+  ],
+  "retained_definitions": [
+    {
+      "path": "data/core/monsters/imported_monsters.json",
+      "sha256": "f57bee1e93f185a89575bed3d8b2b610b53cfd3b7f2eb56448d1dd64a0126c5f",
+      "pointer": "/326",
+      "payload": {
+        "id": "quasit",
+        "name": "Quasit",
+        "hit_points": "3d4",
+        "armor_class": 13,
+        "speed": 8,
+        "ability_scores": {
+          "STR": 5,
+          "DEX": 17,
+          "CON": 10,
+          "INT": 7,
+          "WIS": 10,
+          "CHA": 10
+        },
+        "attacks": [
+          {
+            "name": "Claws",
+            "ability": "STR",
+            "damage": "1d6",
+            "range": 1,
+            "damage_type": "slashing"
+          }
+        ],
+        "ai_behavior": "aggressive"
+      },
+      "manifest_declarations": [
+        {
+          "type": "monster",
+          "id": "quasit",
+          "winner": "res://data/core/monsters/srd_monsters.json#112",
+          "replaces": [
+            "res://data/core/monsters/imported_monsters.json#327"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "data/core/monsters/srd_monsters.json",
+      "sha256": "83786ed8bafc802e37b7794c04ba8901e3e10b35d288f301c92f01bbed50cd73",
+      "pointer": "/111",
+      "payload": {
+        "id": "quasit",
+        "name": "Quasit",
+        "description": "A tiny demon familiar that frightens foes and turns invisible.",
+        "size": "tiny",
+        "challenge_rating": 1,
+        "hit_points": "10d4",
+        "armor_class": 13,
+        "speed": 8,
+        "ability_scores": {
+          "STR": 5,
+          "DEX": 17,
+          "CON": 10,
+          "INT": 7,
+          "WIS": 10,
+          "CHA": 10
+        },
+        "damage_resistances": [
+          "cold",
+          "fire",
+          "lightning"
+        ],
+        "damage_immunities": [
+          "poison"
+        ],
+        "condition_immunities": [
+          "poisoned"
+        ],
+        "attacks": [
+          {
+            "name": "Rend",
+            "ability": "DEX",
+            "damage": "1d4 + 3",
+            "damage_type": "slashing",
+            "range": 1,
+            "extra_effects": [
+              {
+                "type": "poisoned",
+                "duration": 1
+              }
+            ]
+          },
+          {
+            "name": "Scare",
+            "ability": "CHA",
+            "damage": "0",
+            "damage_type": "none",
+            "range": 4,
+            "extra_effects": [
+              {
+                "type": "frighten_save",
+                "save": "WIS",
+                "dc": 10
+              }
+            ]
+          }
+        ],
+        "ai_behavior": "aggressive",
+        "special_abilities": [
+          {
+            "id": "magic_resistance",
+            "name": "Magic Resistance",
+            "description": "Advantage on saves against spells and magical effects."
+          },
+          {
+            "id": "shape_shift",
+            "name": "Shape-Shift",
+            "description": "Can become a bat, centipede, or toad (speeds change), or return to true form."
+          },
+          {
+            "id": "invisibility",
+            "name": "Invisibility",
+            "description": "At will: cast Invisibility on itself."
+          }
+        ],
+        "loot_table": [],
+        "xp": 200
+      },
+      "manifest_declarations": [
+        {
+          "type": "monster",
+          "id": "quasit",
+          "winner": "res://data/core/monsters/srd_monsters.json#112",
+          "replaces": [
+            "res://data/core/monsters/imported_monsters.json#327"
+          ]
+        }
+      ]
+    }
+  ],
+  "selection": {
+    "wild_shape_druid_levels_2_3": false,
+    "wild_shape_druid_levels_4_5": false,
+    "normal_familiar": false,
+    "pact_of_chain_special": true,
+    "animate_dead_output": false,
+    "held_swarm": false,
+    "encounter_comparison_only": false
+  },
+  "acquisition_links": [
+    "selection-links.json"
+  ],
+  "blockers": [
+    "map_statistics",
+    "map_attacks",
+    "map_casting",
+    "map_conditions",
+    "map_forms",
+    "map_items",
+    "map_movement",
+    "map_resources",
+    "map_rolls"
+  ],
+  "source_reconciliation": "Official body is authoritative for this SRD candidate. Retained donor payloads are comparison/reuse seeds, including legacy values and manifest winners; do not merge their statistics or traits by ID. Direct Crown encounters retain separate candidates.",
+  "form_dependency": "Resemblance forms change only the explicitly listed Speeds; retain this creature statistics and exact equipment. No Rat/Raven/Spider/Bat/Centipede/Toad stat block substitution or additional form acquisition.",
+  "spell_candidates": [
+    {
+      "path": "docs/planning/preparation/crown-spells/invisibility.json",
+      "sha256": "15362a5d2d1082a215e7612bcda681b0f3e76a79803b92876441188ee3d8af26"
+    }
+  ],
+  "equipment_links": []
+}

@@ -1,0 +1,180 @@
+{
+  "format": "crown-spell-candidate/1",
+  "id": "unseen_servant",
+  "name": "Unseen Servant",
+  "level": 1,
+  "status": "written_unverified_not_loaded",
+  "source": {
+    "authority": "SRD 5.2.1",
+    "url": "https://media.dndbeyond.com/compendium-images/srd/5.2/SRD_CC_v5.2.1.pdf",
+    "sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      171
+    ],
+    "header": {
+      "Casting Time": "Action or Ritual",
+      "Range": "60 feet",
+      "Components": "V, S, M (a bit of string and of wood)",
+      "Duration": "1 hour"
+    },
+    "attribution": "System Reference Document 5.2.1, Wizards of the Coast LLC; CC BY 4.0."
+  },
+  "casting": {
+    "casting_time": "Action or Ritual",
+    "kind": "action",
+    "seconds": null,
+    "ritual_available": true,
+    "range": {
+      "source": "60 feet",
+      "kind": "distance",
+      "feet": 60
+    },
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "a bit of string and of wood",
+    "duration": "1 hour",
+    "concentration": false,
+    "spell_lists": [
+      "bard",
+      "warlock",
+      "wizard"
+    ]
+  },
+  "authored_intent": "Create Invisible mindless Medium force with AC 10/1 HP/STR 2; no attack; once-per-turn Bonus Action commands move up to 15 feet and handle objects; simple tasks continue to completion; 0 HP or command requiring travel beyond 60 feet ends spell, not merely caster walking away.",
+  "rules": [
+    {
+      "id": "r001",
+      "text": "This spell creates an Invisible, mindless, shapeless, Medium force that performs simple tasks at your command until the spell ends."
+    },
+    {
+      "id": "r002",
+      "text": "The servant springs into existence in an unoccupied space on the ground within range."
+    },
+    {
+      "id": "r003",
+      "text": "It has AC 10, 1 Hit Point, and a Strength of 2, and it can’t attack."
+    },
+    {
+      "id": "r004",
+      "text": "If it drops to 0 Hit Points, the spell ends."
+    },
+    {
+      "id": "r005",
+      "text": "Once on each of your turns as a Bonus Action, you can mentally command the servant to move up to 15 feet and interact with an object."
+    },
+    {
+      "id": "r006",
+      "text": "The servant can perform simple tasks that a human could do, such as fetching things, cleaning, mending, folding clothes, lighting fires, serving food, and pouring drinks."
+    },
+    {
+      "id": "r007",
+      "text": "Once you give the command, the servant performs the task to the best of its ability until it completes the task, then waits for your next command."
+    },
+    {
+      "id": "r008",
+      "text": "If you command the servant to perform a task that would move it more than 60 feet away from you, the spell ends."
+    }
+  ],
+  "authored_operations": [
+    {
+      "operation": "create_task_force",
+      "parameters": {
+        "size": "medium",
+        "invisible": true,
+        "mindless": true,
+        "shapeless": true,
+        "placement": "unoccupied_ground",
+        "stats": {
+          "ac": 10,
+          "hp": 1,
+          "STR": 2
+        },
+        "cannot_attack": true,
+        "command": {
+          "action": "bonus_action",
+          "maximum_per_caster_turn": 1,
+          "movement_feet": 15,
+          "interact_with_object": true,
+          "standing_simple_task": true
+        },
+        "ends": [
+          "zero_hp",
+          "commanded_task_would_move_beyond_60_feet"
+        ]
+      },
+      "status": "authoring_declaration_not_a_registered_opcode",
+      "required_source_rules": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006",
+        "r007",
+        "r008"
+      ]
+    }
+  ],
+  "runtime_draft": {
+    "origin": "proposed_operations",
+    "definition": null,
+    "fragments": {},
+    "coverage": "Unverified. Neither a full definition nor a fragment certifies all source rules or controls. Required extensions are not silently waived."
+  },
+  "required_extensions": [
+    {
+      "group": "created_actors",
+      "requirement": "Supply the complete eligible statblocks/templates and exact placement, command, turn, type, resource, inventory and ending policies; retain all source-specific subclauses.",
+      "spell_specific_intent": "Create Invisible mindless Medium force with AC 10/1 HP/STR 2; no attack; once-per-turn Bonus Action commands move up to 15 feet and handle objects; simple tasks continue to completion; 0 HP or command requiring travel beyond 60 feet ends spell, not merely caster walking away.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006",
+        "r007",
+        "r008"
+      ],
+      "existing_owner_to_reuse": "src/characters/created_actor_rules.gd",
+      "slice_references": "S-154/S-155/S-156/S-157/S-158/S-164",
+      "disposition": "requires_mapping_or_host_completion",
+      "note": "This is an authored handoff requirement, not a fresh runtime failure or claim that the whole referenced slice is missing."
+    },
+    {
+      "group": "granted_actions",
+      "requirement": "Author the correct actor, action kind, budgets, choices, range and repeated effects; retain the parent cast/source and avoid a new named executor.",
+      "spell_specific_intent": "Create Invisible mindless Medium force with AC 10/1 HP/STR 2; no attack; once-per-turn Bonus Action commands move up to 15 feet and handle objects; simple tasks continue to completion; 0 HP or command requiring travel beyond 60 feet ends spell, not merely caster walking away.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006",
+        "r007",
+        "r008"
+      ],
+      "existing_owner_to_reuse": "src/combat/combat_child_actions.gd",
+      "slice_references": "S-134/S-135/S-146/S-148",
+      "disposition": "requires_mapping_or_host_completion",
+      "note": "This is an authored handoff requirement, not a fresh runtime failure or claim that the whole referenced slice is missing."
+    }
+  ],
+  "audit": {
+    "source": "docs/audits/spells.md",
+    "batch": "088-8",
+    "production_definition_at_authoring": "res://data/core/spells/imported_spells.json#188",
+    "baseline_execution": "native",
+    "source_revision": "2a19eb1d",
+    "existing_conversion_label": "queued"
+  },
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile every source rule and required extension, then implement and verify through production paths before any deliberate promotion. Keep native behavior until covered."
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "schema": "crown-world-candidate/1",
+  "id": "dungeon_events__ooze_encounter",
+  "name": "Slime!",
+  "kind": "events",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring declarations only; not registered engine opcodes.",
+  "required_extensions": [
+    "objectives_rewards"
+  ],
+  "authored_operations": [
+    {
+      "operation": "start_authored_encounter",
+      "data": {
+        "monsters": [
+          "ooze",
+          "ooze"
+        ],
+        "surprise": false
+      },
+      "requirement": "Retain exact monster multiplicity and surprise; use existing creature candidates; victory and payout are separate."
+    }
+  ],
+  "blockers": [],
+  "retained_input": {
+    "path": "data/core/events/dungeon_events.json",
+    "sha256": "db368f21178462a95f0bb78028ec8e10441f6467e4a6bb7b3843d6ecaeb20d35",
+    "pointer": "/events/6",
+    "payload": {
+      "id": "ooze_encounter",
+      "name": "Slime!",
+      "weight": 15,
+      "description": "The floor squelches underfoot. What you thought was a puddle of water begins to move...",
+      "type": "combat",
+      "data": {
+        "monsters": [
+          "ooze",
+          "ooze"
+        ],
+        "surprise": false
+      }
+    }
+  },
+  "authority": "Custom Crown campaign event, not an SRD trap/NPC/spell replacement",
+  "table_id": "dungeon_events",
+  "occurrence_policy": "Table may roll again; same in-flight occurrence must not reroll/reapply on reopen. Campaign-specific uniqueness beyond generated room claims is unresolved, not silently global once-per-event-ID."
+}

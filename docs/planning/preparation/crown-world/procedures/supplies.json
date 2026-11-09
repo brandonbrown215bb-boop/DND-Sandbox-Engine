@@ -1,0 +1,67 @@
+{
+  "schema": "crown-world-candidate/1",
+  "id": "supplies",
+  "name": "Supplies",
+  "kind": "procedures",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring declarations only; not registered engine opcodes.",
+  "required_extensions": [
+    "supplies"
+  ],
+  "authored_operations": [
+    {
+      "operation": "resolve_supplies",
+      "requirement": "Track actual food pounds, water gallons, capacity, contamination, intake, size-based daily requirements, expiry/spoilage and remaining stock. Consume exact copies/quantities once; magical nourishment and no-eating/drinking exceptions keep their specific scope. Apply the full dehydration/malnutrition Exhaustion and recovery restrictions at actual deadlines."
+    }
+  ],
+  "blockers": [
+    "Food servings and magical spring potion flavor do not establish pounds/gallons or infinite refill. Production survival size lookup and each projected form/created actor need reconciliation with actual effective size and exception sources. Keep legacy nourishment deadlines distinct from physical intake."
+  ],
+  "slices": "S-197/S-199/S-200/S-205",
+  "source_context_pages": [
+    181,
+    185
+  ],
+  "source_context": "../source-pages.json",
+  "current_owner_pins": [
+    {
+      "path": "src/characters/survival_rules.gd",
+      "sha256": "d4aa4d499b960e30aad896fba8fcb4bb450b254a2957a063cdce6dc7866854d3"
+    },
+    {
+      "path": "src/dungeon/local_room_rules.gd",
+      "sha256": "cbe65b9c14cc2261555f0cc29e65f669d288967b757f7999f70f9062bf81cd8e"
+    },
+    {
+      "path": "src/characters/rest_rules.gd",
+      "sha256": "1548c49c6bdfa520a588e53915527c1b3b56e60f5f23d00468943dfaa0368595"
+    }
+  ],
+  "reuse_boundary": "Existing accepted pieces remain accepted at their documented limits; these requirements do not mark the entire slices missing.",
+  "source_parameters": {
+    "authority": "SRD 5.2.1 pp.181,185; source-specific spell/character exceptions still apply",
+    "daily_food_pounds_and_water_gallons": {
+      "Tiny": 0.25,
+      "Small": 1,
+      "Medium": 1,
+      "Large": 4,
+      "Huge": 16,
+      "Gargantuan": 64
+    },
+    "dehydration": "Less than half required water: 1 Exhaustion at day end. Exhaustion caused by dehydration cannot be removed until full daily amount is drunk.",
+    "malnutrition": "Eating but less than half required food: CON save DC10 or 1 Exhaustion at day end. No food for 5 days: 1 Exhaustion at end of day 5 and each subsequent foodless day. Malnutrition Exhaustion cannot be removed until full daily amount is eaten.",
+    "measurement_blocker": "food_servings are not automatically pounds. Temporary size/form and no-eating/drinking sources must bind to actual consumers; no extra daily stock is created."
+  },
+  "reused_equipment_rules": [
+    {
+      "path": "docs/planning/preparation/crown-equipment/items/rations.json",
+      "sha256": "05e386d52feb05b39ee7f0aee119bb65bff2f399ebe9af759308ad8011a17bdc",
+      "full_rules_pointer": "/rules"
+    },
+    {
+      "path": "docs/planning/preparation/crown-equipment/items/waterskin.json",
+      "sha256": "851167951185a0fa3e08a11617eb75c37991f96a193cca7f72ae3eb52ec7932e",
+      "full_rules_pointer": "/rules"
+    }
+  ]
+}

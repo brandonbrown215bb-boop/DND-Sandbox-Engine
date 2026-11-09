@@ -1,0 +1,64 @@
+{
+  "schema": "crown-world-candidate/1",
+  "id": "dungeon_events__treasure_room",
+  "name": "Hidden Treasure Room",
+  "kind": "events",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring declarations only; not registered engine opcodes.",
+  "required_extensions": [
+    "objectives_rewards",
+    "rest_time"
+  ],
+  "authored_operations": [
+    {
+      "operation": "settle_ordered_branch",
+      "seed_pointer": "/effects",
+      "effects": [
+        {
+          "type": "give_item",
+          "item_id": "gold_100"
+        },
+        {
+          "type": "give_item",
+          "item_id": "gold_100"
+        },
+        {
+          "type": "give_item",
+          "item_id": "potion_greater_healing"
+        }
+      ],
+      "condition": null,
+      "requirement": "Retain order, exact quantities/formulas, recipient, costs, branch descriptions and occurrence identity; no repeated payment when a child resumes."
+    }
+  ],
+  "blockers": [],
+  "retained_input": {
+    "path": "data/core/events/dungeon_events.json",
+    "sha256": "db368f21178462a95f0bb78028ec8e10441f6467e4a6bb7b3843d6ecaeb20d35",
+    "pointer": "/events/5",
+    "payload": {
+      "id": "treasure_room",
+      "name": "Hidden Treasure Room",
+      "weight": 5,
+      "description": "Behind a crumbling wall, you discover a forgotten treasure room! Gold coins and dusty gems litter the floor.",
+      "type": "loot",
+      "effects": [
+        {
+          "type": "give_item",
+          "item_id": "gold_100"
+        },
+        {
+          "type": "give_item",
+          "item_id": "gold_100"
+        },
+        {
+          "type": "give_item",
+          "item_id": "potion_greater_healing"
+        }
+      ]
+    }
+  },
+  "authority": "Custom Crown campaign event, not an SRD trap/NPC/spell replacement",
+  "table_id": "dungeon_events",
+  "occurrence_policy": "Table may roll again; same in-flight occurrence must not reroll/reapply on reopen. Campaign-specific uniqueness beyond generated room claims is unresolved, not silently global once-per-event-ID."
+}

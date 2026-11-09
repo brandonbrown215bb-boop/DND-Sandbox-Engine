@@ -1,0 +1,56 @@
+{
+  "schema": "crown-character-candidate/1",
+  "id": "gaze_of_two_minds",
+  "name": "Gaze of Two Minds",
+  "kind": "invocation",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "scope": {
+    "total_character_level_maximum": 5
+  },
+  "operation_language": "authoring intent only; not registered engine syntax",
+  "runtime_support": "Retained definitions are reuse material, not proof of full rules. Every authored operation needs contract mapping and later production-path verification before promotion.",
+  "minimum_warlock_level": 5,
+  "rules": {
+    "authority": "SRD 5.2.1",
+    "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      73
+    ],
+    "text": "Gaze of Two Minds\nPrerequisite: Level 5+ Warlock\nYou can use a Bonus Action to touch a willing creature and perceive through its senses until the end\nof your next turn. As long as the creature is on the\nsame plane of existence as you, you can take a Bonus Action on subsequent turns to maintain this\nconnection, extending the duration until the end\nof your next turn. The connection ends if you don’t\nmaintain it in this way.\nWhile perceiving through the other creature’s\nsenses, you benefit from any special senses possessed by that creature, and you can cast spells as if\nyou were in your space or the other creature’s space\nif the two of you are within 60 feet of each other."
+  },
+  "prerequisites": {
+    "warlock_level": 5,
+    "invocations": [],
+    "cantrip_parameter": null
+  },
+  "repeatable": false,
+  "authored_operations": [
+    {
+      "trigger": "Warlock5; Bonus Action touch willing creature",
+      "cost": "Bonus Action initially and on subsequent turns to maintain",
+      "effects": [
+        "Perceive target senses including special senses while same plane; cast from self OR target space when within60 feet"
+      ],
+      "ending_and_identity": "Until end next turn; each subsequent Bonus Action extends to end next turn; end if not maintained or different plane. Borrowed spell origin requires distance<=60 feet.",
+      "required_extension_groups": [
+        "casting",
+        "world",
+        "source_lifetimes"
+      ]
+    }
+  ],
+  "retained_runtime_fragment": null,
+  "unsupported_behavior": [
+    {
+      "groups": [
+        "casting",
+        "world",
+        "source_lifetimes"
+      ],
+      "requirement": "Perceive target senses including special senses while same plane; cast from self OR target space when within60 feet",
+      "status": "mapping_and_production_host_verification_required"
+    }
+  ],
+  "source_revision": "2a19eb1d (existing working-tree definitions and recovered drafts read on 2026-11-08)",
+  "reused_input_hashes": {}
+}

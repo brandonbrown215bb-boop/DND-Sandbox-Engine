@@ -1,0 +1,79 @@
+{
+  "schema": "crown-reachable-item-candidate/1",
+  "id": "antidote",
+  "name": "Antidote",
+  "kind": "campaign_consumable",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring intent only; not registered engine syntax.",
+  "rules": {
+    "authority": "Existing Crown item definition; no SRD equivalence asserted",
+    "pdf_sha256": null,
+    "pages": [],
+    "text": "Existing Crown custom item: Action, remove the Poisoned condition, shop value 25 GP. This is not SRD Antitoxin (50 GP, Bonus Action, Advantage on saves to avoid/end Poisoned for 1 hour); no substitution or expanded cure is authorized.",
+    "source_context": "../source-pages.json"
+  },
+  "definition": {
+    "id": "antidote",
+    "name": "Antidote",
+    "action": "action",
+    "effect": "remove_condition",
+    "condition": "poisoned",
+    "campaign_shop_value_gp": 25
+  },
+  "authored_operations": [
+    "Existing Crown custom item: Action, remove the Poisoned condition, shop value 25 GP. This is not SRD Antitoxin (50 GP, Bonus Action, Advantage on saves to avoid/end Poisoned for 1 hour); no substitution or expanded cure is authorized."
+  ],
+  "retained_runtime_seeds": [
+    {
+      "path": "data/core/items/consumables.json",
+      "array_index": 2,
+      "file_sha256": "045f413d89391312c1e3a175351f90427accde8f21b8d087abc1d6c5d9c3ec2d",
+      "definition": {
+        "id": "antidote",
+        "name": "Antidote",
+        "description": "Cures the poisoned condition.",
+        "type": "consumable",
+        "action_cost": "action",
+        "effects": [
+          {
+            "type": "remove_condition",
+            "condition": "poisoned"
+          }
+        ],
+        "value": 25
+      }
+    }
+  ],
+  "manifest_overrides": [],
+  "required_mapping": [
+    "campaign_custom"
+  ],
+  "consumers": [
+    {
+      "channel": "historical_shop_inventory",
+      "path": "docs/planning/crown-content-scope.md",
+      "sha256": "3bcb9799865f1779aa7da1c1b041a6ac938c33491dfd502641593bf767a8528e",
+      "details": "Pinned 64-ID Windows export inventory; retained below, not rerun here."
+    },
+    {
+      "channel": "source_shop_candidate",
+      "path": "data/core/items/consumables.json",
+      "sha256": "045f413d89391312c1e3a175351f90427accde8f21b8d087abc1d6c5d9c3ec2d",
+      "json_pointer": "/2",
+      "details": "Positive shop type/value and, for consumables, declared supported effect names. This is a source selection lead, not a loaded availability certification; manifest wins remain authoritative."
+    },
+    {
+      "channel": "monster_reward_metadata",
+      "path": "data/core/monsters/core_monsters.json",
+      "sha256": "33bf505c91476b32f7dd2887dd0caa19521e4a9e206392b8d803090b105eb8c2",
+      "json_pointer": "/6/loot_table/1/item_id",
+      "details": "Loot-table metadata retained; combat currently copies it into entities. This is not proof that a post-combat roll/grant host executes it."
+    }
+  ],
+  "unsupported_behavior": [
+    {
+      "group": "campaign_custom",
+      "requirement": "Preserve selected custom item semantics and availability as campaign policy. Do not relabel Antidote as Antitoxin, add SRD powers or remove existing content during writing."
+    }
+  ]
+}

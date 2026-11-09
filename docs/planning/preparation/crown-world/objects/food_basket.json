@@ -1,0 +1,49 @@
+{
+  "schema": "crown-world-candidate/1",
+  "id": "food_basket",
+  "name": "Dry food basket",
+  "kind": "objects",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring declarations only; not registered engine opcodes.",
+  "required_extensions": [
+    "objects",
+    "supplies"
+  ],
+  "authored_operations": [
+    {
+      "operation": "instantiate_exact_room_object",
+      "requirement": "Preserve all retained facts and exact room/object identity; mutations and contents persist with the room. Do not respawn removed/destroyed objects on revisit."
+    },
+    {
+      "operation": "use_physical_stock",
+      "requirement": "Change actual authored water/food and contamination once; respect capacity and actual recipient intake; purification removes eligible contamination without minting supplies."
+    }
+  ],
+  "blockers": [
+    "Three food_servings have no authored pounds conversion; preserve servings and record the missing mapping."
+  ],
+  "retained_input": {
+    "path": "data/core/campaigns/the_lost_crown.json",
+    "sha256": "3352b2d22be36e68591bfdf4ec73b8201f2bec6c69a3a60b0c8beb7d5074db44",
+    "pointer": "/dungeons/ruins_of_ashvale/tactical_rooms/1/objects/4",
+    "payload": {
+      "id": "food_basket",
+      "kind": "container",
+      "name": "Dry food basket",
+      "position": [
+        4,
+        -1
+      ],
+      "material": "woven reed",
+      "size": "Medium",
+      "fixed": false,
+      "hp": 5,
+      "max_hp": 5,
+      "open": true,
+      "contents": [],
+      "food_or_drink": true,
+      "food_servings": 3,
+      "contamination": []
+    }
+  }
+}

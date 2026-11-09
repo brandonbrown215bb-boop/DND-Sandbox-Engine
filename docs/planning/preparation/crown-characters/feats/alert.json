@@ -1,0 +1,71 @@
+{
+  "schema": "crown-character-candidate/1",
+  "id": "alert",
+  "name": "Alert",
+  "kind": "feat",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "scope": {
+    "total_character_level_maximum": 5
+  },
+  "operation_language": "authoring intent only; not registered engine syntax",
+  "runtime_support": "Retained definitions are reuse material, not proof of full rules. Every authored operation needs contract mapping and later production-path verification before promotion.",
+  "definition": {
+    "category": "Origin",
+    "repeatable": false,
+    "prerequisites": {}
+  },
+  "rules": {
+    "authority": "SRD 5.2.1",
+    "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      87
+    ],
+    "text": "Alert\nOrigin Feat\nYou gain the following benefits.\nInitiative Proficiency.\nWhen you roll Initiative,\nyou can add your Proficiency Bonus to the roll.\nInitiative Swap.\nImmediately after you roll Initiative, you can swap your Initiative with the Initiative\nof one willing ally in the same combat. You can’t\nmake this swap if you or the ally has the Incapacitated condition."
+  },
+  "authored_operations": [
+    {
+      "trigger": "Initiative roll",
+      "effects": [
+        "Add Proficiency Bonus to Initiative"
+      ],
+      "required_extension_groups": [
+        "rolls",
+        "initiative"
+      ],
+      "ending_and_identity": "Exact acquired feat instance owns parameters, budgets and grants; once-only acquisition and per-turn receipts; no replay on restore."
+    },
+    {
+      "trigger": "Immediately after owner rolls Initiative",
+      "effects": [
+        "Optional swap Initiative with one willing ally in same combat; neither may be Incapacitated; swap exact initiative values once in this window, not rolls or arbitrary later reorder"
+      ],
+      "required_extension_groups": [
+        "rolls",
+        "initiative"
+      ],
+      "ending_and_identity": "Exact acquired feat instance owns parameters, budgets and grants; once-only acquisition and per-turn receipts; no replay on restore."
+    }
+  ],
+  "reused_from": [],
+  "retained_runtime_seed": null,
+  "unsupported_behavior": [
+    {
+      "groups": [
+        "rolls",
+        "initiative"
+      ],
+      "requirement": "Add Proficiency Bonus to Initiative",
+      "status": "candidate_mapping_and_full_host_verification_required"
+    },
+    {
+      "groups": [
+        "rolls",
+        "initiative"
+      ],
+      "requirement": "Optional swap Initiative with one willing ally in same combat; neither may be Incapacitated; swap exact initiative values once in this window, not rolls or arbitrary later reorder",
+      "status": "initiative_swap_owner_not_located_in_recovery_review; no engine change in this pass"
+    }
+  ],
+  "source_revision": "2a19eb1d (existing working-tree definitions and recovered drafts read on 2026-11-08)",
+  "reused_input_hashes": {}
+}

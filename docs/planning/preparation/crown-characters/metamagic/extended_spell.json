@@ -1,0 +1,52 @@
+{
+  "schema": "crown-character-candidate/1",
+  "id": "extended_spell",
+  "name": "Extended Spell",
+  "kind": "metamagic",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "scope": {
+    "total_character_level_maximum": 5
+  },
+  "operation_language": "authoring intent only; not registered engine syntax",
+  "runtime_support": "Retained definitions are reuse material, not proof of full rules. Every authored operation needs contract mapping and later production-path verification before promotion.",
+  "minimum_sorcerer_level": 2,
+  "rules": {
+    "authority": "SRD 5.2.1",
+    "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      67
+    ],
+    "text": "Extended Spell\nCost: 1 Sorcery Point\nWhen you cast a spell that has a duration of 1 minute or longer, you can spend 1 Sorcery Point to double its duration to a maximum duration of 24 hours.\nIf the affected spell requires Concentration, you\nhave Advantage on any saving throw you make to\nmaintain that Concentration."
+  },
+  "authored_operations": [
+    {
+      "trigger": "Cast duration>=1 minute spell",
+      "cost": {
+        "resource": "sorcery_points",
+        "amount": 1
+      },
+      "effects": [
+        "Double duration up to24 hours; if Concentration, Advantage on saves to maintain that cast"
+      ],
+      "combination_exception": "none",
+      "ending_and_identity": "Capture edits on exact cast; preserve dice/targets/recipients through settlement; pay once after legal selection.",
+      "required_extension_groups": [
+        "casting",
+        "rolls",
+        "resources"
+      ]
+    }
+  ],
+  "unsupported_behavior": [
+    {
+      "groups": [
+        "casting",
+        "rolls"
+      ],
+      "requirement": "Map exact option onto every eligible in-band spell payload/host; existing native support is bounded, not universal. Do not mutate global spell definitions.",
+      "status": "mapping_and_host_verification_required"
+    }
+  ],
+  "source_revision": "2a19eb1d (existing working-tree definitions and recovered drafts read on 2026-11-08)",
+  "reused_input_hashes": {}
+}

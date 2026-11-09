@@ -3643,7 +3643,7 @@ func _highlight_attack_targets() -> void:
 	hex_grid.clear_highlights()
 	
 	var pos: Vector2i = player_entities[current_player_idx]["hex_position"]
-	var weapon := DruidRules.current_attack_profile(active_character) if DruidRules.is_shaped(active_character) else DataLoader.get_item(active_character.inventory.get_weapon())
+	var weapon := DruidRules.current_attack_profile(active_character) if DruidRules.is_shaped(active_character) else DataLoader.get_item(active_character.inventory.get_weapon()).duplicate(true)
 	var max_range := CombatAction.weapon_range_hexes(weapon)
 
 	var highlights := {}
@@ -3840,7 +3840,7 @@ func _attack_choice_target_error(actor: Character, turn: int, target: Dictionary
 	var destination: Vector2i = target.get("hex_position", Vector2i.ZERO)
 	if not CombatPerception.can_locate_target(actor, target, origin, destination, hex_grid) or not Targeting.is_in_range(origin, destination, CombatAction.weapon_range_hexes(weapon)) or not Targeting.has_line_of_effect(origin, destination, hex_grid) or _spell_zones()._antilife_shell_blocks_melee(actor, origin, destination, weapon):
 		return "The target is no longer within the weapon's reach."
-	return ""
+	return AmmunitionRules.attack_error(actor, weapon)
 
 
 func _resolve_player_weapon_attack(attacker: Character, target, weapon: Dictionary, advantage: bool, disadvantage: bool, decisions: Dictionary, additional_damage: Dictionary) -> Dictionary:
@@ -4532,9 +4532,14 @@ func _on_hex_clicked(coord: Vector2i) -> void:
 			return
 
 		# Enforce weapon range on execution (mirrors _highlight_attack_targets).
-		var weapon := DruidRules.current_attack_profile(active_character) if DruidRules.is_shaped(active_character) else DataLoader.get_item(active_character.inventory.get_weapon())
+		var weapon := DruidRules.current_attack_profile(active_character) if DruidRules.is_shaped(active_character) else DataLoader.get_item(active_character.inventory.get_weapon()).duplicate(true)
 		if weapon.is_empty():
 			weapon = CombatAction.unarmed_attack_profile(active_character)
+		weapon["_ammunition_weapon_copy"] = active_character.inventory.equipped_instance_id(Inventory.Slot.WEAPON)
+		var ammunition_error := AmmunitionRules.attack_error(active_character, weapon)
+		if not ammunition_error.is_empty():
+			hud.add_log(ammunition_error)
+			return
 		var max_range := CombatAction.weapon_range_hexes(weapon)
 		var atk_dist := HexUtils.get_distance(player_pos, coord)
 		if not Targeting.is_in_range(player_pos, coord, max_range):
@@ -4587,6 +4592,17 @@ func _on_hex_clicked(coord: Vector2i) -> void:
 				return
 		if CombatAction.is_charmed_by(active_character, clicked_monster):
 			hud.add_log("[color=yellow]%s cannot attack their charmer; nothing was spent.[/color]" % active_character.character_name)
+			return
+		if weapon.has("ammunition_kind"):
+			var ammunition_target_error := ContainmentRules.target_error(active_character, clicked_monster, weapon)
+			if CombatAction.has_condition(active_character, "resilient_sphere") or CombatAction.has_condition(clicked_monster, "resilient_sphere"):
+				ammunition_target_error = "The attack cannot pass through Resilient Sphere."
+			if not ammunition_target_error.is_empty():
+				hud.add_log(ammunition_target_error)
+				return
+		ammunition_error = AmmunitionRules.commit(active_character, weapon)
+		if not ammunition_error.is_empty():
+			hud.add_log(ammunition_error)
 			return
 		weapon["attack_distance"] = atk_dist
 		pending_action_type = ""
@@ -4717,12 +4733,19 @@ func _on_hex_clicked(coord: Vector2i) -> void:
 			var live_origin: Vector2i = player_entities[current_player_idx]["hex_position"]
 			if not Targeting.is_in_range(live_origin, clicked_monster["hex_position"], max_range):
 				break
+			# Each extra swing is a new shot, not the previous roll continuation.
+			weapon = weapon.duplicate(true)
+			weapon.erase("_ammunition_shot")
 			# Batch 077 (#39 follow-up): every swing asks its own per-attack
 			# choice; only an "attack_action" rule carries the earlier pick. A
 			# dismissed or stale answer holds this swing (nothing silently falls
 			# back to the weapon's own type) and the swing stays available.
 			var swing_choice := await _extra_swing_damage_choice(weapon, clicked_monster, extra_index)
 			if bool(swing_choice.get("held", false)):
+				break
+			var extra_ammunition_error := AmmunitionRules.commit(active_character, weapon)
+			if not extra_ammunition_error.is_empty():
+				hud.add_log(extra_ammunition_error)
 				break
 			remaining_attack_swings -= 1
 			weapon["attack_distance"] = HexUtils.get_distance(live_origin, clicked_monster["hex_position"])
@@ -5688,6 +5711,9 @@ func _check_battle_end_conditions() -> bool:
 
 
 func _end_battle(result: String) -> void:
+	for player in player_entities:
+		var actor: Character = player.get("character")
+		if actor != null: AmmunitionRules.finish(actor)
 	_end_monster_spell_sources()
 	CreatedCreatureCombat.capture(self)
 	_cleanup_dead_familiars()
@@ -5740,6 +5766,7 @@ func _exit_tree() -> void:
 	for entity in player_entities:
 		var character: Character = entity.get("character")
 		if character != null:
+			AmmunitionRules.clear_shots(character)
 			character.condition_consequence_handler = Callable()
 			# Combat owns these positions; range-only auras cannot outlive it.
 			character.aura_source_memberships.clear()

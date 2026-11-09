@@ -1,0 +1,149 @@
+{
+  "format": "crown-spell-candidate/1",
+  "id": "suggestion",
+  "name": "Suggestion",
+  "level": 2,
+  "status": "written_unverified_not_loaded",
+  "source": {
+    "authority": "SRD 5.2.1",
+    "url": "https://media.dndbeyond.com/compendium-images/srd/5.2/SRD_CC_v5.2.1.pdf",
+    "sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      166
+    ],
+    "header": {
+      "Casting Time": "Action",
+      "Range": "30 feet",
+      "Components": "V, M (a drop of honey)",
+      "Duration": "Concentration, up to 8 hours"
+    },
+    "attribution": "System Reference Document 5.2.1, Wizards of the Coast LLC; CC BY 4.0."
+  },
+  "casting": {
+    "casting_time": "Action",
+    "kind": "action",
+    "seconds": null,
+    "ritual_available": false,
+    "range": {
+      "source": "30 feet",
+      "kind": "distance",
+      "feet": 30
+    },
+    "components": [
+      "V",
+      "M"
+    ],
+    "material": "a drop of honey",
+    "duration": "Concentration, up to 8 hours",
+    "concentration": true,
+    "spell_lists": [
+      "bard",
+      "sorcerer",
+      "warlock",
+      "wizard"
+    ]
+  },
+  "authored_intent": "Seen creature hearing/understanding caster; at-most-25-word reasonable achievable activity, no obviously harmful course; WIS save or Charmed; ends on completion or caster/allied damage; actual authored task, not arbitrary obedience.",
+  "rules": [
+    {
+      "id": "r001",
+      "text": "You suggest a course of activity—described in no more than 25 words—to one creature you can see within range that can hear and understand you."
+    },
+    {
+      "id": "r002",
+      "text": "The suggestion must sound achievable and not involve anything that would obviously deal damage to the target or its allies."
+    },
+    {
+      "id": "r003",
+      "text": "For example, you could say, “Fetch the key to the cult’s treasure vault, and give the key to me.” Or you could say, “Stop fighting, leave this library peacefully, and don’t return.” The target must succeed on a Wisdom saving throw or have the Charmed condition for the duration or until you or your allies deal damage to the target."
+    },
+    {
+      "id": "r004",
+      "text": "The Charmed target pursues the suggestion to the best of its ability."
+    },
+    {
+      "id": "r005",
+      "text": "The suggested activity can continue for the entire duration, but if the suggested activity can be completed in a shorter time, the spell ends for the target upon completing it."
+    }
+  ],
+  "authored_operations": [
+    {
+      "operation": "bind_authored_activity",
+      "parameters": {
+        "target": "seen_hearing_understanding_creature",
+        "words_max": 25,
+        "activity": "achievable_no_obvious_damage_to_target_or_allies",
+        "save": "WIS",
+        "failure": {
+          "condition": "charmed",
+          "pursue": "best_of_ability"
+        },
+        "ends": [
+          "activity_completed",
+          "caster_or_allied_damage"
+        ]
+      },
+      "status": "authoring_declaration_not_a_registered_opcode",
+      "required_source_rules": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005"
+      ]
+    }
+  ],
+  "runtime_draft": {
+    "origin": "proposed_operations",
+    "definition": null,
+    "fragments": {},
+    "coverage": "Unverified. Neither a full definition nor a fragment certifies all source rules or controls. Required extensions are not silently waived."
+  },
+  "required_extensions": [
+    {
+      "group": "communication",
+      "requirement": "Reuse represented language/hearing where applicable, then implement the spell-specific recipients, range, content, answers, secrecy and source lifetime.",
+      "spell_specific_intent": "Seen creature hearing/understanding caster; at-most-25-word reasonable achievable activity, no obviously harmful course; WIS save or Charmed; ends on completion or caster/allied damage; actual authored task, not arbitrary obedience.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005"
+      ],
+      "existing_owner_to_reuse": "src/combat/communication_rules.gd",
+      "slice_references": "S-194/S-218/S-219",
+      "disposition": "requires_mapping_or_host_completion",
+      "note": "This is an authored handoff requirement, not a fresh runtime failure or claim that the whole referenced slice is missing."
+    },
+    {
+      "group": "world_outcomes",
+      "requirement": "Bind source-defined attitude, knowledge or activity to real represented outcomes; retain bounded ADR-0023 choices instead of arbitrary obedience or a no-op.",
+      "spell_specific_intent": "Seen creature hearing/understanding caster; at-most-25-word reasonable achievable activity, no obviously harmful course; WIS save or Charmed; ends on completion or caster/allied damage; actual authored task, not arbitrary obedience.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005"
+      ],
+      "existing_owner_to_reuse": "src/combat/influence_rules.gd",
+      "slice_references": "S-216/S-218/S-219",
+      "disposition": "requires_mapping_or_host_completion",
+      "note": "This is an authored handoff requirement, not a fresh runtime failure or claim that the whole referenced slice is missing."
+    }
+  ],
+  "audit": {
+    "source": "docs/audits/spells.md",
+    "batch": "088-3",
+    "production_definition_at_authoring": "res://data/core/spells/imported_spells.json#179",
+    "baseline_execution": "native",
+    "source_revision": "2a19eb1d",
+    "existing_conversion_label": "queued"
+  },
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile every source rule and required extension, then implement and verify through production paths before any deliberate promotion. Keep native behavior until covered."
+  }
+}

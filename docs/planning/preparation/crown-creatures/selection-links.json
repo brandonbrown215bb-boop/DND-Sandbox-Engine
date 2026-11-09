@@ -1,0 +1,213 @@
+{
+  "schema": "crown-creature-selection-links/1",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "wild_shape": {
+    "source": {
+      "path": "docs/planning/preparation/crown-characters/classes/druid.json",
+      "sha256": "11ea7a02c19569735e02535e0c6b66ff222c6536b436e70af5133937353c7561"
+    },
+    "class_levels_2_3": [
+      "baboon",
+      "badger",
+      "boar",
+      "camel",
+      "cat",
+      "constrictor_snake",
+      "crab",
+      "deer",
+      "draft_horse",
+      "elk",
+      "frog",
+      "giant_badger",
+      "giant_centipede",
+      "giant_crab",
+      "giant_fire_beetle",
+      "giant_frog",
+      "giant_lizard",
+      "giant_rat",
+      "giant_venomous_snake",
+      "giant_weasel",
+      "giant_wolf_spider",
+      "goat",
+      "hyena",
+      "jackal",
+      "lizard",
+      "mastiff",
+      "mule",
+      "octopus",
+      "panther",
+      "piranha",
+      "pony",
+      "rat",
+      "riding_horse",
+      "scorpion",
+      "seahorse",
+      "spider",
+      "venomous_snake",
+      "weasel",
+      "wolf"
+    ],
+    "class_levels_4_5": [
+      "ape",
+      "baboon",
+      "badger",
+      "black_bear",
+      "boar",
+      "camel",
+      "cat",
+      "constrictor_snake",
+      "crab",
+      "crocodile",
+      "deer",
+      "draft_horse",
+      "elk",
+      "frog",
+      "giant_badger",
+      "giant_centipede",
+      "giant_crab",
+      "giant_fire_beetle",
+      "giant_frog",
+      "giant_goat",
+      "giant_lizard",
+      "giant_rat",
+      "giant_seahorse",
+      "giant_venomous_snake",
+      "giant_weasel",
+      "giant_wolf_spider",
+      "goat",
+      "hyena",
+      "jackal",
+      "lizard",
+      "mastiff",
+      "mule",
+      "octopus",
+      "panther",
+      "piranha",
+      "pony",
+      "rat",
+      "reef_shark",
+      "riding_horse",
+      "scorpion",
+      "seahorse",
+      "spider",
+      "venomous_snake",
+      "warhorse",
+      "weasel",
+      "wolf"
+    ],
+    "known_counts": {
+      "2": 4,
+      "4": 6
+    },
+    "replacement": "One known form on each finished Long Rest. No Fly Speed before Druid8; Swim Speed is legal in band. The source permits GM-approved other sources, not every imported monster. No additional source approved here.",
+    "projection": "Retain type/HP/Hit Dice/mental scores/class features/languages/feats, own skill/save proficiency and PB with higher form modifier rule; Druid-level Temporary HP; no casting; Concentration continues. Full rule retained in source candidate.",
+    "equipment": "Choose exact-copy drop/merge/wear subject to actual limbs, shape and practical fit; not automatic resizing."
+  },
+  "familiar": {
+    "source": {
+      "path": "docs/planning/preparation/crown-spells/find_familiar.json",
+      "sha256": "b4d4813a1cedd5ba3f5a37f3028598d2a67c2e27b0132358071387563e3ba35a"
+    },
+    "normal": [
+      "baboon",
+      "badger",
+      "bat",
+      "cat",
+      "crab",
+      "deer",
+      "eagle",
+      "frog",
+      "giant_fire_beetle",
+      "goat",
+      "hawk",
+      "hyena",
+      "jackal",
+      "lizard",
+      "octopus",
+      "owl",
+      "piranha",
+      "rat",
+      "raven",
+      "scorpion",
+      "seahorse",
+      "spider",
+      "vulture",
+      "weasel"
+    ],
+    "wild_companion_source": {
+      "path": "docs/planning/preparation/crown-characters/classes/druid.json",
+      "sha256": "11ea7a02c19569735e02535e0c6b66ff222c6536b436e70af5133937353c7561"
+    },
+    "wild_companion": "Same legal normal form set, Fey, Magic action, slot or Wild Shape use, no Material component; ends on owner finished Long Rest.",
+    "pact_of_chain_source": {
+      "path": "docs/planning/preparation/crown-characters/invocations/pact_of_the_chain.json",
+      "sha256": "1be7ef61616316625530f1cacbefdb7cc8b8eb32e4f77160e4256e54b660ba32"
+    },
+    "additional": [
+      "imp",
+      "pseudodragon",
+      "quasit",
+      "skeleton",
+      "sphinx_of_wonder",
+      "sprite",
+      "venomous_snake"
+    ],
+    "pact_command": "Magic-action slot-free cast retains Material. Forgo one own Attack-action attack for one familiar attack using its Reaction; not Multiattack action or extra independent turns.",
+    "investment_source": {
+      "path": "docs/planning/preparation/crown-characters/invocations/investment_of_the_chain_master.json",
+      "sha256": "4be6b5dfd7f0d70a38f7c6b2b0403767c5b639c2603dadefca7dd37c64e7be51"
+    },
+    "investment": "Warlock5 plus Pact: choose Fly/Swim40; Bonus Action commands Attack action; optional B/P/S -> Necrotic/Radiant; familiar saves use owner DC; owner Reaction grants Resistance to triggering damage. Distinguish save-only actions from attacks and both command routes.",
+    "ordinary_policy": "Own initiative and turn, no attacks without specific exception; obey commands; exact familiar identity, 100-foot telepathy/borrowed senses/Touch Reaction, dismissal/recall/recast and exact gear drop from spell source."
+  },
+  "animate_dead": {
+    "source": {
+      "path": "docs/planning/preparation/crown-spells/animate_dead.json",
+      "sha256": "45ad4be01f071ea803bd21741e9c96beaff51d4494599fa5d99b2be13cfa2327"
+    },
+    "outputs": {
+      "bones": "skeleton",
+      "corpse": "zombie"
+    },
+    "target": "Small/Medium Humanoid remains within10 feet, one different exact corpse/bone pile per creation; do not reuse remains or assume equipment materializes. Source stat-block gear and actual corpse inventory need reconciliation.",
+    "slot_3_counts": {
+      "create": 1,
+      "renew": 4
+    },
+    "control": "24 hours; reassert before expiry; command eligible own creatures within60 feet with one Bonus Action/same group order, standing orders; absent command Dodge and move only to avoid harm. Control expiry ends obedience, not creature existence.",
+    "maximum_slot_in_band": 3
+  },
+  "steeds": {
+    "find_steed": "actors/find_steed.json",
+    "phantom_steed": "actors/phantom_steed.json",
+    "faithful_steed_source": {
+      "path": "docs/planning/preparation/crown-characters/classes/paladin.json",
+      "sha256": "84cd175843b2b35b8acdaacb578ad2336801b8c84f478ac9be6b65ec55806d8e"
+    },
+    "policy": "Cosmetic animal choices do not import their monster traits. Ordinary controlled-mount movement/action restrictions and actual rider/size remain required."
+  },
+  "direct_encounters": [
+    "bandit",
+    "giant_spider",
+    "goblin",
+    "goblin_chief",
+    "lich_king",
+    "ooze",
+    "skeleton",
+    "wight",
+    "wolf",
+    "zombie"
+  ],
+  "companions": [
+    "aldric",
+    "mira",
+    "rowan"
+  ],
+  "held_swarm_candidates": [
+    "swarm_of_bats",
+    "swarm_of_insects",
+    "swarm_of_rats",
+    "swarm_of_ravens"
+  ],
+  "statblock_path_rule": "statblocks/<form-id>.json; candidate ID is srd_<form-id>. Campaign encounter candidate ID is crown_<production-id>. These identities must not collide."
+}

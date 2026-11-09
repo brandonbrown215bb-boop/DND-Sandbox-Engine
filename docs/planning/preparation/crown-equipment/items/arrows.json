@@ -1,0 +1,73 @@
+{
+  "schema": "crown-equipment-candidate/1",
+  "id": "arrows",
+  "name": "Arrows",
+  "kind": "ammunition",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring intent only; not registered engine syntax.",
+  "rules": {
+    "authority": "SRD 5.2.1",
+    "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      89,
+      94,
+      96
+    ],
+    "section": "Arrows",
+    "text": "Arrows are bought in lots of 20 for 1 GP, weighing 1 pound for the lot; Quiver storage is separate. An Ammunition attack spends one piece, drawing as part of attack; one free hand loads a one-handed weapon. After a fight, spend 1 minute to recover half the ammunition used, rounded down; the rest is lost.",
+    "source_context": "../source-pages.json"
+  },
+  "definition": {
+    "id": "arrows",
+    "name": "Arrows",
+    "unit": "arrow",
+    "purchase_quantity": 20,
+    "purchase_cost_gp": 1,
+    "purchase_weight_lb": 1,
+    "typical_storage_candidate_id": "quiver"
+  },
+  "authored_operations": [
+    "Arrows are bought in lots of 20 for 1 GP, weighing 1 pound for the lot; Quiver storage is separate. An Ammunition attack spends one piece, drawing as part of attack; one free hand loads a one-handed weapon. After a fight, spend 1 minute to recover half the ammunition used, rounded down; the rest is lost."
+  ],
+  "retained_runtime_seeds": [],
+  "manifest_overrides": [],
+  "required_mapping": [
+    "ammunition"
+  ],
+  "consumers": [
+    {
+      "package_id": "fighter",
+      "option": "B",
+      "quantity": 20,
+      "source": "docs/planning/preparation/crown-characters/classes/fighter.json"
+    },
+    {
+      "package_id": "ranger",
+      "option": "A",
+      "quantity": 20,
+      "source": "docs/planning/preparation/crown-characters/classes/ranger.json"
+    },
+    {
+      "package_id": "rogue",
+      "option": "A",
+      "quantity": 20,
+      "source": "docs/planning/preparation/crown-characters/classes/rogue.json"
+    },
+    {
+      "package_id": "soldier",
+      "option": "A",
+      "quantity": 20,
+      "source": "docs/planning/preparation/crown-characters/backgrounds/soldier.json"
+    }
+  ],
+  "unsupported_behavior": [
+    {
+      "group": "ammunition",
+      "requirement": "Separate Arrow pieces from purchase lots and Quiver; refuse empty attacks, spend/recover exact counts once, preserve counters at checkpoints."
+    },
+    {
+      "group": "definition",
+      "requirement": "No exact current item seed at this candidate identity. This authored record is not a loaded definition; map or promote deliberately later."
+    }
+  ]
+}

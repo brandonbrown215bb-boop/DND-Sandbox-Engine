@@ -1,0 +1,157 @@
+{
+  "format": "crown-spell-candidate/1",
+  "id": "slow",
+  "name": "Slow",
+  "level": 3,
+  "status": "written_unverified_not_loaded",
+  "source": {
+    "authority": "SRD 5.2.1",
+    "url": "https://media.dndbeyond.com/compendium-images/srd/5.2/SRD_CC_v5.2.1.pdf",
+    "sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      163
+    ],
+    "header": {
+      "Casting Time": "Action",
+      "Range": "120 feet",
+      "Components": "V, S, M (a drop of molasses)",
+      "Duration": "Concentration, up to 1 minute"
+    },
+    "attribution": "System Reference Document 5.2.1, Wizards of the Coast LLC; CC BY 4.0."
+  },
+  "casting": {
+    "casting_time": "Action",
+    "kind": "action",
+    "seconds": null,
+    "ritual_available": false,
+    "range": {
+      "source": "120 feet",
+      "kind": "distance",
+      "feet": 120
+    },
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "a drop of molasses",
+    "duration": "Concentration, up to 1 minute",
+    "concentration": true,
+    "spell_lists": [
+      "bard",
+      "sorcerer",
+      "wizard"
+    ]
+  },
+  "authored_intent": "Choose up to six creatures in 40-foot cube; WIS save; half Speed, minus 2 AC/DEX saves, no Reactions, either Action or Bonus Action, at most one attack; Somatic cast d4 failure on 1; turn-end save.",
+  "rules": [
+    {
+      "id": "r001",
+      "text": "You alter time around up to six creatures of your choice in a 40-foot Cube within range."
+    },
+    {
+      "id": "r002",
+      "text": "Each target must succeed on a Wisdom saving throw or be affected by this spell for the duration."
+    },
+    {
+      "id": "r003",
+      "text": "An affected target’s Speed is halved, it takes a −2 penalty to AC and Dexterity saving throws, and it can’t take Reactions."
+    },
+    {
+      "id": "r004",
+      "text": "On its turns, it can take either an action or a Bonus Action, not both, and it can make only one attack if it takes the Attack action."
+    },
+    {
+      "id": "r005",
+      "text": "If it casts a spell with a Somatic component, there is a 25 percent chance the spell fails as a result of the target making the spell’s gestures too slowly."
+    },
+    {
+      "id": "r006",
+      "text": "An affected target repeats the save at the end of each of its turns, ending the spell on itself on a success."
+    }
+  ],
+  "authored_operations": [
+    {
+      "operation": "restrict_target_budgets",
+      "parameters": {
+        "cube_feet": 40,
+        "chosen_targets_max": 6,
+        "save": "WIS",
+        "effects": {
+          "speed_multiplier": 0.5,
+          "ac_bonus": -2,
+          "DEX_save_bonus": -2,
+          "reactions": 0,
+          "action_or_bonus_action": "exclusive",
+          "Attack_action_attacks_max": 1,
+          "somatic_cast_failure_chance": 0.25
+        },
+        "repeat_save": "WIS_at_target_turn_end"
+      },
+      "status": "authoring_declaration_not_a_registered_opcode",
+      "required_source_rules": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006"
+      ]
+    }
+  ],
+  "runtime_draft": {
+    "origin": "proposed_operations",
+    "definition": null,
+    "fragments": {},
+    "coverage": "Unverified. Neither a full definition nor a fragment certifies all source rules or controls. Required extensions are not silently waived."
+  },
+  "required_extensions": [
+    {
+      "group": "restricted_budgets",
+      "requirement": "Express Action-vs-Bonus exclusivity, restricted extra actions, attack counts and lost actions/Reactions; never turn a restricted grant into a general budget.",
+      "spell_specific_intent": "Choose up to six creatures in 40-foot cube; WIS save; half Speed, minus 2 AC/DEX saves, no Reactions, either Action or Bonus Action, at most one attack; Somatic cast d4 failure on 1; turn-end save.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006"
+      ],
+      "existing_owner_to_reuse": "src/combat/combat_turn_budget.gd",
+      "slice_references": "S-146/S-148/S-160",
+      "disposition": "requires_mapping_or_host_completion",
+      "note": "This is an authored handoff requirement, not a fresh runtime failure or claim that the whole referenced slice is missing."
+    },
+    {
+      "group": "cast_failure",
+      "requirement": "Capture source-defined failure roll at the correct cast boundary, retain spent actions/slots as specified and never replay RNG or partial effects.",
+      "spell_specific_intent": "Choose up to six creatures in 40-foot cube; WIS save; half Speed, minus 2 AC/DEX saves, no Reactions, either Action or Bonus Action, at most one attack; Somatic cast d4 failure on 1; turn-end save.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006"
+      ],
+      "existing_owner_to_reuse": "src/spells/cast_interruption_rules.gd",
+      "slice_references": "S-142/S-143",
+      "disposition": "requires_mapping_or_host_completion",
+      "note": "This is an authored handoff requirement, not a fresh runtime failure or claim that the whole referenced slice is missing."
+    }
+  ],
+  "audit": {
+    "source": "docs/audits/spells.md",
+    "batch": "088-3",
+    "production_definition_at_authoring": "res://data/core/spells/imported_spells.json#169",
+    "baseline_execution": "native",
+    "source_revision": "2a19eb1d",
+    "existing_conversion_label": "queued"
+  },
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile every source rule and required extension, then implement and verify through production paths before any deliberate promotion. Keep native behavior until covered."
+  }
+}

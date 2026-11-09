@@ -1,0 +1,169 @@
+{
+  "format": "crown-spell-candidate/1",
+  "id": "animal_messenger",
+  "name": "Animal Messenger",
+  "level": 2,
+  "status": "written_unverified_not_loaded",
+  "source": {
+    "authority": "SRD 5.2.1",
+    "url": "https://media.dndbeyond.com/compendium-images/srd/5.2/SRD_CC_v5.2.1.pdf",
+    "sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      108
+    ],
+    "header": {
+      "Casting Time": "Action or Ritual",
+      "Range": "30 feet",
+      "Components": "V, S, M (a morsel of food)",
+      "Duration": "24 hours"
+    },
+    "attribution": "System Reference Document 5.2.1, Wizards of the Coast LLC; CC BY 4.0."
+  },
+  "casting": {
+    "casting_time": "Action or Ritual",
+    "kind": "action",
+    "seconds": null,
+    "ritual_available": true,
+    "range": {
+      "source": "30 feet",
+      "kind": "distance",
+      "feet": 30
+    },
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "a morsel of food",
+    "duration": "24 hours",
+    "concentration": false,
+    "spell_lists": [
+      "bard",
+      "druid",
+      "ranger"
+    ]
+  },
+  "authored_intent": "Seen Tiny CR-0 Beast; CHA save; capture visited destination, described recipient and at-most-25-word message; 24-hour travel and failure return; higher slots extend travel/duration.",
+  "rules": [
+    {
+      "id": "r001",
+      "text": "A Tiny Beast of your choice that you can see within range must succeed on a Charisma saving throw, or it attempts to deliver a message for you (if the target’s Challenge Rating isn’t 0, it automatically succeeds)."
+    },
+    {
+      "id": "r002",
+      "text": "You specify a location you have visited and a recipient who matches a general description, such as “a person dressed in the uniform of the town guard” or “a red-haired dwarf wearing a pointed hat.” You also communicate a message of up to twenty-five words."
+    },
+    {
+      "id": "r003",
+      "text": "The Beast travels for the duration toward the specified location, covering about 25 miles per 24 hours or 50 miles if the Beast can fly."
+    },
+    {
+      "id": "r004",
+      "text": "When the Beast arrives, it delivers your message to the creature that you described, mimicking your communication."
+    },
+    {
+      "id": "r005",
+      "text": "If the Beast doesn’t reach its destination before the spell ends, the message is lost, and the Beast returns to where you cast the spell."
+    },
+    {
+      "id": "r006",
+      "text": "Using a Higher-Level Spell Slot."
+    },
+    {
+      "id": "r007",
+      "text": "The spell’s duration increases by 48 hours for each spell slot level above 2."
+    }
+  ],
+  "authored_operations": [
+    {
+      "operation": "deliver_message_by_actor",
+      "parameters": {
+        "target": {
+          "type": "beast",
+          "size": "tiny",
+          "cr": 0,
+          "sight": true
+        },
+        "save": "CHA",
+        "other_cr": "automatic_success",
+        "message_words_max": 25,
+        "destination": "visited_location",
+        "recipient": "authored_description",
+        "miles_per_24_hours": {
+          "walking": 25,
+          "flying": 50
+        },
+        "arrival": "mimic_message_to_matching_recipient",
+        "expiry_before_arrival": "lose_message_and_return_to_cast_location",
+        "upcast_hours_per_slot": 48
+      },
+      "status": "authoring_declaration_not_a_registered_opcode",
+      "required_source_rules": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006",
+        "r007"
+      ]
+    }
+  ],
+  "runtime_draft": {
+    "origin": "proposed_operations",
+    "definition": null,
+    "fragments": {},
+    "coverage": "Unverified. Neither a full definition nor a fragment certifies all source rules or controls. Required extensions are not silently waived."
+  },
+  "required_extensions": [
+    {
+      "group": "communication",
+      "requirement": "Reuse represented language/hearing where applicable, then implement the spell-specific recipients, range, content, answers, secrecy and source lifetime.",
+      "spell_specific_intent": "Seen Tiny CR-0 Beast; CHA save; capture visited destination, described recipient and at-most-25-word message; 24-hour travel and failure return; higher slots extend travel/duration.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006",
+        "r007"
+      ],
+      "existing_owner_to_reuse": "src/combat/communication_rules.gd",
+      "slice_references": "S-194/S-218/S-219",
+      "disposition": "requires_mapping_or_host_completion",
+      "note": "This is an authored handoff requirement, not a fresh runtime failure or claim that the whole referenced slice is missing."
+    },
+    {
+      "group": "travel",
+      "requirement": "Execute the source-defined travel/following, capacity, distance, terrain and arrival outcomes without duplicating elapsed time or moving identities by fiat.",
+      "spell_specific_intent": "Seen Tiny CR-0 Beast; CHA save; capture visited destination, described recipient and at-most-25-word message; 24-hour travel and failure return; higher slots extend travel/duration.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006",
+        "r007"
+      ],
+      "existing_owner_to_reuse": "src/combat/placement_rules.gd",
+      "slice_references": "S-121/S-122/S-179/S-227/S-228",
+      "disposition": "requires_mapping_or_host_completion",
+      "note": "This is an authored handoff requirement, not a fresh runtime failure or claim that the whole referenced slice is missing."
+    }
+  ],
+  "audit": {
+    "source": "docs/audits/spells.md",
+    "batch": "088-8",
+    "production_definition_at_authoring": "res://data/core/spells/imported_spells.json#6",
+    "baseline_execution": "native",
+    "source_revision": "2a19eb1d",
+    "existing_conversion_label": "queued"
+  },
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile every source rule and required extension, then implement and verify through production paths before any deliberate promotion. Keep native behavior until covered."
+  }
+}

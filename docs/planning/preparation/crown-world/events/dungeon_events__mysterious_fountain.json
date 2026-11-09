@@ -1,0 +1,116 @@
+{
+  "schema": "crown-world-candidate/1",
+  "id": "dungeon_events__mysterious_fountain",
+  "name": "Mysterious Fountain",
+  "kind": "events",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring declarations only; not registered engine opcodes.",
+  "required_extensions": [
+    "hazards",
+    "objectives_rewards",
+    "rest_time",
+    "supplies"
+  ],
+  "authored_operations": [
+    {
+      "operation": "settle_ordered_branch",
+      "seed_pointer": "/choices/0/effects",
+      "effects": [
+        {
+          "type": "heal",
+          "value": "3d8"
+        }
+      ],
+      "condition": null,
+      "requirement": "Retain order, exact quantities/formulas, recipient, costs, branch descriptions and occurrence identity; no repeated payment when a child resumes."
+    },
+    {
+      "operation": "settle_ordered_branch",
+      "seed_pointer": "/choices/1/effects",
+      "effects": [
+        {
+          "type": "grant_condition",
+          "condition": "strengthened",
+          "duration": 5
+        }
+      ],
+      "condition": null,
+      "requirement": "Retain order, exact quantities/formulas, recipient, costs, branch descriptions and occurrence identity; no repeated payment when a child resumes."
+    },
+    {
+      "operation": "settle_ordered_branch",
+      "seed_pointer": "/choices/2/effects",
+      "effects": [
+        {
+          "type": "damage",
+          "value": "2d6",
+          "damage_type": "poison"
+        },
+        {
+          "type": "grant_condition",
+          "condition": "poisoned",
+          "duration": 3
+        }
+      ],
+      "condition": null,
+      "requirement": "Retain order, exact quantities/formulas, recipient, costs, branch descriptions and occurrence identity; no repeated payment when a child resumes."
+    }
+  ],
+  "blockers": [
+    "Retain numeric event duration/unit and custom condition IDs as authored. Generic marker support is not proof of defined mechanical benefit, cure scope or turn/clock conversion; map each declared condition to its actual rule."
+  ],
+  "retained_input": {
+    "path": "data/core/events/dungeon_events.json",
+    "sha256": "db368f21178462a95f0bb78028ec8e10441f6467e4a6bb7b3843d6ecaeb20d35",
+    "pointer": "/events/2",
+    "payload": {
+      "id": "mysterious_fountain",
+      "name": "Mysterious Fountain",
+      "weight": 10,
+      "description": "A fountain of shimmering liquid stands in the center of this room. The liquid changes color as you watch.",
+      "type": "choice",
+      "choices": [
+        {
+          "text": "Drink the blue liquid",
+          "effects": [
+            {
+              "type": "heal",
+              "value": "3d8"
+            }
+          ],
+          "description": "The liquid tastes of mint and starlight. Your wounds close."
+        },
+        {
+          "text": "Drink the red liquid",
+          "effects": [
+            {
+              "type": "grant_condition",
+              "condition": "strengthened",
+              "duration": 5
+            }
+          ],
+          "description": "Fire courses through your veins! You feel powerful."
+        },
+        {
+          "text": "Drink the green liquid",
+          "description": "The liquid tastes awful. Your stomach churns.",
+          "effects": [
+            {
+              "type": "damage",
+              "value": "2d6",
+              "damage_type": "poison"
+            },
+            {
+              "type": "grant_condition",
+              "condition": "poisoned",
+              "duration": 3
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "authority": "Custom Crown campaign event, not an SRD trap/NPC/spell replacement",
+  "table_id": "dungeon_events",
+  "occurrence_policy": "Table may roll again; same in-flight occurrence must not reroll/reapply on reopen. Campaign-specific uniqueness beyond generated room claims is unresolved, not silently global once-per-event-ID."
+}

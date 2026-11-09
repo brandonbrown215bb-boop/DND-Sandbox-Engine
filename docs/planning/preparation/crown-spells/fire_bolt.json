@@ -1,0 +1,167 @@
+{
+  "format": "crown-spell-candidate/1",
+  "id": "fire_bolt",
+  "name": "Fire Bolt",
+  "level": 0,
+  "status": "written_unverified_not_loaded",
+  "source": {
+    "authority": "SRD 5.2.1",
+    "url": "https://media.dndbeyond.com/compendium-images/srd/5.2/SRD_CC_v5.2.1.pdf",
+    "sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      132
+    ],
+    "header": {
+      "Casting Time": "Action",
+      "Range": "120 feet",
+      "Components": "V, S",
+      "Duration": "Instantaneous"
+    },
+    "attribution": "System Reference Document 5.2.1, Wizards of the Coast LLC; CC BY 4.0."
+  },
+  "casting": {
+    "casting_time": "Action",
+    "kind": "action",
+    "seconds": null,
+    "ritual_available": false,
+    "range": {
+      "source": "120 feet",
+      "kind": "distance",
+      "feet": 120
+    },
+    "components": [
+      "V",
+      "S"
+    ],
+    "material": null,
+    "duration": "Instantaneous",
+    "concentration": false,
+    "spell_lists": [
+      "sorcerer",
+      "wizard"
+    ]
+  },
+  "authored_intent": "Ranged spell attack against creature or object; Fire dice and character-level scaling; ignite hit unworn/uncarried flammable object.",
+  "rules": [
+    {
+      "id": "r001",
+      "text": "You hurl a mote of fire at a creature or an object within range."
+    },
+    {
+      "id": "r002",
+      "text": "Make a ranged spell attack against the target."
+    },
+    {
+      "id": "r003",
+      "text": "On a hit, the target takes 1d10 Fire damage."
+    },
+    {
+      "id": "r004",
+      "text": "A flammable object hit by this spell starts burning if it isn’t being worn or carried."
+    },
+    {
+      "id": "r005",
+      "text": "Cantrip Upgrade."
+    },
+    {
+      "id": "r006",
+      "text": "The damage increases by 1d10 when you reach levels 5 (2d10), 11 (3d10), and 17 (4d10)."
+    }
+  ],
+  "authored_operations": [
+    {
+      "operation": "attack_damage_and_ignition",
+      "parameters": {
+        "target": "creature_or_object",
+        "attack": "ranged_spell",
+        "damage": "1d10",
+        "type": "fire",
+        "scaling": {
+          "5": "2d10",
+          "11": "3d10",
+          "17": "4d10"
+        },
+        "ignite": "hit_flammable_unworn_uncarried_object"
+      },
+      "status": "authoring_declaration_not_a_registered_opcode",
+      "required_source_rules": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006"
+      ]
+    }
+  ],
+  "runtime_draft": {
+    "origin": "existing_shared_definition",
+    "definition": {
+      "attack_type": "ranged_spell",
+      "casting_time": "action",
+      "components": [
+        "V",
+        "S"
+      ],
+      "damage": "1d10",
+      "damage_type": "fire",
+      "description": "You hurl a mote of fire at a creature or an object within range. Make a ranged spell attack against the target. On a hit, the target takes 1d10 Fire damage. A flammable object hit by this spell starts burning if it isn’t being worn or carried. Cantrip Upgrade. The damage increases by 1d10 when you reach levels 5 (2d10), 11 (3d10), and 17 (4d10).",
+      "execution": "shared",
+      "id": "fire_bolt",
+      "ignites_objects": true,
+      "level": 0,
+      "name": "Fire Bolt",
+      "range": 24,
+      "rules_source": "SRD 5.2.1",
+      "rules_status": "authoring-draft-unverified",
+      "scaling": {
+        "11": "3d10",
+        "17": "4d10",
+        "5": "2d10"
+      },
+      "school": "evocation",
+      "target": "single",
+      "targets_objects": true,
+      "classes": [
+        "sorcerer",
+        "wizard"
+      ],
+      "duration": "Instantaneous",
+      "concentration": false
+    },
+    "fragments": {},
+    "coverage": "Unverified. Neither a full definition nor a fragment certifies all source rules or controls. Required extensions are not silently waived."
+  },
+  "required_extensions": [
+    {
+      "group": "object_ignition",
+      "requirement": "Enumerate exact eligible unworn/uncarried flammable objects, including collocated objects; apply actual damage/burning and preserve unknown material facts.",
+      "spell_specific_intent": "Ranged spell attack against creature or object; Fire dice and character-level scaling; ignite hit unworn/uncarried flammable object.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006"
+      ],
+      "existing_owner_to_reuse": "src/dungeon/local_room_shared_spells.gd",
+      "slice_references": "S-032/S-091/S-098/S-099",
+      "disposition": "requires_mapping_or_host_completion",
+      "note": "This is an authored handoff requirement, not a fresh runtime failure or claim that the whole referenced slice is missing."
+    }
+  ],
+  "audit": {
+    "source": "docs/audits/spells.md",
+    "batch": "088-2",
+    "production_definition_at_authoring": "res://data/core/spells/core_spells.json#1",
+    "baseline_execution": "shared",
+    "source_revision": "2a19eb1d",
+    "existing_conversion_label": "already_shared_baseline"
+  },
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile every source rule and required extension, then implement and verify through production paths before any deliberate promotion. Keep native behavior until covered."
+  }
+}

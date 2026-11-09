@@ -1,0 +1,183 @@
+{
+  "schema": "crown-creature-candidate/1",
+  "id": "srd_swarm_of_bats",
+  "name": "Swarm of Bats",
+  "kind": "srd_statblock",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring intent only; not registered engine syntax. Mapping requirements do not assert the whole referenced engine slice is absent.",
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile all source clauses, mappings and source differences before later production-path verification. Keep native paths until replacements cover them."
+  },
+  "source": {
+    "authority": "SRD 5.2.1",
+    "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      361
+    ],
+    "text": "Swarm of Bats\nLarge Swarm of Tiny Beasts, Unaligned\nAC 12 Initiative +2 (12)\nHP 11 (2d10)\nSpeed 5 ft., Fly 30 ft.\nMOD SAVE MOD SAVE MOD SAVE\nStr 5 −3 −3 Dex 15 +2 +2 Con 10 +0 +0\nInt 2 −4 −4 WIS 12 +1 +1 Cha 4 −3 −3\nResistances Bludgeoning, Piercing, Slashing\nImmunities Charmed, Frightened, Grappled, Paralyzed,\nPetrified, Prone, Restrained, Stunned\nSenses Blindsight 60 ft.; Passive Perception 11\nLanguages None\nCR 1/4 (XP 50; PB +2)\nTraits\nSwarm. The swarm can occupy another creature’s\nspace and vice versa, and the swarm can move through\nany opening large enough for a Tiny bat. The swarm\ncan’t regain Hit Points or gain Temporary Hit Points.\nActions\nBites. Melee Attack Roll: +4, reach 5 ft. Hit: 5 (2d4)\nPiercing damage, or 2 (1d4) Piercing damage if the\nswarm is Bloodied.",
+    "transcription": "Two-column extraction; line breaks retained. Whole selected page context is in source-pages.json. No stat correction inferred from donor data."
+  },
+  "statistics": {
+    "identity_line": "Large Swarm of Tiny Beasts, Unaligned",
+    "AC": "12 Initiative +2 (12)",
+    "HP": "11 (2d10)",
+    "Speed": "5 ft., Fly 30 ft.",
+    "Resistances": "Bludgeoning, Piercing, Slashing",
+    "Immunities": "Charmed, Frightened, Grappled, Paralyzed,\nPetrified, Prone, Restrained, Stunned",
+    "Senses": "Blindsight 60 ft.; Passive Perception 11",
+    "Languages": "None",
+    "CR": "1/4 (XP 50; PB +2)",
+    "ability_scores": {
+      "STR": 5,
+      "DEX": 15,
+      "CON": 10,
+      "INT": 2,
+      "WIS": 12,
+      "CHA": 4
+    },
+    "saving_throw_modifiers": {
+      "STR": -3,
+      "DEX": 2,
+      "CON": 0,
+      "INT": -4,
+      "WIS": 1,
+      "CHA": -3
+    },
+    "initiative_modifier": 2,
+    "initiative_score_printed": 12,
+    "armor_class": 12,
+    "movement_feet": {
+      "walk": 5,
+      "fly": 30
+    }
+  },
+  "authored_operations": [
+    {
+      "key": "b001",
+      "name": "Swarm",
+      "source_section": "Traits",
+      "full_rule": "Swarm. The swarm can occupy another creature’s\nspace and vice versa, and the swarm can move through\nany opening large enough for a Tiny bat. The swarm\ncan’t regain Hit Points or gain Temporary Hit Points.",
+      "budget": "passive_or_declared_trigger",
+      "steps": [
+        {
+          "intent": "Represent actual size/space, climb/swim/fly and breathing, jumps, straight-line charge history, opportunity exceptions, web surfaces and legal release.",
+          "mapping_group": "movement"
+        }
+      ],
+      "parameters_from_rule": {
+        "attack_bonus": [],
+        "save_dc": [],
+        "distances_feet": [],
+        "dice": []
+      },
+      "blockers": [
+        "map_movement"
+      ],
+      "ending_and_identity": "Exact actor/action/target/source instance; use every qualifier and ending in full_rule, not only extracted parameters.",
+      "behavior_plan": {
+        "budget": "passive_or_declared_trigger",
+        "source_outcomes": {},
+        "shared_space": true,
+        "gap": "One constituent Tiny animal",
+        "healing": false,
+        "temporary_hp_gain": false,
+        "eligibility": "Held; not offered as individual animal form"
+      }
+    },
+    {
+      "key": "b002",
+      "name": "Bites",
+      "source_section": "Actions",
+      "full_rule": "Bites. Melee Attack Roll: +4, reach 5 ft. Hit: 5 (2d4)\nPiercing damage, or 2 (1d4) Piercing damage if the\nswarm is Bloodied.",
+      "budget": "action",
+      "steps": [
+        {
+          "intent": "Resolve declared roll or save, targets, range/reach, damage packets, multiattack choice, riders and exact action budget. A save-only action is not a weapon hit rider.",
+          "mapping_group": "attacks"
+        }
+      ],
+      "parameters_from_rule": {
+        "attack_bonus": [
+          4
+        ],
+        "save_dc": [],
+        "distances_feet": [
+          5
+        ],
+        "dice": [
+          "2d4",
+          "1d4"
+        ]
+      },
+      "blockers": [
+        "map_attacks"
+      ],
+      "ending_and_identity": "Exact actor/action/target/source instance; use every qualifier and ending in full_rule, not only extracted parameters.",
+      "behavior_plan": {
+        "budget": "action",
+        "source_outcomes": {
+          "hit": "5 (2d4) Piercing damage, or 2 (1d4) Piercing damage if the swarm is Bloodied."
+        },
+        "resolution": "attack_roll",
+        "attack_kind": "melee",
+        "damage_and_riders": "5 (2d4) Piercing damage, or 2 (1d4) Piercing damage if the swarm is Bloodied.",
+        "permission": "ordinary familiar cannot attack; invocation exceptions must grant this exact attack or Attack action, not every Actions entry"
+      }
+    }
+  ],
+  "retained_definitions": [
+    {
+      "path": "data/core/monsters/imported_monsters.json",
+      "sha256": "f57bee1e93f185a89575bed3d8b2b610b53cfd3b7f2eb56448d1dd64a0126c5f",
+      "pointer": "/376",
+      "payload": {
+        "id": "swarm_of_bats",
+        "name": "Swarm of Bats",
+        "hit_points": "5d8",
+        "armor_class": 12,
+        "speed": 0,
+        "ability_scores": {
+          "STR": 5,
+          "DEX": 15,
+          "CON": 10,
+          "INT": 2,
+          "WIS": 12,
+          "CHA": 4
+        },
+        "attacks": [
+          {
+            "name": "Claws",
+            "ability": "STR",
+            "damage": "1d6",
+            "range": 1,
+            "damage_type": "slashing"
+          }
+        ],
+        "ai_behavior": "aggressive"
+      },
+      "manifest_declarations": []
+    }
+  ],
+  "selection": {
+    "wild_shape_druid_levels_2_3": false,
+    "wild_shape_druid_levels_4_5": false,
+    "normal_familiar": false,
+    "pact_of_chain_special": false,
+    "animate_dead_output": false,
+    "held_swarm": true,
+    "encounter_comparison_only": false
+  },
+  "acquisition_links": [
+    "selection-links.json"
+  ],
+  "blockers": [
+    "map_statistics",
+    "map_attacks",
+    "map_movement",
+    "selection_swarm_adjudication"
+  ],
+  "source_reconciliation": "Official body is authoritative for this SRD candidate. Retained donor payloads are comparison/reuse seeds, including legacy values and manifest winners; do not merge their statistics or traits by ID. Direct Crown encounters retain separate candidates.",
+  "equipment_links": []
+}

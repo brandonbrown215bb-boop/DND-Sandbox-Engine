@@ -1,0 +1,166 @@
+{
+  "schema": "crown-character-candidate/1",
+  "id": "dwarf",
+  "name": "Dwarf",
+  "kind": "species",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "scope": {
+    "total_character_level_maximum": 5
+  },
+  "operation_language": "authoring intent only; not registered engine syntax",
+  "runtime_support": "Retained definitions are reuse material, not proof of full rules. Every authored operation needs contract mapping and later production-path verification before promotion.",
+  "rules": {
+    "authority": "SRD 5.2.1",
+    "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      84
+    ],
+    "text": "Dwarf\nCreature Type: Humanoid\nSize: Medium (about 4–5 feet tall)\nSpeed: 30 feet\nAs a Dwarf, you have these special traits.\nDarkvision.\nYou have Darkvision with a range of\n120 feet.\nDwarven Resilience.\nYou have Resistance to\nPoison damage. You also have Advantage on saving throws you make to avoid or end the Poisoned\ncondition.\nDwarven Toughness.\nYour Hit Point maximum\nincreases by 1, and it increases by 1 again whenever\nyou gain a level.\nStonecunning.\nAs a Bonus Action, you gain Tremorsense with a range of 60 feet for 10 minutes. You\nmust be on a stone surface or touching a stone surface to use this Tremorsense. The stone can be natural or worked.\nYou can use this Bonus Action a number of times\nequal to your Proficiency Bonus, and you regain all\nexpended uses when you finish a Long Rest."
+  },
+  "definition": {
+    "size": [
+      "Medium"
+    ],
+    "speed_feet": 30,
+    "darkvision_feet": 120,
+    "creature_type": "Humanoid",
+    "ability_score_increases": {},
+    "languages": {
+      "fixed": [
+        "Common"
+      ],
+      "choose": 2,
+      "from": [
+        "Common Sign Language",
+        "Draconic",
+        "Dwarvish",
+        "Elvish",
+        "Giant",
+        "Gnomish",
+        "Goblin",
+        "Halfling",
+        "Orc"
+      ],
+      "source": "creation p20; species supplies no fixed ancestral language"
+    }
+  },
+  "authored_operations": [
+    {
+      "name": "Base species and creation grants",
+      "trigger": "Creation confirmation",
+      "cost": "One species; listed size and language choices",
+      "effects": [
+        "Humanoid creature type",
+        "Choose listed size; use declared Speed in feet; no fixed species ASIs",
+        "Know Common and choose two Standard Languages",
+        "Darkvision 120 feet; lineage override applies; execute observer-specific sight rather than an overworld vision bonus"
+      ],
+      "required_extension_groups": [
+        "progression",
+        "choices",
+        "languages",
+        "movement",
+        "world"
+      ],
+      "ending_and_identity": "Save exact selected species/size/languages; grant once; preserve legacy records separately."
+    },
+    {
+      "name": "Dwarven Resilience",
+      "trigger": "Poison damage or avoid/end Poisoned save",
+      "cost": "none",
+      "effects": [
+        "Poison Resistance; Advantage saves to avoid/end Poisoned"
+      ],
+      "required_extension_groups": [
+        "stats",
+        "rolls"
+      ],
+      "ending_and_identity": "Exact species/selected trait source; respect source ending; permanent grants once at actual character level."
+    },
+    {
+      "name": "Dwarven Toughness",
+      "trigger": "Character1 and every later character level",
+      "cost": "none",
+      "effects": [
+        "Permanent max HP+1 each total level; source-owned once-only grants"
+      ],
+      "required_extension_groups": [
+        "progression"
+      ],
+      "ending_and_identity": "Exact species/selected trait source; respect source ending; permanent grants once at actual character level."
+    },
+    {
+      "name": "Stonecunning",
+      "trigger": "Bonus Action",
+      "cost": "PB uses per Long Rest",
+      "effects": [
+        "For10 minutes Tremorsense60 feet; must be on or touch stone surface, natural or worked"
+      ],
+      "required_extension_groups": [
+        "world",
+        "resources"
+      ],
+      "ending_and_identity": "Exact species/selected trait source; respect source ending; permanent grants once at actual character level."
+    }
+  ],
+  "reused_from": [
+    "data/core/races/dwarf.json"
+  ],
+  "retained_runtime_seed": {
+    "id": "dwarf",
+    "name": "Dwarf",
+    "description": "Dwarf race. Source: XPHB.",
+    "ability_bonuses": {},
+    "speed": 6,
+    "size": "medium",
+    "languages": [
+      "Common"
+    ],
+    "proficiencies": [],
+    "traits": [
+      {
+        "id": "dwarf_darkvision",
+        "name": "Darkvision",
+        "description": "You have {@sense Darkvision} with a range of 120 feet.",
+        "effects": []
+      },
+      {
+        "id": "dwarf_dwarven_resilience",
+        "name": "Dwarven Resilience",
+        "description": "You have Resistance to Poison damage. You also have Advantage on saving throws you make to avoid or end the Poisoned condition.",
+        "effects": []
+      },
+      {
+        "id": "dwarf_dwarven_toughness",
+        "name": "Dwarven Toughness",
+        "description": "Your Hit Points Point maximum increases by 1, and it increases by 1 again whenever you gain a level.",
+        "effects": []
+      },
+      {
+        "id": "dwarf_stonecunning",
+        "name": "Stonecunning",
+        "description": "As a Bonus Action, you gain {@sense Tremorsense} with a range of 60 feet for 10 minutes. You must be on a stone surface or touching a stone surface to use this {@sense Tremorsense}. The stone can be natural or worked. You can use this Bonus Action a number of times equal to your Proficiency Bonus, and you regain all expended uses when you finish a Long Rest.",
+        "effects": []
+      }
+    ],
+    "darkvision": true,
+    "darkvision_feet": 120
+  },
+  "unsupported_behavior": [
+    {
+      "groups": [
+        "progression",
+        "resources",
+        "rolls",
+        "stats",
+        "world"
+      ],
+      "requirement": "2024 choices, character-level grants and full named trait outcomes must map to shared hosts. Legacy seed is comparison material only: never inherit its fixed ASIs, old weapon grants or other unselected traits.",
+      "status": "mapping_and_host_verification_required"
+    }
+  ],
+  "source_revision": "2a19eb1d (existing working-tree definitions and recovered drafts read on 2026-11-08)",
+  "reused_input_hashes": {
+    "data/core/races/dwarf.json": "f9d6efb9a4f3a71a7df402c8158f3441a315bfd7f58edad62632d766b03e4da1"
+  }
+}

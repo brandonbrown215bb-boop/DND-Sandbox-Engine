@@ -1,0 +1,150 @@
+{
+  "schema": "crown-equipment-candidate/1",
+  "id": "dagger",
+  "name": "Dagger",
+  "kind": "weapon",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring intent only; not registered engine syntax.",
+  "rules": {
+    "authority": "SRD 5.2.1",
+    "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      89,
+      90,
+      91
+    ],
+    "section": "Dagger",
+    "text": "Dagger: simple melee weapon; 1d4 piercing; properties finesse, light, thrown; mastery nick. Range and Versatile values are in definition. The complete property and mastery rules on pp.89–90 apply only when their requirements are met.",
+    "source_context": "../source-pages.json"
+  },
+  "definition": {
+    "id": "dagger",
+    "name": "Dagger",
+    "category": "simple",
+    "weapon_kind": "melee",
+    "damage_dice": "1d4",
+    "damage_type": "piercing",
+    "properties": [
+      "finesse",
+      "light",
+      "thrown"
+    ],
+    "mastery": "nick",
+    "weight_lb": 1,
+    "cost_gp": 2,
+    "range_feet": {
+      "normal": 20,
+      "long": 60
+    }
+  },
+  "authored_operations": [
+    "Use declared weapon proficiency, ability, hands, range and properties for each actual attack; Finesse uses the same chosen ability for attack and damage. Thrown draws as part of the attack and retains the melee ability.",
+    "Light extra attack requires a different Light weapon and omits a positive ability modifier; Nick moves that single extra attack into the Attack action. Apply only an unlocked mastery with its exact target, timing and once-per-turn rules from source context.",
+    "Ammunition attacks require and spend one Arrow; recover floor(half spent) after one minute following the fight. Heavy melee needs Strength 13 and Heavy ranged needs Dexterity 13 to avoid Disadvantage; enforce normal/long ranges and Two-Handed only when attacking."
+  ],
+  "retained_runtime_seeds": [
+    {
+      "path": "data/core/items/imported_base_items.json",
+      "array_index": 9,
+      "file_sha256": "d450331c5dc1756fccc025c42e7f60bc6312a6829e59814e9864878a4abaae42",
+      "definition": {
+        "id": "dagger",
+        "name": "Dagger",
+        "description": "Standard D&D weapon: Dagger.",
+        "type": "weapon",
+        "damage": "1d4",
+        "damage_type": "piercing",
+        "ability": "DEX",
+        "range": 4,
+        "value": 2
+      }
+    },
+    {
+      "path": "data/core/items/weapons.json",
+      "array_index": 2,
+      "file_sha256": "6f6314edd2f971deea6f5d058e0e5f913757a662b2340a8a01c52d60432e0df5",
+      "definition": {
+        "id": "dagger",
+        "weight": 1,
+        "name": "Dagger",
+        "description": "A small, concealable blade. Can be thrown.",
+        "type": "weapon",
+        "weapon_type": "simple",
+        "damage": "1d4",
+        "damage_type": "piercing",
+        "properties": [
+          "finesse",
+          "light",
+          "thrown"
+        ],
+        "ability": "DEX",
+        "range": 1,
+        "thrown_range": 4,
+        "value": 2
+      }
+    }
+  ],
+  "manifest_overrides": [
+    {
+      "type": "item",
+      "id": "dagger",
+      "winner": "res://data/core/items/weapons.json#3",
+      "replaces": [
+        "res://data/core/items/imported_base_items.json#10"
+      ]
+    }
+  ],
+  "required_mapping": [
+    "weapons"
+  ],
+  "consumers": [
+    {
+      "package_id": "bard",
+      "option": "A",
+      "quantity": 2,
+      "source": "docs/planning/preparation/crown-characters/classes/bard.json"
+    },
+    {
+      "package_id": "monk",
+      "option": "A",
+      "quantity": 5,
+      "source": "docs/planning/preparation/crown-characters/classes/monk.json"
+    },
+    {
+      "package_id": "rogue",
+      "option": "A",
+      "quantity": 2,
+      "source": "docs/planning/preparation/crown-characters/classes/rogue.json"
+    },
+    {
+      "package_id": "sorcerer",
+      "option": "A",
+      "quantity": 2,
+      "source": "docs/planning/preparation/crown-characters/classes/sorcerer.json"
+    },
+    {
+      "package_id": "warlock",
+      "option": "A",
+      "quantity": 2,
+      "source": "docs/planning/preparation/crown-characters/classes/warlock.json"
+    },
+    {
+      "package_id": "wizard",
+      "option": "A",
+      "quantity": 2,
+      "source": "docs/planning/preparation/crown-characters/classes/wizard.json"
+    },
+    {
+      "package_id": "criminal",
+      "option": "A",
+      "quantity": 2,
+      "source": "docs/planning/preparation/crown-characters/backgrounds/criminal.json"
+    }
+  ],
+  "unsupported_behavior": [
+    {
+      "group": "weapons",
+      "requirement": "Map complete weapon properties, masteries, hand/ability eligibility and actual attacks through shared owners. Reuse verified range/Heavy work; no item-ID dispatch or support claim from seed fields."
+    }
+  ]
+}

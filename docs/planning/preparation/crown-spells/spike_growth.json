@@ -1,0 +1,157 @@
+{
+  "format": "crown-spell-candidate/1",
+  "id": "spike_growth",
+  "name": "Spike Growth",
+  "level": 2,
+  "status": "written_unverified_not_loaded",
+  "source": {
+    "authority": "SRD 5.2.1",
+    "url": "https://media.dndbeyond.com/compendium-images/srd/5.2/SRD_CC_v5.2.1.pdf",
+    "sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      164
+    ],
+    "header": {
+      "Casting Time": "Action",
+      "Range": "150 feet",
+      "Components": "V, S, M (seven thorns)",
+      "Duration": "Concentration, up to 10 minutes"
+    },
+    "attribution": "System Reference Document 5.2.1, Wizards of the Coast LLC; CC BY 4.0."
+  },
+  "casting": {
+    "casting_time": "Action",
+    "kind": "action",
+    "seconds": null,
+    "ritual_available": false,
+    "range": {
+      "source": "150 feet",
+      "kind": "distance",
+      "feet": 150
+    },
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "seven thorns",
+    "duration": "Concentration, up to 10 minutes",
+    "concentration": true,
+    "spell_lists": [
+      "druid",
+      "ranger"
+    ]
+  },
+  "authored_intent": "20-foot-radius ground Difficult Terrain; each 5 feet moved deals 2d4 Piercing; natural camouflage and Perception to recognize if not observing creation; no save and no entry damage without distance.",
+  "rules": [
+    {
+      "id": "r001",
+      "text": "The ground in a 20-foot-radius Sphere centered on a point within range sprouts hard spikes and thorns."
+    },
+    {
+      "id": "r002",
+      "text": "The area becomes Difficult Terrain for the duration."
+    },
+    {
+      "id": "r003",
+      "text": "When a creature moves into or within the area, it takes 2d4 Piercing damage for every 5 feet it travels."
+    },
+    {
+      "id": "r004",
+      "text": "The transformation of the ground is camouflaged to look natural."
+    },
+    {
+      "id": "r005",
+      "text": "Any creature that can’t see the area when the spell is cast must take a Search action and succeed on a Wisdom (Perception or Survival) check against your spell save DC to recognize the terrain as hazardous before entering it."
+    }
+  ],
+  "authored_operations": [
+    {
+      "operation": "create_movement_hazard",
+      "parameters": {
+        "sphere_radius_feet": 20,
+        "ground": "difficult_terrain",
+        "damage": {
+          "per_travel_feet": 5,
+          "dice": "2d4",
+          "type": "piercing"
+        },
+        "camouflage": true,
+        "unseen_at_creation_discovery": {
+          "action": "search",
+          "check_choices": [
+            "WIS_Perception",
+            "WIS_Survival"
+          ],
+          "dc": "caster_spell_dc"
+        }
+      },
+      "status": "authoring_declaration_not_a_registered_opcode",
+      "required_source_rules": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005"
+      ]
+    }
+  ],
+  "runtime_draft": {
+    "origin": "fragments_only",
+    "definition": null,
+    "fragments": {
+      "each_5_feet_moved": {
+        "damage": "2d4",
+        "damage_type": "piercing"
+      }
+    },
+    "coverage": "Unverified. Neither a full definition nor a fragment certifies all source rules or controls. Required extensions are not silently waived."
+  },
+  "required_extensions": [
+    {
+      "group": "zones",
+      "requirement": "Mount source-defined recurring and moving area effects with independent appearance/entry/movement/start/end triggers, exclusions and once-per-turn receipts; area_selection is geometry only.",
+      "spell_specific_intent": "20-foot-radius ground Difficult Terrain; each 5 feet moved deals 2d4 Piercing; natural camouflage and Perception to recognize if not observing creation; no save and no entry damage without distance.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005"
+      ],
+      "existing_owner_to_reuse": "src/spells/combat_spell_zones.gd",
+      "slice_references": "S-080/S-087/S-184/S-190",
+      "disposition": "requires_mapping_or_host_completion",
+      "note": "This is an authored handoff requirement, not a fresh runtime failure or claim that the whole referenced slice is missing."
+    },
+    {
+      "group": "terrain",
+      "requirement": "Represent actual source-defined terrain movement cost, anchoring, camouflage, plant selection and discovery; preserve actor travel and once-only movement damage.",
+      "spell_specific_intent": "20-foot-radius ground Difficult Terrain; each 5 feet moved deals 2d4 Piercing; natural camouflage and Perception to recognize if not observing creation; no save and no entry damage without distance.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005"
+      ],
+      "existing_owner_to_reuse": "src/dungeon/local_room_rules.gd",
+      "slice_references": "S-179/S-227/S-228",
+      "disposition": "requires_mapping_or_host_completion",
+      "note": "This is an authored handoff requirement, not a fresh runtime failure or claim that the whole referenced slice is missing."
+    }
+  ],
+  "audit": {
+    "source": "docs/audits/spells.md",
+    "batch": "088-5",
+    "production_definition_at_authoring": "res://data/core/spells/imported_spells.json#175",
+    "baseline_execution": "native",
+    "source_revision": "2a19eb1d",
+    "existing_conversion_label": "queued"
+  },
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile every source rule and required extension, then implement and verify through production paths before any deliberate promotion. Keep native behavior until covered."
+  }
+}

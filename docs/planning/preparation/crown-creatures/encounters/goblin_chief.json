@@ -1,0 +1,263 @@
+{
+  "schema": "crown-creature-candidate/1",
+  "id": "crown_goblin_chief",
+  "name": "Goblin Chief",
+  "kind": "campaign_encounter",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring intent only; not registered engine syntax. Mapping requirements do not assert the whole referenced engine slice is absent.",
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile all source clauses, mappings and source differences before later production-path verification. Keep native paths until replacements cover them."
+  },
+  "source": {
+    "path": "data/core/monsters/core_monsters.json",
+    "sha256": "33bf505c91476b32f7dd2887dd0caa19521e4a9e206392b8d803090b105eb8c2",
+    "pointer": "/1",
+    "payload": {
+      "id": "goblin_chief",
+      "name": "Goblin Chief",
+      "description": "A larger, meaner goblin that leads raiding parties.",
+      "size": "small",
+      "challenge_rating": 1,
+      "hit_points": "6d6 + 6",
+      "armor_class": 15,
+      "speed": 6,
+      "ability_scores": {
+        "STR": 12,
+        "DEX": 14,
+        "CON": 12,
+        "INT": 12,
+        "WIS": 10,
+        "CHA": 12
+      },
+      "attacks": [
+        {
+          "name": "Morningstar",
+          "ability": "STR",
+          "damage": "1d8 + 1",
+          "damage_type": "bludgeoning",
+          "range": 1
+        }
+      ],
+      "ai_behavior": "aggressive",
+      "special_abilities": [
+        {
+          "id": "multiattack",
+          "name": "Multiattack",
+          "description": "Makes two melee attacks."
+        },
+        {
+          "id": "rally",
+          "name": "Rally",
+          "description": "Grants nearby goblins advantage on their next attack."
+        }
+      ],
+      "loot_table": [
+        {
+          "item_id": "gold_100",
+          "chance": 0.5
+        },
+        {
+          "item_id": "potion_healing",
+          "chance": 0.3
+        }
+      ],
+      "xp": 200
+    },
+    "authority": "Existing Crown authored creature; not asserted SRD 5.2.1 compliance"
+  },
+  "retained_definitions": [
+    {
+      "path": "data/core/monsters/core_monsters.json",
+      "sha256": "33bf505c91476b32f7dd2887dd0caa19521e4a9e206392b8d803090b105eb8c2",
+      "pointer": "/1",
+      "payload": {
+        "id": "goblin_chief",
+        "name": "Goblin Chief",
+        "description": "A larger, meaner goblin that leads raiding parties.",
+        "size": "small",
+        "challenge_rating": 1,
+        "hit_points": "6d6 + 6",
+        "armor_class": 15,
+        "speed": 6,
+        "ability_scores": {
+          "STR": 12,
+          "DEX": 14,
+          "CON": 12,
+          "INT": 12,
+          "WIS": 10,
+          "CHA": 12
+        },
+        "attacks": [
+          {
+            "name": "Morningstar",
+            "ability": "STR",
+            "damage": "1d8 + 1",
+            "damage_type": "bludgeoning",
+            "range": 1
+          }
+        ],
+        "ai_behavior": "aggressive",
+        "special_abilities": [
+          {
+            "id": "multiattack",
+            "name": "Multiattack",
+            "description": "Makes two melee attacks."
+          },
+          {
+            "id": "rally",
+            "name": "Rally",
+            "description": "Grants nearby goblins advantage on their next attack."
+          }
+        ],
+        "loot_table": [
+          {
+            "item_id": "gold_100",
+            "chance": 0.5
+          },
+          {
+            "item_id": "potion_healing",
+            "chance": 0.3
+          }
+        ],
+        "xp": 200
+      },
+      "manifest_declarations": []
+    }
+  ],
+  "campaign_monster_id": "goblin_chief",
+  "srd_comparison_candidate": null,
+  "conversion_policy": "Preserve campaign identity and all existing custom rules. Source-reconcile overlapping SRD creatures explicitly; candidate authoring does not replace a campaign definition. Goblin Chief and Lich King have no automatic official replacement.",
+  "authored_operations": [
+    {
+      "key": "attack_0",
+      "trigger": "Selected action attack",
+      "budget": "action; multiattack only if explicitly granted",
+      "full_rule_payload": {
+        "name": "Morningstar",
+        "ability": "STR",
+        "damage": "1d8 + 1",
+        "damage_type": "bludgeoning",
+        "range": 1
+      },
+      "steps": [
+        "Resolve authored range/ability/damage and each declared extra effect in order through shared operations.",
+        "Retain separate save-only, after-hit, max-HP, corrosion and condition outcomes; native effect-name recognition is not complete behavior."
+      ],
+      "blockers": [
+        "map_attacks",
+        "map_conditions"
+      ],
+      "behavior_plan": {
+        "budget": "action or member of source-declared Multiattack",
+        "resolution": "Printed campaign attack with native ability/cell range; source conversion must settle feet and explicit final attack modifiers",
+        "hit_damage": {
+          "formula": "1d8 + 1",
+          "type": "bludgeoning"
+        },
+        "after_hit_in_order": [],
+        "source_boundary": "Keep current custom attack separate from official comparison; map every save, defense, condition ending, max-HP or exact-item effect explicitly."
+      }
+    },
+    {
+      "key": "trait_0",
+      "full_rule_payload": {
+        "id": "multiattack",
+        "name": "Multiattack",
+        "description": "Makes two melee attacks."
+      },
+      "steps": [
+        {
+          "intent": "Resolve declared roll or save, targets, range/reach, damage packets, multiattack choice, riders and exact action budget. A save-only action is not a weapon hit rider.",
+          "mapping_group": "attacks"
+        }
+      ],
+      "blockers": [
+        "custom_underspecified"
+      ],
+      "behavior_plan": {
+        "budget": "action",
+        "sequence": [
+          "two melee attacks"
+        ],
+        "policy": "Keep authored campaign sequence; no imported SRD replacement option."
+      }
+    },
+    {
+      "key": "trait_1",
+      "full_rule_payload": {
+        "id": "rally",
+        "name": "Rally",
+        "description": "Grants nearby goblins advantage on their next attack."
+      },
+      "steps": [
+        {
+          "intent": "Preserve printed ability/save/skill/initiative, size/type, defenses, senses, languages, HP and feet; do not infer all saves from abilities or treat native cell speeds as feet.",
+          "mapping_group": "statistics"
+        }
+      ],
+      "blockers": [
+        "custom_underspecified"
+      ],
+      "behavior_plan": {
+        "recipient": "nearby goblins; exact radius/count unresolved",
+        "effect": "Advantage on next attack",
+        "budget": null,
+        "ending": null,
+        "recovery": null,
+        "blocker": "custom_underspecified"
+      }
+    }
+  ],
+  "blockers": [
+    "map_statistics",
+    "source_reconciliation",
+    "map_attacks",
+    "map_items"
+  ],
+  "selection_links": [
+    "selection-links.json"
+  ],
+  "loot": {
+    "metadata": [
+      {
+        "item_id": "gold_100",
+        "chance": 0.5
+      },
+      {
+        "item_id": "potion_healing",
+        "chance": 0.3
+      }
+    ],
+    "item_pass": {
+      "path": "docs/planning/preparation/crown-reachable-items/reachability.json",
+      "sha256": "060c7989394a5dd9f9079bca55527b5a22dcb3d7c4e7d0568f3ae784c472220c"
+    },
+    "candidate_index": "../crown-reachable-items/index.json",
+    "settlement": "No generic post-combat payment established by the reachable-item trace. Do not duplicate campaign boss/room rewards.",
+    "candidate_links": [
+      {
+        "item_id": "gold_100",
+        "candidate": "../crown-reachable-items/items/gold_100.json"
+      },
+      {
+        "item_id": "potion_healing",
+        "candidate": "../crown-reachable-items/items/potion_healing.json"
+      }
+    ]
+  },
+  "spell_candidates": [],
+  "explicit_blockers": [
+    "Rally says nearby goblins and next attack but gives no range, recipient count, action cost, duration or recharge. Preserve the rule; do not invent a radius or replace with Goblin Boss.",
+    "Multiattack grants two melee attacks; keep separate from Rally and ordinary single attack."
+  ],
+  "retained_runtime_observations": {
+    "source": {
+      "path": "src/combat/combat_action.gd",
+      "sha256": "2833d2c8b3f6b2fd5a6b0acf97a927d8b5299362d9e5db8517ff5506d53892f8"
+    },
+    "function": "resolve_monster_attack_effects",
+    "boundary": "Read-only code observation, not gameplay verification: after a hit poison_save/restrain/paralyze_save call saving_throw_to_dc and add_condition with max(1,duration) turn count; corrode_armor adds AC-1 modifier for duration default10 rather than damaging a carried armor copy. reduce_max_hp uses existing damage receipt and direct maxHP mutation. Do not treat these simplified interpretations as source rules or replace them here."
+  }
+}

@@ -1,0 +1,1280 @@
+{
+  "schema": "crown-character-candidate/1",
+  "id": "bard",
+  "name": "Bard",
+  "kind": "class",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "scope": {
+    "total_character_level_maximum": 5
+  },
+  "operation_language": "authoring intent only; not registered engine syntax",
+  "runtime_support": "Retained definitions are reuse material, not proof of full rules. Every authored operation needs contract mapping and later production-path verification before promotion.",
+  "source": {
+    "authority": "SRD 5.2.1",
+    "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      31
+    ],
+    "text": "Bard\nCore Bard Traits\nPrimary Ability Charisma\nHit Point Die D8 per Bard level\nSaving Throw\nProficiencies\nDexterity and Charisma\nSkill Proficiencies Choose any 3 skills (see “Playing\nthe Game”)\nWeapon Proficiencies Simple weapons\nTool Proficiencies Choose 3 Musical Instruments\n(see “Equipment”)\nArmor Training Light armor\nStarting Equipment Choose A or B: (A) Leather\nArmor, 2 Daggers, Musical\nInstrument of your choice, Entertainer’s Pack, and 19 GP; or\n(B) 90 GP\nBecoming a Bard …\nAs a Level 1 Character\n• Gain all the traits in the Core Bard Traits table.\nBard Features\nProficiency\nBonus\nBardic\nDie Level Class Features\n1 +2 Bardic Inspiration,\nSpellcasting\nD6\n2 +2 Expertise,\nJack of All Trades\nD6\n3 +2 Bard Subclass D6\n4 +2 Ability Score Improvement D6\n5 +3 Font of Inspiration D8\n6 +3 Subclass feature D8\n7 +3 Countercharm D8\n8 +3 Ability Score Improvement D8\n9 +4 Expertise D8\n10 +4 Magical Secrets D10\n11 +4 — D10\n12 +4 Ability Score Improvement D10\n13 +5 — D10\n14 +5 Subclass feature D10\n15 +5 — D12\n16 +5 Ability Score Improvement D12\n17 +6 — D12\n18 +6 Superior Inspiration D12\n19 +6 Epic Boon D12\n20 +6 Words of Creation D12\n• Gain the Bard’s level 1 features, which are listed\nin the Bard Features table.\nAs a Multiclass Character\n• Gain the following traits from the Core Bard\nTraits table: Hit Point Die, proficiency in one skill\nof your choice, proficiency with one Musical Instrument of your choice, and training with Light\narmor.\n• Gain the Bard’s level 1 features, which are listed\nin the Bard Features table. See the multiclassing\nrules in “Character Creation” to determine your\navailable spell slots.\nBard Class Features\nAs a Bard, you gain the following class features\nwhen you reach the specified Bard levels. These features are listed in the Bard Features table."
+  },
+  "reused_from": [
+    "data/core/classes/bard.json",
+    "reference/2024/classes/bard.json",
+    "docs/mechanics/bard-2024.md"
+  ],
+  "acquisition": {
+    "starting_traits": {
+      "armor": [
+        "light"
+      ],
+      "weapons": [
+        "simple"
+      ],
+      "tools": [
+        "Choose three {@item Musical Instrument|XPHB|Musical Instruments}"
+      ],
+      "toolProficiencies": [
+        {
+          "anyMusicalInstrument": 3
+        }
+      ],
+      "skills": [
+        {
+          "any": 3
+        }
+      ]
+    },
+    "multiclass_donor": {
+      "proficienciesGained": {
+        "armor": [
+          "light"
+        ],
+        "tools": [
+          "Choose one {@item Musical Instrument|XPHB}"
+        ],
+        "toolProficiencies": [
+          {
+            "anyMusicalInstrument": 1
+          }
+        ],
+        "skills": [
+          {
+            "choose": {
+              "from": [
+                "athletics",
+                "acrobatics",
+                "sleight of hand",
+                "stealth",
+                "arcana",
+                "history",
+                "investigation",
+                "nature",
+                "religion",
+                "animal handling",
+                "insight",
+                "medicine",
+                "perception",
+                "survival",
+                "deception",
+                "intimidation",
+                "performance",
+                "persuasion"
+              ],
+              "count": 1
+            }
+          }
+        ]
+      }
+    },
+    "hit_die": {
+      "number": 1,
+      "faces": 8
+    },
+    "primary_ability": [
+      {
+        "cha": true
+      }
+    ],
+    "saving_throws": [
+      "dex",
+      "cha"
+    ],
+    "grant_policy": "First total level: full Core Traits and level1 features. Later class entry: only source multiclass traits plus all class level1 features; no starting gear or saving throws. Explicit resolved grants in multiclass.json.",
+    "starting_equipment_donor": {
+      "additionalFromBackground": true,
+      "defaultData": [
+        {
+          "A": [
+            {
+              "item": "leather armor|xphb"
+            },
+            {
+              "item": "dagger|xphb",
+              "quantity": 2
+            },
+            {
+              "equipmentType": "instrumentMusical"
+            },
+            {
+              "item": "entertainer's pack|xphb"
+            },
+            {
+              "value": 1900
+            }
+          ],
+          "B": [
+            {
+              "value": 9000
+            }
+          ]
+        }
+      ],
+      "entries": [
+        "{@i Choose A or B:} (A) {@item Leather Armor|XPHB}, 2 {@item Dagger|XPHB}, {@item Musical Instrument|XPHB} of your choice, {@item Entertainer's Pack|XPHB}, 19 GP; or (B) 90 GP"
+      ]
+    },
+    "starting_equipment": {
+      "A": {
+        "gp": 19,
+        "items": [
+          {
+            "source_item_key": "leather_armor",
+            "quantity": 1
+          },
+          {
+            "source_item_key": "dagger",
+            "quantity": 2
+          },
+          {
+            "source_item_key": "chosen_musical_instrument",
+            "quantity": 1
+          },
+          {
+            "source_item_key": "entertainers_pack",
+            "quantity": 1
+          }
+        ]
+      },
+      "B": {
+        "gp": 90,
+        "items": []
+      }
+    },
+    "equipment_mapping_notes": [
+      "source_item_key is an authoring identity, not automatically a resolved loaded item. Later inventory reconciliation records missing/choice links.",
+      "Monk chosen_tool is the same single Artisan’s Tool OR Musical Instrument chosen for proficiency. Bard instrument is a separate equipment choice.",
+      "Holy Symbol form is a choice or unresolved generic mapping; no silent form substitution."
+    ],
+    "tool_choice": {
+      "pick": 3,
+      "from": [
+        "Musical Instruments"
+      ]
+    },
+    "multiclass_grants": {
+      "all": [
+        "CHA"
+      ],
+      "armor": [
+        "light"
+      ],
+      "skill_choice": {
+        "pick": 1,
+        "from": "any skill"
+      },
+      "tool_choice": {
+        "pick": 1,
+        "from": "Musical Instruments"
+      },
+      "score_minimum": 13,
+      "hit_die": "d8",
+      "features": "All own-class level1 features plus later features at own-class thresholds; subclass at class3, feat entitlement at class4. See class candidate.",
+      "starting_equipment": [],
+      "saving_throws": []
+    }
+  },
+  "level_hit_points": {
+    "first_total_level": "maximum class Hit Die + permanent CON modifier",
+    "later_levels": "roll class Hit Die OR use fixed average rounded up; add permanent CON modifier; minimum1 HP",
+    "fixed_average": 5,
+    "hit_dice": "Add one Hit Die of this class type; preserve separate types",
+    "project_policy": "Current bounded permanent progression uses fixed level_hit_points and existing level-up living-character heal; rolled advancement is unsupported there, not silently removed from source."
+  },
+  "features": [
+    {
+      "id": "bard_bardic_inspiration",
+      "name": "Bardic Inspiration",
+      "class_level": 1,
+      "rules": {
+        "authority": "SRD 5.2.1",
+        "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+        "pages": [
+          31,
+          32
+        ],
+        "text": "Level 1: Bardic Inspiration\nYou can supernaturally inspire others through\nwords, music, or dance. This inspiration is represented by your Bardic Inspiration die, which is a d6.\nUsing Bardic Inspiration.\nAs a Bonus Action, you\ncan inspire another creature within 60 feet of yourself who can see or hear you. That creature gains\nPrepared\nSpells\n——Spell Slots per Spell Level——\nCantrips 1 2 3 4 5 6 7 8 9\n2 4 2 — — — — — — — —\n2 5 3 — — — — — — — —\n2 6 4 2 — — — — — — —\n3 7 4 3 — — — — — — —\n3 9 4 3 2 — — — — — —\n3 10 4 3 3 — — — — — —\n3 11 4 3 3 1 — — — — —\n3 12 4 3 3 2 — — — — —\n3 14 4 3 3 3 1 — — — —\n4 15 4 3 3 3 2 — — — —\n4 16 4 3 3 3 2 1 — — —\n4 16 4 3 3 3 2 1 — — —\n4 17 4 3 3 3 2 1 1 — —\n4 17 4 3 3 3 2 1 1 — —\n4 18 4 3 3 3 2 1 1 1 —\n4 18 4 3 3 3 2 1 1 1 —\n4 19 4 3 3 3 2 1 1 1 1\n4 20 4 3 3 3 3 1 1 1 1\n4 21 4 3 3 3 3 2 1 1 1\n4 22 4 3 3 3 3 2 2 1 1\none of your Bardic Inspiration dice. A creature can\nhave only one Bardic Inspiration die at a time.\nOnce within the next hour when the creature fails\na D20 Test, the creature can roll the Bardic Inspiration die and add the number rolled to the d20, potentially turning the failure into a success. A Bardic\nInspiration die is expended when it’s rolled.\nNumber of Uses.\nYou can confer a Bardic Inspiration die a number of times equal to your Charisma\nmodifier (minimum of once), and you regain all expended uses when you finish a Long Rest.\nAt Higher Levels.\nYour Bardic Inspiration die\nchanges when you reach certain Bard levels, as\nshown in the Bardic Die column of the Bard Features table. The die becomes a d8 at level 5, a d10 at\nlevel 10, and a d12 at level 15."
+      },
+      "revised_reference_entries": [
+        "You can supernaturally inspire others through words, music, or dance. This inspiration is represented by your Bardic Inspiration die, which is a {@dice d6}.",
+        {
+          "type": "entries",
+          "entries": [
+            {
+              "type": "entries",
+              "name": "Using Bardic Inspiration",
+              "entries": [
+                "As a {@variantrule Bonus Action|XPHB}, you can inspire another creature within 60 feet of yourself who can see or hear you. That creature gains one of your Bardic Inspiration dice. A creature can have only one Bardic Inspiration die at a time.",
+                "Once within the next hour when the creature fails a {@variantrule D20 Test|XPHB}, the creature can roll the Bardic Inspiration die and add the number rolled to the {@dice d20}, potentially turning the failure into a success. A Bardic Inspiration die is expended when it's rolled."
+              ]
+            },
+            {
+              "type": "entries",
+              "name": "Number of Uses",
+              "entries": [
+                "You can confer a Bardic Inspiration die a number of times equal to your Charisma modifier (minimum of once), and you regain all expended uses when you finish a {@variantrule Long Rest|XPHB}."
+              ]
+            },
+            {
+              "type": "entries",
+              "name": "At Higher Levels",
+              "entries": [
+                "Your Bardic Inspiration die changes when you reach certain Bard levels, as shown in the Bardic Die column of the Bard Features table. The die becomes a {@dice d8} at level 5, a {@dice d10} at level 10, and a {@dice d12} at level 15."
+              ]
+            }
+          ]
+        }
+      ],
+      "authored_operations": [
+        {
+          "trigger": "Bonus Action; another creature within 60 feet that can see or hear owner",
+          "cost": "one use; CHA modifier minimum 1; Long Rest all",
+          "effects": [
+            "Grant d6 held for 1 hour",
+            "Recipient may add after failing a D20 Test, potentially changing failure to success",
+            "One die held per creature; consume on use"
+          ],
+          "ending_and_identity": "Exact donor and recipient; expire after 1 hour. At Bard 5 die becomes d8 and Font recovery applies.",
+          "required_extension_groups": [
+            "resources",
+            "rolls",
+            "source_lifetimes"
+          ]
+        }
+      ],
+      "unsupported_behavior": [
+        {
+          "groups": [
+            "resources",
+            "rolls",
+            "source_lifetimes"
+          ],
+          "requirement": {
+            "trigger": "Bonus Action; another creature within 60 feet that can see or hear owner",
+            "cost": "one use; CHA modifier minimum 1; Long Rest all",
+            "effects": [
+              "Grant d6 held for 1 hour",
+              "Recipient may add after failing a D20 Test, potentially changing failure to success",
+              "One die held per creature; consume on use"
+            ],
+            "ending": "Exact donor and recipient; expire after 1 hour. At Bard 5 die becomes d8 and Font recovery applies."
+          },
+          "mapping_boundary": "Map this complete sequence to shared contracts; retained native behavior and fragments do not certify it.",
+          "status": "unmapped_or_unverified_candidate"
+        }
+      ]
+    },
+    {
+      "id": "bard_spellcasting",
+      "name": "Spellcasting",
+      "class_level": 1,
+      "rules": {
+        "authority": "SRD 5.2.1",
+        "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+        "pages": [
+          32
+        ],
+        "text": "Level 1: Spellcasting\nYou have learned to cast spells through your bardic\narts. See “Spells” for the rules on spellcasting. The\ninformation below details how you use those rules\nwith Bard spells, which appear in the Bard spell list\nlater in the class’s description.\nCantrips.\nYou know two cantrips of your choice\nfrom the Bard spell list.\nDancing Lights\nand\nVicious\nMockery\nare recommended.\nWhenever you gain a Bard level, you can replace\none of your cantrips with another cantrip of your\nchoice from the Bard spell list.\nWhen you reach Bard levels 4 and 10, you learn\nanother cantrip of your choice from the Bard spell\nlist, as shown in the Cantrips column of the Bard\nFeatures table.\nSpell Slots.\nThe Bard Features table shows how\nmany spell slots you have to cast your level 1+\nspells. You regain all expended slots when you finish a Long Rest.\nPrepared Spells of Level 1+.\nYou prepare the\nlist of level 1+ spells that are available for you to\ncast with this feature. To start, choose four level 1\nspells from the Bard spell list.\nCharm Person\n,\nColor\nSpray\n,\nDissonant Whispers\n, and\nHealing Word\nare\nrecommended.\nThe number of spells on your list increases as you\ngain Bard levels, as shown in the Prepared Spells\ncolumn of the Bard Features table. Whenever that\nnumber increases, choose additional spells from the\nBard spell list until the number of spells on your list\nmatches the number on the table. The chosen spells\nmust be of a level for which you have spell slots.\nFor example, if you’re a level 3 Bard, your list of\nprepared spells can include six spells of levels 1 and\n2 in any combination.\nIf another Bard feature gives you spells that you\nalways have prepared, those spells don’t count\nagainst the number of spells you can prepare with\nthis feature, but those spells otherwise count as\nBard spells for you.\nChanging Your Prepared Spells.\nWhenever you\ngain a Bard level, you can replace one spell on your\nlist with another Bard spell for which you have spell\nslots.\nSpellcasting Ability.\nCharisma is your spellcasting ability for your Bard spells.\nSpellcasting Focus.\nYou can use a Musical Instrument as a Spellcasting Focus for your Bard spells."
+      },
+      "revised_reference_entries": [
+        "You have learned to cast spells through your bardic arts. See {@book chapter 7|XPHB|7} for the rules on spellcasting. The information below details how you use those rules with Bard spells, which appear in the {@filter Bard spell list|spells|class=Bard} later in the class's description.",
+        {
+          "type": "entries",
+          "entries": [
+            {
+              "type": "entries",
+              "name": "Cantrips",
+              "entries": [
+                "You know two cantrips of your choice from the {@filter Bard spell list|spells|class=Bard}. {@spell Dancing Lights|XPHB} and {@spell Vicious Mockery|XPHB} are recommended.",
+                "Whenever you gain a Bard level, you can replace one of your cantrips with another cantrip of your choice from the {@filter Bard spell list|spells|class=Bard}.",
+                "When you reach Bard levels 4 and 10, you learn another cantrip of your choice from the {@filter Bard spell list|spells|class=Bard}, as shown in the Cantrips column of the Bard Features table."
+              ]
+            },
+            {
+              "type": "entries",
+              "name": "Spell Slots",
+              "entries": [
+                "The Bard Features table shows how many spell slots you have to cast your level 1+ spells. You regain all expended slots when you finish a {@variantrule Long Rest|XPHB}."
+              ]
+            },
+            {
+              "type": "entries",
+              "name": "Prepared Spells of Level 1+",
+              "entries": [
+                "You prepare the list of level 1+ spells that are available for you to cast with this feature. To start, choose four level 1 spells from the {@filter Bard spell list|spells|class=Bard}. {@spell Charm Person|XPHB}, {@spell Color Spray|XPHB}, {@spell Dissonant Whispers|XPHB}, and {@spell Healing Word|XPHB} are recommended.",
+                "The number of spells on your list increases as you gain Bard levels, as shown in the Prepared Spells column of the Bard Features table. Whenever that number increases, choose additional spells from the {@filter Bard spell list|spells|class=Bard} until the number of spells on your list matches the number on the table. The chosen spells must be of a level for which you have spell slots. For example, if you're a level 3 Bard, your list of prepared spells can include six spells of levels 1 and 2 in any combination.",
+                "If another Bard feature gives you spells that you always have prepared, those spells don't count against the number of spells you can prepare with this feature, but those spells otherwise count as Bard spells for you."
+              ]
+            },
+            {
+              "type": "entries",
+              "name": "Changing Your Prepared Spells",
+              "entries": [
+                "Whenever you gain a Bard level, you can replace one spell on your list with another Bard spell for which you have spell slots."
+              ]
+            },
+            {
+              "type": "entries",
+              "name": "Spellcasting Ability",
+              "entries": [
+                "Charisma is your spellcasting ability for your Bard spells."
+              ]
+            },
+            {
+              "type": "entries",
+              "name": "Spellcasting Focus",
+              "entries": [
+                "You can use a {@item Musical Instrument|XPHB} as a {@variantrule Spellcasting Focus|XPHB} for your Bard spells."
+              ]
+            }
+          ]
+        }
+      ],
+      "authored_operations": [
+        {
+          "trigger": "Acquire class; class-level advancement; legal preparation/replacement window",
+          "cost": "Actual action, slot, components and source permission for each cast",
+          "effects": [
+            "Use class casting package in this candidate; own-class preparation eligibility even with higher multiclass slots",
+            "Preserve source cantrip replacement and preparation rules, chosen ability, focus and always-prepared exclusions"
+          ],
+          "ending_and_identity": "Distinct class source, ordinary/Pact/free/created slots and cast identities; rests recover declared pools once",
+          "required_extension_groups": [
+            "casting",
+            "choices",
+            "resources"
+          ]
+        }
+      ],
+      "unsupported_behavior": [
+        {
+          "groups": [
+            "casting",
+            "choices",
+            "resources"
+          ],
+          "requirement": {
+            "trigger": "Acquire class; class-level advancement; legal preparation/replacement window",
+            "cost": "Actual action, slot, components and source permission for each cast",
+            "effects": [
+              "Use class casting package in this candidate; own-class preparation eligibility even with higher multiclass slots",
+              "Preserve source cantrip replacement and preparation rules, chosen ability, focus and always-prepared exclusions"
+            ],
+            "ending": "Distinct class source, ordinary/Pact/free/created slots and cast identities; rests recover declared pools once"
+          },
+          "mapping_boundary": "Map this complete sequence to shared contracts; retained native behavior and fragments do not certify it.",
+          "status": "unmapped_or_unverified_candidate"
+        }
+      ]
+    },
+    {
+      "id": "bard_expertise",
+      "name": "Expertise",
+      "class_level": 2,
+      "rules": {
+        "authority": "SRD 5.2.1",
+        "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+        "pages": [
+          32
+        ],
+        "text": "Level 2: Expertise\nYou gain Expertise (see “Rules Glossary”) in two of\nyour skill proficiencies of your choice. Performance\nand Persuasion are recommended if you have proficiency in them.\nAt Bard level 9, you gain Expertise in two more of\nyour skill proficiencies of your choice."
+      },
+      "revised_reference_entries": [
+        "You gain {@variantrule Expertise|XPHB} in two of your skill proficiencies of your choice. {@skill Performance|XPHB} and {@skill Persuasion|XPHB} are recommended if you have proficiency in them.",
+        "At Bard level 9, you gain {@variantrule Expertise|XPHB} in two more of your skill proficiencies of your choice."
+      ],
+      "authored_operations": [
+        {
+          "trigger": "Acquire listed number of already proficient skills",
+          "cost": "none",
+          "effects": [
+            "Bard level 2 chooses 2; Rogue level 1 chooses 2",
+            "Double proficiency for chosen skills; no duplicate multiplier"
+          ],
+          "ending_and_identity": "Exact source owns the grant/state; remove temporary effects at the declared ending; never replay acquisition on restore.",
+          "required_extension_groups": [
+            "choices",
+            "progression"
+          ]
+        }
+      ],
+      "unsupported_behavior": [
+        {
+          "groups": [
+            "choices",
+            "progression"
+          ],
+          "requirement": {
+            "trigger": "Acquire listed number of already proficient skills",
+            "cost": "none",
+            "effects": [
+              "Bard level 2 chooses 2; Rogue level 1 chooses 2",
+              "Double proficiency for chosen skills; no duplicate multiplier"
+            ],
+            "ending": "Exact source owns the grant/state; remove temporary effects at the declared ending; never replay acquisition on restore."
+          },
+          "mapping_boundary": "Map this complete sequence to shared contracts; retained native behavior and fragments do not certify it.",
+          "status": "unmapped_or_unverified_candidate"
+        }
+      ]
+    },
+    {
+      "id": "bard_jack_of_all_trades",
+      "name": "Jack of All Trades",
+      "class_level": 2,
+      "rules": {
+        "authority": "SRD 5.2.1",
+        "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+        "pages": [
+          32
+        ],
+        "text": "Level 2: Jack of All Trades\nYou can add half your Proficiency Bonus (round\ndown) to any ability check you make that uses a\nskill proficiency you lack and that doesn’t otherwise\nuse your Proficiency Bonus.\nFor example, if you make a Strength (Athletics)\ncheck and lack Athletics proficiency, you can add\nhalf your Proficiency Bonus to the check."
+      },
+      "revised_reference_entries": [
+        "You can add half your {@variantrule Proficiency|XPHB|Proficiency Bonus} (round down) to any ability check you make that uses a skill proficiency you lack and that doesn't otherwise use your {@variantrule Proficiency|XPHB|Proficiency Bonus}.",
+        "For example, if you make a Strength ({@skill Athletics|XPHB}) check and lack {@skill Athletics|XPHB} proficiency, you can add half your {@variantrule Proficiency|XPHB|Proficiency Bonus} to the check.",
+        {
+          "type": "inset",
+          "name": "A Bard's Repertoire",
+          "entries": [
+            "Does your Bard beat a {@item drum|XPHB} while chanting the deeds of ancient heroes? Strum a {@item lute|XPHB} while crooning romantic tunes? Perform arias of stirring power? Recite dramatic monologues from classic tragedies? Use the rhythm of a folk dance to coordinate the movement of allies in battle? Compose naughty limericks?",
+            "When you play a Bard, consider the style of artistic performance you favor, the moods you might invoke, and the themes that inspire your own creations. Are your poems inspired by moments of natural beauty, or are they brooding reflections on loss? Do you prefer lofty hymns or rowdy tavern songs? Are you drawn to laments for the fallen or celebrations of joy? Do you dance merry jigs or perform elaborate interpretive choreography? Do you focus on one style of performance or strive to master them all?"
+          ]
+        }
+      ],
+      "authored_operations": [
+        {
+          "trigger": "Ability check using skill lacking proficiency",
+          "cost": "none",
+          "effects": [
+            "Add half Proficiency Bonus rounded down to that check"
+          ],
+          "ending_and_identity": "Exact source owns the grant/state; remove temporary effects at the declared ending; never replay acquisition on restore.",
+          "required_extension_groups": [
+            "rolls"
+          ]
+        }
+      ],
+      "unsupported_behavior": [
+        {
+          "groups": [
+            "rolls"
+          ],
+          "requirement": {
+            "trigger": "Ability check using skill lacking proficiency",
+            "cost": "none",
+            "effects": [
+              "Add half Proficiency Bonus rounded down to that check"
+            ],
+            "ending": "Exact source owns the grant/state; remove temporary effects at the declared ending; never replay acquisition on restore."
+          },
+          "mapping_boundary": "Map this complete sequence to shared contracts; retained native behavior and fragments do not certify it.",
+          "status": "unmapped_or_unverified_candidate"
+        }
+      ]
+    },
+    {
+      "id": "bard_bard_subclass",
+      "name": "Bard Subclass",
+      "class_level": 3,
+      "rules": {
+        "authority": "SRD 5.2.1",
+        "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+        "pages": [
+          32
+        ],
+        "text": "Level 3: Bard Subclass\nYou gain a Bard subclass of your choice. The College\nof Lore subclass is detailed after this class’s description. A subclass is a specialization that grants you\nfeatures at certain Bard levels. For the rest of your\ncareer, you gain each of your subclass’s features\nthat are of your Bard level or lower."
+      },
+      "revised_reference_entries": [
+        "You gain a Bard subclass of your choice. A subclass is a specialization that grants you features at certain Bard levels. For the rest of your career, you gain each of your subclass's features that are of your Bard level or lower."
+      ],
+      "authored_operations": [
+        {
+          "trigger": "Class level3",
+          "cost": "one subclass choice",
+          "effects": [
+            "Grant selected SRD subclass in-band features at actual class thresholds; no level6+ grants"
+          ],
+          "ending_and_identity": "Permanent exact subclass ownership; acquisition once",
+          "required_extension_groups": [
+            "progression",
+            "choices"
+          ]
+        }
+      ],
+      "unsupported_behavior": [
+        {
+          "groups": [
+            "progression",
+            "choices"
+          ],
+          "requirement": {
+            "trigger": "Class level3",
+            "cost": "one subclass choice",
+            "effects": [
+              "Grant selected SRD subclass in-band features at actual class thresholds; no level6+ grants"
+            ],
+            "ending": "Permanent exact subclass ownership; acquisition once"
+          },
+          "mapping_boundary": "Map this complete sequence to shared contracts; retained native behavior and fragments do not certify it.",
+          "status": "unmapped_or_unverified_candidate"
+        }
+      ]
+    },
+    {
+      "id": "bard_ability_score_improvement",
+      "name": "Ability Score Improvement",
+      "class_level": 4,
+      "rules": {
+        "authority": "SRD 5.2.1",
+        "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+        "pages": [
+          32
+        ],
+        "text": "Level 4: Ability Score Improvement\nYou gain the Ability Score Improvement feat (see\n“Feats”) or another feat of your choice for which you\nqualify. You gain this feature again at Bard levels 8,\n12, and 16."
+      },
+      "revised_reference_entries": [
+        "You gain the {@feat Ability Score Improvement|XPHB} feat or another {@5etools feat|feats.html} of your choice for which you qualify. You gain this feature again at Bard levels 8, 12, and 16."
+      ],
+      "authored_operations": [
+        {
+          "trigger": "Class level 4 entitlement",
+          "cost": "one entitlement",
+          "effects": [
+            "Choose ASI or another qualifying feat; validate chosen feat category/prerequisites; source owns grant once"
+          ],
+          "ending_and_identity": "Exact source owns the grant/state; remove temporary effects at the declared ending; never replay acquisition on restore.",
+          "required_extension_groups": [
+            "choices",
+            "progression"
+          ]
+        }
+      ],
+      "unsupported_behavior": [
+        {
+          "groups": [
+            "choices",
+            "progression"
+          ],
+          "requirement": {
+            "trigger": "Class level 4 entitlement",
+            "cost": "one entitlement",
+            "effects": [
+              "Choose ASI or another qualifying feat; validate chosen feat category/prerequisites; source owns grant once"
+            ],
+            "ending": "Exact source owns the grant/state; remove temporary effects at the declared ending; never replay acquisition on restore."
+          },
+          "mapping_boundary": "Map this complete sequence to shared contracts; retained native behavior and fragments do not certify it.",
+          "status": "unmapped_or_unverified_candidate"
+        }
+      ]
+    },
+    {
+      "id": "bard_font_of_inspiration",
+      "name": "Font of Inspiration",
+      "class_level": 5,
+      "rules": {
+        "authority": "SRD 5.2.1",
+        "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+        "pages": [
+          32
+        ],
+        "text": "Level 5: Font of Inspiration\nYou now regain all your expended uses of Bardic Inspiration when you finish a Short or Long Rest.\nIn addition, you can expend a spell slot (no action\nrequired) to regain one expended use of Bardic\nInspiration."
+      },
+      "revised_reference_entries": [
+        "You now regain all your expended uses of Bardic Inspiration when you finish a {@variantrule Short Rest|XPHB|Short} or {@variantrule Long Rest|XPHB}.",
+        "In addition, you can expend a spell slot (no action required) to regain one expended use of Bardic Inspiration."
+      ],
+      "authored_operations": [
+        {
+          "trigger": "Class 5; rest or no-action spell-slot exchange",
+          "cost": "Short or Long Rest restores all Inspiration; spell slot restores one expended use",
+          "effects": [
+            "Bardic Inspiration die d8",
+            "Optional expenditure of any spell slot, no action, regains one Bardic Inspiration use"
+          ],
+          "ending_and_identity": "Exact source owns the grant/state; remove temporary effects at the declared ending; never replay acquisition on restore.",
+          "required_extension_groups": [
+            "resources"
+          ]
+        }
+      ],
+      "unsupported_behavior": [
+        {
+          "groups": [
+            "resources"
+          ],
+          "requirement": {
+            "trigger": "Class 5; rest or no-action spell-slot exchange",
+            "cost": "Short or Long Rest restores all Inspiration; spell slot restores one expended use",
+            "effects": [
+              "Bardic Inspiration die d8",
+              "Optional expenditure of any spell slot, no action, regains one Bardic Inspiration use"
+            ],
+            "ending": "Exact source owns the grant/state; remove temporary effects at the declared ending; never replay acquisition on restore."
+          },
+          "mapping_boundary": "Map this complete sequence to shared contracts; retained native behavior and fragments do not certify it.",
+          "status": "unmapped_or_unverified_candidate"
+        }
+      ]
+    }
+  ],
+  "casting": {
+    "ability": "cha",
+    "prepared_counts_by_class_level": [
+      4,
+      5,
+      6,
+      7,
+      9
+    ],
+    "cantrips_by_class_level": [
+      2,
+      2,
+      2,
+      3,
+      3
+    ],
+    "ordinary_slots_by_class_level": [
+      [
+        2,
+        0,
+        0
+      ],
+      [
+        3,
+        0,
+        0
+      ],
+      [
+        4,
+        2,
+        0
+      ],
+      [
+        4,
+        3,
+        0
+      ],
+      [
+        4,
+        3,
+        2
+      ]
+    ],
+    "pact_slots_by_class_level": [],
+    "pact_slot_tuple": "[number of slots, slot level]",
+    "prepared_change": "one on own-class level gain",
+    "cantrip_change": "one on own-class level gain",
+    "spell_list": "SRD own-class list at spell levels0–3; spell-candidates index retains exact authoritative lists",
+    "spellbook": null,
+    "spell_choices": {
+      "0": [
+        "dancing_lights",
+        "light",
+        "mage_hand",
+        "mending",
+        "message",
+        "minor_illusion",
+        "prestidigitation",
+        "starry_wisp",
+        "true_strike",
+        "vicious_mockery"
+      ],
+      "1": [
+        "animal_friendship",
+        "bane",
+        "charm_person",
+        "color_spray",
+        "command",
+        "comprehend_languages",
+        "cure_wounds",
+        "detect_magic",
+        "disguise_self",
+        "dissonant_whispers",
+        "faerie_fire",
+        "feather_fall",
+        "healing_word",
+        "heroism",
+        "identify",
+        "illusory_script",
+        "longstrider",
+        "silent_image",
+        "sleep",
+        "speak_with_animals",
+        "tashas_hideous_laughter",
+        "thunderwave",
+        "unseen_servant"
+      ],
+      "2": [
+        "aid",
+        "animal_messenger",
+        "blindness/deafness",
+        "calm_emotions",
+        "detect_thoughts",
+        "enhance_ability",
+        "enlarge/reduce",
+        "enthrall",
+        "heat_metal",
+        "hold_person",
+        "invisibility",
+        "knock",
+        "lesser_restoration",
+        "locate_animals_or_plants",
+        "locate_object",
+        "magic_mouth",
+        "mirror_image",
+        "phantasmal_force",
+        "see_invisibility",
+        "shatter",
+        "silence",
+        "suggestion",
+        "zone_of_truth"
+      ],
+      "3": [
+        "bestow_curse",
+        "clairvoyance",
+        "dispel_magic",
+        "fear",
+        "glyph_of_warding",
+        "hypnotic_pattern",
+        "leomunds_tiny_hut",
+        "major_image",
+        "mass_healing_word",
+        "nondetection",
+        "plant_growth",
+        "sending",
+        "slow",
+        "speak_with_dead",
+        "speak_with_plants",
+        "stinking_cloud",
+        "tongues"
+      ]
+    },
+    "spell_choice_policy": "These are SRD list memberships through spell level3, not permission to prepare above own-class slot progression; always-prepared and feat/species permissions are additional source grants."
+  },
+  "retained_runtime_seed": {
+    "id": "bard",
+    "name": "Bard",
+    "description": "Bard class. Source: PHB.",
+    "hit_die": "d8",
+    "primary_ability": "CHA",
+    "subclass_level": 3,
+    "saving_throw_proficiencies": [
+      "DEX",
+      "CHA"
+    ],
+    "armor_proficiencies": [
+      "light"
+    ],
+    "weapon_proficiencies": [
+      "simple"
+    ],
+    "creation_proficiency_choices": true,
+    "skill_choices": {
+      "pick": 3,
+      "from": [
+        "Acrobatics",
+        "Animal Handling",
+        "Arcana",
+        "Athletics",
+        "Deception",
+        "History",
+        "Insight",
+        "Intimidation",
+        "Investigation",
+        "Medicine",
+        "Nature",
+        "Perception",
+        "Performance",
+        "Persuasion",
+        "Religion",
+        "Sleight of Hand",
+        "Stealth",
+        "Survival"
+      ]
+    },
+    "starting_equipment": [
+      "leather_armor",
+      "dagger",
+      "dagger",
+      "entertainers_pack"
+    ],
+    "spell_slots_by_level": {
+      "1": [
+        2
+      ],
+      "2": [
+        3
+      ],
+      "3": [
+        4,
+        2
+      ],
+      "4": [
+        4,
+        3
+      ],
+      "5": [
+        4,
+        3,
+        2
+      ]
+    },
+    "cantrips_known": [],
+    "spell_list_ids": [
+      "aid",
+      "animal_friendship",
+      "animal_messenger",
+      "animate_objects",
+      "antipathy_sympathy",
+      "arcane_sword",
+      "awaken",
+      "bane",
+      "befuddlement",
+      "bestow_curse",
+      "blade_ward",
+      "blindness/deafness",
+      "calm_emotions",
+      "charm_monster",
+      "charm_person",
+      "clairvoyance",
+      "cloud_of_daggers",
+      "color_spray",
+      "command",
+      "comprehend_languages",
+      "compulsion",
+      "confusion",
+      "crown_of_madness",
+      "cure_wounds",
+      "dancing_lights",
+      "detect_magic",
+      "detect_thoughts",
+      "dimension_door",
+      "disguise_self",
+      "dispel_magic",
+      "dissonant_whispers",
+      "dominate_monster",
+      "dominate_person",
+      "dream",
+      "enhance_ability",
+      "enlarge/reduce",
+      "enthrall",
+      "etherealness",
+      "eyebite",
+      "faerie_fire",
+      "fear",
+      "feather_fall",
+      "feign_death",
+      "find_the_path",
+      "forcecage",
+      "foresight",
+      "freedom_of_movement",
+      "friends",
+      "geas",
+      "glibness",
+      "glyph_of_warding",
+      "greater_invisibility",
+      "greater_restoration",
+      "guards_and_wards",
+      "hallucinatory_terrain",
+      "healing_word",
+      "heat_metal",
+      "heroes_feast",
+      "heroism",
+      "hold_monster",
+      "hold_person",
+      "hypnotic_pattern",
+      "identify",
+      "illusory_script",
+      "invisibility",
+      "irresistible_dance",
+      "knock",
+      "legend_lore",
+      "leomunds_tiny_hut",
+      "lesser_restoration",
+      "light",
+      "locate_animals_or_plants",
+      "locate_creature",
+      "locate_object",
+      "longstrider",
+      "mage_hand",
+      "magic_mouth",
+      "magnificent_mansion",
+      "major_image",
+      "mass_cure_wounds",
+      "mass_healing_word",
+      "mass_suggestion",
+      "mending",
+      "message",
+      "mind_blank",
+      "minor_illusion",
+      "mirage_arcane",
+      "mirror_image",
+      "mislead",
+      "modify_memory",
+      "nondetection",
+      "phantasmal_force",
+      "phantasmal_killer",
+      "planar_binding",
+      "plant_growth",
+      "polymorph",
+      "power_word_heal",
+      "power_word_kill",
+      "power_word_stun",
+      "prestidigitation",
+      "prismatic_spray",
+      "prismatic_wall",
+      "programmed_illusion",
+      "project_image",
+      "raise_dead",
+      "regenerate",
+      "resurrection",
+      "scrying",
+      "see_invisibility",
+      "seeming",
+      "sending",
+      "shatter",
+      "silence",
+      "silent_image",
+      "sleep",
+      "slow",
+      "speak_with_animals",
+      "speak_with_dead",
+      "speak_with_plants",
+      "starry_wisp",
+      "stinking_cloud",
+      "suggestion",
+      "symbol",
+      "tashas_hideous_laughter",
+      "telepathic_bond",
+      "teleport",
+      "teleportation_circle",
+      "thunderwave",
+      "tongues",
+      "true_polymorph",
+      "true_seeing",
+      "true_strike",
+      "unseen_servant",
+      "vicious_mockery",
+      "zone_of_truth"
+    ],
+    "spells_known_by_level": {
+      "1": [],
+      "2": [],
+      "3": []
+    },
+    "features_by_level": {
+      "1": [
+        {
+          "id": "bard_spellcasting",
+          "name": "Spellcasting",
+          "type": "passive",
+          "description": "You can cast prepared Bard spells using Charisma. You can use a Musical Instrument as a Spellcasting Focus.",
+          "effects": [
+            {
+              "type": "spellcasting",
+              "ability": "CHA",
+              "spell_lists": [
+                "bard"
+              ],
+              "default_cantrips": [
+                "dancing_lights",
+                "vicious_mockery"
+              ],
+              "default_prepared_spells": [
+                "charm_person",
+                "color_spray",
+                "dissonant_whispers",
+                "healing_word"
+              ],
+              "capacity_by_level": {
+                "1": {
+                  "cantrips": 2,
+                  "prepared_spells": 4
+                },
+                "2": {
+                  "cantrips": 2,
+                  "prepared_spells": 5
+                },
+                "3": {
+                  "cantrips": 2,
+                  "prepared_spells": 6
+                },
+                "4": {
+                  "cantrips": 3,
+                  "prepared_spells": 7
+                },
+                "5": {
+                  "cantrips": 3,
+                  "prepared_spells": 9
+                },
+                "6": {
+                  "cantrips": 3,
+                  "prepared_spells": 10
+                },
+                "7": {
+                  "cantrips": 3,
+                  "prepared_spells": 11
+                },
+                "8": {
+                  "cantrips": 3,
+                  "prepared_spells": 12
+                },
+                "9": {
+                  "cantrips": 3,
+                  "prepared_spells": 14
+                },
+                "10": {
+                  "cantrips": 4,
+                  "prepared_spells": 15
+                },
+                "11": {
+                  "cantrips": 4,
+                  "prepared_spells": 16
+                },
+                "12": {
+                  "cantrips": 4,
+                  "prepared_spells": 16
+                },
+                "13": {
+                  "cantrips": 4,
+                  "prepared_spells": 17
+                },
+                "14": {
+                  "cantrips": 4,
+                  "prepared_spells": 17
+                },
+                "15": {
+                  "cantrips": 4,
+                  "prepared_spells": 18
+                },
+                "16": {
+                  "cantrips": 4,
+                  "prepared_spells": 18
+                },
+                "17": {
+                  "cantrips": 4,
+                  "prepared_spells": 19
+                },
+                "18": {
+                  "cantrips": 4,
+                  "prepared_spells": 20
+                },
+                "19": {
+                  "cantrips": 4,
+                  "prepared_spells": 21
+                },
+                "20": {
+                  "cantrips": 4,
+                  "prepared_spells": 22
+                }
+              }
+            }
+          ],
+          "rules_status": "2024-supported",
+          "rules_source": "dnd-2024-srd-5.2.1"
+        },
+        {
+          "id": "bard_bardic_inspiration",
+          "name": "Bardic Inspiration",
+          "type": "active",
+          "description": "As a Bonus Action, inspire another creature within 60 feet that can see or hear you. The die expires after one hour. It can expend the die after failing a D20 Test, adding it to the roll and potentially turning failure into success.",
+          "effects": [
+            {
+              "type": "bardic_inspiration",
+              "die_by_level": {
+                "1": "1d6",
+                "5": "1d8",
+                "10": "1d10",
+                "15": "1d12"
+              },
+              "range": 12
+            }
+          ],
+          "action_cost": "bonus_action",
+          "uses_ability": "CHA",
+          "minimum_uses": 1,
+          "uses_per": "long_rest",
+          "rules_status": "2024-supported",
+          "rules_source": "dnd-2024-srd-5.2.1"
+        }
+      ],
+      "2": [
+        {
+          "id": "bard_jack_of_all_trades",
+          "name": "Jack of All Trades",
+          "type": "passive",
+          "description": "Add half your Proficiency Bonus, rounded down, to skill checks that do not already use your Proficiency Bonus.",
+          "effects": [
+            {
+              "type": "jack_of_all_trades"
+            }
+          ],
+          "rules_status": "2024-supported",
+          "rules_source": "dnd-2024-srd-5.2.1"
+        },
+        {
+          "id": "bard_expertise_2",
+          "name": "Expertise",
+          "type": "passive",
+          "description": "Choose two proficient skills; double your Proficiency Bonus for checks using them.",
+          "effects": [
+            {
+              "type": "skill_expertise_choice",
+              "count": 2
+            }
+          ],
+          "rules_status": "2024-supported",
+          "rules_source": "dnd-2024-srd-5.2.1"
+        }
+      ],
+      "4": [
+        {
+          "id": "bard_ability_score_improvement_4",
+          "name": "Ability Score Improvement",
+          "type": "passive",
+          "effects": [
+            {
+              "type": "asi"
+            }
+          ],
+          "rules_status": "2024-supported",
+          "rules_source": "dnd-2024-srd-5.2.1"
+        }
+      ],
+      "5": [
+        {
+          "id": "bard_font_of_inspiration",
+          "name": "Font of Inspiration",
+          "type": "passive",
+          "description": "You regain all expended Bardic Inspiration uses when you finish a Short or Long Rest.",
+          "effects": [
+            {
+              "type": "short_rest_recharge",
+              "resource_id": "bard_bardic_inspiration"
+            },
+            {
+              "type": "resource_from_spell_slot",
+              "resource_id": "bard_bardic_inspiration",
+              "amount": 1
+            }
+          ],
+          "rules_status": "2024-supported",
+          "rules_source": "dnd-2024-srd-5.2.1"
+        }
+      ]
+    },
+    "spell_slots_by_character_level": {
+      "1": [
+        2
+      ],
+      "2": [
+        3
+      ],
+      "3": [
+        4,
+        2
+      ],
+      "4": [
+        4,
+        3
+      ],
+      "5": [
+        4,
+        3,
+        2
+      ]
+    },
+    "tool_choices": {
+      "pick": 3,
+      "from": [
+        "bagpipes",
+        "drum",
+        "dulcimer",
+        "flute",
+        "horn",
+        "lute",
+        "lyre",
+        "pan_flute",
+        "shawm",
+        "viol"
+      ]
+    },
+    "starting_gold": 19,
+    "starting_gold_alternative": 90
+  },
+  "required_extensions": [
+    "progression",
+    "choices",
+    "casting"
+  ],
+  "equipment_resolution": [
+    {
+      "option": "A",
+      "source_item_key": "leather_armor",
+      "quantity": 1,
+      "runtime_item_id": "leather_armor",
+      "status": "source_definition_exists_not_gameplay_verified",
+      "requirement": "Preserve quantity, exact source item facts and complete pack contents"
+    },
+    {
+      "option": "A",
+      "source_item_key": "dagger",
+      "quantity": 2,
+      "runtime_item_id": "dagger",
+      "status": "source_definition_exists_not_gameplay_verified",
+      "requirement": "Preserve quantity, exact source item facts and complete pack contents"
+    },
+    {
+      "option": "A",
+      "source_item_key": "chosen_musical_instrument",
+      "quantity": 1,
+      "runtime_item_id": null,
+      "status": "choice_or_missing_definition",
+      "requirement": "Choose Musical Instrument for equipment independently"
+    },
+    {
+      "option": "A",
+      "source_item_key": "entertainers_pack",
+      "quantity": 1,
+      "runtime_item_id": "entertainers_pack",
+      "status": "source_definition_exists_not_gameplay_verified",
+      "requirement": "Preserve quantity, exact source item facts and complete pack contents"
+    }
+  ],
+  "unsupported_behavior": [
+    {
+      "groups": [
+        "progression",
+        "items"
+      ],
+      "requirement": "Complete starting/multiclass acquisition, choices and equipment quantities/GP; candidate equipment_resolution retains every unresolved item or choice. No opt-in or native-path replacement is authorized by this candidate."
+    }
+  ],
+  "source_revision": "2a19eb1d (existing working-tree definitions and recovered drafts read on 2026-11-08)",
+  "reused_input_hashes": {
+    "data/core/classes/bard.json": "806f3116e1a7c500786bcc4dac8143e478f9a63d28ea550a4df11873c812bd38",
+    "reference/2024/classes/bard.json": "00f46a8a161a199515d40c58d185029747cf59cb0015ede12e16caeb91680d5b",
+    "docs/mechanics/bard-2024.md": "5b270b54773bbe86393a068635ae4a720380b45eb9995a85fed4525ac5cbda30"
+  }
+}

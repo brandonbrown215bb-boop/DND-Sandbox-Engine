@@ -1,0 +1,370 @@
+{
+  "schema": "crown-creature-candidate/1",
+  "id": "srd_giant_spider",
+  "name": "Giant Spider",
+  "kind": "srd_statblock",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring intent only; not registered engine syntax. Mapping requirements do not assert the whole referenced engine slice is absent.",
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile all source clauses, mappings and source differences before later production-path verification. Keep native paths until replacements cover them."
+  },
+  "source": {
+    "authority": "SRD 5.2.1",
+    "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      353,
+      354
+    ],
+    "text": "Giant Spider\nLarge Beast, Unaligned\nAC 14 Initiative +3 (13)\nHP 26 (4d10 + 4)\nSpeed 30 ft., Climb 30 ft.\nMOD SAVE MOD SAVE MOD SAVE\nStr 14 +2 +2 Dex 16 +3 +3 Con 12 +1 +1\nInt 2 −4 −4 WIS 11 +0 +0 Cha 4 −3 −3\nSkills Perception +4, Stealth +7\nSenses Darkvision 60 ft.; Passive Perception 14\nLanguages None\nCR 1 (XP 200; PB +2)\nTraits\nSpider Climb. The spider can climb difficult surfaces,\nincluding along ceilings, without needing to make an\nability check.\nWeb Walker. The spider ignores movement restrictions\ncaused by webs, and it knows the location of any other\ncreature in contact with the same web.\nActions\nBite. Melee Attack Roll: +5, reach 5 ft. Hit: 7 (1d8 + 3)\nPiercing damage plus 7 (2d6) Poison damage.\nWeb (Recharge 5–6). Dexterity Saving Throw: DC 13,\none creature the spider can see within 60 feet. Failure:\nThe target has the Restrained condition until the web is\ndestroyed (AC 10; HP 5; Vulnerability to Fire damage;\nImmunity to Poison and Psychic damage).",
+    "transcription": "Two-column extraction; line breaks retained. Whole selected page context is in source-pages.json. No stat correction inferred from donor data."
+  },
+  "statistics": {
+    "identity_line": "Large Beast, Unaligned",
+    "AC": "14 Initiative +3 (13)",
+    "HP": "26 (4d10 + 4)",
+    "Speed": "30 ft., Climb 30 ft.",
+    "Skills": "Perception +4, Stealth +7",
+    "Senses": "Darkvision 60 ft.; Passive Perception 14",
+    "Languages": "None",
+    "CR": "1 (XP 200; PB +2)",
+    "ability_scores": {
+      "STR": 14,
+      "DEX": 16,
+      "CON": 12,
+      "INT": 2,
+      "WIS": 11,
+      "CHA": 4
+    },
+    "saving_throw_modifiers": {
+      "STR": 2,
+      "DEX": 3,
+      "CON": 1,
+      "INT": -4,
+      "WIS": 0,
+      "CHA": -3
+    },
+    "initiative_modifier": 3,
+    "initiative_score_printed": 13,
+    "armor_class": 14,
+    "movement_feet": {
+      "walk": 30,
+      "climb": 30
+    }
+  },
+  "authored_operations": [
+    {
+      "key": "b001",
+      "name": "Spider Climb",
+      "source_section": "Traits",
+      "full_rule": "Spider Climb. The spider can climb difficult surfaces,\nincluding along ceilings, without needing to make an\nability check.",
+      "budget": "passive_or_declared_trigger",
+      "steps": [
+        {
+          "intent": "Represent actual size/space, climb/swim/fly and breathing, jumps, straight-line charge history, opportunity exceptions, web surfaces and legal release.",
+          "mapping_group": "movement"
+        }
+      ],
+      "parameters_from_rule": {
+        "attack_bonus": [],
+        "save_dc": [],
+        "distances_feet": [],
+        "dice": []
+      },
+      "blockers": [
+        "map_movement"
+      ],
+      "ending_and_identity": "Exact actor/action/target/source instance; use every qualifier and ending in full_rule, not only extracted parameters.",
+      "behavior_plan": {
+        "budget": "passive_or_declared_trigger",
+        "source_outcomes": {},
+        "surfaces": "Difficult climbing surfaces including ceilings",
+        "ability_check_required": false,
+        "speed": "Printed Climb Speed; conditional for Swarm of Insects"
+      }
+    },
+    {
+      "key": "b002",
+      "name": "Web Walker",
+      "source_section": "Traits",
+      "full_rule": "Web Walker. The spider ignores movement restrictions\ncaused by webs, and it knows the location of any other\ncreature in contact with the same web.",
+      "budget": "passive_or_declared_trigger",
+      "steps": [
+        {
+          "intent": "Represent actual size/space, climb/swim/fly and breathing, jumps, straight-line charge history, opportunity exceptions, web surfaces and legal release.",
+          "mapping_group": "movement"
+        }
+      ],
+      "parameters_from_rule": {
+        "attack_bonus": [],
+        "save_dc": [],
+        "distances_feet": [],
+        "dice": []
+      },
+      "blockers": [
+        "map_movement"
+      ],
+      "ending_and_identity": "Exact actor/action/target/source instance; use every qualifier and ending in full_rule, not only extracted parameters.",
+      "behavior_plan": {
+        "budget": "passive_or_declared_trigger",
+        "source_outcomes": {},
+        "ignore": "Movement restrictions caused by webs",
+        "perception": "Know other creatures touching the same actual web; not all room occupants"
+      }
+    },
+    {
+      "key": "b003",
+      "name": "Bite",
+      "source_section": "Actions",
+      "full_rule": "Bite. Melee Attack Roll: +5, reach 5 ft. Hit: 7 (1d8 + 3)\nPiercing damage plus 7 (2d6) Poison damage.",
+      "budget": "action",
+      "steps": [
+        {
+          "intent": "Resolve declared roll or save, targets, range/reach, damage packets, multiattack choice, riders and exact action budget. A save-only action is not a weapon hit rider.",
+          "mapping_group": "attacks"
+        }
+      ],
+      "parameters_from_rule": {
+        "attack_bonus": [
+          5
+        ],
+        "save_dc": [],
+        "distances_feet": [
+          5
+        ],
+        "dice": [
+          "1d8 + 3",
+          "2d6"
+        ]
+      },
+      "blockers": [
+        "map_attacks"
+      ],
+      "ending_and_identity": "Exact actor/action/target/source instance; use every qualifier and ending in full_rule, not only extracted parameters.",
+      "behavior_plan": {
+        "budget": "action",
+        "source_outcomes": {
+          "hit": "7 (1d8 + 3) Piercing damage plus 7 (2d6) Poison damage."
+        },
+        "resolution": "attack_roll",
+        "attack_kind": "melee",
+        "damage_and_riders": "7 (1d8 + 3) Piercing damage plus 7 (2d6) Poison damage.",
+        "permission": "ordinary familiar cannot attack; invocation exceptions must grant this exact attack or Attack action, not every Actions entry"
+      }
+    },
+    {
+      "key": "b004",
+      "name": "Web (Recharge 5–6)",
+      "source_section": "Actions",
+      "full_rule": "Web (Recharge 5–6). Dexterity Saving Throw: DC 13,\none creature the spider can see within 60 feet. Failure:\nThe target has the Restrained condition until the web is\ndestroyed (AC 10; HP 5; Vulnerability to Fire damage;\nImmunity to Poison and Psychic damage).",
+      "budget": "action",
+      "steps": [
+        {
+          "intent": "Resolve declared roll or save, targets, range/reach, damage packets, multiattack choice, riders and exact action budget. A save-only action is not a weapon hit rider.",
+          "mapping_group": "attacks"
+        },
+        {
+          "intent": "Preserve immunity, source identity, thresholds, repeat saves, explicit ending events and target-relative deadlines.",
+          "mapping_group": "conditions"
+        },
+        {
+          "intent": "Charge exact source-owned action/reaction/use once; preserve recharge dice, daily and Long Rest schedules as separately authored rules.",
+          "mapping_group": "resources"
+        }
+      ],
+      "parameters_from_rule": {
+        "attack_bonus": [],
+        "save_dc": [
+          13
+        ],
+        "distances_feet": [
+          60
+        ],
+        "dice": []
+      },
+      "blockers": [
+        "map_attacks",
+        "map_conditions",
+        "map_resources"
+      ],
+      "ending_and_identity": "Exact actor/action/target/source instance; use every qualifier and ending in full_rule, not only extracted parameters.",
+      "behavior_plan": {
+        "budget": "action",
+        "source_outcomes": {
+          "failure": "The target has the Restrained condition until the web is destroyed (AC 10; HP 5; Vulnerability to Fire damage; Immunity to Poison and Psychic damage)."
+        },
+        "recharge": "d6 on turn start; regain on5–6",
+        "target": "Seen creature within60 feet",
+        "save": {
+          "ability": "DEX",
+          "dc": 13
+        },
+        "failure": "Restrained until exact web destroyed",
+        "web_object": {
+          "AC": 10,
+          "HP": 5,
+          "vulnerabilities": [
+            "Fire"
+          ],
+          "immunities": [
+            "Poison",
+            "Psychic"
+          ]
+        },
+        "resolution": "save_only_action; no preliminary attack roll"
+      }
+    }
+  ],
+  "retained_definitions": [
+    {
+      "path": "data/core/monsters/core_monsters.json",
+      "sha256": "33bf505c91476b32f7dd2887dd0caa19521e4a9e206392b8d803090b105eb8c2",
+      "pointer": "/6",
+      "payload": {
+        "id": "giant_spider",
+        "name": "Giant Spider",
+        "description": "A monstrous arachnid that lurks in dark places.",
+        "size": "large",
+        "challenge_rating": 1,
+        "hit_points": "4d10 + 4",
+        "armor_class": 14,
+        "speed": 6,
+        "ability_scores": {
+          "STR": 14,
+          "DEX": 16,
+          "CON": 12,
+          "INT": 2,
+          "WIS": 11,
+          "CHA": 4
+        },
+        "attacks": [
+          {
+            "name": "Bite",
+            "ability": "DEX",
+            "damage": "1d8 + 2",
+            "damage_type": "piercing",
+            "range": 1,
+            "extra_effects": [
+              {
+                "type": "poison_save",
+                "dc": 11,
+                "damage": "2d8",
+                "damage_type": "poison"
+              }
+            ]
+          },
+          {
+            "name": "Web",
+            "ability": "DEX",
+            "damage": "0",
+            "damage_type": "none",
+            "range": 4,
+            "extra_effects": [
+              {
+                "type": "restrain",
+                "save": "STR",
+                "dc": 12
+              }
+            ]
+          }
+        ],
+        "ai_behavior": "aggressive",
+        "special_abilities": [
+          {
+            "id": "spider_climb",
+            "name": "Spider Climb",
+            "description": "Can climb difficult surfaces without needing to make an ability check."
+          },
+          {
+            "id": "web_sense",
+            "name": "Web Sense",
+            "description": "Knows the location of any creature in contact with the same web."
+          }
+        ],
+        "loot_table": [
+          {
+            "item_id": "gold_50",
+            "chance": 0.3
+          },
+          {
+            "item_id": "antidote",
+            "chance": 0.2
+          }
+        ],
+        "xp": 200
+      },
+      "manifest_declarations": [
+        {
+          "type": "monster",
+          "id": "giant_spider",
+          "winner": "res://data/core/monsters/core_monsters.json#7",
+          "replaces": [
+            "res://data/core/monsters/imported_monsters.json#180"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "data/core/monsters/imported_monsters.json",
+      "sha256": "f57bee1e93f185a89575bed3d8b2b610b53cfd3b7f2eb56448d1dd64a0126c5f",
+      "pointer": "/179",
+      "payload": {
+        "id": "giant_spider",
+        "name": "Giant Spider",
+        "hit_points": "4d10 + 4",
+        "armor_class": 14,
+        "speed": 6,
+        "ability_scores": {
+          "STR": 14,
+          "DEX": 16,
+          "CON": 12,
+          "INT": 2,
+          "WIS": 11,
+          "CHA": 4
+        },
+        "attacks": [
+          {
+            "name": "Claws",
+            "ability": "STR",
+            "damage": "1d6",
+            "range": 1,
+            "damage_type": "slashing"
+          }
+        ],
+        "ai_behavior": "aggressive"
+      },
+      "manifest_declarations": [
+        {
+          "type": "monster",
+          "id": "giant_spider",
+          "winner": "res://data/core/monsters/core_monsters.json#7",
+          "replaces": [
+            "res://data/core/monsters/imported_monsters.json#180"
+          ]
+        }
+      ]
+    }
+  ],
+  "selection": {
+    "wild_shape_druid_levels_2_3": false,
+    "wild_shape_druid_levels_4_5": false,
+    "normal_familiar": false,
+    "pact_of_chain_special": false,
+    "animate_dead_output": false,
+    "held_swarm": false,
+    "encounter_comparison_only": true
+  },
+  "acquisition_links": [
+    "selection-links.json"
+  ],
+  "blockers": [
+    "map_statistics",
+    "map_attacks",
+    "map_conditions",
+    "map_movement",
+    "map_resources"
+  ],
+  "source_reconciliation": "Official body is authoritative for this SRD candidate. Retained donor payloads are comparison/reuse seeds, including legacy values and manifest winners; do not merge their statistics or traits by ID. Direct Crown encounters retain separate candidates.",
+  "equipment_links": []
+}

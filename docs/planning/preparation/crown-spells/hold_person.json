@@ -1,0 +1,160 @@
+{
+  "format": "crown-spell-candidate/1",
+  "id": "hold_person",
+  "name": "Hold Person",
+  "level": 2,
+  "status": "written_unverified_not_loaded",
+  "source": {
+    "authority": "SRD 5.2.1",
+    "url": "https://media.dndbeyond.com/compendium-images/srd/5.2/SRD_CC_v5.2.1.pdf",
+    "sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      141
+    ],
+    "header": {
+      "Casting Time": "Action",
+      "Range": "60 feet",
+      "Components": "V, S, M (a straight piece of iron)",
+      "Duration": "Concentration, up to 1 minute"
+    },
+    "attribution": "System Reference Document 5.2.1, Wizards of the Coast LLC; CC BY 4.0."
+  },
+  "casting": {
+    "casting_time": "Action",
+    "kind": "action",
+    "seconds": null,
+    "ritual_available": false,
+    "range": {
+      "source": "60 feet",
+      "kind": "distance",
+      "feet": 60
+    },
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "a straight piece of iron",
+    "duration": "Concentration, up to 1 minute",
+    "concentration": true,
+    "spell_lists": [
+      "bard",
+      "cleric",
+      "druid",
+      "sorcerer",
+      "warlock",
+      "wizard"
+    ]
+  },
+  "authored_intent": "Seen Humanoid WIS save or Paralyzed; repeat at each target turn end; higher slots add recipients.",
+  "rules": [
+    {
+      "id": "r001",
+      "text": "Choose a Humanoid that you can see within range."
+    },
+    {
+      "id": "r002",
+      "text": "The target must succeed on a Wisdom saving throw or have the Paralyzed condition for the duration."
+    },
+    {
+      "id": "r003",
+      "text": "At the end of each of its turns, the target repeats the save, ending the spell on itself on a success."
+    },
+    {
+      "id": "r004",
+      "text": "Using a Higher-Level Spell Slot."
+    },
+    {
+      "id": "r005",
+      "text": "You can target one additional Humanoid for each spell slot level above 2."
+    }
+  ],
+  "authored_operations": [
+    {
+      "operation": "save_then_condition",
+      "parameters": {
+        "target": "seen_humanoid",
+        "save": "WIS",
+        "failure": "paralyzed",
+        "repeat_save": "target_turn_end",
+        "upcast_additional_targets": 1
+      },
+      "status": "authoring_declaration_not_a_registered_opcode",
+      "required_source_rules": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005"
+      ]
+    }
+  ],
+  "runtime_draft": {
+    "origin": "existing_shared_definition",
+    "definition": {
+      "attack_type": "none",
+      "casting_time": "action",
+      "classes": [
+        "bard",
+        "cleric",
+        "druid",
+        "sorcerer",
+        "warlock",
+        "wizard"
+      ],
+      "components": [
+        "V",
+        "S",
+        "M"
+      ],
+      "concentration": true,
+      "description": "Choose a Humanoid that you can see within range. The target must succeed on a Wisdom saving throw or have the Paralyzed condition for the duration. At the end of each of its turns, the target repeats the save, ending the spell on itself on a success. Using a Higher-Level Spell Slot. You can target one additional Humanoid for each spell slot level above 2.",
+      "duration": "Concentration, up to 1 minute",
+      "duration_seconds": 60,
+      "effects": [
+        {
+          "condition": "paralyzed",
+          "on_failed_save": true,
+          "type": "grant_condition"
+        }
+      ],
+      "execution": "shared",
+      "half_on_save": false,
+      "id": "hold_person",
+      "level": 2,
+      "material": "a straight piece of iron",
+      "name": "Hold Person",
+      "range": 12,
+      "repeat_save": "WIS",
+      "requires_target_sight": true,
+      "rules_source": "SRD 5.2.1",
+      "rules_status": "authoring-draft-unverified",
+      "save": "WIS",
+      "school": "enchantment",
+      "target": "single",
+      "target_creature_types": [
+        "humanoid"
+      ],
+      "upcast": {
+        "additional_targets_per_level": 1.0,
+        "starting_level": 2.0
+      }
+    },
+    "fragments": {},
+    "coverage": "Unverified. Neither a full definition nor a fragment certifies all source rules or controls. Required extensions are not silently waived."
+  },
+  "required_extensions": [],
+  "audit": {
+    "source": "docs/audits/spells.md",
+    "batch": "088-3",
+    "production_definition_at_authoring": "res://data/core/spells/imported_spells.json#98",
+    "baseline_execution": "shared",
+    "source_revision": "2a19eb1d",
+    "existing_conversion_label": "already_shared_baseline"
+  },
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile every source rule and required extension, then implement and verify through production paths before any deliberate promotion. Keep native behavior until covered."
+  }
+}

@@ -1,0 +1,197 @@
+{
+  "format": "crown-spell-candidate/1",
+  "id": "magic_mouth",
+  "name": "Magic Mouth",
+  "level": 2,
+  "status": "written_unverified_not_loaded",
+  "source": {
+    "authority": "SRD 5.2.1",
+    "url": "https://media.dndbeyond.com/compendium-images/srd/5.2/SRD_CC_v5.2.1.pdf",
+    "sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      146
+    ],
+    "header": {
+      "Casting Time": "1 minute or Ritual",
+      "Range": "30 feet",
+      "Components": "V, S, M (jade dust worth 10+ GP, which the spell consumes)",
+      "Duration": "Until dispelled"
+    },
+    "attribution": "System Reference Document 5.2.1, Wizards of the Coast LLC; CC BY 4.0."
+  },
+  "casting": {
+    "casting_time": "1 minute or Ritual",
+    "kind": "timed",
+    "seconds": 60,
+    "ritual_available": true,
+    "range": {
+      "source": "30 feet",
+      "kind": "distance",
+      "feet": 30
+    },
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "jade dust worth 10+ GP, which the spell consumes",
+    "duration": "Until dispelled",
+    "concentration": false,
+    "spell_lists": [
+      "bard",
+      "wizard"
+    ]
+  },
+  "authored_intent": "One-minute cast, consumed 10-GP materials; exact unworn/uncarried object; retain up-to-25-word message and sensed trigger within 30 feet; mouth appearance, speaking duration, repeat-or-end policy.",
+  "rules": [
+    {
+      "id": "r001",
+      "text": "You implant a message within an object in range—a message that is uttered when a trigger condition is met."
+    },
+    {
+      "id": "r002",
+      "text": "Choose an object that you can see and that isn’t being worn or carried by another creature."
+    },
+    {
+      "id": "r003",
+      "text": "Then speak the message, which must be 25 words or fewer, though it can be delivered over as long as 10 minutes."
+    },
+    {
+      "id": "r004",
+      "text": "Finally, determine the circumstance that will trigger the spell to deliver your message."
+    },
+    {
+      "id": "r005",
+      "text": "When that trigger occurs, a magical mouth appears on the object and recites the message in your voice and at the same volume you spoke."
+    },
+    {
+      "id": "r006",
+      "text": "If the object you chose has a mouth or something that looks like a mouth (for example, the mouth of a statue), the magical mouth appears there, so the words appear to come from the object’s mouth."
+    },
+    {
+      "id": "r007",
+      "text": "When you cast this spell, you can have the spell end after it delivers its message, or it can remain and repeat its message whenever the trigger occurs."
+    },
+    {
+      "id": "r008",
+      "text": "The trigger can be as general or as detailed as you like, though it must be based on visual or audible conditions that occur within 30 feet of the object."
+    },
+    {
+      "id": "r009",
+      "text": "For example, you could instruct the mouth to speak when any creature moves within 30 feet of the object or when a silver bell rings within 30 feet of it."
+    }
+  ],
+  "authored_operations": [
+    {
+      "operation": "store_triggered_message",
+      "parameters": {
+        "target": "seen_object_not_worn_or_carried_by_another",
+        "word_limit": 25,
+        "delivery_minutes_max": 10,
+        "caster_voice_and_original_volume": true,
+        "mouth_location": "existing_mouth_if_present",
+        "trigger": {
+          "visual_or_audible": true,
+          "within_object_feet": 30
+        },
+        "after_delivery_choices": [
+          "end_spell",
+          "repeat_on_each_trigger"
+        ]
+      },
+      "status": "authoring_declaration_not_a_registered_opcode",
+      "required_source_rules": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006",
+        "r007",
+        "r008",
+        "r009"
+      ]
+    }
+  ],
+  "runtime_draft": {
+    "origin": "proposed_operations",
+    "definition": null,
+    "fragments": {},
+    "coverage": "Unverified. Neither a full definition nor a fragment certifies all source rules or controls. Required extensions are not silently waived."
+  },
+  "required_extensions": [
+    {
+      "group": "wards_and_triggers",
+      "requirement": "Bind an exact object/area and trigger policy, authorized actors, consequences and source end; a condition marker or detection message is not the effect.",
+      "spell_specific_intent": "One-minute cast, consumed 10-GP materials; exact unworn/uncarried object; retain up-to-25-word message and sensed trigger within 30 feet; mouth appearance, speaking duration, repeat-or-end policy.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006",
+        "r007",
+        "r008",
+        "r009"
+      ],
+      "existing_owner_to_reuse": "src/spells/spell_effects.gd",
+      "slice_references": "S-150/S-151/S-184/S-203",
+      "disposition": "requires_mapping_or_host_completion",
+      "note": "This is an authored handoff requirement, not a fresh runtime failure or claim that the whole referenced slice is missing."
+    },
+    {
+      "group": "communication",
+      "requirement": "Reuse represented language/hearing where applicable, then implement the spell-specific recipients, range, content, answers, secrecy and source lifetime.",
+      "spell_specific_intent": "One-minute cast, consumed 10-GP materials; exact unworn/uncarried object; retain up-to-25-word message and sensed trigger within 30 feet; mouth appearance, speaking duration, repeat-or-end policy.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006",
+        "r007",
+        "r008",
+        "r009"
+      ],
+      "existing_owner_to_reuse": "src/combat/communication_rules.gd",
+      "slice_references": "S-194/S-218/S-219",
+      "disposition": "requires_mapping_or_host_completion",
+      "note": "This is an authored handoff requirement, not a fresh runtime failure or claim that the whole referenced slice is missing."
+    },
+    {
+      "group": "long_cast",
+      "requirement": "Preserve the source casting duration, participants, ritual extension, interruption and once-only payment; do not replace a timed cast with an Action.",
+      "spell_specific_intent": "One-minute cast, consumed 10-GP materials; exact unworn/uncarried object; retain up-to-25-word message and sensed trigger within 30 feet; mouth appearance, speaking duration, repeat-or-end policy.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006",
+        "r007",
+        "r008",
+        "r009"
+      ],
+      "existing_owner_to_reuse": "src/spells/cast_interruption_rules.gd",
+      "slice_references": "S-066/S-067/S-134",
+      "disposition": "requires_mapping_or_host_completion",
+      "note": "This is an authored handoff requirement, not a fresh runtime failure or claim that the whole referenced slice is missing."
+    }
+  ],
+  "audit": {
+    "source": "docs/audits/spells.md",
+    "batch": "088-7",
+    "production_definition_at_authoring": "res://data/core/spells/imported_spells.json#121",
+    "baseline_execution": "native",
+    "source_revision": "2a19eb1d",
+    "existing_conversion_label": "queued"
+  },
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile every source rule and required extension, then implement and verify through production paths before any deliberate promotion. Keep native behavior until covered."
+  }
+}

@@ -1,0 +1,319 @@
+{
+  "format": "crown-spell-candidate/1",
+  "id": "find_familiar",
+  "name": "Find Familiar",
+  "level": 1,
+  "status": "written_unverified_not_loaded",
+  "source": {
+    "authority": "SRD 5.2.1",
+    "url": "https://media.dndbeyond.com/compendium-images/srd/5.2/SRD_CC_v5.2.1.pdf",
+    "sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      130
+    ],
+    "header": {
+      "Casting Time": "1 hour or Ritual",
+      "Range": "10 feet",
+      "Components": "V, S, M (burning incense worth 10+ GP, which the spell consumes)",
+      "Duration": "Instantaneous"
+    },
+    "attribution": "System Reference Document 5.2.1, Wizards of the Coast LLC; CC BY 4.0."
+  },
+  "casting": {
+    "casting_time": "1 hour or Ritual",
+    "kind": "timed",
+    "seconds": 3600,
+    "ritual_available": true,
+    "range": {
+      "source": "10 feet",
+      "kind": "distance",
+      "feet": 10
+    },
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "burning incense worth 10+ GP, which the spell consumes",
+    "duration": "Instantaneous",
+    "concentration": false,
+    "spell_lists": [
+      "wizard"
+    ]
+  },
+  "authored_intent": "One-hour ritual/cast with consumed 10-GP materials; choose named animal form or another CR-0 Beast, with no invented Tiny/Small restriction; choose Celestial/Fey/Fiend type; independent initiative/no attacks, 100-foot telepathy and Bonus Action senses, familiar Reaction Touch delivery, Magic-action dismissal/return, exact gear drop and one-familiar replacement.",
+  "rules": [
+    {
+      "id": "r001",
+      "text": "You gain the service of a familiar, a spirit that takes an animal form you choose: Bat, Cat, Frog, Hawk, Lizard, Octopus, Owl, Rat, Raven, Spider, Weasel, or another Beast that has a Challenge Rating of 0."
+    },
+    {
+      "id": "r002",
+      "text": "Appearing in an unoccupied space within range, the familiar has the statistics of the chosen form (see “Monsters”), though it is a Celestial, Fey, or Fiend (your choice) instead of a Beast."
+    },
+    {
+      "id": "r003",
+      "text": "Your familiar acts independently of you, but it obeys your commands."
+    },
+    {
+      "id": "r004",
+      "text": "Telepathic Connection."
+    },
+    {
+      "id": "r005",
+      "text": "While your familiar is within 100 feet of you, you can communicate with it telepathically."
+    },
+    {
+      "id": "r006",
+      "text": "Additionally, as a Bonus Action, you can see through the familiar’s eyes and hear what it hears until the start of your next turn, gaining the benefits of any special senses it has."
+    },
+    {
+      "id": "r007",
+      "text": "Finally, when you cast a spell with a range of touch, your familiar can deliver the touch."
+    },
+    {
+      "id": "r008",
+      "text": "Your familiar must be within 100 feet of you, and it must take a Reaction to deliver the touch when you cast the spell."
+    },
+    {
+      "id": "r009",
+      "text": "Combat."
+    },
+    {
+      "id": "r010",
+      "text": "The familiar is an ally to you and your allies."
+    },
+    {
+      "id": "r011",
+      "text": "It rolls its own Initiative and acts on its own turn."
+    },
+    {
+      "id": "r012",
+      "text": "A familiar can’t attack, but it can take other actions as normal."
+    },
+    {
+      "id": "r013",
+      "text": "Disappearance of the Familiar."
+    },
+    {
+      "id": "r014",
+      "text": "When the familiar drops to 0 Hit Points, it disappears."
+    },
+    {
+      "id": "r015",
+      "text": "It reappears after you cast this spell again."
+    },
+    {
+      "id": "r016",
+      "text": "As a Magic action, you can temporarily dismiss the familiar to a pocket dimension."
+    },
+    {
+      "id": "r017",
+      "text": "Alternatively, you can dismiss it forever."
+    },
+    {
+      "id": "r018",
+      "text": "As a Magic action while it is temporarily dismissed, you can cause it to reappear in an unoccupied space within 30 feet of you."
+    },
+    {
+      "id": "r019",
+      "text": "Whenever the familiar drops to 0 Hit Points or disappears into the pocket dimension, it leaves behind in its space anything it was wearing or carrying."
+    },
+    {
+      "id": "r020",
+      "text": "One Familiar Only."
+    },
+    {
+      "id": "r021",
+      "text": "You can’t have more than one familiar at a time."
+    },
+    {
+      "id": "r022",
+      "text": "If you cast this spell while you have a familiar, you instead cause it to adopt a new eligible form."
+    }
+  ],
+  "authored_operations": [
+    {
+      "operation": "create_bound_companion",
+      "parameters": {
+        "form": "source_named_forms_or_other_CR0_beast",
+        "type_choices": [
+          "celestial",
+          "fey",
+          "fiend"
+        ],
+        "placement": "unoccupied_in_range",
+        "initiative": "own",
+        "cannot_attack": true,
+        "telepathy_feet": 100,
+        "senses": {
+          "action": "bonus_action",
+          "until": "caster_next_turn_start",
+          "include_special_senses": true
+        },
+        "deliver_touch": {
+          "within_feet": 100,
+          "budget": "familiar_reaction"
+        },
+        "dismiss": {
+          "action": "magic_action",
+          "temporary_or_permanent": true
+        },
+        "reappear": {
+          "action": "magic_action",
+          "unoccupied_within_feet": 30
+        },
+        "disappear": {
+          "at_zero_hp": true,
+          "drop_exact_gear": true
+        },
+        "existing_familiar": "change_eligible_form_not_create_second"
+      },
+      "status": "authoring_declaration_not_a_registered_opcode",
+      "required_source_rules": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006",
+        "r007",
+        "r008",
+        "r009",
+        "r010",
+        "r011",
+        "r012",
+        "r013",
+        "r014",
+        "r015",
+        "r016",
+        "r017",
+        "r018",
+        "r019",
+        "r020",
+        "r021",
+        "r022"
+      ]
+    }
+  ],
+  "runtime_draft": {
+    "origin": "proposed_operations",
+    "definition": null,
+    "fragments": {},
+    "coverage": "Unverified. Neither a full definition nor a fragment certifies all source rules or controls. Required extensions are not silently waived."
+  },
+  "required_extensions": [
+    {
+      "group": "created_actors",
+      "requirement": "Supply the complete eligible statblocks/templates and exact placement, command, turn, type, resource, inventory and ending policies; retain all source-specific subclauses.",
+      "spell_specific_intent": "One-hour ritual/cast with consumed 10-GP materials; choose named animal form or another CR-0 Beast, with no invented Tiny/Small restriction; choose Celestial/Fey/Fiend type; independent initiative/no attacks, 100-foot telepathy and Bonus Action senses, familiar Reaction Touch delivery, Magic-action dismissal/return, exact gear drop and one-familiar replacement.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006",
+        "r007",
+        "r008",
+        "r009",
+        "r010",
+        "r011",
+        "r012",
+        "r013",
+        "r014",
+        "r015",
+        "r016",
+        "r017",
+        "r018",
+        "r019",
+        "r020",
+        "r021",
+        "r022"
+      ],
+      "existing_owner_to_reuse": "src/characters/created_actor_rules.gd",
+      "slice_references": "S-154/S-155/S-156/S-157/S-158/S-164",
+      "disposition": "requires_mapping_or_host_completion",
+      "note": "This is an authored handoff requirement, not a fresh runtime failure or claim that the whole referenced slice is missing."
+    },
+    {
+      "group": "remote_senses",
+      "requirement": "Supply sensor/familiar exact identity, control cost, origin, distance, sensory exclusions and touch-delivery windows rather than granting global sight.",
+      "spell_specific_intent": "One-hour ritual/cast with consumed 10-GP materials; choose named animal form or another CR-0 Beast, with no invented Tiny/Small restriction; choose Celestial/Fey/Fiend type; independent initiative/no attacks, 100-foot telepathy and Bonus Action senses, familiar Reaction Touch delivery, Magic-action dismissal/return, exact gear drop and one-familiar replacement.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006",
+        "r007",
+        "r008",
+        "r009",
+        "r010",
+        "r011",
+        "r012",
+        "r013",
+        "r014",
+        "r015",
+        "r016",
+        "r017",
+        "r018",
+        "r019",
+        "r020",
+        "r021",
+        "r022"
+      ],
+      "existing_owner_to_reuse": "src/characters/familiar_rules.gd",
+      "slice_references": "S-178/S-190/S-191/S-192/S-193",
+      "disposition": "requires_mapping_or_host_completion",
+      "note": "This is an authored handoff requirement, not a fresh runtime failure or claim that the whole referenced slice is missing."
+    },
+    {
+      "group": "long_cast",
+      "requirement": "Preserve the source casting duration, participants, ritual extension, interruption and once-only payment; do not replace a timed cast with an Action.",
+      "spell_specific_intent": "One-hour ritual/cast with consumed 10-GP materials; choose named animal form or another CR-0 Beast, with no invented Tiny/Small restriction; choose Celestial/Fey/Fiend type; independent initiative/no attacks, 100-foot telepathy and Bonus Action senses, familiar Reaction Touch delivery, Magic-action dismissal/return, exact gear drop and one-familiar replacement.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006",
+        "r007",
+        "r008",
+        "r009",
+        "r010",
+        "r011",
+        "r012",
+        "r013",
+        "r014",
+        "r015",
+        "r016",
+        "r017",
+        "r018",
+        "r019",
+        "r020",
+        "r021",
+        "r022"
+      ],
+      "existing_owner_to_reuse": "src/spells/cast_interruption_rules.gd",
+      "slice_references": "S-066/S-067/S-134",
+      "disposition": "requires_mapping_or_host_completion",
+      "note": "This is an authored handoff requirement, not a fresh runtime failure or claim that the whole referenced slice is missing."
+    }
+  ],
+  "audit": {
+    "source": "docs/audits/spells.md",
+    "batch": "088-8",
+    "production_definition_at_authoring": "res://data/core/spells/imported_spells.json#73",
+    "baseline_execution": "native",
+    "source_revision": "2a19eb1d",
+    "existing_conversion_label": "queued"
+  },
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile every source rule and required extension, then implement and verify through production paths before any deliberate promotion. Keep native behavior until covered."
+  }
+}

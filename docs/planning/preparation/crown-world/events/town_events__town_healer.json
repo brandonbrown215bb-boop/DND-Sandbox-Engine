@@ -1,0 +1,98 @@
+{
+  "schema": "crown-world-candidate/1",
+  "id": "town_events__town_healer",
+  "name": "Temple Healer",
+  "kind": "events",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring declarations only; not registered engine opcodes.",
+  "required_extensions": [
+    "bodies_actors",
+    "objectives_rewards",
+    "rest_time"
+  ],
+  "authored_operations": [
+    {
+      "operation": "settle_ordered_branch",
+      "seed_pointer": "/choices/0/effects",
+      "effects": [
+        {
+          "type": "heal",
+          "value": "2d8"
+        }
+      ],
+      "condition": null,
+      "requirement": "Retain order, exact quantities/formulas, recipient, costs, branch descriptions and occurrence identity; no repeated payment when a child resumes."
+    },
+    {
+      "operation": "settle_ordered_branch",
+      "seed_pointer": "/choices/1/effects",
+      "effects": [
+        {
+          "type": "take_gold",
+          "value": 25
+        },
+        {
+          "type": "full_heal"
+        },
+        {
+          "type": "remove_all_conditions"
+        }
+      ],
+      "condition": {
+        "type": "has_gold",
+        "amount": 25
+      },
+      "requirement": "Retain order, exact quantities/formulas, recipient, costs, branch descriptions and occurrence identity; no repeated payment when a child resumes."
+    }
+  ],
+  "blockers": [
+    "remove_all_conditions directly clears character.conditions in the seed consumer; full restoration of source-owned ailments, curses, disease and other effects is not established. Preserve campaign intent and record required cure policy."
+  ],
+  "retained_input": {
+    "path": "data/core/events/town_events.json",
+    "sha256": "cc2833d086c100b57a67f114d11888312e7074fdebe601d94151d17e9c310098",
+    "pointer": "/events/2",
+    "payload": {
+      "id": "town_healer",
+      "name": "Temple Healer",
+      "weight": 15,
+      "description": "A kindly cleric at the local temple offers healing to weary travelers.",
+      "type": "choice",
+      "choices": [
+        {
+          "text": "Accept free basic healing",
+          "effects": [
+            {
+              "type": "heal",
+              "value": "2d8"
+            }
+          ],
+          "description": "The cleric lays hands on you and warm light flows through your body."
+        },
+        {
+          "text": "Pay 25 gold for full restoration",
+          "condition": {
+            "type": "has_gold",
+            "amount": 25
+          },
+          "effects": [
+            {
+              "type": "take_gold",
+              "value": 25
+            },
+            {
+              "type": "full_heal"
+            },
+            {
+              "type": "remove_all_conditions"
+            }
+          ],
+          "description": "The cleric performs a thorough healing ritual. All wounds and ailments are cured."
+        }
+      ]
+    }
+  },
+  "authority": "Custom Crown campaign event, not an SRD trap/NPC/spell replacement",
+  "table_id": "town_events",
+  "occurrence_policy": "Table may roll again; same in-flight occurrence must not reroll/reapply on reopen. Campaign-specific uniqueness beyond generated room claims is unresolved, not silently global once-per-event-ID."
+}

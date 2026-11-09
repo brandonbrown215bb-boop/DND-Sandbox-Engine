@@ -1,0 +1,53 @@
+{
+  "schema": "crown-character-candidate/1",
+  "id": "careful_spell",
+  "name": "Careful Spell",
+  "kind": "metamagic",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "scope": {
+    "total_character_level_maximum": 5
+  },
+  "operation_language": "authoring intent only; not registered engine syntax",
+  "runtime_support": "Retained definitions are reuse material, not proof of full rules. Every authored operation needs contract mapping and later production-path verification before promotion.",
+  "minimum_sorcerer_level": 2,
+  "rules": {
+    "authority": "SRD 5.2.1",
+    "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      66,
+      67
+    ],
+    "text": "Careful Spell\nCost: 1 Sorcery Point\nWhen you cast a spell that forces other creatures\nto make a saving throw, you can protect some of\nthose creatures from the spell’s full force. To do so,\nspend 1 Sorcery Point and choose a number of those\ncreatures up to your Charisma modifier (minimum\nof one creature). A chosen creature automatically\nsucceeds on its saving throw against the spell, and\nit takes no damage if it would normally take half\ndamage on a successful save."
+  },
+  "authored_operations": [
+    {
+      "trigger": "Cast spell forcing other creatures to save",
+      "cost": {
+        "resource": "sorcery_points",
+        "amount": 1
+      },
+      "effects": [
+        "Choose up to max(1,CHA) affected creatures; each automatically succeeds and takes no damage if it normally takes half on success"
+      ],
+      "combination_exception": "none",
+      "ending_and_identity": "Capture edits on exact cast; preserve dice/targets/recipients through settlement; pay once after legal selection.",
+      "required_extension_groups": [
+        "casting",
+        "rolls",
+        "resources"
+      ]
+    }
+  ],
+  "unsupported_behavior": [
+    {
+      "groups": [
+        "casting",
+        "rolls"
+      ],
+      "requirement": "Map exact option onto every eligible in-band spell payload/host; existing native support is bounded, not universal. Do not mutate global spell definitions.",
+      "status": "mapping_and_host_verification_required"
+    }
+  ],
+  "source_revision": "2a19eb1d (existing working-tree definitions and recovered drafts read on 2026-11-08)",
+  "reused_input_hashes": {}
+}

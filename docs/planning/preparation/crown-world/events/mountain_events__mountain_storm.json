@@ -1,0 +1,82 @@
+{
+  "schema": "crown-world-candidate/1",
+  "id": "mountain_events__mountain_storm",
+  "name": "Sudden Storm",
+  "kind": "events",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring declarations only; not registered engine opcodes.",
+  "required_extensions": [
+    "discovery",
+    "hazards",
+    "objectives_rewards"
+  ],
+  "authored_operations": [
+    {
+      "operation": "resolve_authored_check",
+      "seed_pointer": "/check",
+      "check": {
+        "ability": "CON",
+        "dc": 12
+      },
+      "requirement": "Keep ability, skill/context, DC and optional familiar Help exactly. Choose actor and actual context; settle one branch once; never silently convert an ability check into a saving throw."
+    },
+    {
+      "operation": "settle_ordered_branch",
+      "seed_pointer": "/failure/effects",
+      "effects": [
+        {
+          "type": "damage",
+          "value": "1d8",
+          "damage_type": "lightning"
+        },
+        {
+          "type": "reduce_speed",
+          "value": 2,
+          "duration": 1
+        }
+      ],
+      "condition": null,
+      "requirement": "Retain order, exact quantities/formulas, recipient, costs, branch descriptions and occurrence identity; no repeated payment when a child resumes."
+    }
+  ],
+  "blockers": [
+    "Retain numeric event duration/unit and custom condition IDs as authored. Generic marker support is not proof of defined mechanical benefit, cure scope or turn/clock conversion; map each declared condition to its actual rule."
+  ],
+  "retained_input": {
+    "path": "data/core/events/mountain_events.json",
+    "sha256": "28c24bea91c714a4c49e7c7b6358adf5dea15b8f06d69dca29ef79542f0a6fd3",
+    "pointer": "/events/6",
+    "payload": {
+      "id": "mountain_storm",
+      "name": "Sudden Storm",
+      "weight": 10,
+      "description": "Dark clouds roll in fast. Lightning cracks across the sky and the wind howls!",
+      "type": "skill_check",
+      "check": {
+        "ability": "CON",
+        "dc": 12
+      },
+      "success": {
+        "description": "You find shelter in a rocky overhang and wait out the storm."
+      },
+      "failure": {
+        "description": "Caught in the open, the storm batters you mercilessly.",
+        "effects": [
+          {
+            "type": "damage",
+            "value": "1d8",
+            "damage_type": "lightning"
+          },
+          {
+            "type": "reduce_speed",
+            "value": 2,
+            "duration": 1
+          }
+        ]
+      }
+    }
+  },
+  "authority": "Custom Crown campaign event, not an SRD trap/NPC/spell replacement",
+  "table_id": "mountain_events",
+  "occurrence_policy": "Table may roll again; same in-flight occurrence must not reroll/reapply on reopen. Campaign-specific uniqueness beyond generated room claims is unresolved, not silently global once-per-event-ID."
+}

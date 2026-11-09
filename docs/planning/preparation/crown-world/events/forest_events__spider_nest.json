@@ -1,0 +1,45 @@
+{
+  "schema": "crown-world-candidate/1",
+  "id": "forest_events__spider_nest",
+  "name": "Spider Nest",
+  "kind": "events",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring declarations only; not registered engine opcodes.",
+  "required_extensions": [
+    "objectives_rewards"
+  ],
+  "authored_operations": [
+    {
+      "operation": "start_authored_encounter",
+      "data": {
+        "monsters": [
+          "giant_spider"
+        ],
+        "surprise": false
+      },
+      "requirement": "Retain exact monster multiplicity and surprise; use existing creature candidates; victory and payout are separate."
+    }
+  ],
+  "blockers": [],
+  "retained_input": {
+    "path": "data/core/events/forest_events.json",
+    "sha256": "d4510f0da5ad26db2611a506fb58c79c35247610ac61ea39be48d30824feac09",
+    "pointer": "/events/7",
+    "payload": {
+      "id": "spider_nest",
+      "name": "Spider Nest",
+      "weight": 10,
+      "description": "Thick webs stretch between the trees. Movement stirs in the canopy above...",
+      "type": "combat",
+      "data": {
+        "monsters": [
+          "giant_spider"
+        ],
+        "surprise": false
+      }
+    }
+  },
+  "authority": "Custom Crown campaign event, not an SRD trap/NPC/spell replacement",
+  "table_id": "forest_events",
+  "occurrence_policy": "Table may roll again; same in-flight occurrence must not reroll/reapply on reopen. Campaign-specific uniqueness beyond generated room claims is unresolved, not silently global once-per-event-ID."
+}

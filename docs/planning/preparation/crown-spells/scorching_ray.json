@@ -1,0 +1,139 @@
+{
+  "format": "crown-spell-candidate/1",
+  "id": "scorching_ray",
+  "name": "Scorching Ray",
+  "level": 2,
+  "status": "written_unverified_not_loaded",
+  "source": {
+    "authority": "SRD 5.2.1",
+    "url": "https://media.dndbeyond.com/compendium-images/srd/5.2/SRD_CC_v5.2.1.pdf",
+    "sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      159
+    ],
+    "header": {
+      "Casting Time": "Action",
+      "Range": "120 feet",
+      "Components": "V, S",
+      "Duration": "Instantaneous"
+    },
+    "attribution": "System Reference Document 5.2.1, Wizards of the Coast LLC; CC BY 4.0."
+  },
+  "casting": {
+    "casting_time": "Action",
+    "kind": "action",
+    "seconds": null,
+    "ritual_available": false,
+    "range": {
+      "source": "120 feet",
+      "kind": "distance",
+      "feet": 120
+    },
+    "components": [
+      "V",
+      "S"
+    ],
+    "material": null,
+    "duration": "Instantaneous",
+    "concentration": false,
+    "spell_lists": [
+      "sorcerer",
+      "wizard"
+    ]
+  },
+  "authored_intent": "Three Fire rays with separate ranged spell attacks and allocation; higher slots add ray; each hit is its own damage occurrence.",
+  "rules": [
+    {
+      "id": "r001",
+      "text": "You hurl three fiery rays."
+    },
+    {
+      "id": "r002",
+      "text": "You can hurl them at one target within range or at several."
+    },
+    {
+      "id": "r003",
+      "text": "Make a ranged spell attack for each ray."
+    },
+    {
+      "id": "r004",
+      "text": "On a hit, the target takes 2d6 Fire damage."
+    },
+    {
+      "id": "r005",
+      "text": "Using a Higher-Level Spell Slot."
+    },
+    {
+      "id": "r006",
+      "text": "You create one additional ray for each spell slot level above 2."
+    }
+  ],
+  "authored_operations": [
+    {
+      "operation": "shared_definition_reference",
+      "parameters": {
+        "definition": "runtime_draft.definition"
+      },
+      "status": "shared_definition_reference_unverified",
+      "required_source_rules": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006"
+      ]
+    }
+  ],
+  "runtime_draft": {
+    "origin": "existing_shared_definition",
+    "definition": {
+      "attack_type": "ranged_spell",
+      "casting_time": "action",
+      "classes": [
+        "sorcerer",
+        "wizard"
+      ],
+      "components": [
+        "V",
+        "S"
+      ],
+      "concentration": false,
+      "damage_type": "fire",
+      "description": "You hurl three fiery rays. You can hurl them at one target within range or at several. Make a ranged spell attack for each ray. On a hit, the target takes 2d6 Fire damage. Using a Higher-Level Spell Slot. You create one additional ray for each spell slot level above 2.",
+      "duration": "Instantaneous",
+      "execution": "shared",
+      "id": "scorching_ray",
+      "level": 2,
+      "name": "Scorching Ray",
+      "projectiles": {
+        "count": 3.0,
+        "damage": "2d6",
+        "delivery": "spell_attack",
+        "extra_per_slot_level": 1.0,
+        "noun": "ray"
+      },
+      "range": 24,
+      "rules_source": "SRD 5.2.1",
+      "rules_status": "authoring-draft-unverified",
+      "school": "evocation",
+      "target": "single"
+    },
+    "fragments": {},
+    "coverage": "Unverified. Neither a full definition nor a fragment certifies all source rules or controls. Required extensions are not silently waived."
+  },
+  "required_extensions": [],
+  "audit": {
+    "source": "docs/audits/spells.md",
+    "batch": "088-2",
+    "production_definition_at_authoring": "res://data/core/spells/core_spells.json#11",
+    "baseline_execution": "shared",
+    "source_revision": "2a19eb1d",
+    "existing_conversion_label": "converted"
+  },
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile every source rule and required extension, then implement and verify through production paths before any deliberate promotion. Keep native behavior until covered."
+  }
+}

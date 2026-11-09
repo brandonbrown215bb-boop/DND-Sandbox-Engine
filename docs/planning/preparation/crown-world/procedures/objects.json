@@ -1,0 +1,50 @@
+{
+  "schema": "crown-world-candidate/1",
+  "id": "objects",
+  "name": "Objects",
+  "kind": "procedures",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring declarations only; not registered engine opcodes.",
+  "required_extensions": [
+    "objects"
+  ],
+  "authored_operations": [
+    {
+      "operation": "resolve_objects",
+      "requirement": "Address actual objects and exact carried/ground/container copies, including collocated targets. Preserve material, size, mass/volume, fixed/attached state, HP/AC, thresholds, immunities, magical/worn/carried eligibility and exact contents. Manipulation, damage, destruction, repair and cleaning must change the selected copy; repair preserves identity and respects pieces, break dimensions and exclusions."
+    }
+  ],
+  "blockers": [
+    "Use existing room/object and item-copy hosts; metadata is not proof every attack/spell/tool route executes. Unknown weight, volume, metal, magic or repair facts remain unknown. Mending is not resurrection, general HP refill or replacement loot."
+  ],
+  "slices": "S-032/S-091/S-098/S-099/S-164/S-196/S-210/S-212/S-213",
+  "source_context_pages": [
+    177,
+    178,
+    185
+  ],
+  "source_context": "../source-pages.json",
+  "current_owner_pins": [
+    {
+      "path": "src/dungeon/local_room_rules.gd",
+      "sha256": "cbe65b9c14cc2261555f0cc29e65f669d288967b757f7999f70f9062bf81cd8e"
+    },
+    {
+      "path": "src/combat/combat_object_rules.gd",
+      "sha256": "dca0308ef00f8c72af9a98476a2da638a3d2e71f9ecfbc3a43f25a4dd534b30f"
+    }
+  ],
+  "reuse_boundary": "Existing accepted pieces remain accepted at their documented limits; these requirements do not mark the entire slices missing.",
+  "reused_equipment_rules": [
+    {
+      "path": "docs/planning/preparation/crown-equipment/items/rope.json",
+      "sha256": "1d7fec5885c412867fdadc96b70e3e10e9724b17c1c9d60b1c87915497e005f5",
+      "full_rules_pointer": "/rules"
+    },
+    {
+      "path": "docs/planning/preparation/crown-equipment/items/crowbar.json",
+      "sha256": "61635dee67028a95b3b0e50a7f55788c2a07c6e8d0863afa3675cb492ab5c357",
+      "full_rules_pointer": "/rules"
+    }
+  ]
+}

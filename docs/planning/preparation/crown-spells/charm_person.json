@@ -1,0 +1,191 @@
+{
+  "format": "crown-spell-candidate/1",
+  "id": "charm_person",
+  "name": "Charm Person",
+  "level": 1,
+  "status": "written_unverified_not_loaded",
+  "source": {
+    "authority": "SRD 5.2.1",
+    "url": "https://media.dndbeyond.com/compendium-images/srd/5.2/SRD_CC_v5.2.1.pdf",
+    "sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      115
+    ],
+    "header": {
+      "Casting Time": "Action",
+      "Range": "30 feet",
+      "Components": "V, S",
+      "Duration": "1 hour"
+    },
+    "attribution": "System Reference Document 5.2.1, Wizards of the Coast LLC; CC BY 4.0."
+  },
+  "casting": {
+    "casting_time": "Action",
+    "kind": "action",
+    "seconds": null,
+    "ritual_available": false,
+    "range": {
+      "source": "30 feet",
+      "kind": "distance",
+      "feet": 30
+    },
+    "components": [
+      "V",
+      "S"
+    ],
+    "material": null,
+    "duration": "1 hour",
+    "concentration": false,
+    "spell_lists": [
+      "bard",
+      "druid",
+      "sorcerer",
+      "warlock",
+      "wizard"
+    ]
+  },
+  "authored_intent": "Humanoid WIS save, Advantage while fighting caster/allies; Charmed and Friendly toward caster; caster/allied damage ends; knows after ending; higher slots add recipients.",
+  "rules": [
+    {
+      "id": "r001",
+      "text": "One Humanoid you can see within range makes a Wisdom saving throw."
+    },
+    {
+      "id": "r002",
+      "text": "It does so with Advantage if you or your allies are fighting it."
+    },
+    {
+      "id": "r003",
+      "text": "On a failed save, the target has the Charmed condition until the spell ends or until you or your allies damage it."
+    },
+    {
+      "id": "r004",
+      "text": "The Charmed creature is Friendly to you."
+    },
+    {
+      "id": "r005",
+      "text": "When the spell ends, the target knows it was Charmed by you."
+    },
+    {
+      "id": "r006",
+      "text": "Using a Higher-Level Spell Slot."
+    },
+    {
+      "id": "r007",
+      "text": "You can target one additional creature for each spell slot level above 1."
+    }
+  ],
+  "authored_operations": [
+    {
+      "operation": "save_then_attitude",
+      "parameters": {
+        "targets": {
+          "type": "humanoid",
+          "sight": true
+        },
+        "save": "WIS",
+        "fighting_caster_or_allies": "save_advantage",
+        "condition": "charmed",
+        "attitude_toward_caster": "friendly",
+        "ends_on": "caster_or_allied_damage",
+        "knowledge_on_end": "was_charmed_by_caster",
+        "upcast_additional_targets": 1
+      },
+      "status": "authoring_declaration_not_a_registered_opcode",
+      "required_source_rules": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006",
+        "r007"
+      ]
+    }
+  ],
+  "runtime_draft": {
+    "origin": "existing_shared_definition",
+    "definition": {
+      "attack_type": "none",
+      "base_targets": 1.0,
+      "casting_time": "action",
+      "classes": [
+        "bard",
+        "druid",
+        "sorcerer",
+        "warlock",
+        "wizard"
+      ],
+      "components": [
+        "V",
+        "S"
+      ],
+      "concentration": false,
+      "description": "One Humanoid you can see within range makes a Wisdom saving throw. It does so with Advantage if you or your allies are fighting it. On a failed save, the target has the Charmed condition until the spell ends or until you or your allies damage it. The Charmed creature is Friendly to you. When the spell ends, the target knows it was Charmed by you. Using a Higher-Level Spell Slot. You can target one additional creature for each spell slot level above 1.",
+      "duration": "1 hour",
+      "duration_seconds": 3600,
+      "effects": [
+        {
+          "condition": "charmed",
+          "on_failed_save": true,
+          "type": "grant_condition"
+        }
+      ],
+      "end_on_party_damage": true,
+      "execution": "shared",
+      "id": "charm_person",
+      "level": 1,
+      "name": "Charm Person",
+      "range": 6,
+      "requires_target_sight": true,
+      "rules_source": "SRD 5.2.1",
+      "rules_status": "authoring-draft-unverified",
+      "save": "WIS",
+      "save_advantage_if_fighting_target": true,
+      "school": "enchantment",
+      "target": "single",
+      "target_creature_types": [
+        "humanoid"
+      ],
+      "upcast": {
+        "additional_targets_per_level": 1.0,
+        "starting_level": 1.0
+      }
+    },
+    "fragments": {},
+    "coverage": "Unverified. Neither a full definition nor a fragment certifies all source rules or controls. Required extensions are not silently waived."
+  },
+  "required_extensions": [
+    {
+      "group": "world_outcomes",
+      "requirement": "Bind source-defined attitude, knowledge or activity to real represented outcomes; retain bounded ADR-0023 choices instead of arbitrary obedience or a no-op.",
+      "spell_specific_intent": "Humanoid WIS save, Advantage while fighting caster/allies; Charmed and Friendly toward caster; caster/allied damage ends; knows after ending; higher slots add recipients.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006",
+        "r007"
+      ],
+      "existing_owner_to_reuse": "src/combat/influence_rules.gd",
+      "slice_references": "S-216/S-218/S-219",
+      "disposition": "requires_mapping_or_host_completion",
+      "note": "This is an authored handoff requirement, not a fresh runtime failure or claim that the whole referenced slice is missing."
+    }
+  ],
+  "audit": {
+    "source": "docs/audits/spells.md",
+    "batch": "088-3",
+    "production_definition_at_authoring": "res://data/core/spells/crown_sc_05_support_02.json#3",
+    "baseline_execution": "shared",
+    "source_revision": "2a19eb1d",
+    "existing_conversion_label": "converted"
+  },
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile every source rule and required extension, then implement and verify through production paths before any deliberate promotion. Keep native behavior until covered."
+  }
+}

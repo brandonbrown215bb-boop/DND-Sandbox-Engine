@@ -1,0 +1,99 @@
+{
+  "schema": "crown-reachable-item-candidate/1",
+  "id": "pact_weapon",
+  "name": "Conjured pact weapon",
+  "kind": "created_item",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring intent only; not registered engine syntax.",
+  "rules": {
+    "authority": "SRD 5.2.1",
+    "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      74
+    ],
+    "text": "Pact of the Blade\nAs a Bonus Action, you can conjure a pact weapon\nin your hand—a Simple or Martial Melee weapon of\nyour choice with which you bond—or create a bond\nwith a magic weapon you touch; you can’t bond with\na magic weapon if someone else is attuned to it or\nanother Warlock is bonded with it. Until the bond\nends, you have proficiency with the weapon, and\nyou can use it as a Spellcasting Focus.\nWhenever you attack with the bonded weapon,\nyou can use your Charisma modifier for the attack\nand damage rolls instead of using Strength or\nDexterity; and you can cause the weapon to deal\nNecrotic, Psychic, or Radiant damage or its normal\ndamage type.\nYour bond with the weapon ends if you use this\nfeature’s Bonus Action again, if the weapon is more\nthan 5 feet away from you for 1 minute or more, or\nif you die. A conjured weapon disappears when the\nbond ends.",
+    "source_context": "../source-pages.json"
+  },
+  "definition": {
+    "id": "pact_weapon",
+    "name": "Conjured pact weapon",
+    "selector": "any Simple or Martial Melee weapon",
+    "expiry": "bond_end",
+    "candidate_ids": [
+      "battleaxe",
+      "club",
+      "dagger",
+      "flail",
+      "glaive",
+      "greataxe",
+      "greatclub",
+      "greatsword",
+      "halberd",
+      "handaxe",
+      "javelin",
+      "lance",
+      "light_hammer",
+      "longsword",
+      "mace",
+      "maul",
+      "morningstar",
+      "pike",
+      "quarterstaff",
+      "rapier",
+      "scimitar",
+      "shortsword",
+      "sickle",
+      "spear",
+      "trident",
+      "war_pick",
+      "warhammer",
+      "whip"
+    ]
+  },
+  "authored_operations": [
+    "Bonus Action: conjure selected weapon in hand and bond, or bond a touched magic weapon not attuned to another or bonded to another Warlock. The latter selects an existing owned world item, not a grant of all magic weapons.",
+    "Until bond ends, grant proficiency/focus and optional Charisma attack/damage plus optional Necrotic/Psychic/Radiant or normal damage on each attack. End on another use, owner death or more than 5 feet apart for at least 1 minute. Only a conjured weapon disappears; a real bonded magic copy remains."
+  ],
+  "retained_runtime_seeds": [],
+  "manifest_overrides": [],
+  "required_mapping": [
+    "character_creations"
+  ],
+  "rules_owner": {
+    "path": "docs/planning/preparation/crown-characters/invocations/pact_of_the_blade.json",
+    "sha256": "ae155ef90caa35d254f685caa6208383178e4d8dd77360795f165e32016b4046"
+  },
+  "retained_character_operations": [
+    {
+      "trigger": "Bonus Action conjure Simple/Martial Melee weapon in hand OR bond touched magic weapon",
+      "cost": "Bonus Action; magic item must not be attuned to someone else or bonded to another Warlock",
+      "effects": [
+        "Proficiency with bonded weapon; spellcasting focus; optional CHA attacks/damage; choose normal/Necrotic/Psychic/Radiant each attack; one bond"
+      ],
+      "ending_and_identity": "End on another use of this Bonus Action, death, or weapon more than5 feet away for at least1 minute. Conjured weapon disappears at bond end; real magic weapon persists.",
+      "required_extension_groups": [
+        "items",
+        "attacks",
+        "source_lifetimes"
+      ]
+    }
+  ],
+  "consumers": [
+    {
+      "channel": "character_created_output",
+      "path": "docs/planning/preparation/crown-characters/invocations/pact_of_the_blade.json",
+      "sha256": "ae155ef90caa35d254f685caa6208383178e4d8dd77360795f165e32016b4046",
+      "json_pointer": "/rules"
+    }
+  ],
+  "unsupported_behavior": [
+    {
+      "group": "character_creations",
+      "requirement": "Reuse the complete authoring owner for Pact of Blade, Rock Gnome or Tinker task. Persist actual object choices, actor/source, activation budget and independent timers/endings; no feature-ID dispatch or newly invented object powers."
+    },
+    {
+      "group": "definition",
+      "requirement": "No exact current loaded-source seed at this identity. This candidate needs deliberate contract mapping/promotion; it is not an installed item."
+    }
+  ]
+}

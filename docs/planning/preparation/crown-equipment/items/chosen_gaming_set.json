@@ -1,0 +1,57 @@
+{
+  "schema": "crown-equipment-candidate/1",
+  "id": "chosen_gaming_set",
+  "name": "Chosen Gaming Set",
+  "kind": "equipment_choice",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring intent only; not registered engine syntax.",
+  "rules": {
+    "authority": "SRD 5.2.1",
+    "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      93,
+      94
+    ],
+    "section": "Chosen Gaming Set",
+    "text": "Soldier: grant the same Gaming Set chosen for tool proficiency.",
+    "source_context": "../source-pages.json"
+  },
+  "definition": {
+    "id": "chosen_gaming_set",
+    "name": "Chosen Gaming Set",
+    "choose": 1,
+    "candidate_ids": [
+      "dice_set",
+      "dragonchess_set",
+      "playing_card_set",
+      "three_dragon_ante_set"
+    ],
+    "link_policy": "Soldier: grant the same Gaming Set chosen for tool proficiency."
+  },
+  "authored_operations": [
+    "Soldier: grant the same Gaming Set chosen for tool proficiency."
+  ],
+  "retained_runtime_seeds": [],
+  "manifest_overrides": [],
+  "required_mapping": [
+    "choices"
+  ],
+  "consumers": [
+    {
+      "package_id": "soldier",
+      "option": "A",
+      "quantity": 1,
+      "source": "docs/planning/preparation/crown-characters/backgrounds/soldier.json"
+    }
+  ],
+  "unsupported_behavior": [
+    {
+      "group": "choices",
+      "requirement": "Resolve form/tool choices and grant exactly once. Monk/Soldier copy matches chosen proficiency; Bard instrument choice remains independent. Generic Holy Symbol seed must not silently force Amulet."
+    },
+    {
+      "group": "definition",
+      "requirement": "No exact current item seed at this candidate identity. This authored record is not a loaded definition; map or promote deliberately later."
+    }
+  ]
+}

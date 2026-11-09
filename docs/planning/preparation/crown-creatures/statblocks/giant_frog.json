@@ -1,0 +1,280 @@
+{
+  "schema": "crown-creature-candidate/1",
+  "id": "srd_giant_frog",
+  "name": "Giant Frog",
+  "kind": "srd_statblock",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring intent only; not registered engine syntax. Mapping requirements do not assert the whole referenced engine slice is absent.",
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile all source clauses, mappings and source differences before later production-path verification. Keep native paths until replacements cover them."
+  },
+  "source": {
+    "authority": "SRD 5.2.1",
+    "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      351
+    ],
+    "text": "Giant Frog\nMedium Beast, Unaligned\nAC 11 Initiative +1 (11)\nHP 18 (4d8)\nSpeed 30 ft., Swim 30 ft.\nMOD SAVE MOD SAVE MOD SAVE\nStr 12 +1 +1 Dex 13 +1 +1 Con 11 +0 +0\nInt 2 −4 −4 WIS 10 +0 +0 Cha 3 −4 −4\nSkills Perception +2, Stealth +4\nSenses Darkvision 30 ft.; Passive Perception 12\nLanguages None\nCR 1/4 (XP 50; PB +2)\nTraits\nAmphibious. The frog can breathe air and water.\nStanding Leap. The frog’s Long Jump is up to 20 feet\nand its High Jump is up to 10 feet with or without a\nrunning start.\nActions\nBite. Melee Attack Roll: +3, reach 5 ft. Hit: 5 (1d6 + 2)\nPiercing damage. If the target is a Medium or smaller\ncreature, it has the Grappled condition (escape DC 11).\nSwallow. The frog swallows a Small or smaller target it\nis grappling. While swallowed, the target isn’t Grappled\nbut has the Blinded and Restrained conditions, and it\nhas Total Cover against attacks and other effects outside\nthe frog. While swallowing the target, the frog can’t use\nBite, and if the frog dies, the swallowed target is no lon-\nger Restrained and can escape from the corpse using 5\nfeet of movement, exiting with the Prone condition.\nAt the end of the frog’s next turn, the swallowed target\ntakes 5 (2d4) Acid damage. If that damage doesn’t kill it,\nthe frog disgorges it, causing it to exit Prone.",
+    "transcription": "Two-column extraction; line breaks retained. Whole selected page context is in source-pages.json. No stat correction inferred from donor data."
+  },
+  "statistics": {
+    "identity_line": "Medium Beast, Unaligned",
+    "AC": "11 Initiative +1 (11)",
+    "HP": "18 (4d8)",
+    "Speed": "30 ft., Swim 30 ft.",
+    "Skills": "Perception +2, Stealth +4",
+    "Senses": "Darkvision 30 ft.; Passive Perception 12",
+    "Languages": "None",
+    "CR": "1/4 (XP 50; PB +2)",
+    "ability_scores": {
+      "STR": 12,
+      "DEX": 13,
+      "CON": 11,
+      "INT": 2,
+      "WIS": 10,
+      "CHA": 3
+    },
+    "saving_throw_modifiers": {
+      "STR": 1,
+      "DEX": 1,
+      "CON": 0,
+      "INT": -4,
+      "WIS": 0,
+      "CHA": -4
+    },
+    "initiative_modifier": 1,
+    "initiative_score_printed": 11,
+    "armor_class": 11,
+    "movement_feet": {
+      "walk": 30,
+      "swim": 30
+    }
+  },
+  "authored_operations": [
+    {
+      "key": "b001",
+      "name": "Amphibious",
+      "source_section": "Traits",
+      "full_rule": "Amphibious. The frog can breathe air and water.",
+      "budget": "passive_or_declared_trigger",
+      "steps": [
+        {
+          "intent": "Represent actual size/space, climb/swim/fly and breathing, jumps, straight-line charge history, opportunity exceptions, web surfaces and legal release.",
+          "mapping_group": "movement"
+        }
+      ],
+      "parameters_from_rule": {
+        "attack_bonus": [],
+        "save_dc": [],
+        "distances_feet": [],
+        "dice": []
+      },
+      "blockers": [
+        "map_movement"
+      ],
+      "ending_and_identity": "Exact actor/action/target/source instance; use every qualifier and ending in full_rule, not only extracted parameters.",
+      "behavior_plan": {
+        "budget": "passive_or_declared_trigger",
+        "source_outcomes": {},
+        "breathing_media": [
+          "air",
+          "water"
+        ]
+      }
+    },
+    {
+      "key": "b002",
+      "name": "Standing Leap",
+      "source_section": "Traits",
+      "full_rule": "Standing Leap. The frog’s Long Jump is up to 20 feet\nand its High Jump is up to 10 feet with or without a\nrunning start.",
+      "budget": "passive_or_declared_trigger",
+      "steps": [
+        {
+          "intent": "Represent actual size/space, climb/swim/fly and breathing, jumps, straight-line charge history, opportunity exceptions, web surfaces and legal release.",
+          "mapping_group": "movement"
+        }
+      ],
+      "parameters_from_rule": {
+        "attack_bonus": [],
+        "save_dc": [],
+        "distances_feet": [
+          20,
+          10
+        ],
+        "dice": []
+      },
+      "blockers": [
+        "map_movement"
+      ],
+      "ending_and_identity": "Exact actor/action/target/source instance; use every qualifier and ending in full_rule, not only extracted parameters.",
+      "behavior_plan": {
+        "budget": "passive_or_declared_trigger",
+        "source_outcomes": {},
+        "long_jump_feet": 20,
+        "high_jump_feet": 10,
+        "running_start_required": false
+      }
+    },
+    {
+      "key": "b003",
+      "name": "Bite",
+      "source_section": "Actions",
+      "full_rule": "Bite. Melee Attack Roll: +3, reach 5 ft. Hit: 5 (1d6 + 2)\nPiercing damage. If the target is a Medium or smaller\ncreature, it has the Grappled condition (escape DC 11).",
+      "budget": "action",
+      "steps": [
+        {
+          "intent": "Resolve declared roll or save, targets, range/reach, damage packets, multiattack choice, riders and exact action budget. A save-only action is not a weapon hit rider.",
+          "mapping_group": "attacks"
+        },
+        {
+          "intent": "Preserve immunity, source identity, thresholds, repeat saves, explicit ending events and target-relative deadlines.",
+          "mapping_group": "conditions"
+        }
+      ],
+      "parameters_from_rule": {
+        "attack_bonus": [
+          3
+        ],
+        "save_dc": [
+          11
+        ],
+        "distances_feet": [
+          5
+        ],
+        "dice": [
+          "1d6 + 2"
+        ]
+      },
+      "blockers": [
+        "map_attacks",
+        "map_conditions"
+      ],
+      "ending_and_identity": "Exact actor/action/target/source instance; use every qualifier and ending in full_rule, not only extracted parameters.",
+      "behavior_plan": {
+        "budget": "action",
+        "source_outcomes": {
+          "hit": "5 (1d6 + 2) Piercing damage. If the target is a Medium or smaller creature, it has the Grappled condition (escape DC 11)."
+        },
+        "resolution": "attack_roll",
+        "attack_kind": "melee",
+        "damage_and_riders": "5 (1d6 + 2) Piercing damage. If the target is a Medium or smaller creature, it has the Grappled condition (escape DC 11).",
+        "permission": "ordinary familiar cannot attack; invocation exceptions must grant this exact attack or Attack action, not every Actions entry",
+        "relation": "Create exact grapple/tether relation, printed target size and escapeDC; preserve each limb/capacity restriction and associated Restrained only while related"
+      }
+    },
+    {
+      "key": "b004",
+      "name": "Swallow",
+      "source_section": "Actions",
+      "full_rule": "Swallow. The frog swallows a Small or smaller target it\nis grappling. While swallowed, the target isn’t Grappled\nbut has the Blinded and Restrained conditions, and it\nhas Total Cover against attacks and other effects outside\nthe frog. While swallowing the target, the frog can’t use\nBite, and if the frog dies, the swallowed target is no longer Restrained and can escape from the corpse using 5\nfeet of movement, exiting with the Prone condition.\nAt the end of the frog’s next turn, the swallowed target\ntakes 5 (2d4) Acid damage. If that damage doesn’t kill it,\nthe frog disgorges it, causing it to exit Prone.",
+      "budget": "action",
+      "steps": [
+        {
+          "intent": "Preserve immunity, source identity, thresholds, repeat saves, explicit ending events and target-relative deadlines.",
+          "mapping_group": "conditions"
+        },
+        {
+          "intent": "Use exact container/victim occupancy, targeting and internal harm; legal corpse escape/disgorge with printed movement and conditions.",
+          "mapping_group": "containment"
+        },
+        {
+          "intent": "Represent actual size/space, climb/swim/fly and breathing, jumps, straight-line charge history, opportunity exceptions, web surfaces and legal release.",
+          "mapping_group": "movement"
+        },
+        {
+          "intent": "Charge exact source-owned action/reaction/use once; preserve recharge dice, daily and Long Rest schedules as separately authored rules.",
+          "mapping_group": "resources"
+        }
+      ],
+      "parameters_from_rule": {
+        "attack_bonus": [],
+        "save_dc": [],
+        "distances_feet": [],
+        "dice": [
+          "2d4"
+        ]
+      },
+      "blockers": [
+        "map_conditions",
+        "map_containment",
+        "map_movement",
+        "map_resources"
+      ],
+      "ending_and_identity": "Exact actor/action/target/source instance; use every qualifier and ending in full_rule, not only extracted parameters.",
+      "behavior_plan": {
+        "budget": "action",
+        "source_outcomes": {},
+        "target": "Small or smaller exact creature currently grappled by frog",
+        "replace_conditions": {
+          "remove": "Grappled",
+          "add": [
+            "Blinded",
+            "Restrained"
+          ]
+        },
+        "outside_targeting": "Total Cover",
+        "self_restriction": "Cannot Bite while swallowing",
+        "frog_dies": "Restrained ends; victim can exit corpse using5 feet movement, exits Prone",
+        "frog_next_turn_end": "2d4 Acid to victim; disgorge Prone if not killed",
+        "mapping": "S-170/S-171/S-172 actual containment, harm and release; not just add Restrained"
+      }
+    }
+  ],
+  "retained_definitions": [
+    {
+      "path": "data/core/monsters/imported_monsters.json",
+      "sha256": "f57bee1e93f185a89575bed3d8b2b610b53cfd3b7f2eb56448d1dd64a0126c5f",
+      "pointer": "/168",
+      "payload": {
+        "id": "giant_frog",
+        "name": "Giant Frog",
+        "hit_points": "4d8",
+        "armor_class": 11,
+        "speed": 6,
+        "ability_scores": {
+          "STR": 12,
+          "DEX": 13,
+          "CON": 11,
+          "INT": 2,
+          "WIS": 10,
+          "CHA": 3
+        },
+        "attacks": [
+          {
+            "name": "Claws",
+            "ability": "STR",
+            "damage": "1d6",
+            "range": 1,
+            "damage_type": "slashing"
+          }
+        ],
+        "ai_behavior": "aggressive"
+      },
+      "manifest_declarations": []
+    }
+  ],
+  "selection": {
+    "wild_shape_druid_levels_2_3": true,
+    "wild_shape_druid_levels_4_5": true,
+    "normal_familiar": false,
+    "pact_of_chain_special": false,
+    "animate_dead_output": false,
+    "held_swarm": false,
+    "encounter_comparison_only": false
+  },
+  "acquisition_links": [
+    "selection-links.json"
+  ],
+  "blockers": [
+    "map_statistics",
+    "map_attacks",
+    "map_conditions",
+    "map_containment",
+    "map_movement",
+    "map_resources"
+  ],
+  "source_reconciliation": "Official body is authoritative for this SRD candidate. Retained donor payloads are comparison/reuse seeds, including legacy values and manifest winners; do not merge their statistics or traits by ID. Direct Crown encounters retain separate candidates.",
+  "equipment_links": []
+}

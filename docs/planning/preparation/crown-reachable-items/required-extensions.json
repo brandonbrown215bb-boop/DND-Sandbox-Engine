@@ -1,0 +1,183 @@
+{
+  "schema": "crown-reachable-item-extension-map/1",
+  "warning": "Authoring requirements, not findings that each named owner is absent; no fixes or accepted gameplay proof.",
+  "groups": [
+    {
+      "id": "weapons",
+      "slices": "S-127/S-250/S-255",
+      "requirement": "Map all declared weapon properties, mastery eligibility and actual attack routes. Reuse accepted range/Heavy owners; Loading, ammunition, hands and source-specific exceptions still need their complete contract mapping.",
+      "members": [
+        "club",
+        "greatclub",
+        "light_hammer",
+        "dart",
+        "light_crossbow",
+        "sling",
+        "battleaxe",
+        "glaive",
+        "halberd",
+        "lance",
+        "maul",
+        "morningstar",
+        "pike",
+        "rapier",
+        "trident",
+        "warhammer",
+        "war_pick",
+        "whip",
+        "blowgun",
+        "hand_crossbow",
+        "heavy_crossbow",
+        "musket",
+        "pistol"
+      ]
+    },
+    {
+      "id": "armor",
+      "slices": "S-251/S-252",
+      "requirement": "Map base AC/Dex caps, training, Strength/Stealth consequences and real don/doff. Reuse accepted timing; seed presence does not establish complete behavior.",
+      "members": [
+        "padded_armor",
+        "hide_armor",
+        "scale_mail",
+        "breastplate",
+        "half_plate_armor",
+        "ring_mail",
+        "splint_armor",
+        "plate_armor"
+      ]
+    },
+    {
+      "id": "ammunition",
+      "slices": "S-196/S-197/S-249",
+      "requirement": "Separate piece counts, purchase lots and storage. Exact weapon type, free-hand loading, one-piece spending, one-minute floor-half recovery and Loading limits must work through attacks and checkpoints.",
+      "members": [
+        "light_crossbow",
+        "sling",
+        "blowgun",
+        "hand_crossbow",
+        "heavy_crossbow",
+        "musket",
+        "pistol",
+        "bolts",
+        "firearm_bullets",
+        "sling_bullets",
+        "needles",
+        "crossbow_bolt_case"
+      ]
+    },
+    {
+      "id": "net",
+      "slices": "S-146/S-168/S-169/S-256",
+      "requirement": "Replace one Attack-action attack with the actual Net save/restraint, target-size exclusion, action escape/rescue and destructible object. The current ordinary-damage weapon seed is not the 2024 rule.",
+      "members": [
+        "net"
+      ]
+    },
+    {
+      "id": "potions",
+      "slices": "S-006/S-049/S-064/S-197",
+      "requirement": "Drink or administer as a Bonus Action, consume exact copy once, settle real healing and preserve actual target/range/quantity. Retain potion mixing source/table as an explicit unmapped procedure; do not imply generic heal supports it.",
+      "members": [
+        "potion_healing",
+        "potion_greater_healing",
+        "potion_superior_healing",
+        "potion_supreme_healing"
+      ]
+    },
+    {
+      "id": "components",
+      "slices": "S-049/S-134/S-135/S-136/S-142",
+      "requirement": "Map exact form, minimum worth and consumption per original cast, including rituals and paid/cancelled/Ready continuations. Do not equate shop price with component worth; consumed or priced components cannot be replaced with a generic focus/pouch.",
+      "members": [
+        "component_pouch",
+        "gold_dust_25gp",
+        "divinatory_tokens_25gp",
+        "diamond_50gp",
+        "clairvoyance_jeweled_horn_100gp",
+        "clairvoyance_glass_eye_100gp",
+        "ruby_dust_50gp",
+        "incense_10gp",
+        "gentle_repose_copper",
+        "diamond_dust_200gp",
+        "pearl_100gp",
+        "salt_silver_100gp",
+        "jade_dust_10gp",
+        "diamond_dust_25gp",
+        "diamond_300gp",
+        "platinum_ring_50gp",
+        "copper_piece"
+      ]
+    },
+    {
+      "id": "currency_rewards",
+      "slices": "S-047/S-049/S-216/S-217",
+      "requirement": "Keep currency amounts distinct from inventory items; route actual once-only rewards without replay, source-ID gold special cases or duplicate campaign/monster rewards. Source trace is not a claim that all reward hosts currently settle metadata.",
+      "members": [
+        "gold_50",
+        "gold_100"
+      ]
+    },
+    {
+      "id": "quest_items",
+      "slices": "S-049/S-216/S-217",
+      "requirement": "Preserve exact key/item identity, three-fragment goal and once-only acquisition, ownership and allowed checkpoint recovery. A Crown-specific authored object is not an invented SRD magic-item ability.",
+      "members": [
+        "crown_fragment",
+        "ashvale_brass_key"
+      ]
+    },
+    {
+      "id": "campaign_custom",
+      "slices": "S-049/S-064",
+      "requirement": "Preserve selected custom item semantics and availability as campaign policy. Do not relabel Antidote as Antitoxin, add SRD powers or remove existing content during writing.",
+      "members": [
+        "antidote"
+      ]
+    },
+    {
+      "id": "created_items",
+      "slices": "S-049/S-064/S-161/S-162/S-196/S-197/S-200",
+      "requirement": "Map actual created copies/batches, source owner, portions, location, lifetime and exact ending/consumption without replay. Never replace transient magical output with a permanent tradeable catalog item.",
+      "members": [
+        "goodberry_batch",
+        "created_food",
+        "clean_water",
+        "prestidigitation_trinket"
+      ]
+    },
+    {
+      "id": "created_books",
+      "slices": "S-049/S-134/S-137/S-161/S-162",
+      "requirement": "Reuse the existing Pact of the Tome/Wizard rules; bind preparation/focus permission to the correct exact book and source. Book of Shadows is neither ordinary Book nor Wizard Spellbook.",
+      "members": [
+        "book_of_shadows"
+      ]
+    },
+    {
+      "id": "character_creations",
+      "slices": "S-049/S-064/S-161/S-162",
+      "requirement": "Reuse the complete authoring owner for Pact of Blade, Rock Gnome or Tinker task. Persist actual object choices, actor/source, activation budget and independent timers/endings; no feature-ID dispatch or newly invented object powers.",
+      "members": [
+        "rock_gnome_clockwork",
+        "pact_weapon",
+        "tinker_scrap_item"
+      ]
+    },
+    {
+      "id": "legacy_components",
+      "slices": "S-049/S-134/S-136",
+      "requirement": "These sold components belong to level-6 spells outside Crown casting permissions. Preserve item exposure without granting the spell or importing its entire higher-level execution.",
+      "members": [
+        "black_pearl_powder_500gp",
+        "mushroom_powder_25gp"
+      ]
+    }
+  ],
+  "source_reconciliations": [
+    "SRD p.91 includes Musket and Pistol; older Crown scope prose calls them non-SRD. Preserve current availability; correct the source classification without creating a policy gate.",
+    "Existing druidic_focus_quarterstaff combined weapon/focus seed was missed by the first preparation pass. It is now retained in that existing candidate; no runtime edit is needed to invent a second combined Druid staff.",
+    "Current-source shop leads total 66; the retained loaded export listed 64. diamond_50gp and druidic_focus_quarterstaff are additions. This is a source comparison, not a new loaded availability count.",
+    "Antidote is the existing custom cure, not Antitoxin. Higher Healing potion seed prices differ from SRD rarity valuation; retain both facts and defer campaign price decisions."
+  ]
+}

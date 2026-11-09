@@ -1,0 +1,182 @@
+{
+  "format": "crown-spell-candidate/1",
+  "id": "druidcraft",
+  "name": "Druidcraft",
+  "level": 0,
+  "status": "written_unverified_not_loaded",
+  "source": {
+    "authority": "SRD 5.2.1",
+    "url": "https://media.dndbeyond.com/compendium-images/srd/5.2/SRD_CC_v5.2.1.pdf",
+    "sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      126
+    ],
+    "header": {
+      "Casting Time": "Action",
+      "Range": "30 feet",
+      "Components": "V, S",
+      "Duration": "Instantaneous"
+    },
+    "attribution": "System Reference Document 5.2.1, Wizards of the Coast LLC; CC BY 4.0."
+  },
+  "casting": {
+    "casting_time": "Action",
+    "kind": "action",
+    "seconds": null,
+    "ritual_available": false,
+    "range": {
+      "source": "30 feet",
+      "kind": "distance",
+      "feet": 30
+    },
+    "components": [
+      "V",
+      "S"
+    ],
+    "material": null,
+    "duration": "Instantaneous",
+    "concentration": false,
+    "spell_lists": [
+      "druid"
+    ]
+  },
+  "authored_intent": "Choose weather forecast, plant opening, harmless sensory effect, or small fire lighting/extinguishing; effects use represented facts and bounded sizes; no invented full weather simulation.",
+  "rules": [
+    {
+      "id": "r001",
+      "text": "Whispering to the spirits of nature, you create one of the following effects within range."
+    },
+    {
+      "id": "r002",
+      "text": "Weather Sensor."
+    },
+    {
+      "id": "r003",
+      "text": "You create a Tiny, harmless sensory effect that predicts what the weather will be at your location for the next 24 hours."
+    },
+    {
+      "id": "r004",
+      "text": "The effect might manifest as a golden orb for clear skies, a cloud for rain, falling snowflakes for snow, and so on."
+    },
+    {
+      "id": "r005",
+      "text": "This effect persists for 1 round."
+    },
+    {
+      "id": "r006",
+      "text": "Bloom."
+    },
+    {
+      "id": "r007",
+      "text": "You instantly make a flower blossom, a seed pod open, or a leaf bud bloom."
+    },
+    {
+      "id": "r008",
+      "text": "Sensory Effect."
+    },
+    {
+      "id": "r009",
+      "text": "You create a harmless sensory effect, such as falling leaves, spectral dancing fairies, a gentle breeze, the sound of an animal, or the faint odor of skunk."
+    },
+    {
+      "id": "r010",
+      "text": "The effect must fit in a 5-foot Cube."
+    },
+    {
+      "id": "r011",
+      "text": "Fire Play."
+    },
+    {
+      "id": "r012",
+      "text": "You light or snuff out a candle, a torch, or a campfire."
+    }
+  ],
+  "authored_operations": [
+    {
+      "operation": "choose_utility_effect",
+      "parameters": {
+        "choices": {
+          "weather_sensor": {
+            "forecast_hours": 24,
+            "duration_rounds": 1,
+            "tiny": true,
+            "harmless": true
+          },
+          "bloom": [
+            "flower",
+            "seed_pod",
+            "leaf_bud"
+          ],
+          "sensory": {
+            "cube_feet_max": 5,
+            "harmless": true
+          },
+          "fire_play": [
+            "candle",
+            "torch",
+            "campfire"
+          ]
+        }
+      },
+      "status": "authoring_declaration_not_a_registered_opcode",
+      "required_source_rules": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006",
+        "r007",
+        "r008",
+        "r009",
+        "r010",
+        "r011",
+        "r012"
+      ]
+    }
+  ],
+  "runtime_draft": {
+    "origin": "proposed_operations",
+    "definition": null,
+    "fragments": {},
+    "coverage": "Unverified. Neither a full definition nor a fragment certifies all source rules or controls. Required extensions are not silently waived."
+  },
+  "required_extensions": [
+    {
+      "group": "utility_world",
+      "requirement": "Author every source-listed utility choice, size, duration, concurrency and actual effect against represented world facts; no free-text universal GM.",
+      "spell_specific_intent": "Choose weather forecast, plant opening, harmless sensory effect, or small fire lighting/extinguishing; effects use represented facts and bounded sizes; no invented full weather simulation.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006",
+        "r007",
+        "r008",
+        "r009",
+        "r010",
+        "r011",
+        "r012"
+      ],
+      "existing_owner_to_reuse": "src/dungeon/local_room_rules.gd",
+      "slice_references": "S-197/S-212/S-218/S-219",
+      "disposition": "requires_mapping_or_host_completion",
+      "note": "This is an authored handoff requirement, not a fresh runtime failure or claim that the whole referenced slice is missing."
+    }
+  ],
+  "audit": {
+    "source": "docs/audits/spells.md",
+    "batch": "088-7",
+    "production_definition_at_authoring": "res://data/core/spells/imported_spells.json#59",
+    "baseline_execution": "native",
+    "source_revision": "2a19eb1d",
+    "existing_conversion_label": "queued"
+  },
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile every source rule and required extension, then implement and verify through production paths before any deliberate promotion. Keep native behavior until covered."
+  }
+}

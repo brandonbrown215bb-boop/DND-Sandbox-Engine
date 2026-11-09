@@ -1,0 +1,175 @@
+{
+  "schema": "crown-character-candidate/1",
+  "id": "hunter",
+  "name": "Hunter",
+  "kind": "subclass",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "scope": {
+    "total_character_level_maximum": 5
+  },
+  "operation_language": "authoring intent only; not registered engine syntax",
+  "runtime_support": "Retained definitions are reuse material, not proof of full rules. Every authored operation needs contract mapping and later production-path verification before promotion.",
+  "class_id": "ranger",
+  "class_level": 3,
+  "features": [
+    {
+      "id": "hunter_hunter_s_lore",
+      "name": "Hunter’s Lore",
+      "class_level": 3,
+      "rules": {
+        "authority": "SRD 5.2.1",
+        "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+        "pages": [
+          61
+        ],
+        "text": "Level 3: Hunter’s Lore\nYou can call on the forces of nature to reveal certain\nstrengths and weaknesses of your prey. While a\ncreature is marked by your\nHunter’s Mark\n, you know\nwhether that creature has any Immunities, Resistances, or Vulnerabilities, and if the creature has\nany, you know what they are."
+      },
+      "revised_reference_entries": [
+        "You can call on the forces of nature to reveal certain strengths and weaknesses of your prey. While a creature is marked by your Hunter's Mark, you know whether that creature has any Immunities, Resistances, or Vulnerabilities, and if the creature has any, you know what they are."
+      ],
+      "authored_operations": [
+        {
+          "trigger": "Creature currently marked by own Hunters Mark",
+          "cost": "none",
+          "effects": [
+            "Know its Immunities, Resistances and Vulnerabilities; reveal represented facts"
+          ],
+          "ending_and_identity": "Exact source owns the grant/state; remove temporary effects at the declared ending; never replay acquisition on restore.",
+          "required_extension_groups": [
+            "world",
+            "casting"
+          ]
+        }
+      ],
+      "unsupported_behavior": [
+        {
+          "groups": [
+            "world",
+            "casting"
+          ],
+          "requirement": {
+            "trigger": "Creature currently marked by own Hunters Mark",
+            "cost": "none",
+            "effects": [
+              "Know its Immunities, Resistances and Vulnerabilities; reveal represented facts"
+            ],
+            "ending": "Exact source owns the grant/state; remove temporary effects at the declared ending; never replay acquisition on restore."
+          },
+          "mapping_boundary": "Map this complete sequence to shared contracts; retained native behavior and fragments do not certify it.",
+          "status": "unmapped_or_unverified_candidate"
+        }
+      ]
+    },
+    {
+      "id": "hunter_hunter_s_prey",
+      "name": "Hunter’s Prey",
+      "class_level": 3,
+      "rules": {
+        "authority": "SRD 5.2.1",
+        "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+        "pages": [
+          61
+        ],
+        "text": "Level 3: Hunter’s Prey\nYou gain one of the following feature options of your\nchoice. Whenever you finish a Short or Long Rest,\nyou can replace the chosen option with the other\none.\nColossus Slayer.\nYour tenacity can wear down\neven the most resilient foes. When you hit a creature with a weapon, the weapon deals an extra 1d8\ndamage to the target if it’s missing any of its Hit\nPoints. You can deal this extra damage only once\nper turn.\nHorde Breaker.\nOnce on each of your turns when\nyou make an attack with a weapon, you can make\nanother attack with the same weapon against a different creature that is within 5 feet of the original\ntarget, that is within the weapon’s range, and that\nyou haven’t attacked this turn."
+      },
+      "revised_reference_entries": [
+        "You gain one of the following feature options of your choice. Whenever you finish a {@variantrule Short Rest|XPHB|Short} or {@variantrule Long Rest|XPHB}, you can replace the chosen option with the other one.",
+        {
+          "type": "entries",
+          "entries": [
+            {
+              "type": "entries",
+              "name": "Colossus Slayer",
+              "entries": [
+                "Your tenacity can wear down even the most resilient foes. When you hit a creature with a weapon, the weapon deals an extra {@damage 1d8} damage to the target if it's missing any of its {@variantrule Hit Points|XPHB}. You can deal this extra damage only once per turn."
+              ]
+            },
+            {
+              "type": "entries",
+              "name": "Horde Breaker",
+              "entries": [
+                "Once on each of your turns when you make an attack with a weapon, you can make another attack with the same weapon against a different creature that is within 5 feet of the original target, that is within the weapon's range, and that you haven't attacked this turn."
+              ]
+            }
+          ]
+        }
+      ],
+      "authored_operations": [
+        {
+          "trigger": "Choose one; may change after Short or Long Rest",
+          "cost": "none",
+          "effects": [
+            "Colossus Slayer: once per turn weapon hit against below-max-HP creature +1d8",
+            "Horde Breaker: once per own turn weapon attack permits another attack same weapon against different creature within5 feet of first and weapon range, not already attacked this turn"
+          ],
+          "ending_and_identity": "Exact source owns the grant/state; remove temporary effects at the declared ending; never replay acquisition on restore.",
+          "required_extension_groups": [
+            "choices",
+            "attacks",
+            "rolls"
+          ]
+        }
+      ],
+      "unsupported_behavior": [
+        {
+          "groups": [
+            "choices",
+            "attacks",
+            "rolls"
+          ],
+          "requirement": {
+            "trigger": "Choose one; may change after Short or Long Rest",
+            "cost": "none",
+            "effects": [
+              "Colossus Slayer: once per turn weapon hit against below-max-HP creature +1d8",
+              "Horde Breaker: once per own turn weapon attack permits another attack same weapon against different creature within5 feet of first and weapon range, not already attacked this turn"
+            ],
+            "ending": "Exact source owns the grant/state; remove temporary effects at the declared ending; never replay acquisition on restore."
+          },
+          "mapping_boundary": "Map this complete sequence to shared contracts; retained native behavior and fragments do not certify it.",
+          "status": "unmapped_or_unverified_candidate"
+        }
+      ]
+    }
+  ],
+  "reused_from": [
+    "_staging/subclass-staging/staged/hunter.json",
+    "reference/2024/classes/ranger.json"
+  ],
+  "retained_runtime_seed": {
+    "id": "hunter",
+    "name": "Hunter",
+    "class_id": "ranger",
+    "rights": "srd_ok",
+    "rules_status": "2024-partial",
+    "features_by_level": {
+      "3": [
+        {
+          "id": "hunter_hunter_s_lore",
+          "name": "Hunter's Lore",
+          "description": "You can call on the forces of nature to reveal certain strengths and weaknesses of your prey. While a creature is marked by your Hunter's Mark, you know whether that creature has any Immunities, Resistances, or…",
+          "type": "passive",
+          "effects": [],
+          "rules_source": "dnd-2024-srd-5.2.1",
+          "rules_status": "reference-only",
+          "enabled": false
+        },
+        {
+          "id": "hunter_hunter_s_prey",
+          "name": "Hunter's Prey",
+          "description": "You gain one of the following feature options of your choice. Whenever you finish a Long Rest or Rest, you can replace the chosen option with the other one. Your tenacity can wear down even the most resilient foes. When you hit a creature with a weapon, the weapon deals an extra 1d8 …",
+          "type": "passive",
+          "effects": [],
+          "rules_source": "dnd-2024-srd-5.2.1",
+          "rules_status": "reference-only",
+          "enabled": false
+        }
+      ]
+    }
+  },
+  "source_revision": "2a19eb1d (existing working-tree definitions and recovered drafts read on 2026-11-08)",
+  "reused_input_hashes": {
+    "_staging/subclass-staging/staged/hunter.json": "c9c5d585514fa2e91a9dfe8a77f7e5af7a18c18226ff84534fc99b59ac1d8b78",
+    "reference/2024/classes/ranger.json": "6971b8aa093a9fa673e48eb43161b46a188404ef61fca4235aa4eec94c793074"
+  }
+}

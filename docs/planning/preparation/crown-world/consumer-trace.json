@@ -1,0 +1,228 @@
+{
+  "schema": "crown-world-static-consumer-trace/1",
+  "status": "static_observation_not_gameplay_proof",
+  "sources": [
+    {
+      "source": {
+        "path": "src/dungeon/dungeon_generator.gd",
+        "sha256": "88af7259bb15ebdba9e864b6fc59468d6a262946f7bde20ac33d8cb64921ca7e"
+      },
+      "functions": [
+        {
+          "name": "generate_dungeon",
+          "line": 9,
+          "text": "static func generate_dungeon(dungeon_data: Dictionary) -> Dictionary:\n\tvar rooms: Dictionary = {}\n\tvar room_count: int = int(dungeon_data.get(\"room_count\", 5))\n\tvar monster_pool: Array = dungeon_data.get(\"monster_pool\", [\"goblin\"])\n\tvar boss_data: Dictionary = dungeon_data.get(\"boss\", {})\n\n\t# Start at (0, 0) as Entrance\n\tvar entrance_coord := Vector2i.ZERO\n\tvar entrance := Room.new()\n\tentrance.id = 0\n\tentrance.coord = entrance_coord\n\tentrance.type = Room.RoomType.ENTRANCE\n\tentrance.is_visited = true\n\tentrance.is_cleared = true\n\trooms[entrance_coord] = entrance\n\n\t# Choose a random direction to build rooms sequentially\n\tvar current_coord := entrance_coord\n\tvar directions := [Vector2i(0, 1), Vector2i(1, 0), Vector2i(0, -1), Vector2i(-1, 0)]\n\tdirections.shuffle()\n\tvar dir: Vector2i = directions[0]\n\n\t# Build intermediate rooms\n\tfor i in range(1, room_count - 1):\n\t\tcurrent_coord += dir\n\t\t\n\t\tvar room := Room.new()\n\t\troom.id = i\n\t\troom.coord = current_coord\n\t\t\n\t\t# Distribute room types randomly\n\t\tvar roll := randf()\n\t\tif roll < 0.5:\n\t\t\troom.type = Room.RoomType.COMBAT\n\t\t\t# Select 1-3 monsters from pool\n\t\t\tvar count := randi_range(1, 3)\n\t\t\tfor j in count:\n\t\t\t\troom.monster_ids.append(monster_pool.pick_random())\n\t\telif roll < 0.7:\n\t\t\troom.type = Room.RoomType.TRAP\n\t\t\troom.event_id = \"trapped_chest\"\n\t\telif roll < 0.9:\n\t\t\troom.type = Room.RoomType.LOOT\n\t\t\troom.loot_item_ids.append(\"gold_100\")\n\t\t\tif randf() < 0.5:\n\t\t\t\troom.loot_item_ids.append(\"potion_healing\")\n\t\telse:\n\t\t\troom.type = Room.RoomType.EMPTY\n\n\t\tif dungeon_data.get(\"tactical_rooms\", {}).has(str(i)):\n\t\t\troom.type = Room.RoomType.EMPTY\n\t\t\troom.monster_ids.clear()\n\t\t\troom.loot_item_ids.clear()\n\t\t\troom.event_id = \"\"\n\t\trooms[current_coord] = room\n\n\t# Place Boss room at the end\n\tcurrent_coord += dir\n\tvar boss_room := Room.new()\n\tboss_room.id = room_count - 1\n\tboss_room.coord = current_coord\n\tboss_room.type = Room.RoomType.BOSS\n\t\n\tvar boss_id: String = boss_data.get(\"monster_id\", \"goblin_chief\")\n\tboss_room.monster_ids.append(boss_id)\n\t\n\trooms[current_coord] = boss_room\n\n\tprint(\"[DungeonGenerator] Procedurally built dungeon with %d rooms.\" % rooms.size())\n\treturn rooms"
+        }
+      ]
+    },
+    {
+      "source": {
+        "path": "src/dungeon/dungeon_state.gd",
+        "sha256": "5f984d2ec72334d022e2ae9a07333d5037f26be207b070a9093621ef99b21428"
+      },
+      "functions": [
+        {
+          "name": "_resolve_room_encounter",
+          "line": 237,
+          "text": "func _resolve_room_encounter(room: Room) -> void:\n\tif dungeon_data.get(\"tactical_rooms\", {}).has(str(room.id)):\n\t\t_enter_local_room(str(room.id))\n\t\treturn\n\tif room.is_cleared:\n\t\thud.add_log(\"This room is empty and cleared.\")\n\t\treturn\n\n\tvar tile_terrain := \"plains\"\n\tvar current_tile := hex_grid.get_tile(party_position)\n\tif current_tile != null:\n\t\ttile_terrain = current_tile.get_terrain_name()\n\n\tmatch room.type:\n\t\tRoom.RoomType.COMBAT:\n\t\t\thud.add_log(\"[color=red]Monsters spotted! Prepare for battle.[/color]\")\n\t\t\t_begin_room_combat(room)\n\t\t\tGameManager.enter_combat(room.monster_ids, false, GameManager.GameState.DUNGEON, tile_terrain)\n\t\t\t\n\t\tRoom.RoomType.TRAP:\n\t\t\t# Pop up chest event\n\t\t\tvar event_table := DataLoader.get_event_table(\"dungeon_events\")\n\t\t\tvar event_data: Dictionary = {}\n\t\t\tfor ev in event_table.get(\"events\", []):\n\t\t\t\tif ev[\"id\"] == room.event_id:\n\t\t\t\t\tevent_data = ev\n\t\t\t\t\tbreak\n\t\t\t\n\t\t\tif not event_data.is_empty():\n\t\t\t\t_trigger_dungeon_event_ui(event_data, room)\n\t\t\telse:\n\t\t\t\troom.is_cleared = true\n\t\t\t\t_save_dungeon_state_to_manager()\n\n\t\tRoom.RoomType.LOOT:\n\t\t\thud.add_log(\"[color=green]You found a treasure chest![/color]\")\n\t\t\t# Grant loot items to the active character\n\t\t\tvar char_data: Character = PartyManager.get_active_characters()[0] if not PartyManager.get_active_characters().is_empty() else PlayerManager.get_active_player().get(\"character\")\n\t\t\tfor item_id in room.loot_item_ids:\n\t\t\t\tif item_id.begins_with(\"gold_\"):\n\t\t\t\t\tvar amount: int = item_id.substr(5).to_int()\n\t\t\t\t\tchar_data.inventory.gold += amount\n\t\t\t\t\thud.add_log(\"%s received %d gold!\" % [char_data.character_name, amount])\n\t\t\t\telse:\n\t\t\t\t\tchar_data.inventory.add_item(item_id)\n\t\t\t\t\tvar item_name: String = DataLoader.get_item(item_id).get(\"name\", item_id)\n\t\t\t\t\thud.add_log(\"%s received %s!\" % [char_data.character_name, item_name])\n\t\t\troom.is_cleared = true\n\t\t\t_save_dungeon_state_to_manager()\n\t\t\thud.update_hud()\n\n\t\tRoom.RoomType.BOSS:\n\t\t\thud.add_log(\"[color=purple]Entering the Boss Chamber! The guardian awaits.[/color]\")\n\t\t\t_begin_room_combat(room)\n\t\t\tGameManager.enter_combat(room.monster_ids, false, GameManager.GameState.DUNGEON, tile_terrain)\n\n\t\t_:\n\t\t\troom.is_cleared = true\n\t\t\t_save_dungeon_state_to_manager()"
+        },
+        {
+          "name": "_trigger_dungeon_event_ui",
+          "line": 298,
+          "text": "func _trigger_dungeon_event_ui(event_data: Dictionary, room: Room) -> void:\n\tvar dialog: EventDialog = event_dialog_scene.instantiate()\n\tadd_child(dialog)\n\tdialog.popup_event(PlayerManager.get_active_player()[\"character\"], event_data)\n\t\n\tdialog.event_resolved.connect(func(result: Dictionary):\n\t\thud.add_log(result.get(\"message\", \"Trap resolved.\"))\n\t\thud.update_hud()\n\t\t\n\t\t# Check if trap triggered combat\n\t\tvar next_combat: Array = result.get(\"monsters\", [])\n\t\tif not next_combat.is_empty():\n\t\t\tvar tile_terrain := \"plains\"\n\t\t\tvar current_tile := hex_grid.get_tile(party_position)\n\t\t\tif current_tile != null:\n\t\t\t\ttile_terrain = current_tile.get_terrain_name()\n\t\t\t_begin_room_combat(room)\n\t\t\tGameManager.enter_combat(next_combat, result.get(\"surprise\", false), GameManager.GameState.DUNGEON, tile_terrain)\n\t\t\treturn\n\t\t\n\t\troom.is_cleared = true\n\t\t_save_dungeon_state_to_manager()\n\t\tif PlayerManager.is_party_wiped():\n\t\t\t_handle_defeat()\n\t)"
+        },
+        {
+          "name": "_complete_pending_combat",
+          "line": 345,
+          "text": "func _complete_pending_combat() -> Room:\n\tif pending_combat_room_id < 0:\n\t\treturn null\n\tvar completed_room: Room = null\n\tfor room in rooms.values():\n\t\tif room is Room and room.id == pending_combat_room_id:\n\t\t\tcompleted_room = room\n\t\t\tbreak\n\tif completed_room == null:\n\t\tpush_error(\"[DungeonState] Pending combat room %d was not found.\" % pending_combat_room_id)\n\t\treturn null\n\tcompleted_room.is_cleared = true\n\tif local_rooms.has(str(completed_room.id)):\n\t\tlocal_rooms[str(completed_room.id)][\"encounter_cleared\"] = true\n\tif completed_room.type == Room.RoomType.BOSS:\n\t\tboss_defeated = true\n\tpending_combat_room_id = -1\n\t_save_dungeon_state_to_manager()\n\treturn completed_room"
+        },
+        {
+          "name": "_clear_dungeon_successfully",
+          "line": 372,
+          "text": "func _clear_dungeon_successfully() -> void:\n\thud.add_log(\"[color=green]DUNGEON CLEARED SUCCESSFULLY![/color]\")\n\tif not GameManager.mark_dungeon_cleared(dungeon_id):\n\t\thud.add_log(\"This dungeon has already been cleared. No duplicate rewards granted.\")\n\t\tawait get_tree().create_timer(1.0).timeout\n\t\tGameManager.exit_dungeon()\n\t\treturn\n\t\n\t# Give campaign rewards to the party\n\tvar active_members := PartyManager.get_active_characters()\n\tvar active_char: Character = active_members[0] if not active_members.is_empty() else PlayerManager.get_active_player().get(\"character\")\n\tvar loot_list: Array = dungeon_data.get(\"loot\", [])\n\t\n\tif loot_list.is_empty():\n\t\tactive_char.inventory.add_item(\"crown_fragment\")\n\t\thud.add_log(\"%s claimed the Crown Fragment!\" % active_char.character_name)\n\telse:\n\t\tfor loot_item in loot_list:\n\t\t\tvar item_id: String = loot_item.get(\"item_id\", \"\")\n\t\t\tif not item_id.is_empty():\n\t\t\t\tif item_id.begins_with(\"gold_\"):\n\t\t\t\t\tvar amount: int = item_id.substr(5).to_int()\n\t\t\t\t\tactive_char.inventory.gold += amount\n\t\t\t\t\thud.add_log(\"%s received %d gold!\" % [active_char.character_name, amount])\n\t\t\t\telse:\n\t\t\t\t\tactive_char.inventory.add_item(item_id)\n\t\t\t\t\tvar item_name: String = DataLoader.get_item(item_id).get(\"name\", item_id)\n\t\t\t\t\thud.add_log(\"%s received %s!\" % [active_char.character_name, item_name])\n\n\t# Trigger Milestone Clear if specified\n\tvar milestone_clear = dungeon_data.get(\"milestone_clear\")\n\tif milestone_clear != null:\n\t\tGameManager.check_milestone(str(milestone_clear))\n\n\t# Return to overworld\n\tawait get_tree().create_timer(3.0).timeout\n\tGameManager.exit_dungeon()\n\n\n## --- System-row handlers (mirror OverworldState) ---"
+        }
+      ]
+    },
+    {
+      "source": {
+        "path": "src/overworld/overworld_state.gd",
+        "sha256": "615f9f73289038fc7fbbab80006391d6c70629875e64be1d132b4d56eb47c9a5"
+      },
+      "functions": [
+        {
+          "name": "_execute_move_command",
+          "line": 133,
+          "text": "func _execute_move_command(command: PlayerCommand) -> void:\n\tif companion_roster_open:\n\t\treturn\n\tvar coord := command.target_hex()\n\tif coord not in reachable_hexes or coord == PartyManager.get_exploration_position():\n\t\treturn\n\n\tvar path := hex_grid.find_path(PartyManager.get_exploration_position(), coord)\n\tif path.is_empty():\n\t\treturn\n\n\t# Perform movement step-by-step or instantly\n\tvar cost: float = reachable_hexes[coord]\n\tremaining_speed -= cost\n\thas_moved_this_turn = true\n\n\t# Update player position\n\tPartyManager.move_exploration_party(coord)\n\t_update_grid_entities()\n\tvar visited_tile := hex_grid.get_tile(coord)\n\tGameManager.record_overworld_location(coord, visited_tile.location_name if visited_tile != null else \"\")\n\n\t# Recalculate Vision\n\tFogOfWar.update_visibility(hex_grid)\n\n\thud.add_log(\"%s moved to hex %s (Spent %.1f movement points)\" % [\n\t\tPlayerManager.get_active_player()[\"character\"].character_name,\n\t\tcoord,\n\t\tcost\n\t])\n\n\t# Update HUD\n\thud.update_hud()\n\n\t# Resolve destination tile\n\t_resolve_destination_tile(coord)"
+        },
+        {
+          "name": "_resolve_destination_tile",
+          "line": 190,
+          "text": "func _resolve_destination_tile(coord: Vector2i) -> void:\n\tvar tile := hex_grid.get_tile(coord)\n\tif tile == null: return\n\n\t# 1. Check if it's a dungeon entrance\n\tif tile.terrain == HexTile.TerrainType.DUNGEON_ENTRANCE:\n\t\thud.add_log(\"[color=purple]Stumbled upon a Dungeon entrance: %s![/color]\" % tile.location_name)\n\t\t# Trigger entering dungeon state\n\t\tGameManager.enter_dungeon(tile.dungeon_id)\n\t\treturn\n\n\t# 2. Check if it's a town\n\tif tile.terrain == HexTile.TerrainType.TOWN:\n\t\tvar town_name := tile.location_name if not tile.location_name.is_empty() else \"Elderwick\"\n\t\thud.add_log(\"[color=green]Entered Town: %s![/color]\" % town_name)\n\t\t_trigger_shop_ui(town_name)\n\t\treturn\n\n\t# 3. Trigger random event based on terrain table\n\tvar event := EventSystem.trigger_event_for_tile(tile)\n\tif not event.is_empty():\n\t\t_trigger_event_ui(event)\n\telse:\n\t\thas_resolved_tile = true\n\t\t_recalculate_reachable()"
+        },
+        {
+          "name": "_trigger_event_ui",
+          "line": 217,
+          "text": "func _trigger_event_ui(event_data: Dictionary) -> void:\n\t# Instantiate and show event dialog\n\tvar dialog: EventDialog = event_dialog_scene.instantiate()\n\tadd_child(dialog)\n\tdialog.popup_event(PlayerManager.get_active_player()[\"character\"], event_data)\n\t\n\t# Block grid clicks until event is closed\n\thex_grid.set_process_input(false)\n\t\n\tdialog.event_resolved.connect(func(result: Dictionary):\n\t\thex_grid.set_process_input(true)\n\t\thas_resolved_tile = true\n\t\t\n\t\t# Log result\n\t\tvar msg: String = result.get(\"message\", \"Event resolved.\")\n\t\thud.add_log(\"[color=light_blue]%s[/color]\" % msg)\n\t\t\n\t\t# Check if event triggered combat\n\t\tvar next_state_combat: Array = result.get(\"monsters\", [])\n\t\tif not next_state_combat.is_empty():\n\t\t\t# Enter combat!\n\t\t\tvar tile_terrain := \"plains\"\n\t\t\tvar current_tile := hex_grid.get_tile(PartyManager.get_exploration_position())\n\t\t\tif current_tile != null:\n\t\t\t\ttile_terrain = current_tile.get_terrain_name()\n\t\t\tGameManager.enter_combat(next_state_combat, result.get(\"surprise\", false), GameManager.GameState.OVERWORLD, tile_terrain)\n\t\t\treturn\n\t\t\n\t\t# Check if event teleported player\n\t\tif result.get(\"teleported\", false):\n\t\t\tvar destination: Variant = _represented_travel_destination(result)\n\t\t\tif destination is Vector2i:\n\t\t\t\tPartyManager.move_exploration_party(destination)\n\t\t\t\tFogOfWar.update_visibility(hex_grid)\n\t\t\t\thud.add_log(\"Teleported to represented hex %s!\" % str(destination))\n\t\t\telse:\n\t\t\t\thud.add_log(\"The teleport has no legal represented destination; the party stays where it is.\")\n\n\t\t# Check milestone check triggers if any\n\t\tvar milestone_trigger: String = result.get(\"milestone\", \"\")\n\t\tif not milestone_trigger.is_empty():\n\t\t\tGameManager.check_milestone(milestone_trigger)\n\n\t\tif PlayerManager.is_party_wiped():\n\t\t\t_handle_party_wiped()\n\t\t\treturn\n\n\t\t# Refresh HUD and highlights\n\t\thud.update_hud()\n\t\t_recalculate_reachable()\n\t)\n\n\n## Resolve travel only onto an actual tile on the current map. Explicit event\n## coordinates are honored only when legal; random-location events choose from\n## the same live, plane-aware legal candidates. Never synthesize a coordinate."
+        },
+        {
+          "name": "_execute_end_turn_command",
+          "line": 336,
+          "text": "func _execute_end_turn_command(_command: PlayerCommand) -> void:\n\tif companion_roster_open:\n\t\treturn\n\t# Clear active player path/reach highlights\n\thex_grid.clear_highlights()\n\t\n\t# Pass turn to next player\n\tvar new_round := PlayerManager.next_turn()\n\tif new_round:\n\t\treport_animal_messenger_notifications(GameManager.advance_campaign_time(86400))\n\t_start_player_turn()"
+        },
+        {
+          "name": "_execute_rest_command",
+          "line": 375,
+          "text": "func _execute_rest_command(command: PlayerCommand) -> void:\n\tif command == null or not command.is_valid() or companion_roster_open:\n\t\treturn\n\tif command.rest_type() == \"short_rest\":\n\t\tvar party := _get_party_characters()\n\t\tvar short_res := RestRules.complete_short_rest(\n\t\t\tparty,\n\t\t\t{\"source\": \"overworld\", \"companion_roster_open\": companion_roster_open},\n\t\t\thud,\n\t\t\tCallable(),\n\t\t\tfunc(final_out: Dictionary) -> void:\n\t\t\t\tfor rec in final_out.get(\"recoveries\", []):\n\t\t\t\t\tif rec is Dictionary and not str(rec.get(\"message\", \"\")).is_empty():\n\t\t\t\t\t\thud.add_log(\"[color=cyan]%s[/color]\" % str(rec[\"message\"]))\n\t\t\t\thud.update_hud()\n\t\t)\n\t\tif not bool(short_res.get(\"success\", false)):\n\t\t\thud.add_log(\"[color=orange]%s[/color]\" % str(short_res.get(\"message\", \"Cannot rest right now.\")))\n\t\t\treturn\n\t\treport_animal_messenger_notifications(short_res.get(\"notifications\", []))\n\t\thud.add_log(\"[color=cyan]The party takes a Short Rest (1 hour). Short-rest features recovered.[/color]\")\n\t\thud.update_hud()\n\t\t_recalculate_reachable()\n\t\treturn\n\tvar long_res := RestRules.complete_long_rest(\n\t\t_get_party_characters(),\n\t\t{\"source\": \"overworld\", \"companion_roster_open\": companion_roster_open}\n\t)\n\tif not bool(long_res.get(\"success\", false)):\n\t\thud.add_log(\"[color=orange]%s[/color]\" % str(long_res.get(\"message\", \"Cannot rest right now.\")))\n\t\treturn\n\treport_animal_messenger_notifications(long_res.get(\"notifications\", []))\n\thud.add_log(\"[color=green]The party makes camp and rests. HP, spell slots, and feature uses restored.[/color]\")\n\thud.update_hud()\n\t_recalculate_reachable()\n\n\t# Ambush check: the most stealthy party member tries to keep the camp quiet.\n\tvar dc := _compute_ambush_dc()\n\tvar best_stealth := _party_best_stealth_mod()\n\tvar best_char := _party_best_stealth_character()\n\tvar roll := 0\n\tvar total := 0\n\tif best_char != null:\n\t\tvar stealth_check := EventResolver.resolve_skill_check(best_char, {\"ability\": \"DEX\", \"skill\": \"Stealth\", \"dc\": dc})\n\t\troll = int(stealth_check.get(\"roll\", 0))\n\t\tbest_stealth = int(stealth_check.get(\"modifier\", best_stealth))\n\t\ttotal = int(stealth_check.get(\"total\", roll + best_stealth))\n\telse:\n\t\thud.add_log(\"Nobody is able to keep watch over the camp.\")\n\t\treturn\n\thud.add_log(\"[color=yellow]Stealth check: %d (rolled %d + %d) vs DC %d.[/color]\" % [total, roll, best_stealth, dc])\n\n\tif total >= dc:\n\t\thud.add_log(\"[color=green]The camp stays hidden. The night passes peacefully.[/color]\")\n\telse:\n\t\tvar ambush_pool := [\"goblin\", \"wolf\", \"bandit\", \"giant_spider\", \"skeleton\"]\n\t\tvar count := randi_range(2, 3)\n\t\tvar monsters: Array[String] = []\n\t\tfor i in count:\n\t\t\tmonsters.append(ambush_pool.pick_random())\n\t\tvar tile_terrain := \"plains\"\n\t\tvar current_tile := hex_grid.get_tile(PartyManager.get_exploration_position())\n\t\tif current_tile != null:\n\t\t\ttile_terrain = current_tile.get_terrain_name()\n\t\thud.add_log(\"[color=red]Ambush! A %s pack stalks the camp![/color]\" % tile_terrain)\n\t\tGameManager.enter_combat(monsters, true, GameManager.GameState.OVERWORLD, tile_terrain)\n\n\n## Ambush Stealth DC: base 12, +1 per extra party member (more people = noisier)."
+        },
+        {
+          "name": "_compute_ambush_dc",
+          "line": 444,
+          "text": "func _compute_ambush_dc() -> int:\n\tvar party_size := PlayerManager.get_player_count()\n\treturn 12 + maxi(0, party_size - 1)\n\n\n## Best party Stealth bonus (DEX mod + proficiency/expertise if Stealth-trained), over\n## all alive characters. Used as the static part of the ambush Stealth check."
+        }
+      ]
+    },
+    {
+      "source": {
+        "path": "src/ui/event_dialog.gd",
+        "sha256": "1fde92db63e89b7a33cb91c33afa4860ce0f8d53a3de3ccf78d3195fe490ab5e"
+      },
+      "functions": [
+        {
+          "name": "popup_event",
+          "line": 61,
+          "text": "func popup_event(character: Character, event_data: Dictionary) -> void:\n\t_popup_generation += 1\n\t_cancel_ability_bonus_prompt()\n\tSpellDamageRolls.cancel_ability_check_requests_for_host(self)\n\tactive_character = character\n\tevent = event_data.duplicate(true)\n\tvar incoming_event_id := str(event.get(\"id\", \"\"))\n\tvar loaded_event: Dictionary = DataLoader.get_event_record(incoming_event_id)\n\tif not loaded_event.is_empty():\n\t\tevent = loaded_event.get(\"event\", {}).duplicate(true)\n\tlast_skill_check_result.clear()\n\t_pending_authored_context.clear()\n\t\n\ttitle_label.text = event.get(\"name\", \"An Event Occurs\")\n\tdesc_label.text = event.get(\"description\", \"\")\n\t\n\t# Clear choices and reset UI state from potential previous events in a chain\n\tfor child in choice_container.get_children():\n\t\tchild.queue_free()\n\n\tchoice_container.visible = true\n\troll_section.visible = false\n\tbtn_close.visible = false\n\tbtn_close.text = \"Close\"\n\tbtn_roll.disabled = false\n\troll_result_lbl.text = \"\"\n\n\t# Handle event types\n\tvar event_type: String = event.get(\"type\", \"normal\")\n\t\n\tmatch event_type:\n\t\t\"choice\":\n\t\t\t_build_choice_buttons()\n\t\t\"skill_check\":\n\t\t\t_setup_skill_check_section(event, str(event.get(\"id\", \"\")))\n\t\t\"loot\":\n\t\t\t_resolve_loot_event()\n\t\t\"chain\":\n\t\t\t_resolve_chain_event()\n\t\t\"combat\":\n\t\t\t_resolve_direct_combat_event()\n\t\t_: # normal / event check fallback\n\t\t\t_resolve_simple_event()"
+        },
+        {
+          "name": "_on_choice_selected",
+          "line": 127,
+          "text": "func _on_choice_selected(option: Dictionary) -> void:\n\tvar command := PlayerCommand.event_choice(option)\n\tif command == null:\n\t\treturn\n\toption = command.payload[\"option\"]\n\tchosen_option = option\n\t\n\t# Check if this choice requires a skill check\n\tvar check_data: Dictionary = option.get(\"check\", {})\n\tif not check_data.is_empty():\n\t\t_setup_skill_check_section(option, str(event.get(\"id\", \"\")))\n\telse:\n\t\t# Direct effects\n\t\tvar effects: Array = option.get(\"effects\", [])\n\t\tvar results := EventResolver.apply_effects(active_character, effects)\n\t\t\n\t\tvar outcomes_msg: String = option.get(\"description\", \"You proceed.\")\n\t\tfor res in results:\n\t\t\toutcomes_msg += \"\\n\" + res.get(\"message\", \"\")\n\t\t\tif res.get(\"type\", \"\") == \"start_combat\":\n\t\t\t\ttriggered_combat = res.get(\"monster_ids\", [])\n\t\t\tif res.get(\"type\", \"\") == \"teleport_random\":\n\t\t\t\tteleported = true\n\n\t\tdesc_label.text = outcomes_msg\n\t\tchoice_container.visible = false\n\t\tbtn_close.visible = true"
+        },
+        {
+          "name": "_resolve_check_outcome",
+          "line": 506,
+          "text": "func _resolve_check_outcome(outcome_data: Dictionary, success: bool) -> void:\n\tvar desc: String = outcome_data.get(\"description\", \"Outcome resolved.\")\n\tvar effects: Array = outcome_data.get(\"effects\", [])\n\tvar results := EventResolver.apply_effects(active_character, effects)\n\t\n\tfor res in results:\n\t\tdesc += \"\\n\" + res.get(\"message\", \"\")\n\t\tif res.get(\"type\", \"\") == \"start_combat\":\n\t\t\ttriggered_combat = res.get(\"monster_ids\", [])\n\t\tif res.get(\"type\", \"\") == \"teleport_random\":\n\t\t\tteleported = true\n\n\t# Wait a small delay to see the roll, then show outcome\n\tawait get_tree().create_timer(1.2).timeout\n\t\n\troll_section.visible = false\n\tdesc_label.text = desc\n\tbtn_close.visible = true"
+        },
+        {
+          "name": "_resolve_chain_event",
+          "line": 546,
+          "text": "func _resolve_chain_event() -> void:\n\tvar effects: Array = event.get(\"effects\", [])\n\tvar results := EventResolver.apply_effects(active_character, effects)\n\t\n\t# Log chain start\n\tvar desc: String = event.get(\"description\", \"\")\n\tfor res in results:\n\t\tdesc += \"\\n\" + res.get(\"message\", \"\")\n\t\tif res.get(\"type\", \"\") == \"teleport_random\":\n\t\t\tteleported = true\n\n\tdesc_label.text = desc\n\t\n\t# Instead of closing, clicking next button triggers the chain sub-event\n\tbtn_close.text = \"Next event...\"\n\tbtn_close.visible = true\n\t\n\t# Override close button to trigger chain\n\tbtn_close.pressed.disconnect(_on_close_pressed)\n\tbtn_close.pressed.connect(func():\n\t\tvar chain_evt := EventChain.get_chain_event(event)\n\t\tif not chain_evt.is_empty():\n\t\t\tpopup_event(active_character, chain_evt)\n\t\t\tbtn_close.text = \"Close\"\n\t\t\tbtn_close.visible = false\n\t\t\tbtn_close.pressed.connect(_on_close_pressed, CONNECT_ONE_SHOT)\n\t\telse:\n\t\t\t_on_close_pressed()\n\t, CONNECT_ONE_SHOT)"
+        },
+        {
+          "name": "_on_close_pressed",
+          "line": 598,
+          "text": "func _on_close_pressed() -> void:\n\t# Emit event finished result to overworld\n\tvar result := {\n\t\t\"message\": title_label.text + \" resolved.\",\n\t\t\"monsters\": triggered_combat,\n\t\t\"teleported\": teleported,\n\t\t\"check_result\": last_skill_check_result.duplicate(true),\n\t}\n\tevent_resolved.emit(result)\n\tqueue_free()"
+        }
+      ]
+    },
+    {
+      "source": {
+        "path": "src/events/event_resolver.gd",
+        "sha256": "b114b09342b9b1ec15f59e4a125c475e45d28fc4b0a76dda23caa34935c759da"
+      },
+      "functions": [
+        {
+          "name": "_apply_single_effect",
+          "line": 558,
+          "text": "static func _apply_single_effect(character: Character, effect: Dictionary, roller: Character = null, casting_ability: String = \"\") -> Dictionary:\n\tvar effect_type: String = effect.get(\"type\", \"\")\n\tif roller == null:\n\t\troller = character\n\n\tmatch effect_type:\n\t\t\"nourish\":\n\t\t\tvar days := maxi(1, int(effect.get(\"days\", 1)))\n\t\t\tcharacter.add_nourishment(days)\n\t\t\treturn {\"type\": \"nourish\", \"days\": days, \"message\": \"%s has food for %d day%s.\" % [character.character_name, days, \"\" if days == 1 else \"s\"]}\n\n\t\t\"damage\":\n\t\t\tvar damage_str: String = effect.get(\"value\", \"1d6\")\n\t\t\tvar modifiers := character.ability_scores.get_all_modifiers()\n\t\t\tmodifiers[\"level\"] = character.level\n\t\t\tvar amount := Dice.parse_dice_string(damage_str, modifiers)\n\t\t\tvar actual := int(CombatAction.resolve_damage(character, amount, str(effect.get(\"damage_type\", \"\")))[\"damage\"])\n\t\t\treturn {\"type\": \"damage\", \"amount\": actual, \"damage_type\": effect.get(\"damage_type\", \"\"), \"message\": \"%s took %d %s damage!\" % [character.character_name, actual, effect.get(\"damage_type\", \"\")]}\n\n\t\t\"heal\":\n\t\t\tvar heal_str := _level_scaled_expression(effect, \"value_by_level\", \"value\", character.level, \"1d6\")\n\t\t\tvar modifiers := character.ability_scores.get_all_modifiers()\n\t\t\tmodifiers[\"level\"] = character.level\n\t\t\tvar amount := Dice.parse_dice_string(heal_str, modifiers, roller)\n\t\t\tamount = SpellEffects.maximize_healing(character, amount, Dice.maximum_dice_string(heal_str, modifiers))\n\t\t\tif bool(effect.get(\"ability_bonus_from_caster\", false)) and roller != null:\n\t\t\t\tamount += roller.ability_scores.get_ability_modifier(casting_ability if casting_ability in AbilityScores.ABILITIES else roller.get_spellcasting_ability())\n\t\t\tamount = maxi(0, amount)\n\t\t\tvar actual := character.heal(amount)\n\t\t\treturn {\"type\": \"heal\", \"amount\": actual, \"message\": \"%s healed %d HP!\" % [character.character_name, actual]}\n\n\t\t\"heal_self\":\n\t\t\tvar heal_str := _level_scaled_expression(effect, \"value_by_level\", \"value\", character.level, \"1d6\")\n\t\t\tvar modifiers := character.ability_scores.get_all_modifiers()\n\t\t\tmodifiers[\"level\"] = character.level\n\t\t\tvar amount := maxi(0, Dice.parse_dice_string(heal_str, modifiers, roller))\n\t\t\tamount = SpellEffects.maximize_healing(character, amount, Dice.maximum_dice_string(heal_str, modifiers))\n\t\t\tvar actual := character.heal(amount)\n\t\t\treturn {\"type\": \"heal\", \"amount\": actual, \"message\": \"%s healed %d HP!\" % [character.character_name, actual]}\n\n\t\t\"temporary_hp\":\n\t\t\tvar temp_str := _level_scaled_expression(effect, \"value_by_level\", \"value\", character.level, \"1d6\")\n\t\t\tvar modifiers := character.ability_scores.get_all_modifiers()\n\t\t\tmodifiers[\"level\"] = character.level\n\t\t\tvar temp_amount := Dice.parse_dice_string(temp_str, modifiers, roller)\n\t\t\tif temp_amount <= character.temp_hp:\n\t\t\t\treturn {\"type\": \"temporary_hp\", \"amount\": 0, \"message\": \"%s keeps their existing temporary HP.\" % character.character_name}\n\t\t\tcharacter.temp_hp = temp_amount\n\t\t\treturn {\"type\": \"temporary_hp\", \"amount\": temp_amount, \"message\": \"%s gains %d temporary HP!\" % [character.character_name, temp_amount]}\n\n\t\t\"full_heal\":\n\t\t\tvar actual := character.heal(character.max_hp)\n\t\t\treturn {\"type\": \"heal\", \"amount\": actual, \"message\": \"%s is fully healed!\" % character.character_name}\n\n\t\t\"give_item\":\n\t\t\tvar item_id: String = effect.get(\"item_id\", \"\")\n\t\t\tif not item_id.is_empty():\n\t\t\t\tcharacter.inventory.add_item(item_id)\n\t\t\t\tvar item_data := DataLoader.get_item(item_id)\n\t\t\t\tvar item_name: String = item_data.get(\"name\", item_id)\n\t\t\t\treturn {\"type\": \"give_item\", \"item_id\": item_id, \"message\": \"%s received %s!\" % [character.character_name, item_name]}\n\n\t\t\"take_gold\":\n\t\t\tvar amount: int = int(effect.get(\"value\", 0))\n\t\t\tvar taken := mini(amount, character.inventory.gold)\n\t\t\tcharacter.inventory.gold -= taken\n\t\t\treturn {\"type\": \"take_gold\", \"amount\": taken, \"message\": \"%s lost %d gold!\" % [character.character_name, taken]}\n\n\t\t\"spend_resource\":\n\t\t\tvar resource_id := str(effect.get(\"resource_id\", effect.get(\"feature_id\", \"\")))\n\t\t\tvar spend_amount := maxi(1, int(effect.get(\"amount\", 1)))\n\t\t\tvar remaining := int(character.feature_uses.get(resource_id, -1))\n\t\t\tif resource_id.is_empty() or remaining < spend_amount:\n\t\t\t\treturn {\"type\": \"spend_resource\", \"success\": false, \"amount\": 0, \"message\": \"%s could not spend %s.\" % [character.character_name, resource_id]}\n\t\t\tcharacter.feature_uses[resource_id] = remaining - spend_amount\n\t\t\treturn {\"type\": \"spend_resource\", \"success\": true, \"amount\": spend_amount, \"message\": \"%s spent %d use(s) of %s.\" % [character.character_name, spend_amount, resource_id]}\n\n\t\t\"restore_resource\":\n\t\t\tvar restore_id := str(effect.get(\"resource_id\", effect.get(\"feature_id\", \"\")))\n\t\t\tvar restore_amount := maxi(1, int(effect.get(\"amount\", 1)))\n\t\t\tvar current := int(character.feature_uses.get(restore_id, -1))\n\t\t\tvar maximum := _feature_max_uses(character, restore_id)\n\t\t\tif restore_id.is_empty() or current < 0 or maximum < 0:\n\t\t\t\treturn {\"type\": \"restore_resource\", \"success\": false, \"amount\": 0, \"message\": \"%s has no resource named %s.\" % [character.character_name, restore_id]}\n\t\t\tvar restored := mini(restore_amount, maximum - current)\n\t\t\tcharacter.feature_uses[restore_id] = current + restored\n\t\t\treturn {\"type\": \"restore_resource\", \"success\": true, \"amount\": restored, \"message\": \"%s restored %d use(s) of %s.\" % [character.character_name, restored, restore_id]}\n\n\t\t\"grant_condition\":\n\t\t\tvar condition_name: String = effect.get(\"condition\", \"\")\n\t\t\tvar duration: int = int(effect.get(\"duration\", 3))\n\t\t\tif not condition_name.is_empty():\n\t\t\t\tcharacter.add_condition(condition_name, duration)\n\t\t\t\treturn {\"type\": \"condition\", \"condition\": condition_name, \"duration\": duration, \"message\": \"%s is now %s for %d turns!\" % [character.character_name, condition_name, duration]}\n\n\t\t\"apply_condition\":\n\t\t\tvar applied_condition := str(effect.get(\"condition\", \"\"))\n\t\t\tvar applied_duration := int(effect.get(\"duration\", 3))\n\t\t\tif not applied_condition.is_empty():\n\t\t\t\tcharacter.add_condition(applied_condition, applied_duration)\n\t\t\t\treturn {\"type\": \"condition\", \"condition\": applied_condition, \"duration\": applied_duration, \"message\": \"%s is now %s for %d turns!\" % [character.character_name, applied_condition, applied_duration]}\n\n\t\t\"remove_condition\":\n\t\t\tvar condition_name: String = effect.get(\"condition\", \"\")\n\t\t\tif not condition_name.is_empty():\n\t\t\t\tcharacter.remove_condition(condition_name)\n\t\t\t\treturn {\"type\": \"remove_condition\", \"condition\": condition_name, \"message\": \"%s is no longer %s!\" % [character.character_name, condition_name]}\n\n\t\t\"remove_all_conditions\":\n\t\t\tcharacter.conditions.clear()\n\t\t\treturn {\"type\": \"remove_all_conditions\", \"message\": \"%s is cured of all conditions!\" % character.character_name}\n\n\t\t\"gold\":\n\t\t\tvar amount: int = int(effect.get(\"value\", 0))\n\t\t\tcharacter.inventory.gold += amount\n\t\t\treturn {\"type\": \"gold\", \"amount\": amount, \"message\": \"%s gained %d gold!\" % [character.character_name, amount]}\n\n\t\t\"rest\":\n\t\t\tcharacter.reset_rest_features()\n\t\t\treturn {\"type\": \"rest\", \"message\": \"%s takes a rest and recovers abilities.\" % character.character_name}\n\n\t\t\"start_combat\":\n\t\t\tvar monster_ids: Array = effect.get(\"monsters\", [])\n\t\t\treturn {\"type\": \"start_combat\", \"monster_ids\": monster_ids, \"message\": \"Combat begins!\"}\n\n\t\t\"set_concentration\":\n\t\t\tvar spell_id := str(effect.get(\"spell_id\", \"\"))\n\t\t\tif spell_id.is_empty():\n\t\t\t\treturn {}\n\t\t\tcharacter.concentrating_on = effect.duplicate(true)\n\t\t\treturn {\"type\": \"concentration\", \"spell_id\": spell_id, \"message\": \"%s begins concentrating.\" % character.character_name}\n\n\t\t\"clear_concentration\":\n\t\t\tcharacter.concentrating_on.clear()\n\t\t\treturn {\"type\": \"concentration\", \"message\": \"%s ends concentration.\" % character.character_name}\n\n\t\t\"stat_modifier\", \"ac_bonus\", \"speed_modifier\", \"movement\":\n\t\t\tvar stat_key := str(effect.get(\"key\", effect.get(\"stat\", \"\")))\n\t\t\tif effect_type == \"ac_bonus\":\n\t\t\t\tstat_key = \"AC\"\n\t\t\telif effect_type in [\"speed_modifier\", \"movement\"]:\n\t\t\t\tstat_key = \"speed\"\n\t\t\tvar stat_amount := _level_scaled_amount(effect, character.level)\n\t\t\tvar stat_duration := int(effect.get(\"duration\", 1))\n\t\t\tif stat_key.is_empty() or stat_amount == 0:\n\t\t\t\treturn {}\n\t\t\tcharacter.add_modifier(\"stat\", stat_key, stat_amount, stat_duration)\n\t\t\treturn {\"type\": \"stat_modifier\", \"key\": stat_key, \"amount\": stat_amount, \"duration\": stat_duration, \"message\": \"%s's %s changes by %d for %d turns.\" % [character.character_name, stat_key, stat_amount, stat_duration]}\n\n\t\t\"roll_modifier\":\n\t\t\tvar roll_key := str(effect.get(\"key\", \"\"))\n\t\t\tvar roll_amount := _level_scaled_amount(effect, character.level)\n\t\t\tvar roll_duration := int(effect.get(\"duration\", 1))\n\t\t\tif roll_key.is_empty() or roll_amount == 0:\n\t\t\t\treturn {}\n\t\t\tcharacter.add_modifier(\"roll\", roll_key, roll_amount, roll_duration)\n\t\t\treturn {\"type\": \"roll_modifier\", \"key\": roll_key, \"amount\": roll_amount, \"duration\": roll_duration, \"message\": \"%s gains a %s roll modifier of %+d for %d turns.\" % [character.character_name, roll_key, roll_amount, roll_duration]}\n\n\t\t\"pact_magic_recovery\":\n\t\t\tvar recovery_fraction := float(effect.get(\"fraction\", 0.5))\n\t\t\tvar recovery_by_level: Dictionary = effect.get(\"fraction_by_level\", {})\n\t\t\tvar recovery_level := 0\n\t\t\tfor level_key in recovery_by_level:\n\t\t\t\tvar attained_level := int(level_key)\n\t\t\t\tif attained_level <= character.level and attained_level > recovery_level:\n\t\t\t\t\trecovery_level = attained_level\n\t\t\tif recovery_level > 0:\n\t\t\t\trecovery_fraction = float(recovery_by_level[str(recovery_level)])\n\t\t\tvar recovered := character.recover_pact_magic_slots(recovery_fraction)\n\t\t\treturn {\"type\": \"pact_magic_recovery\", \"amount\": recovered, \"message\": \"%s recovers %d Pact Magic slot%s.\" % [character.character_name, recovered, \"\" if recovered == 1 else \"s\"]}\n\n\t\t\"innate_sorcery\":\n\t\t\tvar duration := maxi(1, int(effect.get(\"duration\", 10)))\n\t\t\tcharacter.add_condition(\"innate_sorcery\", duration)\n\t\t\treturn {\"type\": \"innate_sorcery\", \"duration\": duration, \"message\": \"%s unleashes Innate Sorcery for %d turns.\" % [character.character_name, duration]}\n\n\t\t\"reaction\":\n\t\t\tvar reaction_id := str(effect.get(\"reaction\", \"\"))\n\t\t\tif reaction_id.is_empty():\n\t\t\t\treturn {}\n\t\t\treturn {\"type\": \"reaction\", \"reaction\": reaction_id, \"message\": \"%s has %s available as a reaction.\" % [character.character_name, reaction_id.replace(\"_\", \" \")]}\n\n\t\t\"teleport_random\":\n\t\t\treturn {\"type\": \"teleport_random\", \"message\": \"%s is teleported to a random location!\" % character.character_name}\n\n\t\t\"reveal_map\":\n\t\t\tvar radius: int = int(effect.get(\"radius\", 2))\n\t\t\treturn {\"type\": \"reveal_map\", \"radius\": radius, \"message\": \"The surrounding area is revealed!\"}\n\n\t\t\"reduce_speed\":\n\t\t\tif SpellEffects.has_spell(character, \"freedom_of_movement\"):\n\t\t\t\treturn {\"type\": \"reduce_speed\", \"value\": 0, \"duration\": int(effect.get(\"duration\", 1)), \"message\": \"%s is unaffected by the movement reduction.\" % character.character_name}\n\t\t\tvar speed_reduction := int(effect.get(\"value\", 2))\n\t\t\tvar speed_duration := int(effect.get(\"duration\", 1))\n\t\t\tcharacter.add_modifier(\"stat\", \"speed\", -speed_reduction, speed_duration)\n\t\t\treturn {\"type\": \"reduce_speed\", \"value\": speed_reduction, \"duration\": speed_duration, \"message\": \"%s's movement is reduced by %d for %d turns.\" % [character.character_name, speed_reduction, speed_duration]}\n\n\t\t\"vision_bonus\":\n\t\t\tvar vision_amount := int(effect.get(\"value\", 2))\n\t\t\tvar vision_duration := int(effect.get(\"duration\", 1))\n\t\t\tcharacter.add_modifier(\"stat\", \"vision\", vision_amount, vision_duration)\n\t\t\treturn {\"type\": \"vision_bonus\", \"value\": vision_amount, \"duration\": vision_duration, \"message\": \"%s's vision improves by %d for %d turns.\" % [character.character_name, vision_amount, vision_duration]}\n\n\t\t\"area_selection\":\n\t\t\treturn resolve_area_selection(effect)\n\n\t\t_:\n\t\t\tpush_warning(\"[EventResolver] Unknown effect type: %s\" % effect_type)\n\t\t\treturn {}\n\n\treturn {}"
+        },
+        {
+          "name": "apply_effects",
+          "line": 545,
+          "text": "static func apply_effects(character: Character, effects: Array, roller: Character = null, casting_ability: String = \"\") -> Array[Dictionary]:\n\tvar results: Array[Dictionary] = []\n\n\tfor effect in effects:\n\t\tvar effect_type: String = effect.get(\"type\", \"\")\n\t\tvar result := _apply_single_effect(character, effect, roller, casting_ability)\n\t\tif not result.is_empty():\n\t\t\tresults.append(result)\n\n\treturn results\n\n\n## Apply a single effect to a character."
+        }
+      ]
+    },
+    {
+      "source": {
+        "path": "src/events/event_system.gd",
+        "sha256": "9dab2021da668bf0c17ed512481ca7b7594329c4e4989e907f675f0d9275193c"
+      },
+      "functions": [
+        {
+          "name": "roll_event",
+          "line": 9,
+          "text": "static func roll_event(table_id: String) -> Dictionary:\n\tvar table := DataLoader.get_event_table(table_id)\n\tif table.is_empty():\n\t\tpush_warning(\"[EventSystem] Event table not found: %s\" % table_id)\n\t\treturn {}\n\n\tvar events: Array = table.get(\"events\", [])\n\tif events.is_empty():\n\t\treturn {}\n\n\t# Calculate total weight\n\tvar total_weight := 0\n\tfor event in events:\n\t\ttotal_weight += int(event.get(\"weight\", 1))\n\n\t# Roll weighted random\n\tvar roll := randi_range(1, total_weight)\n\tvar cumulative := 0\n\tfor event in events:\n\t\tcumulative += int(event.get(\"weight\", 1))\n\t\tif roll <= cumulative:\n\t\t\treturn event\n\n\t# Fallback (shouldn't happen)\n\treturn events[0]\n\n\n## Get the event table ID for a terrain type from the active campaign."
+        },
+        {
+          "name": "get_table_for_terrain",
+          "line": 37,
+          "text": "static func get_table_for_terrain(terrain_name: String) -> String:\n\tvar campaign: Dictionary = GameManager.active_campaign\n\tvar event_tables: Dictionary = campaign.get(\"map\", {}).get(\"event_tables\", {})\n\treturn event_tables.get(terrain_name, \"\")\n\n\n## Trigger an event for a hex tile. Returns the event data or empty dict."
+        }
+      ]
+    },
+    {
+      "source": {
+        "path": "src/autoload/game_manager.gd",
+        "sha256": "800f520c33496c30f2c2e40524adc17e3568fa8c9faa91f44ecfc95d914244e9"
+      },
+      "functions": [
+        {
+          "name": "are_win_conditions_met",
+          "line": 270,
+          "text": "func are_win_conditions_met() -> bool:\n\tvar win_cond := get_win_condition()\n\tif win_cond.is_empty() or str(win_cond.get(\"type\", \"\")) != \"goal\":\n\t\treturn false\n\tfor goal in win_cond.get(\"goals\", []):\n\t\tmatch str(goal.get(\"type\", \"\")):\n\t\t\t\"collect_item\":\n\t\t\t\tvar required := int(goal.get(\"count\", 1))\n\t\t\t\tvar total := 0\n\t\t\t\tfor character in PartyManager.get_active_characters():\n\t\t\t\t\ttotal += character.inventory.count_item(str(goal.get(\"item_id\", \"\")))\n\t\t\t\tif total < required:\n\t\t\t\t\treturn false\n\t\t\t\"defeat_monster\":\n\t\t\t\tif str(goal.get(\"monster_id\", \"\")) not in defeated_monsters:\n\t\t\t\t\treturn false\n\t\t\t_:\n\t\t\t\treturn false\n\treturn true\n\n\n## Check a milestone trigger. Returns true if a milestone was activated."
+        },
+        {
+          "name": "check_milestone",
+          "line": 292,
+          "text": "func check_milestone(trigger: String) -> bool:\n\tif trigger in completed_milestones:\n\t\treturn false\n\tvar milestones: Array = get_milestones()\n\tfor milestone in milestones:\n\t\tif milestone.get(\"trigger\", \"\") == trigger:\n\t\t\t# Apply milestone effects\n\t\t\tvar effects: Array = milestone.get(\"effects\", [])\n\t\t\tfor effect in effects:\n\t\t\t\t_apply_milestone_effect(effect)\n\t\t\tcompleted_milestones.append(trigger)\n\t\t\treturn true\n\treturn false\n\n\n## Claim a dungeon's one-time clear transition. Returns false on replay."
+        },
+        {
+          "name": "mark_dungeon_cleared",
+          "line": 308,
+          "text": "func mark_dungeon_cleared(dungeon_id: String) -> bool:\n\tif dungeon_id.is_empty() or dungeon_id in cleared_dungeons:\n\t\treturn false\n\tcleared_dungeons.append(dungeon_id)\n\treturn true"
+        },
+        {
+          "name": "claim_reward",
+          "line": 315,
+          "text": "func claim_reward(reward_id: String) -> bool:\n\tif reward_id.is_empty() or reward_id in claimed_rewards:\n\t\treturn false\n\tclaimed_rewards.append(reward_id)\n\treturn true"
+        },
+        {
+          "name": "_apply_milestone_effect",
+          "line": 486,
+          "text": "func _apply_milestone_effect(effect: Dictionary) -> void:\n\tvar effect_type: String = effect.get(\"type\", \"\")\n\tmatch effect_type:\n\t\t\"level_up\":\n\t\t\t# Level up every active party member, including recruited companions.\n\t\t\tfor character in PartyManager.get_active_characters():\n\t\t\t\tcharacter.level_up()\n\t\t\t\tprint(\"[GameManager] %s leveled up!\" % character.character_name)\n\t\t_:\n\t\t\tpush_warning(\"[GameManager] Unknown milestone effect type: %s\" % effect_type)\n\n\n## Check if campaign win conditions are met"
+        }
+      ]
+    },
+    {
+      "source": {
+        "path": "src/autoload/save_manager.gd",
+        "sha256": "6e36030eb0901f857d4c0ddc4bcebc0ad78a89a6343a81b7536058eaf72158a0"
+      },
+      "functions": []
+    }
+  ],
+  "findings": [
+    {
+      "id": "monster_loot",
+      "finding": "Retain prior item/creature finding: monster loot metadata does not prove reward payment. No new gameplay trace establishes it here."
+    },
+    {
+      "id": "bounty",
+      "finding": "Quest Board choice.reward has no EventDialog consumer. The result passes monsters, teleported and check_result; there is no pending victory reward."
+    },
+    {
+      "id": "claim_reward",
+      "finding": "Repository rg call sites outside declaration are viewport_harness tests only. Dungeon-clear payout uses mark_dungeon_cleared, not claim_reward."
+    },
+    {
+      "id": "map_reveal",
+      "finding": "Resolver returns reveal_map metadata; dialog consumes only messages and selected combat/teleport results. No fog-reveal delivery established."
+    },
+    {
+      "id": "shop",
+      "finding": "Town destination opens the shop directly; event dialog has no shop dispatch and falls back to simple event effects."
+    },
+    {
+      "id": "boss_overrides",
+      "finding": "Generator copies boss.monster_id only; no bonus_hp/display-name consumer found in dungeon/autoload/combat search."
+    },
+    {
+      "id": "settlement",
+      "finding": "Generated loot/dungeon-clear code attempts add_item then clears/claims. Inventory-full delivery remains unverified; do not equate attempt with received item."
+    },
+    {
+      "id": "duration",
+      "finding": "Custom event condition integers go to add_condition; event rest resets features. Shared timed/rest/source rules require explicit mapping."
+    }
+  ]
+}

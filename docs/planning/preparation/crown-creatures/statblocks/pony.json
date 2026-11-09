@@ -1,0 +1,145 @@
+{
+  "schema": "crown-creature-candidate/1",
+  "id": "srd_pony",
+  "name": "Pony",
+  "kind": "srd_statblock",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring intent only; not registered engine syntax. Mapping requirements do not assert the whole referenced engine slice is absent.",
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile all source clauses, mappings and source differences before later production-path verification. Keep native paths until replacements cover them."
+  },
+  "source": {
+    "authority": "SRD 5.2.1",
+    "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      359
+    ],
+    "text": "Pony\nMedium Beast, Unaligned\nAC 10 Initiative +0 (10)\nHP 11 (2d8 + 2)\nSpeed 40 ft.\nMOD SAVE MOD SAVE MOD SAVE\nStr 15 +2 +4 Dex 10 +0 +0 Con 13 +1 +1\nInt 2 −4 −4 WIS 11 +0 +0 Cha 7 −2 −2\nSenses Passive Perception 10\nLanguages None\nCR 1/8 (XP 25; PB +2)\nActions\nHooves. Melee Attack Roll: +4, reach 5 ft. Hit: 4 (1d4\n+ 2) Bludgeoning damage.",
+    "transcription": "Two-column extraction; line breaks retained. Whole selected page context is in source-pages.json. No stat correction inferred from donor data."
+  },
+  "statistics": {
+    "identity_line": "Medium Beast, Unaligned",
+    "AC": "10 Initiative +0 (10)",
+    "HP": "11 (2d8 + 2)",
+    "Speed": "40 ft.",
+    "Senses": "Passive Perception 10",
+    "Languages": "None",
+    "CR": "1/8 (XP 25; PB +2)",
+    "ability_scores": {
+      "STR": 15,
+      "DEX": 10,
+      "CON": 13,
+      "INT": 2,
+      "WIS": 11,
+      "CHA": 7
+    },
+    "saving_throw_modifiers": {
+      "STR": 4,
+      "DEX": 0,
+      "CON": 1,
+      "INT": -4,
+      "WIS": 0,
+      "CHA": -2
+    },
+    "initiative_modifier": 0,
+    "initiative_score_printed": 10,
+    "armor_class": 10,
+    "movement_feet": {
+      "walk": 40
+    }
+  },
+  "authored_operations": [
+    {
+      "key": "b001",
+      "name": "Hooves",
+      "source_section": "Actions",
+      "full_rule": "Hooves. Melee Attack Roll: +4, reach 5 ft. Hit: 4 (1d4\n+ 2) Bludgeoning damage.",
+      "budget": "action",
+      "steps": [
+        {
+          "intent": "Resolve declared roll or save, targets, range/reach, damage packets, multiattack choice, riders and exact action budget. A save-only action is not a weapon hit rider.",
+          "mapping_group": "attacks"
+        }
+      ],
+      "parameters_from_rule": {
+        "attack_bonus": [
+          4
+        ],
+        "save_dc": [],
+        "distances_feet": [
+          5
+        ],
+        "dice": [
+          "1d4\n+ 2"
+        ]
+      },
+      "blockers": [
+        "map_attacks"
+      ],
+      "ending_and_identity": "Exact actor/action/target/source instance; use every qualifier and ending in full_rule, not only extracted parameters.",
+      "behavior_plan": {
+        "budget": "action",
+        "source_outcomes": {
+          "hit": "4 (1d4 + 2) Bludgeoning damage."
+        },
+        "resolution": "attack_roll",
+        "attack_kind": "melee",
+        "damage_and_riders": "4 (1d4 + 2) Bludgeoning damage.",
+        "permission": "ordinary familiar cannot attack; invocation exceptions must grant this exact attack or Attack action, not every Actions entry"
+      }
+    }
+  ],
+  "retained_definitions": [
+    {
+      "path": "data/core/monsters/imported_monsters.json",
+      "sha256": "f57bee1e93f185a89575bed3d8b2b610b53cfd3b7f2eb56448d1dd64a0126c5f",
+      "pointer": "/317",
+      "payload": {
+        "id": "pony",
+        "name": "Pony",
+        "hit_points": "2d8 + 2",
+        "armor_class": 10,
+        "speed": 8,
+        "ability_scores": {
+          "STR": 15,
+          "DEX": 10,
+          "CON": 13,
+          "INT": 2,
+          "WIS": 11,
+          "CHA": 7
+        },
+        "attacks": [
+          {
+            "name": "Claws",
+            "ability": "STR",
+            "damage": "1d6",
+            "range": 1,
+            "damage_type": "slashing"
+          }
+        ],
+        "ai_behavior": "aggressive"
+      },
+      "manifest_declarations": []
+    }
+  ],
+  "selection": {
+    "wild_shape_druid_levels_2_3": true,
+    "wild_shape_druid_levels_4_5": true,
+    "normal_familiar": false,
+    "pact_of_chain_special": false,
+    "animate_dead_output": false,
+    "held_swarm": false,
+    "encounter_comparison_only": false
+  },
+  "acquisition_links": [
+    "selection-links.json"
+  ],
+  "blockers": [
+    "map_statistics",
+    "map_attacks"
+  ],
+  "source_reconciliation": "Official body is authoritative for this SRD candidate. Retained donor payloads are comparison/reuse seeds, including legacy values and manifest winners; do not merge their statistics or traits by ID. Direct Crown encounters retain separate candidates.",
+  "equipment_links": []
+}

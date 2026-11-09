@@ -9,9 +9,99 @@ retains vocabulary-first delivery, current save priorities, and Wish/illusion po
 
 ## Current work
 
+**CXM-01/S-249 exact ammunition now has a verified bounded runtime** using
+existing copies, attack budgets and campaign clock. Actual attacks and one-minute
+floor-half recovery pass the Windows runner, including both allowed DTOs in a
+fresh process. See the [verified boundary](docs/planning/vocabulary-slices.md#exact-ammunition-spending-and-recovery)
+and [ammunition contract](docs/mechanics/ammunition.md). Catalog promotion and
+fired-ammo corrosion remain separate; continue with the remaining ordered
+assignments. The first mapping entry is now delivered.
+
+The **Crown cross-set engine mapping is complete as planning** in the
+[mapping and clause ledger](docs/planning/crown-engine-mapping/README.md).
+It reuses all six written sets: 608 indexed candidates plus multiclass, full
+rules/blockers and dependency/acquisition links. The
+[ordered bounded assignments](docs/planning/crown-engine-mapping/assignments.md)
+begin with **CXM-01, exact ammunition spending/recovery (S-249)** (now delivered above), using existing
+copies, budgets and clock; general liquids/fuel and whole parent slices are not
+gates. [Unresolved source/policy decisions](docs/planning/crown-engine-mapping/unresolved.md)
+hold only their affected consumers. The mapping pass ran structural/source/link checks,
+not gameplay acceptance; that pass made no runtime, loaded-data or save changes.
+Use this cross-set queue for the next implementation, retaining the older spell
+queue's accepted work and exact partial limits. Native paths stay until covered.
+
+The **final Crown world/event/object writing pass is complete** in the
+[world candidate folder](docs/planning/preparation/crown-world/README.md):
+74 candidates retain the 43-tile map, three dungeons, four tables and all
+29 events/child events, generated traps/loot, nine tactical objects, hazards,
+supplies, objectives, milestones and rewards. Full rules and previous candidate
+sets are reused; all 183 spells and 79 characters plus multiclass have world
+dependency routes. Blockers include unpaid bounty metadata and unproven monster
+loot payment. Structural/source/link checks passed; nothing entered production
+and no gameplay tests ran. The subsequent cross-set mapping is linked above.
+
+The **Crown creature/actor writing pass is complete** in the
+[creature candidate folder](docs/planning/preparation/crown-creatures/README.md):
+94 records cover ten direct encounters, Aldric/Mira/Rowan, complete in-band
+individual SRD form sets, created undead and spell-owned actors/effects, with
+separate campaign/SRD identities. This includes four low-CR swarm blocks written
+but held outside legal individual-form lists pending explicit adjudication.
+Full rules, behavior plans, acquisition links, unchanged seeds and blockers stay
+outside production. Structural/source/documentation checks passed; no engine
+fixes, enabling or gameplay tests occurred. World/event/object candidates are now written above;
+the cross-set mapping is linked above; monster loot metadata still does not prove
+reward payment.
+
+The **remaining reachable-item writing pass is complete** in the
+[reachable-item folder](docs/planning/preparation/crown-reachable-items/README.md):
+73 new candidates reuse 29 package-equipment candidates for shops, companions,
+rewards, tactical contents, exact spell materials and physical creations.
+All 183 spell Material requirements have a source-pinned map. Source mismatches
+and engine blockers remain explicit; nothing was enabled or gameplay-tested.
+The creature and world sets above are now written and mapped; runtime delivery remains.
+The two item sets contain 178 distinct written candidates;
+arbitrary crafting/dormant catalogs stay outside
+this finite acquisition pass.
+
+The **package-equipment writing pass is complete** in the
+[equipment candidate folder](docs/planning/preparation/crown-equipment/README.md):
+105 candidates cover starting alternatives from all twelve classes and four
+backgrounds, six full packs, ammunition, legal tool choices, focuses and the
+previously unresolved background items. Existing definitions remain pinned as
+reuse seeds; blockers are recorded without engine fixes or production enabling.
+The subsequent item and creature sets above are now written;
+world candidates and the subsequent mapping are linked above; runtime delivery remains.
+
+The owner-selected **Crown character/origin authoring pass is written** in the
+[character candidate folder](docs/planning/preparation/crown-characters/README.md):
+twelve classes and their SRD subclasses through level 5, multiclass grants,
+22 eligible invocations, ten Metamagic options, nine species, four reused
+backgrounds and ten feats. Full rules, operation plans, existing definitions and
+recovered drafts stay outside production with explicit unsupported behavior.
+No engine fixes or gameplay tests were part of this pass. The subsequent mapping
+joins the written character, spell, item, creature and world requirements above.
+
+The owner-selected **all-183-spell authoring pass is written** in the tracked
+[Crown spell candidate folder](docs/planning/preparation/crown-spells/README.md).
+It includes full source rules, structured effect plans, available shared drafts
+and explicit unsupported/mapping requirements. Candidates are not loaded or
+enabled; no engine fixes or gameplay tests were part of this pass. The subsequent
+mapping groups related requirements across this complete set. The character/origin set above is also
+written; subsequent item/creature sets above remain separate from spell execution.
+
+The [2026-11-08 authoring reconciliation](docs/planning/crown-roadmap.md#authoring-reconciliation--2026-11-08)
+distinguishes completed audits, existing candidate drafts and missing authored
+content. Read it before selecting more conversion work: broad spell clause
+discovery already exists. The spell candidate set above was written afterward;
+the character/origin candidates above were written afterward too. The world/event/object, item and creature candidate sets linked above
+were written after that reconciliation; catalog writing is complete, while
+the cross-set mapping is linked above and runtime delivery remains.
+It also locates the staged subclasses/backgrounds and checks the origins worktree.
+
 The [Grokbot usage cutoff](docs/planning/crown-spell-conversion-queue.md#resume-here--grokbot-usage-cutoff-2026-11-04)
 records the reviewed stack through #104, the held Bestow Curse PRs #105–106,
-and the exact per-spell next actions. Resume there rather than restarting SC-01.
+and the historical per-spell implementation next actions. It remains an engine
+handoff; do not restart SC-01 or substitute it for the current authoring set.
 
 The [2026-11-04 Crown spell conversion queue](docs/planning/crown-spell-conversion-queue.md)
 assigns the original 169 native spell migrations to 46 ordered, stackable Grokbot PRs.
@@ -33,7 +123,8 @@ requirement umbrellas. Work now selects one
 [bounded assignment](docs/planning/vocabulary-slices.md#ordinary-action-work-packages),
 using the verified OA-01–OA-13 boundaries to select the next missing consumer.
 [Prompts for separate chats](docs/planning/ordinary-action-chat-prompts.md)
-cover the next sound, Search, communication, Help, Study and Influence assignments.
+retain the completed OA-01–OA-13 dispatches; they are not assignments to restart.
+Use the registry's retained requirements for additional hosts and real consumers.
 Independent movement, Hit Dice and character/content work may proceed when its
 actual prerequisites are ready; completing all S-237/S-238 is not their gate.
 The registry preserves the remaining requirements outside these assignments.
@@ -233,7 +324,7 @@ the Crown queue; keep the remainder here.
 |---|---|
 | Higher-level characters and spells | Level-17 Quivering Palm action/control and S-247 production-save proof remain here; inaccessible helper routing does not finish the slice.  Class/subclass features acquired at class levels 6–20, feats requiring those levels, seven Epic Boons, and spell levels 4–9 unless an actual Crown actor/item grants a specific procedure. Do not exclude the campaign's custom Lich King or shop potions by CR/rarity; actual reachable behavior stays in Crown. |
 | Other progression modes — S-243/S-244/S-245 | XP award/threshold progression, starting above level 1 and post-20 advancement. Crown's existing milestone progression is retained. S-234 multiclass eligibility within total levels 1–5 belongs to Crown. |
-| Higher-level feature consumers | S-147 attack-replacing companion commands where only out-of-scope features need them; S-152/S-153 spell theft; S-159 inserted extra turns; S-182 passenger movement such as Monk's level-10 upgrade. Do not copy a later upgrade from a mixed-level audit row into a level-2 assignment. |
+| Higher-level feature consumers | S-147 consumers beyond Crown's in-band Pact of the Chain one-attack/familiar-Reaction substitution; that narrow consumer is assigned in the cross-set mapping. S-152/S-153 spell theft; S-159 inserted extra turns; S-182 passenger movement such as Monk's level-10 upgrade. Do not copy a later upgrade from a mixed-level audit row into a level-2 assignment. |
 | Higher-level transformation/recovery | Full possession/control return (S-173/S-174), body-part loss/regrowth and aging procedures (S-206–S-208), and higher revival policies under S-175/S-176. Crown retains actual low-level protection, Gentle Repose/Revivify, form and corpse-interaction consumers without requiring every higher form. |
 | Exceptional spells and world systems | S-268 freezing-surface occupants where only higher-level spells need it; S-270 guarded removal; S-271 accumulating delayed detonation; S-273 damageable multi-section walls; S-275 staged Control Weather; S-220/S-221 special outcomes/Wish. Low-level Druidcraft forecast information is still Crown work under represented knowledge; it is not a requirement for the complete weather simulator. |
 | Unselected magic items | Dormant/unobtainable item definitions and their S-253–S-265 consumers: class-qualified attunement, scroll/staff/potion overrides, templates, worn periodic effects, weapon riders, study/tome effects, special item reactions, multi-day cooldowns and dice-shaped recharge. S-204 shared enclosed air and related physical systems remain here when only those unselected items require them. Pull in a specific power only with an actual Crown acquisition/creation path. Ordinary tools, supplied consumables, exact quantities and carrying rules remain Crown work. |

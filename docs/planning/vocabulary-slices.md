@@ -11,6 +11,23 @@ The [main roadmap](../../roadmap.md#outside-crown) retains work outside that ban
 
 ## Count and scope
 
+The final [Crown world/event/object writing pass](preparation/crown-world/README.md)
+retains 74 non-loaded candidates, full source rules, reused prior candidate sets
+and explicit world/payment blockers. All spell/character candidates have world
+dependency routes. This is a writing boundary only: no slice acceptance, count,
+required behavior or verified runtime boundary changes. The subsequent
+[cross-set mapping](crown-engine-mapping/README.md) selects bounded implementation
+work without changing those boundaries.
+
+The [remaining reachable-item writing pass](preparation/crown-reachable-items/README.md)
+adds source-pinned shop/reward/material/creation candidates and explicit blockers.
+It changes no engine acceptance, requirements count or verified boundary.
+
+The [Crown package-equipment candidates](preparation/crown-equipment/README.md)
+record the writing-only boundary for starting packages, six packs, ammunition,
+tools, focuses and background items. Their grouped requirements reuse existing
+slice owners; the pass changes no engine acceptance or verified boundary.
+
 **276 defined slices: 163 verified, 113 not yet accepted.** (S-246–S-276 from the [wave 2 audit integration](#wave-2-audit-slices); S-240/S-241 from [SRC-01 batch 2](#src-01-batch-2); S-235–S-239 added by the 2026-10-26 [core rules/conditions audit](../mechanics/core-rules-status.md).) Counts measure accepted
 bounded implementations, not time, effort or completion of every clause in a row.
 These totals include reviewed, repaired and merged Batches 034–065 through
@@ -77,6 +94,17 @@ catalog content as part of every slice.
   implement missing clauses or close the broader V-series requirement.
 
 ## Current and next queue
+
+The [Crown cross-set mapping](crown-engine-mapping/README.md) now reconciles all
+six written sets with these verified boundaries and current contracts. Its
+[bounded queue](crown-engine-mapping/assignments.md) starts with **CXM-01/S-249**
+exact ammunition spending/recovery, now delivered in the
+[verified boundary](#exact-ammunition-spending-and-recovery). Remaining assignments
+stay queued. Mapping itself remains planning; the subsequent runtime delivery
+supplies this one verified-boundary change.
+In-band Pact of the Chain brings only its required S-147 attack-command subset
+into Crown; higher-level consumers remain outside. Source/policy holds are
+[explicit](crown-engine-mapping/unresolved.md), not invented runtime defaults.
 
 The [Crown roadmap](crown-roadmap.md) selects current work by its level-1–5
 content and actual missing consumers. The retained completion plan below covers
@@ -1127,7 +1155,7 @@ attitudes, exact-charmer Advantage and proficient physical Help. No language
 understanding or arbitrary obedience is inferred. Persistent per-actor failed
 approaches retain their 24-hour retry; fulfillment is once per source/request
 and cannot replay object changes across re-entry or checkpoints. The
-[Influence contract](../mechanics/ordinary-actions.md#influence-through-represented-gestures)
+[Influence contract](../mechanics/ordinary-actions.md#influence-through-gestures-or-spoken-communication)
 owns syntax and exact scope. No catalog conversion or S-237/S-238 acceptance is
 claimed.
 
@@ -1173,12 +1201,13 @@ above remains valid within its recorded boundaries. No new behavior or whole
 slice acceptance is claimed by this planning change. The full S-237/S-238 rows
 and accepted counts remain unchanged.
 
-Start with OA-01's review of the delivered cover boundary. After that, choose
-the package needed by the next Crown consumer, or an independent ready Crown
-assignment such as movement or Hit Dice. Finish the selected package's explicit
-behavior/checks before expanding it. Unfinished umbrella requirements do not
-hold unrelated work hostage. Dependencies below are actual prerequisites;
-table order is not an additional dependency. Shared-file work stays sequential.
+The original dispatch began with OA-01; OA-01–OA-13 now have the verified bounded
+implementations below. Do not replay their prompts. Choose additional consumers
+from the retained requirements after the table, or independent Crown work with
+actual prerequisites ready. Finish the selected assignment's explicit behavior
+before expanding it. Unfinished umbrella requirements do not hold unrelated work
+hostage. Dependencies below describe actual prerequisites, not a new table-order
+gate. Shared-file work stays sequential.
 
 Copy-paste prompts and common finishing instructions live in
 [ordinary-action-chat-prompts.md](ordinary-action-chat-prompts.md).
@@ -3675,7 +3704,7 @@ catalog or complete the newly planned rows.
 | S-246 — Monster AI and turn consumers of SRD conditions (P4) | Accepted 2026-10-29 ([verified boundary](#srd-condition-and-roll-host-spine)) | V-100 | Monster AI, AICommand, FighterRules.monster_speed and monster turn gates read the S-235 condition table: Incapacitated/Petrified/Unconscious skip actions, every Speed-0 condition stops movement, generic Stunned/Incapacitated alone preserve movement while refusing actions/Bonus Actions/Reactions, Prone stand-up obeys Speed 0, Frightened can't approach its source, Charmed can't target its charmer, and unknown Hidden targets require discovery while known Invisible locations remain legal ordinary attack targets. Source: [core-6](../audits/core-rules-2.md). | S-235 |
 | S-247 — Non-spell save hosts apply condition modes (P3) | Crown portion complete; partial only for level-17 Quivering Palm ([boundary](#srd-condition-and-roll-host-spine)); unaccepted | V-100, V-013, V-012 | BarbarianRules.roll_monster_save_result, Character.make_saving_throw_result and the monk raw d20 saves (Topple, Push, Quivering Palm) route through one save host that auto-fails STR/DEX for Paralyzed/Stunned/Unconscious/Petrified and gives Restrained DEX Disadvantage, with roll tokens and Bless/Bane intact. Source: [core-7](../audits/core-rules-2.md). | S-235 |
 | S-248 — Non-EventResolver check hosts apply proficiency and condition modes (P3) | Accepted 2026-10-29 ([verified boundary](#srd-condition-and-roll-host-spine)) | V-100, V-012, V-003 | EventResolver.resolve_skill_check, a new monster-check helper, both Cunning Action Hide branches, overworld ambush Stealth, monster zone escape and monster tether escape/rescue apply proficiency consistently and Poisoned/Frightened/Exhaustion check modes. Source: [core-8](../audits/core-rules-2.md). | S-235, S-237 |
-| S-249 — Ammunition consumption and recovery (P8) | Planned | V-076 | A Longbow attack with 0 arrows is refused; two attacks from 3 leave 1; one minute after combat recovers floor(half) spent; the count survives save/load. Source: [items-1](../audits/items.md). | S-196, S-197 |
+| S-249 — Ammunition consumption and recovery (P8) | Verified CXM-01 2026-11-08 ([boundary](#exact-ammunition-spending-and-recovery)) | V-076 | A Longbow attack with 0 arrows is refused; two attacks from 3 leave 1; one minute after combat recovers floor(half) spent; the count survives save/load. Source: [items-1](../audits/items.md). | S-049/S-196/S-064 reuse; no S-197 gate |
 | S-250 — Weapon range bands and the Heavy predicate (P3) | Verified ([boundary](#five-quick-wins)) | V-012, V-005 | Long-range attacks roll with Disadvantage and beyond-long are refused; Heavy weapons give Disadvantage below STR 13 (melee) or DEX 13 (ranged); thrown weapons keep the wielder's ability. Source: [items-2](../audits/items.md). | S-091 |
 | S-251 — Worn-armor predicates (P1) | Planned | V-005, V-012 | Armor STR requirement Speed −10, Stealth Disadvantage and untrained-armor STR/DEX D20 Disadvantage plus casting refusal apply while worn and clear when removed. Source: [items-3](../audits/items.md). | S-028, S-091 |
 | S-252 — Don/Doff timing (P2) | Verified ([boundary](#five-quick-wins)) | V-045 | Equipping or removing armor outside combat advances campaign time by the table value; Medium/Heavy cannot be donned in combat; a Shield costs the Utilize action; the result reports time spent. Source: [items-4](../audits/items.md). | S-064 |
@@ -3893,3 +3922,23 @@ Dice and Playing Cards acquisitions and their exact owners. **Remaining limits:*
 Gaming Set Utilize tasks, background-granted Origin feats, and a Skilled pick that a later source also
 grants is not re-offered. Syntax lives in
 [progression choices](../mechanics/progression-choices.md#feat-proficiency-choices-skilled-crown-g4).
+
+## Exact ammunition spending and recovery
+
+**S-249 / CXM-01 verified 2026-11-08.** The supported Windows
+`ammunition_flow` and paired fresh-process `ammunition_reload` prove exact
+backpack/quiver pieces through actual Attack, misses/Extra Attack, empty and
+exhausted refusal before RNG/units, activation cancellation and identical-copy
+replacement, Loading/free hands, cancelled/completed readied attacks, actual
+shared True Strike, captured post-roll continuation/replay, and one-minute
+floor-half recovery. Five spent pieces yield two; one yields zero. Recovery
+retains original identities, separates generated-room sites, and survives both
+pending and completed full-party/player-only checkpoint routes, including clocks
+over one day. Actual malformed loads refuse before session replacement.
+
+This is a vocabulary-first runtime delivery using renamed loaded fixtures.
+Native weapons without the declaration stay native. Catalog promotion, shop lot
+expansion, monster ammunition inventories and fired-ammunition corrosion are
+outside this proof; destroyed pieces must be excluded when that consumer is
+wired. General liquids, whole S-237/S-238, backgrounds and multiclassing are not
+gates. Syntax and recovery policy live in [ammunition](../mechanics/ammunition.md).

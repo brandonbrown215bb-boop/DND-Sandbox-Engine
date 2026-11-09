@@ -1,0 +1,99 @@
+{
+  "schema": "crown-world-candidate/1",
+  "id": "town_events__quest_board",
+  "name": "Adventurer's Quest Board",
+  "kind": "events",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring declarations only; not registered engine opcodes.",
+  "required_extensions": [
+    "knowledge_social",
+    "objectives_rewards"
+  ],
+  "authored_operations": [
+    {
+      "operation": "settle_ordered_branch",
+      "seed_pointer": "/choices/0/effects",
+      "effects": [
+        {
+          "type": "start_combat",
+          "monsters": [
+            "goblin",
+            "goblin",
+            "goblin_chief"
+          ]
+        }
+      ],
+      "condition": null,
+      "requirement": "Retain order, exact quantities/formulas, recipient, costs, branch descriptions and occurrence identity; no repeated payment when a child resumes."
+    },
+    {
+      "operation": "hold_unconsumed_reward_metadata",
+      "seed_pointer": "/choices/0/reward",
+      "reward": {
+        "type": "give_item",
+        "item_id": "gold_100"
+      },
+      "requirement": "Bounty is contingent on victory and once-only occurrence settlement; existing metadata does not implement payment."
+    },
+    {
+      "operation": "settle_ordered_branch",
+      "seed_pointer": "/choices/1/effects",
+      "effects": [
+        {
+          "type": "reveal_map",
+          "radius": 3
+        }
+      ],
+      "condition": null,
+      "requirement": "Retain order, exact quantities/formulas, recipient, costs, branch descriptions and occurrence identity; no repeated payment when a child resumes."
+    }
+  ],
+  "blockers": [
+    "EventResolver returns reveal_map, but EventDialog does not expose a reveal-map result for the overworld callback; no actual fog reveal established.",
+    "Bounty reward field is not consumed by EventDialog; no victory-bound payout is established."
+  ],
+  "retained_input": {
+    "path": "data/core/events/town_events.json",
+    "sha256": "cc2833d086c100b57a67f114d11888312e7074fdebe601d94151d17e9c310098",
+    "pointer": "/events/4",
+    "payload": {
+      "id": "quest_board",
+      "name": "Adventurer's Quest Board",
+      "weight": 15,
+      "description": "A wooden board covered in notices stands in the town square. One posting catches your eye.",
+      "type": "choice",
+      "choices": [
+        {
+          "text": "Accept the bounty: Clear the goblin camp (combat)",
+          "effects": [
+            {
+              "type": "start_combat",
+              "monsters": [
+                "goblin",
+                "goblin",
+                "goblin_chief"
+              ]
+            }
+          ],
+          "reward": {
+            "type": "give_item",
+            "item_id": "gold_100"
+          }
+        },
+        {
+          "text": "Read the rumors instead",
+          "effects": [
+            {
+              "type": "reveal_map",
+              "radius": 3
+            }
+          ],
+          "description": "You scan the board and learn about the surrounding area."
+        }
+      ]
+    }
+  },
+  "authority": "Custom Crown campaign event, not an SRD trap/NPC/spell replacement",
+  "table_id": "town_events",
+  "occurrence_policy": "Table may roll again; same in-flight occurrence must not reroll/reapply on reopen. Campaign-specific uniqueness beyond generated room claims is unresolved, not silently global once-per-event-ID."
+}

@@ -1,0 +1,107 @@
+{
+  "schema": "crown-equipment-candidate/1",
+  "id": "greataxe",
+  "name": "Greataxe",
+  "kind": "weapon",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring intent only; not registered engine syntax.",
+  "rules": {
+    "authority": "SRD 5.2.1",
+    "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      89,
+      90,
+      91
+    ],
+    "section": "Greataxe",
+    "text": "Greataxe: martial melee weapon; 1d12 slashing; properties heavy, two_handed; mastery cleave. Range and Versatile values are in definition. The complete property and mastery rules on pp.89–90 apply only when their requirements are met.",
+    "source_context": "../source-pages.json"
+  },
+  "definition": {
+    "id": "greataxe",
+    "name": "Greataxe",
+    "category": "martial",
+    "weapon_kind": "melee",
+    "damage_dice": "1d12",
+    "damage_type": "slashing",
+    "properties": [
+      "heavy",
+      "two_handed"
+    ],
+    "mastery": "cleave",
+    "weight_lb": 7,
+    "cost_gp": 30
+  },
+  "authored_operations": [
+    "Use declared weapon proficiency, ability, hands, range and properties for each actual attack; Finesse uses the same chosen ability for attack and damage. Thrown draws as part of the attack and retains the melee ability.",
+    "Light extra attack requires a different Light weapon and omits a positive ability modifier; Nick moves that single extra attack into the Attack action. Apply only an unlocked mastery with its exact target, timing and once-per-turn rules from source context.",
+    "Ammunition attacks require and spend one Arrow; recover floor(half spent) after one minute following the fight. Heavy melee needs Strength 13 and Heavy ranged needs Dexterity 13 to avoid Disadvantage; enforce normal/long ranges and Two-Handed only when attacking."
+  ],
+  "retained_runtime_seeds": [
+    {
+      "path": "data/core/items/imported_base_items.json",
+      "array_index": 13,
+      "file_sha256": "d450331c5dc1756fccc025c42e7f60bc6312a6829e59814e9864878a4abaae42",
+      "definition": {
+        "id": "greataxe",
+        "name": "Greataxe",
+        "description": "Standard D&D weapon: Greataxe.",
+        "type": "weapon",
+        "damage": "1d12",
+        "damage_type": "slashing",
+        "ability": "STR",
+        "range": 1,
+        "value": 30
+      }
+    },
+    {
+      "path": "data/core/items/weapons.json",
+      "array_index": 20,
+      "file_sha256": "6f6314edd2f971deea6f5d058e0e5f913757a662b2340a8a01c52d60432e0df5",
+      "definition": {
+        "id": "greataxe",
+        "weight": 7,
+        "name": "Greataxe",
+        "description": "A massive two-handed axe.",
+        "type": "weapon",
+        "weapon_type": "martial",
+        "damage": "1d12",
+        "damage_type": "slashing",
+        "properties": [
+          "heavy",
+          "two_handed"
+        ],
+        "ability": "STR",
+        "range": 1,
+        "value": 30
+      }
+    }
+  ],
+  "manifest_overrides": [
+    {
+      "type": "item",
+      "id": "greataxe",
+      "winner": "res://data/core/items/weapons.json#21",
+      "replaces": [
+        "res://data/core/items/imported_base_items.json#14"
+      ]
+    }
+  ],
+  "required_mapping": [
+    "weapons"
+  ],
+  "consumers": [
+    {
+      "package_id": "barbarian",
+      "option": "A",
+      "quantity": 1,
+      "source": "docs/planning/preparation/crown-characters/classes/barbarian.json"
+    }
+  ],
+  "unsupported_behavior": [
+    {
+      "group": "weapons",
+      "requirement": "Map complete weapon properties, masteries, hand/ability eligibility and actual attacks through shared owners. Reuse verified range/Heavy work; no item-ID dispatch or support claim from seed fields."
+    }
+  ]
+}

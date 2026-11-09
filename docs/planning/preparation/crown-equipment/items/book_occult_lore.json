@@ -1,0 +1,53 @@
+{
+  "schema": "crown-equipment-candidate/1",
+  "id": "book_occult_lore",
+  "name": "Book (occult lore)",
+  "kind": "book_variant",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring intent only; not registered engine syntax.",
+  "rules": {
+    "authority": "SRD 5.2.1",
+    "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      96
+    ],
+    "section": "Book (occult lore)",
+    "text": "Contains fiction or nonfiction. Consulting an accurate nonfiction Book about its topic grants +5 to Intelligence (Arcana, History, Nature, or Religion) checks about that topic.",
+    "source_context": "../source-pages.json"
+  },
+  "definition": {
+    "id": "book_occult_lore",
+    "name": "Book (occult lore)",
+    "base_candidate_id": "book",
+    "topic": "occult lore",
+    "accurate_nonfiction": null,
+    "weight_lb": 5,
+    "cost_gp": 25
+  },
+  "authored_operations": [
+    "Preserve the granted topic on the exact Book. A +5 check bonus requires actually consulting accurate nonfiction on that topic and the eligible Intelligence skill. The package title alone does not certify accuracy."
+  ],
+  "retained_runtime_seeds": [],
+  "manifest_overrides": [],
+  "required_mapping": [
+    "context_benefits"
+  ],
+  "consumers": [
+    {
+      "package_id": "warlock",
+      "option": "A",
+      "quantity": 1,
+      "source": "docs/planning/preparation/crown-characters/classes/warlock.json"
+    }
+  ],
+  "unsupported_behavior": [
+    {
+      "group": "context_benefits",
+      "requirement": "Map exact-copy consulted Book topic/accuracy and eligible skills, costume impersonation and crowbar leverage. Existing purpose-aware/context modifier hooks are reuse points, not generic support certification."
+    },
+    {
+      "group": "definition",
+      "requirement": "No exact current item seed at this candidate identity. This authored record is not a loaded definition; map or promote deliberately later."
+    }
+  ]
+}

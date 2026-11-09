@@ -1,0 +1,1225 @@
+{
+  "format": "crown-spell-extensions/1",
+  "meaning": "Authoring handoff groups, not accepted slices or a runtime-failure certification. Per-spell rules remain authoritative.",
+  "groups": [
+    {
+      "id": "attack_interception",
+      "spells": [
+        {
+          "spell_id": "mirror_image",
+          "requirement": "Suspend the exact eligible attack/cast; choose/roll source-defined diversion or retargeting, spend once, and continue the original occurrence without rerolling it."
+        },
+        {
+          "spell_id": "sanctuary",
+          "requirement": "Suspend the exact eligible attack/cast; choose/roll source-defined diversion or retargeting, spend once, and continue the original occurrence without rerolling it."
+        }
+      ]
+    },
+    {
+      "id": "attack_riders",
+      "spells": [
+        {
+          "spell_id": "divine_favor",
+          "requirement": "Bind damage or next-result benefits to eligible hit/roll occurrences, casting source and expiry; retain packet damage types, critical behavior and consumption."
+        },
+        {
+          "spell_id": "enlarge/reduce",
+          "requirement": "Bind damage or next-result benefits to eligible hit/roll occurrences, casting source and expiry; retain packet damage types, critical behavior and consumption."
+        },
+        {
+          "spell_id": "guiding_bolt",
+          "requirement": "Bind damage or next-result benefits to eligible hit/roll occurrences, casting source and expiry; retain packet damage types, critical behavior and consumption."
+        },
+        {
+          "spell_id": "hex",
+          "requirement": "Bind damage or next-result benefits to eligible hit/roll occurrences, casting source and expiry; retain packet damage types, critical behavior and consumption."
+        },
+        {
+          "spell_id": "hunters_mark",
+          "requirement": "Bind damage or next-result benefits to eligible hit/roll occurrences, casting source and expiry; retain packet damage types, critical behavior and consumption."
+        }
+      ]
+    },
+    {
+      "id": "attitude_scopes",
+      "spells": [
+        {
+          "spell_id": "calm_emotions",
+          "requirement": "Preserve separate per-recipient chosen creatures, suppression and witness rules; current Calm Emotions common scope is explicitly partial."
+        }
+      ]
+    },
+    {
+      "id": "auras",
+      "spells": [
+        {
+          "spell_id": "pass_without_trace",
+          "requirement": "Retain exact cast-time exclusions, live membership, movement, recipient effects and cleanup for the source-defined emanation."
+        },
+        {
+          "spell_id": "spirit_guardians",
+          "requirement": "Retain exact cast-time exclusions, live membership, movement, recipient effects and cleanup for the source-defined emanation."
+        }
+      ]
+    },
+    {
+      "id": "barriers",
+      "spells": [
+        {
+          "spell_id": "leomunds_tiny_hut",
+          "requirement": "Supply exact occupied volume, permitted creatures/objects/spells/projectiles, movement/admission and ending/release; do not substitute general impassable terrain."
+        },
+        {
+          "spell_id": "magic_circle",
+          "requirement": "Supply exact occupied volume, permitted creatures/objects/spells/projectiles, movement/admission and ending/release; do not substitute general impassable terrain."
+        },
+        {
+          "spell_id": "wind_wall",
+          "requirement": "Supply exact occupied volume, permitted creatures/objects/spells/projectiles, movement/admission and ending/release; do not substitute general impassable terrain."
+        }
+      ]
+    },
+    {
+      "id": "benefit_only_rest",
+      "spells": [
+        {
+          "spell_id": "prayer_of_healing",
+          "requirement": "Apply the declared Short Rest benefits/Hit Dice opportunity and healing without elapsed/completed rest; enforce casting participants and each recipient Long Rest lockout."
+        }
+      ]
+    },
+    {
+      "id": "benefit_recipients",
+      "spells": [
+        {
+          "spell_id": "aid",
+          "requirement": "Bind each chosen recipient, formula, recurring benefit and ending to the exact cast; self-only source carriers do not supply arbitrary recipients or every benefit kind."
+        },
+        {
+          "spell_id": "aid",
+          "requirement": "The base fixed max_hp_source can be written today. The shared upcast contract has no slot-scaled max-HP amount; add 5 to both current/max HP per paid slot above 2 without weakening ownership/nonstacking."
+        },
+        {
+          "spell_id": "barkskin",
+          "requirement": "Bind each chosen recipient, formula, recurring benefit and ending to the exact cast; self-only source carriers do not supply arbitrary recipients or every benefit kind."
+        },
+        {
+          "spell_id": "beacon_of_hope",
+          "requirement": "Bind each chosen recipient, formula, recurring benefit and ending to the exact cast; self-only source carriers do not supply arbitrary recipients or every benefit kind."
+        },
+        {
+          "spell_id": "darkvision",
+          "requirement": "Bind each chosen recipient, formula, recurring benefit and ending to the exact cast; self-only source carriers do not supply arbitrary recipients or every benefit kind."
+        },
+        {
+          "spell_id": "enhance_ability",
+          "requirement": "Bind each chosen recipient, formula, recurring benefit and ending to the exact cast; self-only source carriers do not supply arbitrary recipients or every benefit kind."
+        },
+        {
+          "spell_id": "guidance",
+          "requirement": "Bind each chosen recipient, formula, recurring benefit and ending to the exact cast; self-only source carriers do not supply arbitrary recipients or every benefit kind."
+        },
+        {
+          "spell_id": "heroism",
+          "requirement": "Bind each chosen recipient, formula, recurring benefit and ending to the exact cast; self-only source carriers do not supply arbitrary recipients or every benefit kind."
+        },
+        {
+          "spell_id": "invisibility",
+          "requirement": "Bind each chosen recipient, formula, recurring benefit and ending to the exact cast; self-only source carriers do not supply arbitrary recipients or every benefit kind."
+        },
+        {
+          "spell_id": "longstrider",
+          "requirement": "Bind each chosen recipient, formula, recurring benefit and ending to the exact cast; self-only source carriers do not supply arbitrary recipients or every benefit kind."
+        },
+        {
+          "spell_id": "mage_armor",
+          "requirement": "Bind each chosen recipient, formula, recurring benefit and ending to the exact cast; self-only source carriers do not supply arbitrary recipients or every benefit kind."
+        },
+        {
+          "spell_id": "protection_from_energy",
+          "requirement": "Bind each chosen recipient, formula, recurring benefit and ending to the exact cast; self-only source carriers do not supply arbitrary recipients or every benefit kind."
+        },
+        {
+          "spell_id": "protection_from_evil_and_good",
+          "requirement": "Bind each chosen recipient, formula, recurring benefit and ending to the exact cast; self-only source carriers do not supply arbitrary recipients or every benefit kind."
+        },
+        {
+          "spell_id": "protection_from_poison",
+          "requirement": "Bind each chosen recipient, formula, recurring benefit and ending to the exact cast; self-only source carriers do not supply arbitrary recipients or every benefit kind."
+        },
+        {
+          "spell_id": "resistance",
+          "requirement": "Bind each chosen recipient, formula, recurring benefit and ending to the exact cast; self-only source carriers do not supply arbitrary recipients or every benefit kind."
+        },
+        {
+          "spell_id": "warding_bond",
+          "requirement": "Bind each chosen recipient, formula, recurring benefit and ending to the exact cast; self-only source carriers do not supply arbitrary recipients or every benefit kind."
+        }
+      ]
+    },
+    {
+      "id": "breathing",
+      "spells": [
+        {
+          "spell_id": "water_breathing",
+          "requirement": "Supply recipient respiration in the actual environment for the full source lifetime while retaining normal breathing; not merely an icon."
+        }
+      ]
+    },
+    {
+      "id": "cast_failure",
+      "spells": [
+        {
+          "spell_id": "slow",
+          "requirement": "Capture source-defined failure roll at the correct cast boundary, retain spent actions/slots as specified and never replay RNG or partial effects."
+        }
+      ]
+    },
+    {
+      "id": "communication",
+      "spells": [
+        {
+          "spell_id": "animal_messenger",
+          "requirement": "Reuse represented language/hearing where applicable, then implement the spell-specific recipients, range, content, answers, secrecy and source lifetime."
+        },
+        {
+          "spell_id": "comprehend_languages",
+          "requirement": "Reuse represented language/hearing where applicable, then implement the spell-specific recipients, range, content, answers, secrecy and source lifetime."
+        },
+        {
+          "spell_id": "detect_thoughts",
+          "requirement": "Reuse represented language/hearing where applicable, then implement the spell-specific recipients, range, content, answers, secrecy and source lifetime."
+        },
+        {
+          "spell_id": "illusory_script",
+          "requirement": "Reuse represented language/hearing where applicable, then implement the spell-specific recipients, range, content, answers, secrecy and source lifetime."
+        },
+        {
+          "spell_id": "magic_mouth",
+          "requirement": "Reuse represented language/hearing where applicable, then implement the spell-specific recipients, range, content, answers, secrecy and source lifetime."
+        },
+        {
+          "spell_id": "message",
+          "requirement": "Reuse represented language/hearing where applicable, then implement the spell-specific recipients, range, content, answers, secrecy and source lifetime."
+        },
+        {
+          "spell_id": "sending",
+          "requirement": "Reuse represented language/hearing where applicable, then implement the spell-specific recipients, range, content, answers, secrecy and source lifetime."
+        },
+        {
+          "spell_id": "speak_with_animals",
+          "requirement": "Reuse represented language/hearing where applicable, then implement the spell-specific recipients, range, content, answers, secrecy and source lifetime."
+        },
+        {
+          "spell_id": "speak_with_dead",
+          "requirement": "Reuse represented language/hearing where applicable, then implement the spell-specific recipients, range, content, answers, secrecy and source lifetime."
+        },
+        {
+          "spell_id": "speak_with_plants",
+          "requirement": "Reuse represented language/hearing where applicable, then implement the spell-specific recipients, range, content, answers, secrecy and source lifetime."
+        },
+        {
+          "spell_id": "suggestion",
+          "requirement": "Reuse represented language/hearing where applicable, then implement the spell-specific recipients, range, content, answers, secrecy and source lifetime."
+        },
+        {
+          "spell_id": "tongues",
+          "requirement": "Reuse represented language/hearing where applicable, then implement the spell-specific recipients, range, content, answers, secrecy and source lifetime."
+        },
+        {
+          "spell_id": "zone_of_truth",
+          "requirement": "Reuse represented language/hearing where applicable, then implement the spell-specific recipients, range, content, answers, secrecy and source lifetime."
+        }
+      ]
+    },
+    {
+      "id": "compelled_actions",
+      "spells": [
+        {
+          "spell_id": "command",
+          "requirement": "Execute the target-owned commanded/reaction action and legal route with the correct OA policy, budgets, source conditions and stopping rules."
+        },
+        {
+          "spell_id": "dissonant_whispers",
+          "requirement": "Execute the target-owned commanded/reaction action and legal route with the correct OA policy, budgets, source conditions and stopping rules."
+        },
+        {
+          "spell_id": "fear",
+          "requirement": "Execute the target-owned commanded/reaction action and legal route with the correct OA policy, budgets, source conditions and stopping rules."
+        }
+      ]
+    },
+    {
+      "id": "containment",
+      "spells": [
+        {
+          "spell_id": "rope_trick",
+          "requirement": "Retain entrance/rope/window, permitted occupants/capacity, actual internal targeting barrier and legal release of exact contents at ending."
+        }
+      ]
+    },
+    {
+      "id": "created_actors",
+      "spells": [
+        {
+          "spell_id": "animate_dead",
+          "requirement": "Supply the complete eligible statblocks/templates and exact placement, command, turn, type, resource, inventory and ending policies; retain all source-specific subclauses."
+        },
+        {
+          "spell_id": "find_familiar",
+          "requirement": "Supply the complete eligible statblocks/templates and exact placement, command, turn, type, resource, inventory and ending policies; retain all source-specific subclauses."
+        },
+        {
+          "spell_id": "find_steed",
+          "requirement": "Supply the complete eligible statblocks/templates and exact placement, command, turn, type, resource, inventory and ending policies; retain all source-specific subclauses."
+        },
+        {
+          "spell_id": "phantom_steed",
+          "requirement": "Supply the complete eligible statblocks/templates and exact placement, command, turn, type, resource, inventory and ending policies; retain all source-specific subclauses."
+        },
+        {
+          "spell_id": "unseen_servant",
+          "requirement": "Supply the complete eligible statblocks/templates and exact placement, command, turn, type, resource, inventory and ending policies; retain all source-specific subclauses."
+        }
+      ]
+    },
+    {
+      "id": "created_objects",
+      "spells": [
+        {
+          "spell_id": "mage_hand",
+          "requirement": "Create exact located object/force identities with source-defined control, capacity, following, contents, ending and legal release."
+        },
+        {
+          "spell_id": "spiritual_weapon",
+          "requirement": "Create exact located object/force identities with source-defined control, capacity, following, contents, ending and legal release."
+        },
+        {
+          "spell_id": "tensers_floating_disk",
+          "requirement": "Create exact located object/force identities with source-defined control, capacity, following, contents, ending and legal release."
+        }
+      ]
+    },
+    {
+      "id": "curse_damage_routes",
+      "spells": [
+        {
+          "spell_id": "bestow_curse",
+          "requirement": "Retain the repaired in-occurrence packet and paid-slot durations; cover still-missing direct/delayed/aftermath/class-feature spell and monster-caster routes and repeated-step occurrence identity."
+        }
+      ]
+    },
+    {
+      "id": "curses_and_attunement",
+      "spells": [
+        {
+          "spell_id": "remove_curse",
+          "requirement": "End all eligible creature/object curse sources; on cursed magic items retain curse and break exact-copy attunement so removal/discard is legal."
+        }
+      ]
+    },
+    {
+      "id": "damage_copy",
+      "spells": [
+        {
+          "spell_id": "warding_bond",
+          "requirement": "Copy the specified actual recipient damage to caster as a new bounded consequence; existing split/redirect policies are not a copy operation."
+        }
+      ]
+    },
+    {
+      "id": "damage_repeat_saves",
+      "spells": [
+        {
+          "spell_id": "tashas_hideous_laughter",
+          "requirement": "Trigger one source-owned repeat save on each qualifying damage occurrence with its Advantage rule, plus independent scheduled saves and exact ending."
+        }
+      ]
+    },
+    {
+      "id": "damage_to_healing",
+      "spells": [
+        {
+          "spell_id": "vampiric_touch",
+          "requirement": "Heal from the source-defined fraction of actual eligible damage dealt after defenses, not rolled or prevented damage, and settle once after continuations."
+        }
+      ]
+    },
+    {
+      "id": "death_and_remains",
+      "spells": [
+        {
+          "spell_id": "gentle_repose",
+          "requirement": "Retain exact dead/living/corpse identity, death timing, source restrictions and actual stabilization/revival/remains changes; preserve excluded deaths and missing parts."
+        },
+        {
+          "spell_id": "revivify",
+          "requirement": "Retain exact dead/living/corpse identity, death timing, source restrictions and actual stabilization/revival/remains changes; preserve excluded deaths and missing parts."
+        },
+        {
+          "spell_id": "spare_the_dying",
+          "requirement": "Retain exact dead/living/corpse identity, death timing, source restrictions and actual stabilization/revival/remains changes; preserve excluded deaths and missing parts."
+        },
+        {
+          "spell_id": "speak_with_dead",
+          "requirement": "Retain exact dead/living/corpse identity, death timing, source restrictions and actual stabilization/revival/remains changes; preserve excluded deaths and missing parts."
+        }
+      ]
+    },
+    {
+      "id": "detection",
+      "spells": [
+        {
+          "spell_id": "detect_evil_and_good",
+          "requirement": "Read actual eligible facts with source-defined range, material barriers, actions and disclosure; preserve unknown facts and observer-specific knowledge."
+        },
+        {
+          "spell_id": "detect_magic",
+          "requirement": "Read actual eligible facts with source-defined range, material barriers, actions and disclosure; preserve unknown facts and observer-specific knowledge."
+        },
+        {
+          "spell_id": "detect_poison_and_disease",
+          "requirement": "Read actual eligible facts with source-defined range, material barriers, actions and disclosure; preserve unknown facts and observer-specific knowledge."
+        },
+        {
+          "spell_id": "detect_thoughts",
+          "requirement": "Read actual eligible facts with source-defined range, material barriers, actions and disclosure; preserve unknown facts and observer-specific knowledge."
+        },
+        {
+          "spell_id": "find_traps",
+          "requirement": "Read actual eligible facts with source-defined range, material barriers, actions and disclosure; preserve unknown facts and observer-specific knowledge."
+        },
+        {
+          "spell_id": "identify",
+          "requirement": "Read actual eligible facts with source-defined range, material barriers, actions and disclosure; preserve unknown facts and observer-specific knowledge."
+        },
+        {
+          "spell_id": "locate_animals_or_plants",
+          "requirement": "Read actual eligible facts with source-defined range, material barriers, actions and disclosure; preserve unknown facts and observer-specific knowledge."
+        },
+        {
+          "spell_id": "locate_object",
+          "requirement": "Read actual eligible facts with source-defined range, material barriers, actions and disclosure; preserve unknown facts and observer-specific knowledge."
+        },
+        {
+          "spell_id": "mind_spike",
+          "requirement": "Read actual eligible facts with source-defined range, material barriers, actions and disclosure; preserve unknown facts and observer-specific knowledge."
+        },
+        {
+          "spell_id": "see_invisibility",
+          "requirement": "Read actual eligible facts with source-defined range, material barriers, actions and disclosure; preserve unknown facts and observer-specific knowledge."
+        }
+      ]
+    },
+    {
+      "id": "detection_masking",
+      "spells": [
+        {
+          "spell_id": "nondetection",
+          "requirement": "Change only the specified detection/classification/sensor result for the exact recipient; preserve true identity and recast/permanence rules."
+        },
+        {
+          "spell_id": "nystuls_magic_aura",
+          "requirement": "Change only the specified detection/classification/sensor result for the exact recipient; preserve true identity and recast/permanence rules."
+        }
+      ]
+    },
+    {
+      "id": "dispelling",
+      "spells": [
+        {
+          "spell_id": "dispel_magic",
+          "requirement": "Inspect ongoing spell source levels; end each eligible source or make the declared higher-level check independently; preserve unrelated effects and item properties."
+        }
+      ]
+    },
+    {
+      "id": "divination",
+      "spells": [
+        {
+          "spell_id": "augury",
+          "requirement": "Resolve against authored facts/outcomes with captured uncertainty and use history; no invented answer or success-only log."
+        }
+      ]
+    },
+    {
+      "id": "falling",
+      "spells": [
+        {
+          "spell_id": "feather_fall",
+          "requirement": "Execute real falling with captured descent rate, duration, source-specific landing damage/ending and actual legal destination; a falling condition icon does not supply the world host."
+        }
+      ]
+    },
+    {
+      "id": "flight",
+      "spells": [
+        {
+          "spell_id": "fly",
+          "requirement": "Supply actual three-dimensional occupancy/movement, hover or attachment limits, source ending and legal fall/landing; a Speed bonus alone is not flight."
+        },
+        {
+          "spell_id": "gaseous_form",
+          "requirement": "Supply actual three-dimensional occupancy/movement, hover or attachment limits, source ending and legal fall/landing; a Speed bonus alone is not flight."
+        },
+        {
+          "spell_id": "levitate",
+          "requirement": "Supply actual three-dimensional occupancy/movement, hover or attachment limits, source ending and legal fall/landing; a Speed bonus alone is not flight."
+        },
+        {
+          "spell_id": "spider_climb",
+          "requirement": "Supply actual three-dimensional occupancy/movement, hover or attachment limits, source ending and legal fall/landing; a Speed bonus alone is not flight."
+        }
+      ]
+    },
+    {
+      "id": "forced_movement",
+      "spells": [
+        {
+          "spell_id": "gust_of_wind",
+          "requirement": "Route each source-owned forced displacement through actual legal map space and hazards with declared OA policy and no voluntary movement charge."
+        }
+      ]
+    },
+    {
+      "id": "forms",
+      "spells": [
+        {
+          "spell_id": "alter_self",
+          "requirement": "Declare legal forms, retained/replaced abilities and senses, gear policy, costs, restrictions and actual reversion/expulsion without refilling resources."
+        },
+        {
+          "spell_id": "enlarge/reduce",
+          "requirement": "Declare legal forms, retained/replaced abilities and senses, gear policy, costs, restrictions and actual reversion/expulsion without refilling resources."
+        },
+        {
+          "spell_id": "gaseous_form",
+          "requirement": "Declare legal forms, retained/replaced abilities and senses, gear policy, costs, restrictions and actual reversion/expulsion without refilling resources."
+        },
+        {
+          "spell_id": "meld_into_stone",
+          "requirement": "Declare legal forms, retained/replaced abilities and senses, gear policy, costs, restrictions and actual reversion/expulsion without refilling resources."
+        },
+        {
+          "spell_id": "moonbeam",
+          "requirement": "Declare legal forms, retained/replaced abilities and senses, gear policy, costs, restrictions and actual reversion/expulsion without refilling resources."
+        }
+      ]
+    },
+    {
+      "id": "granted_actions",
+      "spells": [
+        {
+          "spell_id": "alter_self",
+          "requirement": "Author the correct actor, action kind, budgets, choices, range and repeated effects; retain the parent cast/source and avoid a new named executor."
+        },
+        {
+          "spell_id": "call_lightning",
+          "requirement": "Author the correct actor, action kind, budgets, choices, range and repeated effects; retain the parent cast/source and avoid a new named executor."
+        },
+        {
+          "spell_id": "dancing_lights",
+          "requirement": "Author the correct actor, action kind, budgets, choices, range and repeated effects; retain the parent cast/source and avoid a new named executor."
+        },
+        {
+          "spell_id": "detect_magic",
+          "requirement": "Author the correct actor, action kind, budgets, choices, range and repeated effects; retain the parent cast/source and avoid a new named executor."
+        },
+        {
+          "spell_id": "detect_thoughts",
+          "requirement": "Author the correct actor, action kind, budgets, choices, range and repeated effects; retain the parent cast/source and avoid a new named executor."
+        },
+        {
+          "spell_id": "dragons_breath",
+          "requirement": "Author the correct actor, action kind, budgets, choices, range and repeated effects; retain the parent cast/source and avoid a new named executor."
+        },
+        {
+          "spell_id": "expeditious_retreat",
+          "requirement": "Author the correct actor, action kind, budgets, choices, range and repeated effects; retain the parent cast/source and avoid a new named executor."
+        },
+        {
+          "spell_id": "flame_blade",
+          "requirement": "Author the correct actor, action kind, budgets, choices, range and repeated effects; retain the parent cast/source and avoid a new named executor."
+        },
+        {
+          "spell_id": "heat_metal",
+          "requirement": "Author the correct actor, action kind, budgets, choices, range and repeated effects; retain the parent cast/source and avoid a new named executor."
+        },
+        {
+          "spell_id": "mage_hand",
+          "requirement": "Author the correct actor, action kind, budgets, choices, range and repeated effects; retain the parent cast/source and avoid a new named executor."
+        },
+        {
+          "spell_id": "produce_flame",
+          "requirement": "Author the correct actor, action kind, budgets, choices, range and repeated effects; retain the parent cast/source and avoid a new named executor."
+        },
+        {
+          "spell_id": "spiritual_weapon",
+          "requirement": "Author the correct actor, action kind, budgets, choices, range and repeated effects; retain the parent cast/source and avoid a new named executor."
+        },
+        {
+          "spell_id": "unseen_servant",
+          "requirement": "Author the correct actor, action kind, budgets, choices, range and repeated effects; retain the parent cast/source and avoid a new named executor."
+        },
+        {
+          "spell_id": "vampiric_touch",
+          "requirement": "Author the correct actor, action kind, budgets, choices, range and repeated effects; retain the parent cast/source and avoid a new named executor."
+        }
+      ]
+    },
+    {
+      "id": "granted_movement",
+      "spells": [
+        {
+          "spell_id": "jump",
+          "requirement": "Execute the declared jump/move with its movement payment, per-turn limit, route and OA rules; do not substitute teleport or unbounded Speed."
+        }
+      ]
+    },
+    {
+      "id": "heard_targeting",
+      "spells": [
+        {
+          "spell_id": "vicious_mockery",
+          "requirement": "Allow the exact heard creature through represented perception without requiring sight, while preserving location, range, plane and sound-route guards."
+        }
+      ]
+    },
+    {
+      "id": "illusions",
+      "spells": [
+        {
+          "spell_id": "disguise_self",
+          "requirement": "Represent exact appearance/senses/location, interactions and Study checks; retain observer-specific disbelief, permitted changes and real consequences."
+        },
+        {
+          "spell_id": "illusory_script",
+          "requirement": "Represent exact appearance/senses/location, interactions and Study checks; retain observer-specific disbelief, permitted changes and real consequences."
+        },
+        {
+          "spell_id": "major_image",
+          "requirement": "Represent exact appearance/senses/location, interactions and Study checks; retain observer-specific disbelief, permitted changes and real consequences."
+        },
+        {
+          "spell_id": "minor_illusion",
+          "requirement": "Represent exact appearance/senses/location, interactions and Study checks; retain observer-specific disbelief, permitted changes and real consequences."
+        },
+        {
+          "spell_id": "mirror_image",
+          "requirement": "Represent exact appearance/senses/location, interactions and Study checks; retain observer-specific disbelief, permitted changes and real consequences."
+        },
+        {
+          "spell_id": "nystuls_magic_aura",
+          "requirement": "Represent exact appearance/senses/location, interactions and Study checks; retain observer-specific disbelief, permitted changes and real consequences."
+        },
+        {
+          "spell_id": "phantasmal_force",
+          "requirement": "Represent exact appearance/senses/location, interactions and Study checks; retain observer-specific disbelief, permitted changes and real consequences."
+        },
+        {
+          "spell_id": "silent_image",
+          "requirement": "Represent exact appearance/senses/location, interactions and Study checks; retain observer-specific disbelief, permitted changes and real consequences."
+        }
+      ]
+    },
+    {
+      "id": "item_benefits",
+      "spells": [
+        {
+          "spell_id": "magic_weapon",
+          "requirement": "Attach only to the selected eligible weapon copy; preserve ability/dice/type options, paid-slot/character-level scaling, ownership and drop/recast ending."
+        },
+        {
+          "spell_id": "shillelagh",
+          "requirement": "Attach only to the selected eligible weapon copy; preserve ability/dice/type options, paid-slot/character-level scaling, ownership and drop/recast ending."
+        }
+      ]
+    },
+    {
+      "id": "light_and_darkness",
+      "spells": [
+        {
+          "spell_id": "continual_flame",
+          "requirement": "Create/move/cover actual source-owned illumination and darkness, exact radii, sight exceptions and overlapping-spell ending; a marker alone is insufficient."
+        },
+        {
+          "spell_id": "dancing_lights",
+          "requirement": "Create/move/cover actual source-owned illumination and darkness, exact radii, sight exceptions and overlapping-spell ending; a marker alone is insufficient."
+        },
+        {
+          "spell_id": "darkness",
+          "requirement": "Create/move/cover actual source-owned illumination and darkness, exact radii, sight exceptions and overlapping-spell ending; a marker alone is insufficient."
+        },
+        {
+          "spell_id": "daylight",
+          "requirement": "Create/move/cover actual source-owned illumination and darkness, exact radii, sight exceptions and overlapping-spell ending; a marker alone is insufficient."
+        },
+        {
+          "spell_id": "faerie_fire",
+          "requirement": "Create/move/cover actual source-owned illumination and darkness, exact radii, sight exceptions and overlapping-spell ending; a marker alone is insufficient."
+        },
+        {
+          "spell_id": "flame_blade",
+          "requirement": "Create/move/cover actual source-owned illumination and darkness, exact radii, sight exceptions and overlapping-spell ending; a marker alone is insufficient."
+        },
+        {
+          "spell_id": "flaming_sphere",
+          "requirement": "Create/move/cover actual source-owned illumination and darkness, exact radii, sight exceptions and overlapping-spell ending; a marker alone is insufficient."
+        },
+        {
+          "spell_id": "light",
+          "requirement": "Create/move/cover actual source-owned illumination and darkness, exact radii, sight exceptions and overlapping-spell ending; a marker alone is insufficient."
+        },
+        {
+          "spell_id": "produce_flame",
+          "requirement": "Create/move/cover actual source-owned illumination and darkness, exact radii, sight exceptions and overlapping-spell ending; a marker alone is insufficient."
+        },
+        {
+          "spell_id": "shining_smite",
+          "requirement": "Create/move/cover actual source-owned illumination and darkness, exact radii, sight exceptions and overlapping-spell ending; a marker alone is insufficient."
+        },
+        {
+          "spell_id": "starry_wisp",
+          "requirement": "Create/move/cover actual source-owned illumination and darkness, exact radii, sight exceptions and overlapping-spell ending; a marker alone is insufficient."
+        }
+      ]
+    },
+    {
+      "id": "liquid_surfaces",
+      "spells": [
+        {
+          "spell_id": "water_walk",
+          "requirement": "Treat the surface as traversable ground while preserving lava heat; voluntary surface/submerged transition costs a Bonus Action, and falling passes through."
+        }
+      ]
+    },
+    {
+      "id": "long_cast",
+      "spells": [
+        {
+          "spell_id": "alarm",
+          "requirement": "Preserve the source casting duration, participants, ritual extension, interruption and once-only payment; do not replace a timed cast with an Action."
+        },
+        {
+          "spell_id": "animate_dead",
+          "requirement": "Preserve the source casting duration, participants, ritual extension, interruption and once-only payment; do not replace a timed cast with an Action."
+        },
+        {
+          "spell_id": "augury",
+          "requirement": "Preserve the source casting duration, participants, ritual extension, interruption and once-only payment; do not replace a timed cast with an Action."
+        },
+        {
+          "spell_id": "clairvoyance",
+          "requirement": "Preserve the source casting duration, participants, ritual extension, interruption and once-only payment; do not replace a timed cast with an Action."
+        },
+        {
+          "spell_id": "find_familiar",
+          "requirement": "Preserve the source casting duration, participants, ritual extension, interruption and once-only payment; do not replace a timed cast with an Action."
+        },
+        {
+          "spell_id": "glyph_of_warding",
+          "requirement": "Preserve the source casting duration, participants, ritual extension, interruption and once-only payment; do not replace a timed cast with an Action."
+        },
+        {
+          "spell_id": "identify",
+          "requirement": "Preserve the source casting duration, participants, ritual extension, interruption and once-only payment; do not replace a timed cast with an Action."
+        },
+        {
+          "spell_id": "illusory_script",
+          "requirement": "Preserve the source casting duration, participants, ritual extension, interruption and once-only payment; do not replace a timed cast with an Action."
+        },
+        {
+          "spell_id": "leomunds_tiny_hut",
+          "requirement": "Preserve the source casting duration, participants, ritual extension, interruption and once-only payment; do not replace a timed cast with an Action."
+        },
+        {
+          "spell_id": "magic_circle",
+          "requirement": "Preserve the source casting duration, participants, ritual extension, interruption and once-only payment; do not replace a timed cast with an Action."
+        },
+        {
+          "spell_id": "magic_mouth",
+          "requirement": "Preserve the source casting duration, participants, ritual extension, interruption and once-only payment; do not replace a timed cast with an Action."
+        },
+        {
+          "spell_id": "mending",
+          "requirement": "Preserve the source casting duration, participants, ritual extension, interruption and once-only payment; do not replace a timed cast with an Action."
+        },
+        {
+          "spell_id": "phantom_steed",
+          "requirement": "Preserve the source casting duration, participants, ritual extension, interruption and once-only payment; do not replace a timed cast with an Action."
+        },
+        {
+          "spell_id": "plant_growth",
+          "requirement": "Preserve the source casting duration, participants, ritual extension, interruption and once-only payment; do not replace a timed cast with an Action."
+        },
+        {
+          "spell_id": "prayer_of_healing",
+          "requirement": "Preserve the source casting duration, participants, ritual extension, interruption and once-only payment; do not replace a timed cast with an Action."
+        }
+      ]
+    },
+    {
+      "id": "long_lifetimes",
+      "spells": [
+        {
+          "spell_id": "animal_friendship",
+          "requirement": "Carry the declared source and recipient state through actual campaign time, ending and allowed checkpoints; preserve exact damage/recurrence policies."
+        },
+        {
+          "spell_id": "animate_dead",
+          "requirement": "Carry the declared source and recipient state through actual campaign time, ending and allowed checkpoints; preserve exact damage/recurrence policies."
+        }
+      ]
+    },
+    {
+      "id": "object_ignition",
+      "spells": [
+        {
+          "spell_id": "burning_hands",
+          "requirement": "Enumerate exact eligible unworn/uncarried flammable objects, including collocated objects; apply actual damage/burning and preserve unknown material facts."
+        },
+        {
+          "spell_id": "fire_bolt",
+          "requirement": "Enumerate exact eligible unworn/uncarried flammable objects, including collocated objects; apply actual damage/burning and preserve unknown material facts."
+        },
+        {
+          "spell_id": "fireball",
+          "requirement": "Enumerate exact eligible unworn/uncarried flammable objects, including collocated objects; apply actual damage/burning and preserve unknown material facts."
+        }
+      ]
+    },
+    {
+      "id": "object_repair",
+      "spells": [
+        {
+          "spell_id": "mending",
+          "requirement": "Validate one source-sized break with original pieces and join the existing copy; preserve magical properties without restoring lost magic."
+        }
+      ]
+    },
+    {
+      "id": "object_targets",
+      "spells": [
+        {
+          "spell_id": "eldritch_blast",
+          "requirement": "Complete the declared object target/control consumer and its effects; a creature-only path does not author the full spell."
+        },
+        {
+          "spell_id": "faerie_fire",
+          "requirement": "Complete the declared object target/control consumer and its effects; a creature-only path does not author the full spell."
+        },
+        {
+          "spell_id": "sorcerous_burst",
+          "requirement": "Complete the declared object target/control consumer and its effects; a creature-only path does not author the full spell."
+        },
+        {
+          "spell_id": "starry_wisp",
+          "requirement": "Complete the declared object target/control consumer and its effects; a creature-only path does not author the full spell."
+        }
+      ]
+    },
+    {
+      "id": "objects",
+      "spells": [
+        {
+          "spell_id": "arcane_lock",
+          "requirement": "Use exact represented item/object copies, eligibility facts and quantities; retain real manipulation, drop, damage, access and ending outcomes."
+        },
+        {
+          "spell_id": "continual_flame",
+          "requirement": "Use exact represented item/object copies, eligibility facts and quantities; retain real manipulation, drop, damage, access and ending outcomes."
+        },
+        {
+          "spell_id": "fear",
+          "requirement": "Use exact represented item/object copies, eligibility facts and quantities; retain real manipulation, drop, damage, access and ending outcomes."
+        },
+        {
+          "spell_id": "heat_metal",
+          "requirement": "Use exact represented item/object copies, eligibility facts and quantities; retain real manipulation, drop, damage, access and ending outcomes."
+        },
+        {
+          "spell_id": "knock",
+          "requirement": "Use exact represented item/object copies, eligibility facts and quantities; retain real manipulation, drop, damage, access and ending outcomes."
+        },
+        {
+          "spell_id": "levitate",
+          "requirement": "Use exact represented item/object copies, eligibility facts and quantities; retain real manipulation, drop, damage, access and ending outcomes."
+        },
+        {
+          "spell_id": "light",
+          "requirement": "Use exact represented item/object copies, eligibility facts and quantities; retain real manipulation, drop, damage, access and ending outcomes."
+        }
+      ]
+    },
+    {
+      "id": "phasing",
+      "spells": [
+        {
+          "spell_id": "blink",
+          "requirement": "Execute actual plane membership, per-turn roll, observation/interaction limits and chosen/nearest legal return; retain original actor and gear."
+        }
+      ]
+    },
+    {
+      "id": "post_hit_casts",
+      "spells": [
+        {
+          "spell_id": "divine_smite",
+          "requirement": "Keep the triggering attack/hit pending while the actor chooses and pays the extra Bonus Action/slot; merge the declared rider and retain target/source identity."
+        },
+        {
+          "spell_id": "ensnaring_strike",
+          "requirement": "Keep the triggering attack/hit pending while the actor chooses and pays the extra Bonus Action/slot; merge the declared rider and retain target/source identity."
+        },
+        {
+          "spell_id": "searing_smite",
+          "requirement": "Keep the triggering attack/hit pending while the actor chooses and pays the extra Bonus Action/slot; merge the declared rider and retain target/source identity."
+        },
+        {
+          "spell_id": "shining_smite",
+          "requirement": "Keep the triggering attack/hit pending while the actor chooses and pays the extra Bonus Action/slot; merge the declared rider and retain target/source identity."
+        }
+      ]
+    },
+    {
+      "id": "quantities",
+      "spells": [
+        {
+          "spell_id": "create_food_and_water",
+          "requirement": "Create/consume/purify real measured quantities with exact ownership, containers, expiry and source outcomes, not descriptive substitutes."
+        },
+        {
+          "spell_id": "create_or_destroy_water",
+          "requirement": "Create/consume/purify real measured quantities with exact ownership, containers, expiry and source outcomes, not descriptive substitutes."
+        },
+        {
+          "spell_id": "goodberry",
+          "requirement": "Create/consume/purify real measured quantities with exact ownership, containers, expiry and source outcomes, not descriptive substitutes."
+        },
+        {
+          "spell_id": "plant_growth",
+          "requirement": "Create/consume/purify real measured quantities with exact ownership, containers, expiry and source outcomes, not descriptive substitutes."
+        },
+        {
+          "spell_id": "purify_food_and_drink",
+          "requirement": "Create/consume/purify real measured quantities with exact ownership, containers, expiry and source outcomes, not descriptive substitutes."
+        }
+      ]
+    },
+    {
+      "id": "reaction_routes",
+      "spells": [
+        {
+          "spell_id": "counterspell",
+          "requirement": "Produce the exact qualifying trigger across required attack/cast/damage/fall hosts; revalidate actor/target, interruption and one Reaction/payment."
+        },
+        {
+          "spell_id": "feather_fall",
+          "requirement": "Produce the exact qualifying trigger across required attack/cast/damage/fall hosts; revalidate actor/target, interruption and one Reaction/payment."
+        },
+        {
+          "spell_id": "hellish_rebuke",
+          "requirement": "Produce the exact qualifying trigger across required attack/cast/damage/fall hosts; revalidate actor/target, interruption and one Reaction/payment."
+        },
+        {
+          "spell_id": "shield",
+          "requirement": "Produce the exact qualifying trigger across required attack/cast/damage/fall hosts; revalidate actor/target, interruption and one Reaction/payment."
+        }
+      ]
+    },
+    {
+      "id": "remote_senses",
+      "spells": [
+        {
+          "spell_id": "clairvoyance",
+          "requirement": "Supply sensor/familiar exact identity, control cost, origin, distance, sensory exclusions and touch-delivery windows rather than granting global sight."
+        },
+        {
+          "spell_id": "find_familiar",
+          "requirement": "Supply sensor/familiar exact identity, control cost, origin, distance, sensory exclusions and touch-delivery windows rather than granting global sight."
+        }
+      ]
+    },
+    {
+      "id": "restricted_budgets",
+      "spells": [
+        {
+          "spell_id": "haste",
+          "requirement": "Express Action-vs-Bonus exclusivity, restricted extra actions, attack counts and lost actions/Reactions; never turn a restricted grant into a general budget."
+        },
+        {
+          "spell_id": "slow",
+          "requirement": "Express Action-vs-Bonus exclusivity, restricted extra actions, attack counts and lost actions/Reactions; never turn a restricted grant into a general budget."
+        },
+        {
+          "spell_id": "stinking_cloud",
+          "requirement": "Express Action-vs-Bonus exclusivity, restricted extra actions, attack counts and lost actions/Reactions; never turn a restricted grant into a general budget."
+        }
+      ]
+    },
+    {
+      "id": "retained_conversion_limit",
+      "spells": [
+        {
+          "spell_id": "bestow_curse",
+          "requirement": "Remaining limits: the Curse packet rides weapon hits, SpellDamageRolls settlements and spell-zone ticks only; other direct spell settlements (room-spell effects, delayed/aftermath damage, class-feature spell damage) and monster casters add none; Divine Smite and Hunter's Mark add no second packet to a hit."
+        },
+        {
+          "spell_id": "calm_emotions",
+          "requirement": "Support a separate indifference scope per affected creature if required by the selected source clauses; current controls choose one shared set. Preserve prepayment cancellation and explicit choices for late arrivals."
+        },
+        {
+          "spell_id": "eldritch_blast",
+          "requirement": "Reach actual eligible objects with per-beam targeting, invocation riders and one cast payment."
+        },
+        {
+          "spell_id": "faerie_fire",
+          "requirement": "Outline eligible objects and replace the not-Blinded approximation with actual per-observer sight/light consumers."
+        },
+        {
+          "spell_id": "sorcerous_burst",
+          "requirement": "Connect actual object targeting and typed damage; keep the selected permission ability for the explosion cap."
+        },
+        {
+          "spell_id": "starry_wisp",
+          "requirement": "Finish the real 10-foot Dim Light emitter, then prove creature/object targeting and exact expiry through controls."
+        },
+        {
+          "spell_id": "vicious_mockery",
+          "requirement": "Permit a creature the caster can see OR hear; preserve represented sound, concealment and no-payment refusal."
+        }
+      ]
+    },
+    {
+      "id": "retargeting",
+      "spells": [
+        {
+          "spell_id": "hex",
+          "requirement": "Retain the original cast/payment/duration and qualifying zero-HP receipt while paying only the declared Bonus Action to select the new legal target."
+        },
+        {
+          "spell_id": "hunters_mark",
+          "requirement": "Retain the original cast/payment/duration and qualifying zero-HP receipt while paying only the declared Bonus Action to select the new legal target."
+        }
+      ]
+    },
+    {
+      "id": "roll_hosts",
+      "spells": [
+        {
+          "spell_id": "beacon_of_hope",
+          "requirement": "Apply the exact modifier/choice to its eligible roll or settled packet, with once-per-turn/source rules and no payment/roll replay."
+        },
+        {
+          "spell_id": "flame_blade",
+          "requirement": "Apply the exact modifier/choice to its eligible roll or settled packet, with once-per-turn/source rules and no payment/roll replay."
+        },
+        {
+          "spell_id": "guidance",
+          "requirement": "Apply the exact modifier/choice to its eligible roll or settled packet, with once-per-turn/source rules and no payment/roll replay."
+        },
+        {
+          "spell_id": "lesser_restoration",
+          "requirement": "Choose exactly one of four conditions to end. The current remove_condition effect is fixed; do not execute all four alternatives together or pretend grant_condition.condition_options applies to removal."
+        },
+        {
+          "spell_id": "protection_from_evil_and_good",
+          "requirement": "Apply the exact modifier/choice to its eligible roll or settled packet, with once-per-turn/source rules and no payment/roll replay."
+        },
+        {
+          "spell_id": "resistance",
+          "requirement": "Apply the exact modifier/choice to its eligible roll or settled packet, with once-per-turn/source rules and no payment/roll replay."
+        },
+        {
+          "spell_id": "thaumaturgy",
+          "requirement": "Apply the exact modifier/choice to its eligible roll or settled packet, with once-per-turn/source rules and no payment/roll replay."
+        }
+      ]
+    },
+    {
+      "id": "stored_spells",
+      "spells": [
+        {
+          "spell_id": "glyph_of_warding",
+          "requirement": "Retain the stored eligible spell, both costs, source level, trigger/exceptions, relocation ending and release/concentration/target rules; no spell-ID dispatch."
+        }
+      ]
+    },
+    {
+      "id": "teleportation",
+      "spells": [
+        {
+          "spell_id": "misty_step",
+          "requirement": "Choose a seen legal unoccupied destination and move the exact actor/gear once, preserving plane/containment and no-OA teleport semantics."
+        }
+      ]
+    },
+    {
+      "id": "terrain",
+      "spells": [
+        {
+          "spell_id": "plant_growth",
+          "requirement": "Represent actual source-defined terrain movement cost, anchoring, camouflage, plant selection and discovery; preserve actor travel and once-only movement damage."
+        },
+        {
+          "spell_id": "speak_with_plants",
+          "requirement": "Represent actual source-defined terrain movement cost, anchoring, camouflage, plant selection and discovery; preserve actor travel and once-only movement damage."
+        },
+        {
+          "spell_id": "spike_growth",
+          "requirement": "Represent actual source-defined terrain movement cost, anchoring, camouflage, plant selection and discovery; preserve actor travel and once-only movement damage."
+        }
+      ]
+    },
+    {
+      "id": "tethers",
+      "spells": [
+        {
+          "spell_id": "ensnaring_strike",
+          "requirement": "Bind each restrained target and exact anchor/cast; source-defined Athletics/STR checks, helper costs, fire/escape and cleanup need their actual controls."
+        },
+        {
+          "spell_id": "entangle",
+          "requirement": "Bind each restrained target and exact anchor/cast; source-defined Athletics/STR checks, helper costs, fire/escape and cleanup need their actual controls."
+        },
+        {
+          "spell_id": "web",
+          "requirement": "Bind each restrained target and exact anchor/cast; source-defined Athletics/STR checks, helper costs, fire/escape and cleanup need their actual controls."
+        }
+      ]
+    },
+    {
+      "id": "travel",
+      "spells": [
+        {
+          "spell_id": "animal_messenger",
+          "requirement": "Execute the source-defined travel/following, capacity, distance, terrain and arrival outcomes without duplicating elapsed time or moving identities by fiat."
+        },
+        {
+          "spell_id": "tensers_floating_disk",
+          "requirement": "Execute the source-defined travel/following, capacity, distance, terrain and arrival outcomes without duplicating elapsed time or moving identities by fiat."
+        }
+      ]
+    },
+    {
+      "id": "utility_world",
+      "spells": [
+        {
+          "spell_id": "druidcraft",
+          "requirement": "Author every source-listed utility choice, size, duration, concurrency and actual effect against represented world facts; no free-text universal GM."
+        },
+        {
+          "spell_id": "elementalism",
+          "requirement": "Author every source-listed utility choice, size, duration, concurrency and actual effect against represented world facts; no free-text universal GM."
+        },
+        {
+          "spell_id": "prestidigitation",
+          "requirement": "Author every source-listed utility choice, size, duration, concurrency and actual effect against represented world facts; no free-text universal GM."
+        },
+        {
+          "spell_id": "thaumaturgy",
+          "requirement": "Author every source-listed utility choice, size, duration, concurrency and actual effect against represented world facts; no free-text universal GM."
+        }
+      ]
+    },
+    {
+      "id": "wards_and_triggers",
+      "spells": [
+        {
+          "spell_id": "alarm",
+          "requirement": "Bind an exact object/area and trigger policy, authorized actors, consequences and source end; a condition marker or detection message is not the effect."
+        },
+        {
+          "spell_id": "arcane_lock",
+          "requirement": "Bind an exact object/area and trigger policy, authorized actors, consequences and source end; a condition marker or detection message is not the effect."
+        },
+        {
+          "spell_id": "knock",
+          "requirement": "Bind an exact object/area and trigger policy, authorized actors, consequences and source end; a condition marker or detection message is not the effect."
+        },
+        {
+          "spell_id": "magic_mouth",
+          "requirement": "Bind an exact object/area and trigger policy, authorized actors, consequences and source end; a condition marker or detection message is not the effect."
+        }
+      ]
+    },
+    {
+      "id": "world_outcomes",
+      "spells": [
+        {
+          "spell_id": "charm_person",
+          "requirement": "Bind source-defined attitude, knowledge or activity to real represented outcomes; retain bounded ADR-0023 choices instead of arbitrary obedience or a no-op."
+        },
+        {
+          "spell_id": "suggestion",
+          "requirement": "Bind source-defined attitude, knowledge or activity to real represented outcomes; retain bounded ADR-0023 choices instead of arbitrary obedience or a no-op."
+        }
+      ]
+    },
+    {
+      "id": "zones",
+      "spells": [
+        {
+          "spell_id": "call_lightning",
+          "requirement": "Mount source-defined recurring and moving area effects with independent appearance/entry/movement/start/end triggers, exclusions and once-per-turn receipts; area_selection is geometry only."
+        },
+        {
+          "spell_id": "conjure_animals",
+          "requirement": "Mount source-defined recurring and moving area effects with independent appearance/entry/movement/start/end triggers, exclusions and once-per-turn receipts; area_selection is geometry only."
+        },
+        {
+          "spell_id": "entangle",
+          "requirement": "Mount source-defined recurring and moving area effects with independent appearance/entry/movement/start/end triggers, exclusions and once-per-turn receipts; area_selection is geometry only."
+        },
+        {
+          "spell_id": "flaming_sphere",
+          "requirement": "Mount source-defined recurring and moving area effects with independent appearance/entry/movement/start/end triggers, exclusions and once-per-turn receipts; area_selection is geometry only."
+        },
+        {
+          "spell_id": "fog_cloud",
+          "requirement": "Mount source-defined recurring and moving area effects with independent appearance/entry/movement/start/end triggers, exclusions and once-per-turn receipts; area_selection is geometry only."
+        },
+        {
+          "spell_id": "grease",
+          "requirement": "Mount source-defined recurring and moving area effects with independent appearance/entry/movement/start/end triggers, exclusions and once-per-turn receipts; area_selection is geometry only."
+        },
+        {
+          "spell_id": "gust_of_wind",
+          "requirement": "Mount source-defined recurring and moving area effects with independent appearance/entry/movement/start/end triggers, exclusions and once-per-turn receipts; area_selection is geometry only."
+        },
+        {
+          "spell_id": "moonbeam",
+          "requirement": "Mount source-defined recurring and moving area effects with independent appearance/entry/movement/start/end triggers, exclusions and once-per-turn receipts; area_selection is geometry only."
+        },
+        {
+          "spell_id": "silence",
+          "requirement": "Mount source-defined recurring and moving area effects with independent appearance/entry/movement/start/end triggers, exclusions and once-per-turn receipts; area_selection is geometry only."
+        },
+        {
+          "spell_id": "sleet_storm",
+          "requirement": "Mount source-defined recurring and moving area effects with independent appearance/entry/movement/start/end triggers, exclusions and once-per-turn receipts; area_selection is geometry only."
+        },
+        {
+          "spell_id": "spike_growth",
+          "requirement": "Mount source-defined recurring and moving area effects with independent appearance/entry/movement/start/end triggers, exclusions and once-per-turn receipts; area_selection is geometry only."
+        },
+        {
+          "spell_id": "spirit_guardians",
+          "requirement": "Mount source-defined recurring and moving area effects with independent appearance/entry/movement/start/end triggers, exclusions and once-per-turn receipts; area_selection is geometry only."
+        },
+        {
+          "spell_id": "stinking_cloud",
+          "requirement": "Mount source-defined recurring and moving area effects with independent appearance/entry/movement/start/end triggers, exclusions and once-per-turn receipts; area_selection is geometry only."
+        },
+        {
+          "spell_id": "web",
+          "requirement": "Mount source-defined recurring and moving area effects with independent appearance/entry/movement/start/end triggers, exclusions and once-per-turn receipts; area_selection is geometry only."
+        },
+        {
+          "spell_id": "zone_of_truth",
+          "requirement": "Mount source-defined recurring and moving area effects with independent appearance/entry/movement/start/end triggers, exclusions and once-per-turn receipts; area_selection is geometry only."
+        }
+      ]
+    }
+  ]
+}

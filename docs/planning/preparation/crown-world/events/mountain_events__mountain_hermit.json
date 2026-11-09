@@ -1,0 +1,126 @@
+{
+  "schema": "crown-world-candidate/1",
+  "id": "mountain_events__mountain_hermit",
+  "name": "Mountain Hermit",
+  "kind": "events",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring declarations only; not registered engine opcodes.",
+  "required_extensions": [
+    "discovery",
+    "knowledge_social",
+    "objectives_rewards"
+  ],
+  "authored_operations": [
+    {
+      "operation": "settle_ordered_branch",
+      "seed_pointer": "/choices/0/effects",
+      "effects": [
+        {
+          "type": "take_gold",
+          "value": 50
+        },
+        {
+          "type": "reveal_map",
+          "radius": 3
+        }
+      ],
+      "condition": {
+        "type": "has_gold",
+        "amount": 50
+      },
+      "requirement": "Retain order, exact quantities/formulas, recipient, costs, branch descriptions and occurrence identity; no repeated payment when a child resumes."
+    },
+    {
+      "operation": "resolve_authored_check",
+      "seed_pointer": "/choices/1/check",
+      "check": {
+        "ability": "CHA",
+        "dc": 14
+      },
+      "requirement": "Keep ability, skill/context, DC and optional familiar Help exactly. Choose actor and actual context; settle one branch once; never silently convert an ability check into a saving throw."
+    },
+    {
+      "operation": "settle_ordered_branch",
+      "seed_pointer": "/choices/1/success/effects",
+      "effects": [
+        {
+          "type": "grant_condition",
+          "condition": "blessed",
+          "duration": 5
+        }
+      ],
+      "condition": null,
+      "requirement": "Retain order, exact quantities/formulas, recipient, costs, branch descriptions and occurrence identity; no repeated payment when a child resumes."
+    },
+    {
+      "operation": "settle_ordered_branch",
+      "seed_pointer": "/choices/2/effects",
+      "effects": [],
+      "condition": null,
+      "requirement": "Retain order, exact quantities/formulas, recipient, costs, branch descriptions and occurrence identity; no repeated payment when a child resumes."
+    }
+  ],
+  "blockers": [
+    "Retain numeric event duration/unit and custom condition IDs as authored. Generic marker support is not proof of defined mechanical benefit, cure scope or turn/clock conversion; map each declared condition to its actual rule.",
+    "EventResolver returns reveal_map, but EventDialog does not expose a reveal-map result for the overworld callback; no actual fog reveal established."
+  ],
+  "retained_input": {
+    "path": "data/core/events/mountain_events.json",
+    "sha256": "28c24bea91c714a4c49e7c7b6358adf5dea15b8f06d69dca29ef79542f0a6fd3",
+    "pointer": "/events/1",
+    "payload": {
+      "id": "mountain_hermit",
+      "name": "Mountain Hermit",
+      "weight": 10,
+      "description": "A weathered old hermit sits cross-legged on a rocky outcrop. 'Sit, adventurer. I have wisdom to share... for a price.'",
+      "type": "choice",
+      "choices": [
+        {
+          "text": "Pay 50 gold for wisdom",
+          "condition": {
+            "type": "has_gold",
+            "amount": 50
+          },
+          "effects": [
+            {
+              "type": "take_gold",
+              "value": 50
+            },
+            {
+              "type": "reveal_map",
+              "radius": 3
+            }
+          ],
+          "description": "The hermit reveals the surrounding terrain on your map."
+        },
+        {
+          "text": "Ask for a blessing instead",
+          "check": {
+            "ability": "CHA",
+            "dc": 14
+          },
+          "success": {
+            "description": "Impressed by your charm, the hermit blesses you freely.",
+            "effects": [
+              {
+                "type": "grant_condition",
+                "condition": "blessed",
+                "duration": 5
+              }
+            ]
+          },
+          "failure": {
+            "description": "The hermit snorts. 'Charisma won't buy bread.' You move on."
+          }
+        },
+        {
+          "text": "Move along",
+          "effects": []
+        }
+      ]
+    }
+  },
+  "authority": "Custom Crown campaign event, not an SRD trap/NPC/spell replacement",
+  "table_id": "mountain_events",
+  "occurrence_policy": "Table may roll again; same in-flight occurrence must not reroll/reapply on reopen. Campaign-specific uniqueness beyond generated room claims is unresolved, not silently global once-per-event-ID."
+}

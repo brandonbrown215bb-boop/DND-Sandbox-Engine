@@ -1,0 +1,132 @@
+{
+  "format": "crown-spell-candidate/1",
+  "id": "find_traps",
+  "name": "Find Traps",
+  "level": 2,
+  "status": "written_unverified_not_loaded",
+  "source": {
+    "authority": "SRD 5.2.1",
+    "url": "https://media.dndbeyond.com/compendium-images/srd/5.2/SRD_CC_v5.2.1.pdf",
+    "sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      131
+    ],
+    "header": {
+      "Casting Time": "Action",
+      "Range": "120 feet",
+      "Components": "V, S",
+      "Duration": "Instantaneous"
+    },
+    "attribution": "System Reference Document 5.2.1, Wizards of the Coast LLC; CC BY 4.0."
+  },
+  "casting": {
+    "casting_time": "Action",
+    "kind": "action",
+    "seconds": null,
+    "ritual_available": false,
+    "range": {
+      "source": "120 feet",
+      "kind": "distance",
+      "feet": 120
+    },
+    "components": [
+      "V",
+      "S"
+    ],
+    "material": null,
+    "duration": "Instantaneous",
+    "concentration": false,
+    "spell_lists": [
+      "cleric",
+      "druid",
+      "ranger"
+    ]
+  },
+  "authored_intent": "Sense presence of traps within sight/range and nature of danger, not locations; only intentionally created sudden harmful effects; not natural weak floors or unstable ceilings.",
+  "rules": [
+    {
+      "id": "r001",
+      "text": "You sense any trap within range that is within line of sight."
+    },
+    {
+      "id": "r002",
+      "text": "A trap, for the purpose of this spell, includes any object or mechanism that was created to cause damage or other danger."
+    },
+    {
+      "id": "r003",
+      "text": "Thus, the spell would sense the Alarm or Glyph of Warding spell or a mechanical pit trap, but it wouldn’t reveal a natural weakness in the floor, an unstable ceiling, or a hidden sinkhole."
+    },
+    {
+      "id": "r004",
+      "text": "This spell reveals that a trap is present but not its location."
+    },
+    {
+      "id": "r005",
+      "text": "You do learn the general nature of the danger posed by a trap you sense."
+    }
+  ],
+  "authored_operations": [
+    {
+      "operation": "disclose_trap_danger",
+      "parameters": {
+        "requires_line_of_sight": true,
+        "eligibility": "intentionally_created_damaging_or_dangerous_object_or_mechanism",
+        "disclose": [
+          "presence",
+          "general_danger"
+        ],
+        "withhold": "location",
+        "exclude": [
+          "natural_floor_weakness",
+          "unstable_ceiling",
+          "hidden_natural_sinkhole"
+        ]
+      },
+      "status": "authoring_declaration_not_a_registered_opcode",
+      "required_source_rules": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005"
+      ]
+    }
+  ],
+  "runtime_draft": {
+    "origin": "proposed_operations",
+    "definition": null,
+    "fragments": {},
+    "coverage": "Unverified. Neither a full definition nor a fragment certifies all source rules or controls. Required extensions are not silently waived."
+  },
+  "required_extensions": [
+    {
+      "group": "detection",
+      "requirement": "Read actual eligible facts with source-defined range, material barriers, actions and disclosure; preserve unknown facts and observer-specific knowledge.",
+      "spell_specific_intent": "Sense presence of traps within sight/range and nature of danger, not locations; only intentionally created sudden harmful effects; not natural weak floors or unstable ceilings.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005"
+      ],
+      "existing_owner_to_reuse": "src/combat/study_rules.gd",
+      "slice_references": "S-190/S-191/S-194/S-195/S-219",
+      "disposition": "requires_mapping_or_host_completion",
+      "note": "This is an authored handoff requirement, not a fresh runtime failure or claim that the whole referenced slice is missing."
+    }
+  ],
+  "audit": {
+    "source": "docs/audits/spells.md",
+    "batch": "088-6",
+    "production_definition_at_authoring": "res://data/core/spells/imported_spells.json#75",
+    "baseline_execution": "native",
+    "source_revision": "2a19eb1d",
+    "existing_conversion_label": "queued"
+  },
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile every source rule and required extension, then implement and verify through production paths before any deliberate promotion. Keep native behavior until covered."
+  }
+}

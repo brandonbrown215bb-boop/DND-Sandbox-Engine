@@ -1,0 +1,228 @@
+{
+  "schema": "crown-creature-candidate/1",
+  "id": "srd_ape",
+  "name": "Ape",
+  "kind": "srd_statblock",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring intent only; not registered engine syntax. Mapping requirements do not assert the whole referenced engine slice is absent.",
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile all source clauses, mappings and source differences before later production-path verification. Keep native paths until replacements cover them."
+  },
+  "source": {
+    "authority": "SRD 5.2.1",
+    "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      344
+    ],
+    "text": "Ape\nMedium Beast, Unaligned\nAC 12 Initiative +2 (12)\nHP 19 (3d8 + 6)\nSpeed 30 ft., Climb 30 ft.\nMOD SAVE MOD SAVE MOD SAVE\nStr 16 +3 +3 Dex 14 +2 +2 Con 14 +2 +2\nInt 6 −2 −2 WIS 12 +1 +1 Cha 7 −2 −2\nSkills Athletics +5, Perception +3\nSenses Passive Perception 13\nLanguages None\nCR 1/2 (XP 100; PB +2)\nActions\nMultiattack. The ape makes two Fist attacks.\nFist. Melee Attack Roll: +5, reach 5 ft. Hit: 5 (1d4 + 3)\nBludgeoning damage.\nRock (Recharge 6). Ranged Attack Roll: +5, range\n25/50 ft. Hit: 10 (2d6 + 3) Bludgeoning damage.",
+    "transcription": "Two-column extraction; line breaks retained. Whole selected page context is in source-pages.json. No stat correction inferred from donor data."
+  },
+  "statistics": {
+    "identity_line": "Medium Beast, Unaligned",
+    "AC": "12 Initiative +2 (12)",
+    "HP": "19 (3d8 + 6)",
+    "Speed": "30 ft., Climb 30 ft.",
+    "Skills": "Athletics +5, Perception +3",
+    "Senses": "Passive Perception 13",
+    "Languages": "None",
+    "CR": "1/2 (XP 100; PB +2)",
+    "ability_scores": {
+      "STR": 16,
+      "DEX": 14,
+      "CON": 14,
+      "INT": 6,
+      "WIS": 12,
+      "CHA": 7
+    },
+    "saving_throw_modifiers": {
+      "STR": 3,
+      "DEX": 2,
+      "CON": 2,
+      "INT": -2,
+      "WIS": 1,
+      "CHA": -2
+    },
+    "initiative_modifier": 2,
+    "initiative_score_printed": 12,
+    "armor_class": 12,
+    "movement_feet": {
+      "walk": 30,
+      "climb": 30
+    }
+  },
+  "authored_operations": [
+    {
+      "key": "b001",
+      "name": "Multiattack",
+      "source_section": "Actions",
+      "full_rule": "Multiattack. The ape makes two Fist attacks.",
+      "budget": "action",
+      "steps": [
+        {
+          "intent": "Resolve declared roll or save, targets, range/reach, damage packets, multiattack choice, riders and exact action budget. A save-only action is not a weapon hit rider.",
+          "mapping_group": "attacks"
+        }
+      ],
+      "parameters_from_rule": {
+        "attack_bonus": [],
+        "save_dc": [],
+        "distances_feet": [],
+        "dice": []
+      },
+      "blockers": [
+        "map_attacks"
+      ],
+      "ending_and_identity": "Exact actor/action/target/source instance; use every qualifier and ending in full_rule, not only extracted parameters.",
+      "behavior_plan": {
+        "budget": "action",
+        "source_outcomes": {},
+        "resolution": "authored_attack_sequence",
+        "steps": [
+          "Fist",
+          "Fist"
+        ],
+        "permission": "Multiattack is its own action, not Attack action; do not allow it for a one-attack Pact Reaction."
+      }
+    },
+    {
+      "key": "b002",
+      "name": "Fist",
+      "source_section": "Actions",
+      "full_rule": "Fist. Melee Attack Roll: +5, reach 5 ft. Hit: 5 (1d4 + 3)\nBludgeoning damage.",
+      "budget": "action",
+      "steps": [
+        {
+          "intent": "Resolve declared roll or save, targets, range/reach, damage packets, multiattack choice, riders and exact action budget. A save-only action is not a weapon hit rider.",
+          "mapping_group": "attacks"
+        }
+      ],
+      "parameters_from_rule": {
+        "attack_bonus": [
+          5
+        ],
+        "save_dc": [],
+        "distances_feet": [
+          5
+        ],
+        "dice": [
+          "1d4 + 3"
+        ]
+      },
+      "blockers": [
+        "map_attacks"
+      ],
+      "ending_and_identity": "Exact actor/action/target/source instance; use every qualifier and ending in full_rule, not only extracted parameters.",
+      "behavior_plan": {
+        "budget": "action",
+        "source_outcomes": {
+          "hit": "5 (1d4 + 3) Bludgeoning damage."
+        },
+        "resolution": "attack_roll",
+        "attack_kind": "melee",
+        "damage_and_riders": "5 (1d4 + 3) Bludgeoning damage.",
+        "permission": "ordinary familiar cannot attack; invocation exceptions must grant this exact attack or Attack action, not every Actions entry"
+      }
+    },
+    {
+      "key": "b003",
+      "name": "Rock (Recharge 6)",
+      "source_section": "Actions",
+      "full_rule": "Rock (Recharge 6). Ranged Attack Roll: +5, range\n25/50 ft. Hit: 10 (2d6 + 3) Bludgeoning damage.",
+      "budget": "action",
+      "steps": [
+        {
+          "intent": "Resolve declared roll or save, targets, range/reach, damage packets, multiattack choice, riders and exact action budget. A save-only action is not a weapon hit rider.",
+          "mapping_group": "attacks"
+        },
+        {
+          "intent": "Charge exact source-owned action/reaction/use once; preserve recharge dice, daily and Long Rest schedules as separately authored rules.",
+          "mapping_group": "resources"
+        }
+      ],
+      "parameters_from_rule": {
+        "attack_bonus": [
+          5
+        ],
+        "save_dc": [],
+        "distances_feet": [
+          50
+        ],
+        "dice": [
+          "2d6 + 3"
+        ]
+      },
+      "blockers": [
+        "map_attacks",
+        "map_resources"
+      ],
+      "ending_and_identity": "Exact actor/action/target/source instance; use every qualifier and ending in full_rule, not only extracted parameters.",
+      "behavior_plan": {
+        "budget": "action",
+        "source_outcomes": {
+          "hit": "10 (2d6 + 3) Bludgeoning damage."
+        },
+        "recharge": "d6 turn start,6 restores",
+        "attack": "Ranged +5;25/50 feet",
+        "hit": "2d6+3 Bludgeoning",
+        "resolution": "attack_roll",
+        "attack_kind": "ranged",
+        "damage_and_riders": "10 (2d6 + 3) Bludgeoning damage.",
+        "permission": "ordinary familiar cannot attack; invocation exceptions must grant this exact attack or Attack action, not every Actions entry"
+      }
+    }
+  ],
+  "retained_definitions": [
+    {
+      "path": "data/core/monsters/imported_monsters.json",
+      "sha256": "f57bee1e93f185a89575bed3d8b2b610b53cfd3b7f2eb56448d1dd64a0126c5f",
+      "pointer": "/31",
+      "payload": {
+        "id": "ape",
+        "name": "Ape",
+        "hit_points": "3d8 + 6",
+        "armor_class": 12,
+        "speed": 6,
+        "ability_scores": {
+          "STR": 16,
+          "DEX": 14,
+          "CON": 14,
+          "INT": 6,
+          "WIS": 12,
+          "CHA": 7
+        },
+        "attacks": [
+          {
+            "name": "Claws",
+            "ability": "STR",
+            "damage": "1d6",
+            "range": 1,
+            "damage_type": "slashing"
+          }
+        ],
+        "ai_behavior": "aggressive"
+      },
+      "manifest_declarations": []
+    }
+  ],
+  "selection": {
+    "wild_shape_druid_levels_2_3": false,
+    "wild_shape_druid_levels_4_5": true,
+    "normal_familiar": false,
+    "pact_of_chain_special": false,
+    "animate_dead_output": false,
+    "held_swarm": false,
+    "encounter_comparison_only": false
+  },
+  "acquisition_links": [
+    "selection-links.json"
+  ],
+  "blockers": [
+    "map_statistics",
+    "map_attacks",
+    "map_resources"
+  ],
+  "source_reconciliation": "Official body is authoritative for this SRD candidate. Retained donor payloads are comparison/reuse seeds, including legacy values and manifest winners; do not merge their statistics or traits by ID. Direct Crown encounters retain separate candidates.",
+  "equipment_links": []
+}

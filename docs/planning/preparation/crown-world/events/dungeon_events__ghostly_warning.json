@@ -1,0 +1,139 @@
+{
+  "schema": "crown-world-candidate/1",
+  "id": "dungeon_events__ghostly_warning",
+  "name": "Ghostly Warning",
+  "kind": "events",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring declarations only; not registered engine opcodes.",
+  "required_extensions": [
+    "discovery",
+    "hazards",
+    "knowledge_social",
+    "locks_traps",
+    "objectives_rewards"
+  ],
+  "authored_operations": [
+    {
+      "operation": "resolve_authored_check",
+      "seed_pointer": "/choices/0/check",
+      "check": {
+        "ability": "WIS",
+        "dc": 11
+      },
+      "requirement": "Keep ability, skill/context, DC and optional familiar Help exactly. Choose actor and actual context; settle one branch once; never silently convert an ability check into a saving throw."
+    },
+    {
+      "operation": "settle_ordered_branch",
+      "seed_pointer": "/choices/0/success/effects",
+      "effects": [
+        {
+          "type": "grant_condition",
+          "condition": "forewarned",
+          "duration": 5
+        }
+      ],
+      "condition": null,
+      "requirement": "Retain order, exact quantities/formulas, recipient, costs, branch descriptions and occurrence identity; no repeated payment when a child resumes."
+    },
+    {
+      "operation": "resolve_authored_check",
+      "seed_pointer": "/choices/1/check",
+      "check": {
+        "ability": "CHA",
+        "dc": 13
+      },
+      "requirement": "Keep ability, skill/context, DC and optional familiar Help exactly. Choose actor and actual context; settle one branch once; never silently convert an ability check into a saving throw."
+    },
+    {
+      "operation": "settle_ordered_branch",
+      "seed_pointer": "/choices/1/success/effects",
+      "effects": [
+        {
+          "type": "give_item",
+          "item_id": "gold_50"
+        }
+      ],
+      "condition": null,
+      "requirement": "Retain order, exact quantities/formulas, recipient, costs, branch descriptions and occurrence identity; no repeated payment when a child resumes."
+    },
+    {
+      "operation": "settle_ordered_branch",
+      "seed_pointer": "/choices/1/failure/effects",
+      "effects": [
+        {
+          "type": "damage",
+          "value": "1d8",
+          "damage_type": "necrotic"
+        }
+      ],
+      "condition": null,
+      "requirement": "Retain order, exact quantities/formulas, recipient, costs, branch descriptions and occurrence identity; no repeated payment when a child resumes."
+    }
+  ],
+  "blockers": [
+    "Retain numeric event duration/unit and custom condition IDs as authored. Generic marker support is not proof of defined mechanical benefit, cure scope or turn/clock conversion; map each declared condition to its actual rule."
+  ],
+  "retained_input": {
+    "path": "data/core/events/dungeon_events.json",
+    "sha256": "db368f21178462a95f0bb78028ec8e10441f6467e4a6bb7b3843d6ecaeb20d35",
+    "pointer": "/events/4",
+    "payload": {
+      "id": "ghostly_warning",
+      "name": "Ghostly Warning",
+      "weight": 10,
+      "description": "A translucent figure materializes before you. It points deeper into the dungeon and whispers...",
+      "type": "choice",
+      "choices": [
+        {
+          "text": "Listen to the ghost",
+          "check": {
+            "ability": "WIS",
+            "dc": 11
+          },
+          "success": {
+            "description": "The ghost reveals the location of traps and enemies ahead.",
+            "effects": [
+              {
+                "type": "grant_condition",
+                "condition": "forewarned",
+                "duration": 5
+              }
+            ]
+          },
+          "failure": {
+            "description": "The ghost's whispers are incomprehensible. It fades away."
+          }
+        },
+        {
+          "text": "Banish it",
+          "check": {
+            "ability": "CHA",
+            "dc": 13
+          },
+          "success": {
+            "description": "The ghost bows and dissipates. A gold coin materializes where it stood.",
+            "effects": [
+              {
+                "type": "give_item",
+                "item_id": "gold_50"
+              }
+            ]
+          },
+          "failure": {
+            "description": "The ghost shrieks in anger. You feel a cold chill!",
+            "effects": [
+              {
+                "type": "damage",
+                "value": "1d8",
+                "damage_type": "necrotic"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "authority": "Custom Crown campaign event, not an SRD trap/NPC/spell replacement",
+  "table_id": "dungeon_events",
+  "occurrence_policy": "Table may roll again; same in-flight occurrence must not reroll/reapply on reopen. Campaign-specific uniqueness beyond generated room claims is unresolved, not silently global once-per-event-ID."
+}

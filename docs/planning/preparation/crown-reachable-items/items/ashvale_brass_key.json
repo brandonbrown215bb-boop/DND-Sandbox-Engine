@@ -1,0 +1,71 @@
+{
+  "schema": "crown-reachable-item-candidate/1",
+  "id": "ashvale_brass_key",
+  "name": "Ashvale Brass Key",
+  "kind": "quest_item",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring intent only; not registered engine syntax.",
+  "rules": {
+    "authority": "The Lost Crown tactical-room objects and current item definition",
+    "pdf_sha256": null,
+    "pages": [],
+    "text": "Existing Crown key opens the Ashvale antechamber temple door and offering chest whose exact key_id matches. Preserve the object and exact inventory identity; no universal key behavior.",
+    "source_context": "../source-pages.json"
+  },
+  "definition": {
+    "id": "ashvale_brass_key",
+    "name": "Ashvale Brass Key",
+    "weight_lb": 0.1,
+    "campaign_shop_value_gp": 0,
+    "key_id": "ashvale_brass_key"
+  },
+  "authored_operations": [
+    "Existing Crown key opens the Ashvale antechamber temple door and offering chest whose exact key_id matches. Preserve the object and exact inventory identity; no universal key behavior."
+  ],
+  "retained_runtime_seeds": [
+    {
+      "path": "data/core/items/srd_gear.json",
+      "array_index": 49,
+      "file_sha256": "ed873f9a0967f5bb6e20241428e4f53b92c011fa547321af69798ece822b57d4",
+      "definition": {
+        "id": "ashvale_brass_key",
+        "name": "Ashvale Brass Key",
+        "description": "Opens the temple door and offering chest in the Ashvale antechamber.",
+        "type": "tool",
+        "effects": [],
+        "value": 0,
+        "weight": 0.1
+      }
+    }
+  ],
+  "manifest_overrides": [],
+  "required_mapping": [
+    "quest_items"
+  ],
+  "consumers": [
+    {
+      "channel": "campaign_goal_loot_or_tactical_object",
+      "path": "data/core/campaigns/the_lost_crown.json",
+      "sha256": "3352b2d22be36e68591bfdf4ec73b8201f2bec6c69a3a60b0c8beb7d5074db44",
+      "json_pointer": "/dungeons/ruins_of_ashvale/tactical_rooms/1/objects/0/key_id"
+    },
+    {
+      "channel": "campaign_goal_loot_or_tactical_object",
+      "path": "data/core/campaigns/the_lost_crown.json",
+      "sha256": "3352b2d22be36e68591bfdf4ec73b8201f2bec6c69a3a60b0c8beb7d5074db44",
+      "json_pointer": "/dungeons/ruins_of_ashvale/tactical_rooms/1/objects/1/key_id"
+    },
+    {
+      "channel": "campaign_goal_loot_or_tactical_object",
+      "path": "data/core/campaigns/the_lost_crown.json",
+      "sha256": "3352b2d22be36e68591bfdf4ec73b8201f2bec6c69a3a60b0c8beb7d5074db44",
+      "json_pointer": "/dungeons/ruins_of_ashvale/tactical_rooms/1/objects/5/contents/0"
+    }
+  ],
+  "unsupported_behavior": [
+    {
+      "group": "quest_items",
+      "requirement": "Preserve exact key/item identity, three-fragment goal and once-only acquisition, ownership and allowed checkpoint recovery. A Crown-specific authored object is not an invented SRD magic-item ability."
+    }
+  ]
+}

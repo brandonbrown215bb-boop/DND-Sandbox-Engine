@@ -1,0 +1,215 @@
+{
+  "format": "crown-spell-candidate/1",
+  "id": "elementalism",
+  "name": "Elementalism",
+  "level": 0,
+  "status": "written_unverified_not_loaded",
+  "source": {
+    "authority": "SRD 5.2.1",
+    "url": "https://media.dndbeyond.com/compendium-images/srd/5.2/SRD_CC_v5.2.1.pdf",
+    "sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      127
+    ],
+    "header": {
+      "Casting Time": "Action",
+      "Range": "30 feet",
+      "Components": "V, S",
+      "Duration": "Instantaneous"
+    },
+    "attribution": "System Reference Document 5.2.1, Wizards of the Coast LLC; CC BY 4.0."
+  },
+  "casting": {
+    "casting_time": "Action",
+    "kind": "action",
+    "seconds": null,
+    "ritual_available": false,
+    "range": {
+      "source": "30 feet",
+      "kind": "distance",
+      "feet": 30
+    },
+    "components": [
+      "V",
+      "S"
+    ],
+    "material": null,
+    "duration": "Instantaneous",
+    "concentration": false,
+    "spell_lists": [
+      "druid",
+      "sorcerer",
+      "wizard"
+    ]
+  },
+  "authored_intent": "Choose bounded air/earth/fire/water shaping or sculpting; explicit volumes, persistence and fire/air effects; no damage or arbitrary object creation beyond the source.",
+  "rules": [
+    {
+      "id": "r001",
+      "text": "You exert control over the elements, creating one of the following effects within range."
+    },
+    {
+      "id": "r002",
+      "text": "Beckon Air."
+    },
+    {
+      "id": "r003",
+      "text": "You create a breeze strong enough to ripple cloth, stir dust, rustle leaves, and close open doors and shutters, all in a 5-foot Cube."
+    },
+    {
+      "id": "r004",
+      "text": "Doors and shutters being held open by someone or something aren’t affected."
+    },
+    {
+      "id": "r005",
+      "text": "Beckon Earth."
+    },
+    {
+      "id": "r006",
+      "text": "You create a thin shroud of dust or sand that covers surfaces in a 5-foot-square area, or you cause a single word to appear in your handwriting in a patch of dirt or sand."
+    },
+    {
+      "id": "r007",
+      "text": "Beckon Fire."
+    },
+    {
+      "id": "r008",
+      "text": "You create a thin cloud of harmless embers and colored, scented smoke in a 5-foot Cube."
+    },
+    {
+      "id": "r009",
+      "text": "You choose the color and scent, and the embers can light candles, torches, or lamps in that area."
+    },
+    {
+      "id": "r010",
+      "text": "The smoke’s scent lingers for 1 minute."
+    },
+    {
+      "id": "r011",
+      "text": "Beckon Water."
+    },
+    {
+      "id": "r012",
+      "text": "You create a spray of cool mist that lightly dampens creatures and objects in a 5-foot Cube."
+    },
+    {
+      "id": "r013",
+      "text": "Alternatively, you create 1 cup of clean water either in an open container or on a surface, and the water evaporates in 1 minute."
+    },
+    {
+      "id": "r014",
+      "text": "Sculpt Element."
+    },
+    {
+      "id": "r015",
+      "text": "You cause dirt, sand, fire, smoke, mist, or water that can fit in a 1-foot Cube to assume a crude shape (such as that of a creature) for 1 hour."
+    }
+  ],
+  "authored_operations": [
+    {
+      "operation": "choose_element_effect",
+      "parameters": {
+        "choices": {
+          "air": {
+            "cube_feet": 5,
+            "close_unheld_doors_shutters": true
+          },
+          "earth": {
+            "square_feet": 5,
+            "dust_sand_or_single_word": true
+          },
+          "fire": {
+            "cube_feet": 5,
+            "harmless_embers_smoke": true,
+            "color_scent_choice": true,
+            "light_small_flames": true,
+            "scent_seconds": 60
+          },
+          "water": {
+            "mist_cube_feet": 5,
+            "alternative_water_cups": 1,
+            "water_evaporates_seconds": 60
+          },
+          "sculpt": {
+            "cube_feet_max": 1,
+            "elements": [
+              "dirt",
+              "sand",
+              "fire",
+              "smoke",
+              "mist",
+              "water"
+            ],
+            "shape": "crude",
+            "seconds": 3600
+          }
+        }
+      },
+      "status": "authoring_declaration_not_a_registered_opcode",
+      "required_source_rules": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006",
+        "r007",
+        "r008",
+        "r009",
+        "r010",
+        "r011",
+        "r012",
+        "r013",
+        "r014",
+        "r015"
+      ]
+    }
+  ],
+  "runtime_draft": {
+    "origin": "proposed_operations",
+    "definition": null,
+    "fragments": {},
+    "coverage": "Unverified. Neither a full definition nor a fragment certifies all source rules or controls. Required extensions are not silently waived."
+  },
+  "required_extensions": [
+    {
+      "group": "utility_world",
+      "requirement": "Author every source-listed utility choice, size, duration, concurrency and actual effect against represented world facts; no free-text universal GM.",
+      "spell_specific_intent": "Choose bounded air/earth/fire/water shaping or sculpting; explicit volumes, persistence and fire/air effects; no damage or arbitrary object creation beyond the source.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006",
+        "r007",
+        "r008",
+        "r009",
+        "r010",
+        "r011",
+        "r012",
+        "r013",
+        "r014",
+        "r015"
+      ],
+      "existing_owner_to_reuse": "src/dungeon/local_room_rules.gd",
+      "slice_references": "S-197/S-212/S-218/S-219",
+      "disposition": "requires_mapping_or_host_completion",
+      "note": "This is an authored handoff requirement, not a fresh runtime failure or claim that the whole referenced slice is missing."
+    }
+  ],
+  "audit": {
+    "source": "docs/audits/spells.md",
+    "batch": "088-7",
+    "production_definition_at_authoring": "res://data/core/spells/srd_additional_spells.json#55",
+    "baseline_execution": "native",
+    "source_revision": "2a19eb1d",
+    "existing_conversion_label": "queued"
+  },
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile every source rule and required extension, then implement and verify through production paths before any deliberate promotion. Keep native behavior until covered."
+  }
+}

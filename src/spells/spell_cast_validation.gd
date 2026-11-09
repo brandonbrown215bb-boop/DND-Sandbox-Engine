@@ -233,11 +233,16 @@ static func validate_weapon_and_steed(cast: SpellCastContext) -> bool:
 			cast.hud.add_log("[color=orange]%s requires an equipped weapon you are proficient with, worth at least 1 CP.[/color]" % str(cast.spell.get("name", "This spell")))
 			cast.highlight_reachable.call()
 			return false
+		var ammo_error := AmmunitionRules.attack_error(cast.caster, true_strike_weapon)
+		if not ammo_error.is_empty():
+			cast.hud.add_log(ammo_error)
+			return false
 		if not SpellCastTargeting._creature_at_coord_matches_types(cast, cast.target_coord, ["humanoid", "beast", "aberration", "celestial", "construct", "dragon", "elemental", "fey", "fiend", "giant", "monstrosity", "ooze", "plant", "undead"]):
 			cast.hud.add_log("[color=orange]%s needs a creature as the weapon attack target.[/color]" % str(cast.spell.get("name", "This spell")))
 			cast.highlight_reachable.call()
 			return false
 		cast.spell["_true_strike_weapon_id"] = true_strike_weapon_id
+		cast.spell["_ammunition_weapon_copy"] = cast.caster.inventory.equipped_instance_id(Inventory.Slot.WEAPON)
 	if str(cast.spell.get("casting_time", "action")) == "reaction":
 		cast.hud.add_log("[color=orange]%s resolves only through its reaction boundary.[/color]" % cast.spell.get("name", "This spell"))
 		cast.clear_pending(SpellCastContext.CLEAR_ACTION)

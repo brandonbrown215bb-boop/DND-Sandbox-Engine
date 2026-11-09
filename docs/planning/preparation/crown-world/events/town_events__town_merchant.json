@@ -1,0 +1,65 @@
+{
+  "schema": "crown-world-candidate/1",
+  "id": "town_events__town_merchant",
+  "name": "Town Market",
+  "kind": "events",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring declarations only; not registered engine opcodes.",
+  "required_extensions": [
+    "objectives_rewards",
+    "objects",
+    "rest_time"
+  ],
+  "authored_operations": [
+    {
+      "operation": "offer_authored_shop",
+      "data": {
+        "items": [
+          "potion_healing",
+          "potion_greater_healing",
+          "antidote",
+          "torch",
+          "rope",
+          "dagger",
+          "shortbow",
+          "leather_armor",
+          "scale_mail"
+        ],
+        "price_modifier": 1.0
+      },
+      "requirement": "Retain offered IDs and price modifier; map to actual shop host. Declared list is not proof that town/shop consumer honors it."
+    }
+  ],
+  "blockers": [
+    "EventDialog has no shop event dispatch; overworld towns use the separate shop UI. Preserve this event offer without claiming it is delivered."
+  ],
+  "retained_input": {
+    "path": "data/core/events/town_events.json",
+    "sha256": "cc2833d086c100b57a67f114d11888312e7074fdebe601d94151d17e9c310098",
+    "pointer": "/events/1",
+    "payload": {
+      "id": "town_merchant",
+      "name": "Town Market",
+      "weight": 25,
+      "description": "The town's marketplace bustles with activity. Merchants call out their wares from colorful stalls.",
+      "type": "shop",
+      "data": {
+        "items": [
+          "potion_healing",
+          "potion_greater_healing",
+          "antidote",
+          "torch",
+          "rope",
+          "dagger",
+          "shortbow",
+          "leather_armor",
+          "scale_mail"
+        ],
+        "price_modifier": 1.0
+      }
+    }
+  },
+  "authority": "Custom Crown campaign event, not an SRD trap/NPC/spell replacement",
+  "table_id": "town_events",
+  "occurrence_policy": "Table may roll again; same in-flight occurrence must not reroll/reapply on reopen. Campaign-specific uniqueness beyond generated room claims is unresolved, not silently global once-per-event-ID."
+}

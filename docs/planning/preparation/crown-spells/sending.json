@@ -1,0 +1,143 @@
+{
+  "format": "crown-spell-candidate/1",
+  "id": "sending",
+  "name": "Sending",
+  "level": 3,
+  "status": "written_unverified_not_loaded",
+  "source": {
+    "authority": "SRD 5.2.1",
+    "url": "https://media.dndbeyond.com/compendium-images/srd/5.2/SRD_CC_v5.2.1.pdf",
+    "sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      161
+    ],
+    "header": {
+      "Casting Time": "Action",
+      "Range": "Unlimited",
+      "Components": "V, S, M (a copper wire)",
+      "Duration": "Instantaneous"
+    },
+    "attribution": "System Reference Document 5.2.1, Wizards of the Coast LLC; CC BY 4.0."
+  },
+  "casting": {
+    "casting_time": "Action",
+    "kind": "action",
+    "seconds": null,
+    "ritual_available": false,
+    "range": {
+      "source": "Unlimited",
+      "kind": "special",
+      "feet": null
+    },
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "a copper wire",
+    "duration": "Instantaneous",
+    "concentration": false,
+    "spell_lists": [
+      "bard",
+      "cleric",
+      "wizard"
+    ]
+  },
+  "authored_intent": "At-most-25-word message to met creature or one described by someone who met it; immediate understood reply, any distance, cross-plane five-percent failure known to caster; recipient may block further Sendings for eight hours and attempted sender learns blockage.",
+  "rules": [
+    {
+      "id": "r001",
+      "text": "You send a short message of 25 words or fewer to a creature you have met or a creature described to you by someone who has met it."
+    },
+    {
+      "id": "r002",
+      "text": "The target hears the message in its mind, recognizes you as the sender if it knows you, and can answer in a like manner immediately."
+    },
+    {
+      "id": "r003",
+      "text": "The spell enables targets to understand the meaning of your message."
+    },
+    {
+      "id": "r004",
+      "text": "You can send the message across any distance and even to other planes of existence, but if the target is on a different plane than you, there is a 5 percent chance that the message doesn’t arrive."
+    },
+    {
+      "id": "r005",
+      "text": "You know if the delivery fails."
+    },
+    {
+      "id": "r006",
+      "text": "Upon receiving your message, a creature can block your ability to reach it again with this spell for 8 hours."
+    },
+    {
+      "id": "r007",
+      "text": "If you try to send another message during that time, you learn that you are blocked, and the spell fails."
+    }
+  ],
+  "authored_operations": [
+    {
+      "operation": "exchange_remote_message",
+      "parameters": {
+        "target": "met_creature_or_described_by_someone_who_met_it",
+        "word_limit": 25,
+        "understands_meaning": true,
+        "recognizes_known_sender": true,
+        "immediate_reply": true,
+        "distance": "any",
+        "cross_plane_failure_chance": 0.05,
+        "caster_knows_failure": true,
+        "recipient_block_hours": 8,
+        "blocked_attempt": "notify_caster_and_fail"
+      },
+      "status": "authoring_declaration_not_a_registered_opcode",
+      "required_source_rules": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006",
+        "r007"
+      ]
+    }
+  ],
+  "runtime_draft": {
+    "origin": "proposed_operations",
+    "definition": null,
+    "fragments": {},
+    "coverage": "Unverified. Neither a full definition nor a fragment certifies all source rules or controls. Required extensions are not silently waived."
+  },
+  "required_extensions": [
+    {
+      "group": "communication",
+      "requirement": "Reuse represented language/hearing where applicable, then implement the spell-specific recipients, range, content, answers, secrecy and source lifetime.",
+      "spell_specific_intent": "At-most-25-word message to met creature or one described by someone who met it; immediate understood reply, any distance, cross-plane five-percent failure known to caster; recipient may block further Sendings for eight hours and attempted sender learns blockage.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006",
+        "r007"
+      ],
+      "existing_owner_to_reuse": "src/combat/communication_rules.gd",
+      "slice_references": "S-194/S-218/S-219",
+      "disposition": "requires_mapping_or_host_completion",
+      "note": "This is an authored handoff requirement, not a fresh runtime failure or claim that the whole referenced slice is missing."
+    }
+  ],
+  "audit": {
+    "source": "docs/audits/spells.md",
+    "batch": "088-8",
+    "production_definition_at_authoring": "res://data/core/spells/imported_spells.json#159",
+    "baseline_execution": "native",
+    "source_revision": "2a19eb1d",
+    "existing_conversion_label": "queued"
+  },
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile every source rule and required extension, then implement and verify through production paths before any deliberate promotion. Keep native behavior until covered."
+  }
+}

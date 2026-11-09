@@ -1,0 +1,41 @@
+{
+  "authority": "SRD 5.2.1 p20",
+  "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+  "creation": {
+    "fixed": [
+      "Common"
+    ],
+    "choose_standard": 2
+  },
+  "standard_choices": [
+    "Common Sign Language",
+    "Draconic",
+    "Dwarvish",
+    "Elvish",
+    "Giant",
+    "Gnomish",
+    "Goblin",
+    "Halfling",
+    "Orc"
+  ],
+  "rare_choices": [
+    "Abyssal",
+    "Celestial",
+    "Deep Speech",
+    "Druidic",
+    "Infernal",
+    "Primordial",
+    "Sylvan",
+    "Thieves’ Cant",
+    "Undercommon"
+  ],
+  "primordial_dialects": [
+    "Aquan",
+    "Auran",
+    "Ignan",
+    "Terran"
+  ],
+  "dialect_policy": "Speakers of one Primordial dialect can communicate with speakers of another.",
+  "class_choices": "Deft Explorer and Thieves’ Cant extra language may choose from the language tables; Druidic/Thieves’ Cant fixed grants are separate.",
+  "runtime_boundary": "Use saved character language knowledge and represented local communication where available; writing/remote/world answers still need their real hosts."
+}

@@ -1,0 +1,122 @@
+{
+  "format": "crown-spell-candidate/1",
+  "id": "create_food_and_water",
+  "name": "Create Food and Water",
+  "level": 3,
+  "status": "written_unverified_not_loaded",
+  "source": {
+    "authority": "SRD 5.2.1",
+    "url": "https://media.dndbeyond.com/compendium-images/srd/5.2/SRD_CC_v5.2.1.pdf",
+    "sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      120
+    ],
+    "header": {
+      "Casting Time": "Action",
+      "Range": "30 feet",
+      "Components": "V, S",
+      "Duration": "Instantaneous"
+    },
+    "attribution": "System Reference Document 5.2.1, Wizards of the Coast LLC; CC BY 4.0."
+  },
+  "casting": {
+    "casting_time": "Action",
+    "kind": "action",
+    "seconds": null,
+    "ritual_available": false,
+    "range": {
+      "source": "30 feet",
+      "kind": "distance",
+      "feet": 30
+    },
+    "components": [
+      "V",
+      "S"
+    ],
+    "material": null,
+    "duration": "Instantaneous",
+    "concentration": false,
+    "spell_lists": [
+      "cleric",
+      "paladin"
+    ]
+  },
+  "authored_intent": "Create 45 pounds of bland nourishing food and 30 gallons of fresh water on ground or in containers; choose food appearance; food spoils after 24 hours; actual portions and containers, no invented fifteen-Humanoid/five-steed entitlement.",
+  "rules": [
+    {
+      "id": "r001",
+      "text": "You create 45 pounds of food and 30 gallons of fresh water on the ground or in containers within range—both useful in fending off the hazards of malnutrition and dehydration."
+    },
+    {
+      "id": "r002",
+      "text": "The food is bland but nourishing and looks like a food of your choice, and the water is clean."
+    },
+    {
+      "id": "r003",
+      "text": "The food spoils after 24 hours if uneaten."
+    }
+  ],
+  "authored_operations": [
+    {
+      "operation": "create_measured_resources",
+      "parameters": {
+        "food": {
+          "pounds": 45,
+          "nourishing": true,
+          "bland": true,
+          "appearance_choice": true,
+          "spoil_hours": 24
+        },
+        "water": {
+          "gallons": 30,
+          "fresh": true
+        },
+        "placement": [
+          "ground",
+          "containers"
+        ]
+      },
+      "status": "authoring_declaration_not_a_registered_opcode",
+      "required_source_rules": [
+        "r001",
+        "r002",
+        "r003"
+      ]
+    }
+  ],
+  "runtime_draft": {
+    "origin": "proposed_operations",
+    "definition": null,
+    "fragments": {},
+    "coverage": "Unverified. Neither a full definition nor a fragment certifies all source rules or controls. Required extensions are not silently waived."
+  },
+  "required_extensions": [
+    {
+      "group": "quantities",
+      "requirement": "Create/consume/purify real measured quantities with exact ownership, containers, expiry and source outcomes, not descriptive substitutes.",
+      "spell_specific_intent": "Create 45 pounds of bland nourishing food and 30 gallons of fresh water on ground or in containers; choose food appearance; food spoils after 24 hours; actual portions and containers, no invented fifteen-Humanoid/five-steed entitlement.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003"
+      ],
+      "existing_owner_to_reuse": "src/characters/inventory.gd",
+      "slice_references": "S-196/S-197/S-199/S-205",
+      "disposition": "requires_mapping_or_host_completion",
+      "note": "This is an authored handoff requirement, not a fresh runtime failure or claim that the whole referenced slice is missing."
+    }
+  ],
+  "audit": {
+    "source": "docs/audits/spells.md",
+    "batch": "088-7",
+    "production_definition_at_authoring": "res://data/core/spells/imported_spells.json#42",
+    "baseline_execution": "native",
+    "source_revision": "2a19eb1d",
+    "existing_conversion_label": "queued"
+  },
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile every source rule and required extension, then implement and verify through production paths before any deliberate promotion. Keep native behavior until covered."
+  }
+}

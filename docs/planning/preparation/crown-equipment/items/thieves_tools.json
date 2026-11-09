@@ -1,0 +1,112 @@
+{
+  "schema": "crown-equipment-candidate/1",
+  "id": "thieves_tools",
+  "name": "Thieves' Tools",
+  "kind": "tool",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring intent only; not registered engine syntax.",
+  "rules": {
+    "authority": "SRD 5.2.1",
+    "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      93,
+      94
+    ],
+    "section": "Thieves' Tools",
+    "text": "Ability: dexterity. Utilize: Pick a lock (DC 15), or disarm a trap (DC 15). Craft: no listed products. Tool proficiency adds PB to ability checks using the tool; if also proficient in a skill used with the check, gain Advantage. Each Artisan tool needs its own proficiency.",
+    "source_context": "../source-pages.json"
+  },
+  "definition": {
+    "id": "thieves_tools",
+    "name": "Thieves' Tools",
+    "ability": "dexterity",
+    "weight_lb": 1,
+    "cost_gp": 25,
+    "utilize": "Pick a lock (DC 15), or disarm a trap (DC 15)",
+    "craft_source_list": ""
+  },
+  "authored_operations": [
+    "Utilize chooses one task: Pick a lock (DC 15), or disarm a trap (DC 15). Use dexterity, the declared DC and actual tool copy; apply PB for the matching proficiency and Advantage when the applicable skill is also proficient.",
+    "Crafting needs the source procedure, materials, time, proficiency and legal result definition; this list grants no products. Keep unavailable craft consumers explicit rather than synthesizing items."
+  ],
+  "retained_runtime_seeds": [
+    {
+      "path": "data/core/items/consumables.json",
+      "array_index": 5,
+      "file_sha256": "045f413d89391312c1e3a175351f90427accde8f21b8d087abc1d6c5d9c3ec2d",
+      "definition": {
+        "id": "thieves_tools",
+        "name": "Thieves' Tools",
+        "description": "A set of lockpicks and tools for disarming traps.",
+        "type": "tool",
+        "effects": [
+          {
+            "type": "enable_check",
+            "check_type": "lockpick"
+          }
+        ],
+        "value": 25
+      }
+    },
+    {
+      "path": "data/core/items/imported_magic_tools.json",
+      "array_index": 51,
+      "file_sha256": "7403cb6637b668bbfd13787473f467f618af88874c60c0a696adad165255caca",
+      "definition": {
+        "id": "thieves_tools",
+        "name": "Thieves' Tools",
+        "description": "This set of tools includes a small file, a set of lock picks, a small mirror mounted on a metal handle, a set of narrow-bladed scissors, and a pair of pliers. Proficiency with these tools lets you add your proficiency bonus to any ability checks you make to disarm traps or open locks.",
+        "type": "tool",
+        "effects": [],
+        "value": 25
+      }
+    },
+    {
+      "path": "data/core/items/imported_magic_tools.json",
+      "array_index": 52,
+      "file_sha256": "7403cb6637b668bbfd13787473f467f618af88874c60c0a696adad165255caca",
+      "definition": {
+        "id": "thieves_tools",
+        "name": "Thieves' Tools",
+        "description": "{'type': 'list', 'style': 'list-hang-notitle', 'items': [{'name': 'Ability:', 'type': 'item', 'entries': ['Dexterity']}, {'name': 'Utilize:', 'type': 'item', 'entries': ['Pick a lock (15), or disarm a trap (15)']}]}",
+        "type": "tool",
+        "effects": [],
+        "value": 25
+      }
+    }
+  ],
+  "manifest_overrides": [
+    {
+      "type": "item",
+      "id": "thieves_tools",
+      "winner": "res://data/core/items/consumables.json#6",
+      "replaces": [
+        "res://data/core/items/imported_magic_tools.json#52",
+        "res://data/core/items/imported_magic_tools.json#53"
+      ]
+    }
+  ],
+  "required_mapping": [
+    "tools"
+  ],
+  "consumers": [
+    {
+      "package_id": "rogue",
+      "option": "A",
+      "quantity": 1,
+      "source": "docs/planning/preparation/crown-characters/classes/rogue.json"
+    },
+    {
+      "package_id": "criminal",
+      "option": "A",
+      "quantity": 1,
+      "source": "docs/planning/preparation/crown-characters/backgrounds/criminal.json"
+    }
+  ],
+  "unsupported_behavior": [
+    {
+      "group": "tools",
+      "requirement": "Map exact variant proficiency, declared tool ability/DC, PB plus applicable skill Advantage and actual Utilize task outcomes. Do not use a generic +PB check as every tool action."
+    }
+  ]
+}

@@ -4,6 +4,13 @@ extends RefCounted
 
 static func revalidate_selection(cast: SpellCastContext) -> bool:
 	# Recheck after asynchronous choices, before any resource or held Reaction.
+	if not SharedSpell.weapon_attack_effect(cast.spell).is_empty():
+		var weapon := DataLoader.get_item(str(cast.spell.get("_true_strike_weapon_id", ""))).duplicate(true)
+		weapon["_ammunition_weapon_copy"] = str(cast.spell.get("_ammunition_weapon_copy", ""))
+		var ammo_error := AmmunitionRules.attack_error(cast.caster, weapon)
+		if not ammo_error.is_empty():
+			cast.hud.add_log(ammo_error)
+			return false
 	var noise_error := CombatNoiseRules.spell_host_error(cast.spell, cast)
 	if not noise_error.is_empty():
 		cast.hud.add_log(noise_error)

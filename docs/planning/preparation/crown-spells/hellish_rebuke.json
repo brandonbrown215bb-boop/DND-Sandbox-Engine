@@ -1,0 +1,130 @@
+{
+  "format": "crown-spell-candidate/1",
+  "id": "hellish_rebuke",
+  "name": "Hellish Rebuke",
+  "level": 1,
+  "status": "written_unverified_not_loaded",
+  "source": {
+    "authority": "SRD 5.2.1",
+    "url": "https://media.dndbeyond.com/compendium-images/srd/5.2/SRD_CC_v5.2.1.pdf",
+    "sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      140
+    ],
+    "header": {
+      "Casting Time": "Reaction, which you take in response to taking damage from a creature that you can see within 60 feet of yourself",
+      "Range": "60 feet",
+      "Components": "V, S",
+      "Duration": "Instantaneous"
+    },
+    "attribution": "System Reference Document 5.2.1, Wizards of the Coast LLC; CC BY 4.0."
+  },
+  "casting": {
+    "casting_time": "Reaction, which you take in response to taking damage from a creature that you can see within 60 feet of yourself",
+    "kind": "reaction",
+    "seconds": null,
+    "ritual_available": false,
+    "range": {
+      "source": "60 feet",
+      "kind": "distance",
+      "feet": 60
+    },
+    "components": [
+      "V",
+      "S"
+    ],
+    "material": null,
+    "duration": "Instantaneous",
+    "concentration": false,
+    "spell_lists": [
+      "warlock"
+    ]
+  },
+  "authored_intent": "Reaction to damage by seen creature within 60 feet; qualifying creature makes DEX save for half Fire; higher slots add dice; source damage occurrence and payment remain exact.",
+  "rules": [
+    {
+      "id": "r001",
+      "text": "The creature that damaged you is momentarily surrounded by green flames."
+    },
+    {
+      "id": "r002",
+      "text": "It makes a Dexterity saving throw, taking 2d10 Fire damage on a failed save or half as much damage on a successful one."
+    },
+    {
+      "id": "r003",
+      "text": "Using a Higher-Level Spell Slot."
+    },
+    {
+      "id": "r004",
+      "text": "The damage increases by 1d10 for each spell slot level above 1."
+    }
+  ],
+  "authored_operations": [
+    {
+      "operation": "reaction_damage",
+      "parameters": {
+        "trigger": "casting_header",
+        "target": "qualifying_damaging_creature",
+        "save": "DEX",
+        "damage": "2d10",
+        "type": "fire",
+        "half_on_success": true,
+        "upcast_per_slot": "1d10"
+      },
+      "status": "authoring_declaration_not_a_registered_opcode",
+      "required_source_rules": [
+        "r001",
+        "r002",
+        "r003",
+        "r004"
+      ]
+    }
+  ],
+  "runtime_draft": {
+    "origin": "fragments_only",
+    "definition": null,
+    "fragments": {
+      "reaction_resolution": {
+        "damage": "2d10",
+        "damage_type": "fire",
+        "upcast": {
+          "starting_level": 1,
+          "damage_per_level": "1d10"
+        },
+        "save": "DEX",
+        "half_on_save": true
+      }
+    },
+    "coverage": "Unverified. Neither a full definition nor a fragment certifies all source rules or controls. Required extensions are not silently waived."
+  },
+  "required_extensions": [
+    {
+      "group": "reaction_routes",
+      "requirement": "Produce the exact qualifying trigger across required attack/cast/damage/fall hosts; revalidate actor/target, interruption and one Reaction/payment.",
+      "spell_specific_intent": "Reaction to damage by seen creature within 60 feet; qualifying creature makes DEX save for half Fire; higher slots add dice; source damage occurrence and payment remain exact.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003",
+        "r004"
+      ],
+      "existing_owner_to_reuse": "src/spells/spell_cast_reactions.gd",
+      "slice_references": "S-041/S-042/S-134/S-135/S-160",
+      "disposition": "requires_mapping_or_host_completion",
+      "note": "This is an authored handoff requirement, not a fresh runtime failure or claim that the whole referenced slice is missing."
+    }
+  ],
+  "audit": {
+    "source": "docs/audits/spells.md",
+    "batch": "088-2",
+    "production_definition_at_authoring": "res://data/core/spells/imported_spells.json#95",
+    "baseline_execution": "native",
+    "source_revision": "2a19eb1d",
+    "existing_conversion_label": "queued"
+  },
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile every source rule and required extension, then implement and verify through production paths before any deliberate promotion. Keep native behavior until covered."
+  }
+}

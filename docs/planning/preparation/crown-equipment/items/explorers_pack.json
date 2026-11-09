@@ -1,0 +1,151 @@
+{
+  "schema": "crown-equipment-candidate/1",
+  "id": "explorers_pack",
+  "name": "Explorer's Pack",
+  "kind": "pack",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring intent only; not registered engine syntax.",
+  "rules": {
+    "authority": "SRD 5.2.1",
+    "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      95,
+      97,
+      98
+    ],
+    "section": "Explorer's Pack",
+    "text": "Explorer's Pack contains: 1 × Backpack, 1 × Bedroll, 2 × Oil, 10 × Rations, 1 × Rope, 1 × Tinderbox, 10 × Torch, 1 × Waterskin.",
+    "source_context": "../source-pages.json"
+  },
+  "definition": {
+    "id": "explorers_pack",
+    "name": "Explorer's Pack",
+    "weight_lb": 55,
+    "cost_gp": 10,
+    "contents": [
+      {
+        "candidate_id": "backpack",
+        "quantity": 1
+      },
+      {
+        "candidate_id": "bedroll",
+        "quantity": 1
+      },
+      {
+        "candidate_id": "oil_flask",
+        "quantity": 2
+      },
+      {
+        "candidate_id": "rations",
+        "quantity": 10
+      },
+      {
+        "candidate_id": "rope",
+        "quantity": 1
+      },
+      {
+        "candidate_id": "tinderbox",
+        "quantity": 1
+      },
+      {
+        "candidate_id": "torch",
+        "quantity": 10
+      },
+      {
+        "candidate_id": "waterskin",
+        "quantity": 1
+      }
+    ]
+  },
+  "authored_operations": [
+    "Grant the listed quantities exactly once from the selected class package. Resolve actual item copies/units, including sheets, days and flasks. Do not grant a priced shell in addition to free duplicate contents.",
+    "Pack is a purchase/grant bundle, not a promise that everything fits inside its Backpack. Preserve source bundle weight separately from measured contents; do not force all contents into the 30-pound compartment or invent unknown weights.",
+    "A Scholar pack Book has no specified topic or accuracy. Retain unknown metadata; grant no topic bonus merely for possession."
+  ],
+  "retained_runtime_seeds": [
+    {
+      "path": "data/core/items/adventuring_packs.json",
+      "array_index": 0,
+      "file_sha256": "03f215b84039fed986556957e1b4f570aa85179576cb8ca31263e5ba1bee2d1c",
+      "definition": {
+        "id": "explorers_pack",
+        "name": "Explorer's Pack",
+        "type": "tool",
+        "description": "A backpack, bedroll, two Oil flasks, ten days of Rations, Rope, Tinderbox, ten Torches, and a Waterskin.",
+        "pack_contents": [
+          {
+            "item_id": "backpack",
+            "quantity": 1
+          },
+          {
+            "item_id": "bedroll",
+            "quantity": 1
+          },
+          {
+            "item_id": "oil_flask",
+            "quantity": 2
+          },
+          {
+            "item_id": "rations",
+            "quantity": 10
+          },
+          {
+            "item_id": "rope",
+            "quantity": 1
+          },
+          {
+            "item_id": "tinderbox",
+            "quantity": 1
+          },
+          {
+            "item_id": "torch",
+            "quantity": 10
+          },
+          {
+            "item_id": "waterskin",
+            "quantity": 1
+          }
+        ],
+        "value": 10,
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-gameplay-partial"
+      }
+    }
+  ],
+  "manifest_overrides": [],
+  "required_mapping": [
+    "packs"
+  ],
+  "consumers": [
+    {
+      "package_id": "barbarian",
+      "option": "A",
+      "quantity": 1,
+      "source": "docs/planning/preparation/crown-characters/classes/barbarian.json"
+    },
+    {
+      "package_id": "druid",
+      "option": "A",
+      "quantity": 1,
+      "source": "docs/planning/preparation/crown-characters/classes/druid.json"
+    },
+    {
+      "package_id": "monk",
+      "option": "A",
+      "quantity": 1,
+      "source": "docs/planning/preparation/crown-characters/classes/monk.json"
+    },
+    {
+      "package_id": "ranger",
+      "option": "A",
+      "quantity": 1,
+      "source": "docs/planning/preparation/crown-characters/classes/ranger.json"
+    }
+  ],
+  "unsupported_behavior": [
+    {
+      "group": "packs",
+      "requirement": "Resolve six complete pack lists and exact once-only expansion. Existing three pack seeds are partial reuse. Shell versus contents and actual storage must not duplicate gear or pretend bundle contents fit the Backpack."
+    }
+  ]
+}

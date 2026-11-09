@@ -1,0 +1,168 @@
+{
+  "format": "crown-spell-candidate/1",
+  "id": "conjure_animals",
+  "name": "Conjure Animals",
+  "level": 3,
+  "status": "written_unverified_not_loaded",
+  "source": {
+    "authority": "SRD 5.2.1",
+    "url": "https://media.dndbeyond.com/compendium-images/srd/5.2/SRD_CC_v5.2.1.pdf",
+    "sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      117,
+      118
+    ],
+    "header": {
+      "Casting Time": "Action",
+      "Range": "60 feet",
+      "Components": "V, S",
+      "Duration": "Concentration, up to 10 minutes"
+    },
+    "attribution": "System Reference Document 5.2.1, Wizards of the Coast LLC; CC BY 4.0."
+  },
+  "casting": {
+    "casting_time": "Action",
+    "kind": "action",
+    "seconds": null,
+    "ritual_available": false,
+    "range": {
+      "source": "60 feet",
+      "kind": "distance",
+      "feet": 60
+    },
+    "components": [
+      "V",
+      "S"
+    ],
+    "material": null,
+    "duration": "Concentration, up to 10 minutes",
+    "concentration": true,
+    "spell_lists": [
+      "druid",
+      "ranger"
+    ]
+  },
+  "authored_intent": "Create Large intangible spectral pack at seen unoccupied point; caster has STR-save Advantage within 5 feet; caster movement on own turn may move pack 30 feet; seen-target proximity/entry/end-turn DEX save or 3d10 Slashing, no half, once per turn; higher slots add 1d10.",
+  "rules": [
+    {
+      "id": "r001",
+      "text": "You conjure nature spirits that appear as a Large pack of spectral, intangible animals in an unoccupied space you can see within range."
+    },
+    {
+      "id": "r002",
+      "text": "The pack lasts for the duration, and you choose the spirits’ animal form, such as wolves, serpents, or birds."
+    },
+    {
+      "id": "r003",
+      "text": "You have Advantage on Strength saving throws while you’re within 5 feet of the pack, and when you move on your turn, you can also move the pack up to 30 feet to an unoccupied space you can see."
+    },
+    {
+      "id": "r004",
+      "text": "Whenever the pack moves within 10 feet of a creature you can see and whenever a creature you can see enters a space within 10 feet of the pack or ends its turn there, you can force that creature to make a Dexterity saving throw."
+    },
+    {
+      "id": "r005",
+      "text": "On a failed save, the creature takes 3d10 Slashing damage."
+    },
+    {
+      "id": "r006",
+      "text": "A creature makes this save only once per turn."
+    },
+    {
+      "id": "r007",
+      "text": "Using a Higher-Level Spell Slot."
+    },
+    {
+      "id": "r008",
+      "text": "The damage increases by 1d10 for each spell slot level above 3."
+    }
+  ],
+  "authored_operations": [
+    {
+      "operation": "create_moving_spectral_pack",
+      "parameters": {
+        "size": "large",
+        "intangible": true,
+        "location": "seen_unoccupied",
+        "caster_save_advantage": {
+          "ability": "STR",
+          "within_pack_feet": 5
+        },
+        "move": {
+          "during": "caster_movement_on_own_turn",
+          "maximum_feet": 30,
+          "destination": "seen_unoccupied"
+        },
+        "trigger": {
+          "within_pack_feet": 10,
+          "target_must_be_seen": true,
+          "events": [
+            "pack_moves_near",
+            "creature_enters",
+            "creature_turn_end"
+          ],
+          "maximum_per_target_per_turn": 1,
+          "caster_may_force_each_save": true
+        },
+        "damage": {
+          "save": "DEX",
+          "failure": "3d10",
+          "success": 0,
+          "type": "slashing",
+          "upcast_per_slot": "1d10"
+        }
+      },
+      "status": "authoring_declaration_not_a_registered_opcode",
+      "required_source_rules": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006",
+        "r007",
+        "r008"
+      ]
+    }
+  ],
+  "runtime_draft": {
+    "origin": "proposed_operations",
+    "definition": null,
+    "fragments": {},
+    "coverage": "Unverified. Neither a full definition nor a fragment certifies all source rules or controls. Required extensions are not silently waived."
+  },
+  "required_extensions": [
+    {
+      "group": "zones",
+      "requirement": "Mount source-defined recurring and moving area effects with independent appearance/entry/movement/start/end triggers, exclusions and once-per-turn receipts; area_selection is geometry only.",
+      "spell_specific_intent": "Create Large intangible spectral pack at seen unoccupied point; caster has STR-save Advantage within 5 feet; caster movement on own turn may move pack 30 feet; seen-target proximity/entry/end-turn DEX save or 3d10 Slashing, no half, once per turn; higher slots add 1d10.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006",
+        "r007",
+        "r008"
+      ],
+      "existing_owner_to_reuse": "src/spells/combat_spell_zones.gd",
+      "slice_references": "S-080/S-087/S-184/S-190",
+      "disposition": "requires_mapping_or_host_completion",
+      "note": "This is an authored handoff requirement, not a fresh runtime failure or claim that the whole referenced slice is missing."
+    }
+  ],
+  "audit": {
+    "source": "docs/audits/spells.md",
+    "batch": "088-5",
+    "production_definition_at_authoring": "res://data/core/spells/imported_spells.json#37",
+    "baseline_execution": "native",
+    "source_revision": "2a19eb1d",
+    "existing_conversion_label": "queued"
+  },
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile every source rule and required extension, then implement and verify through production paths before any deliberate promotion. Keep native behavior until covered."
+  }
+}

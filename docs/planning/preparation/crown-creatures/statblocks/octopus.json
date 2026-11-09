@@ -1,0 +1,257 @@
+{
+  "schema": "crown-creature-candidate/1",
+  "id": "srd_octopus",
+  "name": "Octopus",
+  "kind": "srd_statblock",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring intent only; not registered engine syntax. Mapping requirements do not assert the whole referenced engine slice is absent.",
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile all source clauses, mappings and source differences before later production-path verification. Keep native paths until replacements cover them."
+  },
+  "source": {
+    "authority": "SRD 5.2.1",
+    "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      357,
+      358
+    ],
+    "text": "Octopus\nSmall Beast, Unaligned\nAC 12 Initiative +2 (12)\nHP 3 (1d6)\nSpeed 5 ft., Swim 30 ft.\nMOD SAVE MOD SAVE MOD SAVE\nStr 4 −3 −3 Dex 15 +2 +2 Con 11 +0 +0\nInt 3 −4 −4 WIS 10 +0 +0 Cha 4 −3 −3\nSkills Perception +2, Stealth +6\nSenses Darkvision 30 ft.; Passive Perception 12\nLanguages None\nCR 0 (XP 10; PB +2)\nTraits\nCompression. The octopus can move through a space\nas narrow as 1 inch without expending extra move-\nment to do so.\nWater Breathing. The octopus can breathe only\nunderwater.\nActions\nTentacles. Melee Attack Roll: +4, reach 5 ft. Hit: 1\nBludgeoning damage.\nReactions\nInk Cloud (1/Day). Trigger: A creature ends its turn\nwithin 5 feet of the octopus while underwater. Re-\nsponse: The octopus releases ink that fills a 5-foot\nCube centered on itself, and the octopus moves up to\nits Swim Speed. The Cube is Heavily Obscured for 1\nminute or until a strong current or similar effect dis-\nperses the ink.",
+    "transcription": "Two-column extraction; line breaks retained. Whole selected page context is in source-pages.json. No stat correction inferred from donor data."
+  },
+  "statistics": {
+    "identity_line": "Small Beast, Unaligned",
+    "AC": "12 Initiative +2 (12)",
+    "HP": "3 (1d6)",
+    "Speed": "5 ft., Swim 30 ft.",
+    "Skills": "Perception +2, Stealth +6",
+    "Senses": "Darkvision 30 ft.; Passive Perception 12",
+    "Languages": "None",
+    "CR": "0 (XP 10; PB +2)",
+    "ability_scores": {
+      "STR": 4,
+      "DEX": 15,
+      "CON": 11,
+      "INT": 3,
+      "WIS": 10,
+      "CHA": 4
+    },
+    "saving_throw_modifiers": {
+      "STR": -3,
+      "DEX": 2,
+      "CON": 0,
+      "INT": -4,
+      "WIS": 0,
+      "CHA": -3
+    },
+    "initiative_modifier": 2,
+    "initiative_score_printed": 12,
+    "armor_class": 12,
+    "movement_feet": {
+      "walk": 5,
+      "swim": 30
+    }
+  },
+  "authored_operations": [
+    {
+      "key": "b001",
+      "name": "Compression",
+      "source_section": "Traits",
+      "full_rule": "Compression. The octopus can move through a space\nas narrow as 1 inch without expending extra movement to do so.",
+      "budget": "passive_or_declared_trigger",
+      "steps": [
+        {
+          "intent": "Represent actual size/space, climb/swim/fly and breathing, jumps, straight-line charge history, opportunity exceptions, web surfaces and legal release.",
+          "mapping_group": "movement"
+        }
+      ],
+      "parameters_from_rule": {
+        "attack_bonus": [],
+        "save_dc": [],
+        "distances_feet": [],
+        "dice": []
+      },
+      "blockers": [
+        "map_movement"
+      ],
+      "ending_and_identity": "Exact actor/action/target/source instance; use every qualifier and ending in full_rule, not only extracted parameters.",
+      "behavior_plan": {
+        "budget": "passive_or_declared_trigger",
+        "source_outcomes": {},
+        "minimum_gap_inches": 1,
+        "extra_movement_cost": 0
+      }
+    },
+    {
+      "key": "b002",
+      "name": "Water Breathing",
+      "source_section": "Traits",
+      "full_rule": "Water Breathing. The octopus can breathe only\nunderwater.",
+      "budget": "passive_or_declared_trigger",
+      "steps": [
+        {
+          "intent": "Represent actual size/space, climb/swim/fly and breathing, jumps, straight-line charge history, opportunity exceptions, web surfaces and legal release.",
+          "mapping_group": "movement"
+        }
+      ],
+      "parameters_from_rule": {
+        "attack_bonus": [],
+        "save_dc": [],
+        "distances_feet": [],
+        "dice": []
+      },
+      "blockers": [
+        "map_movement"
+      ],
+      "ending_and_identity": "Exact actor/action/target/source instance; use every qualifier and ending in full_rule, not only extracted parameters.",
+      "behavior_plan": {
+        "budget": "passive_or_declared_trigger",
+        "source_outcomes": {},
+        "breathing_media": [
+          "water"
+        ],
+        "air_breathing": false
+      }
+    },
+    {
+      "key": "b003",
+      "name": "Tentacles",
+      "source_section": "Actions",
+      "full_rule": "Tentacles. Melee Attack Roll: +4, reach 5 ft. Hit: 1\nBludgeoning damage.",
+      "budget": "action",
+      "steps": [
+        {
+          "intent": "Resolve declared roll or save, targets, range/reach, damage packets, multiattack choice, riders and exact action budget. A save-only action is not a weapon hit rider.",
+          "mapping_group": "attacks"
+        }
+      ],
+      "parameters_from_rule": {
+        "attack_bonus": [
+          4
+        ],
+        "save_dc": [],
+        "distances_feet": [
+          5
+        ],
+        "dice": []
+      },
+      "blockers": [
+        "map_attacks"
+      ],
+      "ending_and_identity": "Exact actor/action/target/source instance; use every qualifier and ending in full_rule, not only extracted parameters.",
+      "behavior_plan": {
+        "budget": "action",
+        "source_outcomes": {
+          "hit": "1 Bludgeoning damage."
+        },
+        "resolution": "attack_roll",
+        "attack_kind": "melee",
+        "damage_and_riders": "1 Bludgeoning damage.",
+        "permission": "ordinary familiar cannot attack; invocation exceptions must grant this exact attack or Attack action, not every Actions entry"
+      }
+    },
+    {
+      "key": "b004",
+      "name": "Ink Cloud (1/Day)",
+      "source_section": "Reactions",
+      "full_rule": "Ink Cloud (1/Day). Trigger: A creature ends its turn\nwithin 5 feet of the octopus while underwater. Response: The octopus releases ink that fills a 5-foot\nCube centered on itself, and the octopus moves up to\nits Swim Speed. The Cube is Heavily Obscured for 1\nminute or until a strong current or similar effect disperses the ink.",
+      "budget": "reaction",
+      "steps": [
+        {
+          "intent": "Represent actual size/space, climb/swim/fly and breathing, jumps, straight-line charge history, opportunity exceptions, web surfaces and legal release.",
+          "mapping_group": "movement"
+        },
+        {
+          "intent": "Charge exact source-owned action/reaction/use once; preserve recharge dice, daily and Long Rest schedules as separately authored rules.",
+          "mapping_group": "resources"
+        }
+      ],
+      "parameters_from_rule": {
+        "attack_bonus": [],
+        "save_dc": [],
+        "distances_feet": [
+          5
+        ],
+        "dice": []
+      },
+      "blockers": [
+        "map_movement",
+        "map_resources"
+      ],
+      "ending_and_identity": "Exact actor/action/target/source instance; use every qualifier and ending in full_rule, not only extracted parameters.",
+      "behavior_plan": {
+        "budget": "reaction",
+        "source_outcomes": {
+          "trigger": "A creature ends its turn within 5 feet of the octopus while underwater.",
+          "response": "The octopus releases ink that fills a 5-foot Cube centered on itself, and the octopus moves up to its Swim Speed. The Cube is Heavily Obscured for 1 minute or until a strong current or similar effect disperses the ink."
+        },
+        "uses": 1,
+        "trigger": "Creature ends turn within5 feet while octopus underwater",
+        "effects": [
+          {
+            "area": "5-foot Cube centered on octopus",
+            "concealment": "Heavily Obscured",
+            "end": "1 minute or strong current/similar dispersion"
+          },
+          {
+            "move": "Up to Swim Speed"
+          }
+        ]
+      }
+    }
+  ],
+  "retained_definitions": [
+    {
+      "path": "data/core/monsters/imported_monsters.json",
+      "sha256": "f57bee1e93f185a89575bed3d8b2b610b53cfd3b7f2eb56448d1dd64a0126c5f",
+      "pointer": "/293",
+      "payload": {
+        "id": "octopus",
+        "name": "Octopus",
+        "hit_points": "1d6",
+        "armor_class": 12,
+        "speed": 1,
+        "ability_scores": {
+          "STR": 4,
+          "DEX": 15,
+          "CON": 11,
+          "INT": 3,
+          "WIS": 10,
+          "CHA": 4
+        },
+        "attacks": [
+          {
+            "name": "Claws",
+            "ability": "STR",
+            "damage": "1d6",
+            "range": 1,
+            "damage_type": "slashing"
+          }
+        ],
+        "ai_behavior": "aggressive"
+      },
+      "manifest_declarations": []
+    }
+  ],
+  "selection": {
+    "wild_shape_druid_levels_2_3": true,
+    "wild_shape_druid_levels_4_5": true,
+    "normal_familiar": true,
+    "pact_of_chain_special": false,
+    "animate_dead_output": false,
+    "held_swarm": false,
+    "encounter_comparison_only": false
+  },
+  "acquisition_links": [
+    "selection-links.json"
+  ],
+  "blockers": [
+    "map_statistics",
+    "map_attacks",
+    "map_movement",
+    "map_resources"
+  ],
+  "source_reconciliation": "Official body is authoritative for this SRD candidate. Retained donor payloads are comparison/reuse seeds, including legacy values and manifest winners; do not merge their statistics or traits by ID. Direct Crown encounters retain separate candidates.",
+  "equipment_links": []
+}

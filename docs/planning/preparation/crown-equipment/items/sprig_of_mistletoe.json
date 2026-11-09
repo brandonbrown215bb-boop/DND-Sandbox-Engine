@@ -1,0 +1,91 @@
+{
+  "schema": "crown-equipment-candidate/1",
+  "id": "sprig_of_mistletoe",
+  "name": "Sprig of Mistletoe",
+  "kind": "focus",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring intent only; not registered engine syntax.",
+  "rules": {
+    "authority": "SRD 5.2.1",
+    "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      97,
+      105,
+      106
+    ],
+    "section": "Sprig of Mistletoe",
+    "text": "Sprig of Mistletoe is a focus for druid, ranger spells, subject to the class casting permission and Material-component rules. Form: held.",
+    "source_context": "../source-pages.json"
+  },
+  "definition": {
+    "id": "sprig_of_mistletoe",
+    "name": "Sprig of Mistletoe",
+    "weight_lb": null,
+    "cost_gp": 1,
+    "class_permissions": [
+      "druid",
+      "ranger"
+    ],
+    "form": "held",
+    "base_weapon_candidate_id": null
+  },
+  "authored_operations": [
+    "A focus can replace Material components only if the spell neither consumes them nor specifies their cost, and a feature permits that focus. Hold the focus unless its item description permits another form; accessing materials needs a free hand, which can also perform Somatic components. Check actual class permission, hands and Holy Symbol worn/borne/held form (SRD pp.105–106).",
+    "Retain one exact item copy with both weapon and focus roles for staff forms; do not substitute a plain Quarterstaff, or grant a second free weapon."
+  ],
+  "retained_runtime_seeds": [
+    {
+      "path": "data/core/items/imported_magic_tools.json",
+      "array_index": 49,
+      "file_sha256": "7403cb6637b668bbfd13787473f467f618af88874c60c0a696adad165255caca",
+      "definition": {
+        "id": "sprig_of_mistletoe",
+        "name": "Sprig of Mistletoe",
+        "description": "",
+        "type": "tool",
+        "effects": [],
+        "value": 1
+      }
+    },
+    {
+      "path": "data/core/items/imported_magic_tools.json",
+      "array_index": 50,
+      "file_sha256": "7403cb6637b668bbfd13787473f467f618af88874c60c0a696adad165255caca",
+      "definition": {
+        "id": "sprig_of_mistletoe",
+        "name": "Sprig of Mistletoe",
+        "description": "",
+        "type": "tool",
+        "effects": [],
+        "value": 1
+      }
+    }
+  ],
+  "manifest_overrides": [
+    {
+      "type": "item",
+      "id": "sprig_of_mistletoe",
+      "winner": "res://data/core/items/imported_magic_tools.json#51",
+      "replaces": [
+        "res://data/core/items/imported_magic_tools.json#50"
+      ]
+    }
+  ],
+  "required_mapping": [
+    "focuses"
+  ],
+  "consumers": [
+    {
+      "package_id": "ranger",
+      "option": "A",
+      "quantity": 1,
+      "source": "docs/planning/preparation/crown-characters/classes/ranger.json"
+    }
+  ],
+  "unsupported_behavior": [
+    {
+      "group": "focuses",
+      "requirement": "Map class-owned focus permission, free hands, Material costs/consumption and Holy Symbol held/worn/borne forms. Staff is one exact copy with both Quarterstaff and focus roles; existing tool-only staff seeds do not provide the weapon role."
+    }
+  ]
+}

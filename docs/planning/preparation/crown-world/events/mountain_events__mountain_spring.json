@@ -1,0 +1,84 @@
+{
+  "schema": "crown-world-candidate/1",
+  "id": "mountain_events__mountain_spring",
+  "name": "Crystal Spring",
+  "kind": "events",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring declarations only; not registered engine opcodes.",
+  "required_extensions": [
+    "objectives_rewards",
+    "rest_time",
+    "supplies"
+  ],
+  "authored_operations": [
+    {
+      "operation": "settle_ordered_branch",
+      "seed_pointer": "/choices/0/effects",
+      "effects": [
+        {
+          "type": "heal",
+          "value": "2d8"
+        },
+        {
+          "type": "remove_condition",
+          "condition": "poisoned"
+        }
+      ],
+      "condition": null,
+      "requirement": "Retain order, exact quantities/formulas, recipient, costs, branch descriptions and occurrence identity; no repeated payment when a child resumes."
+    },
+    {
+      "operation": "settle_ordered_branch",
+      "seed_pointer": "/choices/1/effects",
+      "effects": [
+        {
+          "type": "give_item",
+          "item_id": "potion_healing"
+        }
+      ],
+      "condition": null,
+      "requirement": "Retain order, exact quantities/formulas, recipient, costs, branch descriptions and occurrence identity; no repeated payment when a child resumes."
+    }
+  ],
+  "blockers": [],
+  "retained_input": {
+    "path": "data/core/events/mountain_events.json",
+    "sha256": "28c24bea91c714a4c49e7c7b6358adf5dea15b8f06d69dca29ef79542f0a6fd3",
+    "pointer": "/events/4",
+    "payload": {
+      "id": "mountain_spring",
+      "name": "Crystal Spring",
+      "weight": 15,
+      "description": "A pristine spring bubbles from the rock, its water shimmering with magical energy.",
+      "type": "choice",
+      "choices": [
+        {
+          "text": "Drink from the spring",
+          "effects": [
+            {
+              "type": "heal",
+              "value": "2d8"
+            },
+            {
+              "type": "remove_condition",
+              "condition": "poisoned"
+            }
+          ],
+          "description": "The water is cool and refreshing. You feel rejuvenated."
+        },
+        {
+          "text": "Fill your waterskin for later",
+          "effects": [
+            {
+              "type": "give_item",
+              "item_id": "potion_healing"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "authority": "Custom Crown campaign event, not an SRD trap/NPC/spell replacement",
+  "table_id": "mountain_events",
+  "occurrence_policy": "Table may roll again; same in-flight occurrence must not reroll/reapply on reopen. Campaign-specific uniqueness beyond generated room claims is unresolved, not silently global once-per-event-ID."
+}

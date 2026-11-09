@@ -1,0 +1,1942 @@
+{
+  "schema": "crown-world-acquisition-links/1",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "occurrences": [
+    {
+      "world_candidate": "dungeons/ruins_of_ashvale.json",
+      "pointer": "/monster_pool/0",
+      "kind": "creature",
+      "id": "skeleton",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-creatures/encounters/skeleton.json",
+        "sha256": "7751281316adc3da8cc9943be8a14eeaaf939e9fb9a236a77b9acc6955458a87"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "dungeons/ruins_of_ashvale.json",
+      "pointer": "/monster_pool/1",
+      "kind": "creature",
+      "id": "skeleton",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-creatures/encounters/skeleton.json",
+        "sha256": "7751281316adc3da8cc9943be8a14eeaaf939e9fb9a236a77b9acc6955458a87"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "dungeons/ruins_of_ashvale.json",
+      "pointer": "/monster_pool/2",
+      "kind": "creature",
+      "id": "zombie",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-creatures/encounters/zombie.json",
+        "sha256": "d939db27cb683596a37a6437bf3db5cc28a9be08275af4a886d337a62b72358a"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "dungeons/ruins_of_ashvale.json",
+      "pointer": "/monster_pool/3",
+      "kind": "creature",
+      "id": "zombie",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-creatures/encounters/zombie.json",
+        "sha256": "d939db27cb683596a37a6437bf3db5cc28a9be08275af4a886d337a62b72358a"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "dungeons/ruins_of_ashvale.json",
+      "pointer": "/monster_pool/4",
+      "kind": "creature",
+      "id": "wight",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-creatures/encounters/wight.json",
+        "sha256": "05f64bf221b2256b645e1511b46102c26a60313042987d5266787ecdf71c46b3"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "dungeons/ruins_of_ashvale.json",
+      "pointer": "/boss/monster_id",
+      "kind": "creature",
+      "id": "wight",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-creatures/encounters/wight.json",
+        "sha256": "05f64bf221b2256b645e1511b46102c26a60313042987d5266787ecdf71c46b3"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "dungeons/ruins_of_ashvale.json",
+      "pointer": "/loot/0/item_id",
+      "kind": "item",
+      "id": "crown_fragment",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-reachable-items/items/crown_fragment.json",
+        "sha256": "79c4ae0cde21274f25d9d2c2a9acfac34a986139c8f380dbf96b8c1e1f6aa713"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "dungeons/ruins_of_ashvale.json",
+      "pointer": "/loot/1/item_id",
+      "kind": "item",
+      "id": "gold_100",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-reachable-items/items/gold_100.json",
+        "sha256": "d6a35e427766ee2d236dff5af9458a67e3571e19395a14fc9558a1f9e2a905ff"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "dungeons/ruins_of_ashvale.json",
+      "pointer": "/tactical_rooms/1/encounter_monsters/0",
+      "kind": "creature",
+      "id": "skeleton",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-creatures/encounters/skeleton.json",
+        "sha256": "7751281316adc3da8cc9943be8a14eeaaf939e9fb9a236a77b9acc6955458a87"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "dungeons/ruins_of_ashvale.json",
+      "pointer": "/tactical_rooms/1/objects/0/key_id",
+      "kind": "item",
+      "id": "ashvale_brass_key",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-reachable-items/items/ashvale_brass_key.json",
+        "sha256": "da4d5c2d44c97e05cae28dc4371e07b79217bff89d117b4934d77a2b023a8b77"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "dungeons/ruins_of_ashvale.json",
+      "pointer": "/tactical_rooms/1/objects/1/key_id",
+      "kind": "item",
+      "id": "ashvale_brass_key",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-reachable-items/items/ashvale_brass_key.json",
+        "sha256": "da4d5c2d44c97e05cae28dc4371e07b79217bff89d117b4934d77a2b023a8b77"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "dungeons/ruins_of_ashvale.json",
+      "pointer": "/tactical_rooms/1/objects/1/contents/0",
+      "kind": "item",
+      "id": "potion_healing",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-reachable-items/items/potion_healing.json",
+        "sha256": "c7d6154f39d85bfe7da81ee09b7f69db8e2f5196274d21c3d1d38eff03254886"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "dungeons/ruins_of_ashvale.json",
+      "pointer": "/tactical_rooms/1/objects/1/contents/1",
+      "kind": "item",
+      "id": "potion_healing",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-reachable-items/items/potion_healing.json",
+        "sha256": "c7d6154f39d85bfe7da81ee09b7f69db8e2f5196274d21c3d1d38eff03254886"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "dungeons/ruins_of_ashvale.json",
+      "pointer": "/tactical_rooms/1/objects/5/contents/0",
+      "kind": "item",
+      "id": "ashvale_brass_key",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-reachable-items/items/ashvale_brass_key.json",
+        "sha256": "da4d5c2d44c97e05cae28dc4371e07b79217bff89d117b4934d77a2b023a8b77"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "dungeons/caverns_of_gloom.json",
+      "pointer": "/monster_pool/0",
+      "kind": "creature",
+      "id": "goblin",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-creatures/encounters/goblin.json",
+        "sha256": "da5e9370fff91bbfd93433db9ac66758dfbfd8c997debdfd9fa63f31c8895177"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "dungeons/caverns_of_gloom.json",
+      "pointer": "/monster_pool/1",
+      "kind": "creature",
+      "id": "goblin",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-creatures/encounters/goblin.json",
+        "sha256": "da5e9370fff91bbfd93433db9ac66758dfbfd8c997debdfd9fa63f31c8895177"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "dungeons/caverns_of_gloom.json",
+      "pointer": "/monster_pool/2",
+      "kind": "creature",
+      "id": "goblin_chief",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-creatures/encounters/goblin_chief.json",
+        "sha256": "f4fa845546eb8c8d9b814b344f0cfb6bf776d83ddd2b30236b3fb569e44fb7db"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "dungeons/caverns_of_gloom.json",
+      "pointer": "/monster_pool/3",
+      "kind": "creature",
+      "id": "ooze",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-creatures/encounters/ooze.json",
+        "sha256": "cbb61fe660c9e3dc47751dbdda25796443fcb968bbc34c97a989a0d2529a2741"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "dungeons/caverns_of_gloom.json",
+      "pointer": "/monster_pool/4",
+      "kind": "creature",
+      "id": "giant_spider",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-creatures/encounters/giant_spider.json",
+        "sha256": "5fe9c6cae0fd6b35a21aacc8f488d1eea56cac3f06ae2fdef475161070d7ce4a"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "dungeons/caverns_of_gloom.json",
+      "pointer": "/boss/monster_id",
+      "kind": "creature",
+      "id": "goblin_chief",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-creatures/encounters/goblin_chief.json",
+        "sha256": "f4fa845546eb8c8d9b814b344f0cfb6bf776d83ddd2b30236b3fb569e44fb7db"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "dungeons/caverns_of_gloom.json",
+      "pointer": "/loot/0/item_id",
+      "kind": "item",
+      "id": "crown_fragment",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-reachable-items/items/crown_fragment.json",
+        "sha256": "79c4ae0cde21274f25d9d2c2a9acfac34a986139c8f380dbf96b8c1e1f6aa713"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "dungeons/caverns_of_gloom.json",
+      "pointer": "/loot/1/item_id",
+      "kind": "item",
+      "id": "gold_100",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-reachable-items/items/gold_100.json",
+        "sha256": "d6a35e427766ee2d236dff5af9458a67e3571e19395a14fc9558a1f9e2a905ff"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "dungeons/caverns_of_gloom.json",
+      "pointer": "/loot/2/item_id",
+      "kind": "item",
+      "id": "potion_greater_healing",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-reachable-items/items/potion_greater_healing.json",
+        "sha256": "46bf8bac5c5a5d8860f674336c8c209f231ab219f49757cdda05503a49563c59"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "dungeons/tower_of_the_lich.json",
+      "pointer": "/monster_pool/0",
+      "kind": "creature",
+      "id": "skeleton",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-creatures/encounters/skeleton.json",
+        "sha256": "7751281316adc3da8cc9943be8a14eeaaf939e9fb9a236a77b9acc6955458a87"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "dungeons/tower_of_the_lich.json",
+      "pointer": "/monster_pool/1",
+      "kind": "creature",
+      "id": "zombie",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-creatures/encounters/zombie.json",
+        "sha256": "d939db27cb683596a37a6437bf3db5cc28a9be08275af4a886d337a62b72358a"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "dungeons/tower_of_the_lich.json",
+      "pointer": "/monster_pool/2",
+      "kind": "creature",
+      "id": "wight",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-creatures/encounters/wight.json",
+        "sha256": "05f64bf221b2256b645e1511b46102c26a60313042987d5266787ecdf71c46b3"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "dungeons/tower_of_the_lich.json",
+      "pointer": "/monster_pool/3",
+      "kind": "creature",
+      "id": "wight",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-creatures/encounters/wight.json",
+        "sha256": "05f64bf221b2256b645e1511b46102c26a60313042987d5266787ecdf71c46b3"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "dungeons/tower_of_the_lich.json",
+      "pointer": "/boss/monster_id",
+      "kind": "creature",
+      "id": "lich_king",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-creatures/encounters/lich_king.json",
+        "sha256": "c9d4fc4e1d86f400ac98e11245cae1987545cf6683603f590b64d91a3aa28ce3"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "dungeons/tower_of_the_lich.json",
+      "pointer": "/loot/0/item_id",
+      "kind": "item",
+      "id": "crown_fragment",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-reachable-items/items/crown_fragment.json",
+        "sha256": "79c4ae0cde21274f25d9d2c2a9acfac34a986139c8f380dbf96b8c1e1f6aa713"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "rooms/ashvale_antechamber.json",
+      "pointer": "/encounter_monsters/0",
+      "kind": "creature",
+      "id": "skeleton",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-creatures/encounters/skeleton.json",
+        "sha256": "7751281316adc3da8cc9943be8a14eeaaf939e9fb9a236a77b9acc6955458a87"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "rooms/ashvale_antechamber.json",
+      "pointer": "/objects/0/key_id",
+      "kind": "item",
+      "id": "ashvale_brass_key",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-reachable-items/items/ashvale_brass_key.json",
+        "sha256": "da4d5c2d44c97e05cae28dc4371e07b79217bff89d117b4934d77a2b023a8b77"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "rooms/ashvale_antechamber.json",
+      "pointer": "/objects/1/key_id",
+      "kind": "item",
+      "id": "ashvale_brass_key",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-reachable-items/items/ashvale_brass_key.json",
+        "sha256": "da4d5c2d44c97e05cae28dc4371e07b79217bff89d117b4934d77a2b023a8b77"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "rooms/ashvale_antechamber.json",
+      "pointer": "/objects/1/contents/0",
+      "kind": "item",
+      "id": "potion_healing",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-reachable-items/items/potion_healing.json",
+        "sha256": "c7d6154f39d85bfe7da81ee09b7f69db8e2f5196274d21c3d1d38eff03254886"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "rooms/ashvale_antechamber.json",
+      "pointer": "/objects/1/contents/1",
+      "kind": "item",
+      "id": "potion_healing",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-reachable-items/items/potion_healing.json",
+        "sha256": "c7d6154f39d85bfe7da81ee09b7f69db8e2f5196274d21c3d1d38eff03254886"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "rooms/ashvale_antechamber.json",
+      "pointer": "/objects/5/contents/0",
+      "kind": "item",
+      "id": "ashvale_brass_key",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-reachable-items/items/ashvale_brass_key.json",
+        "sha256": "da4d5c2d44c97e05cae28dc4371e07b79217bff89d117b4934d77a2b023a8b77"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "objects/door.json",
+      "pointer": "/key_id",
+      "kind": "item",
+      "id": "ashvale_brass_key",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-reachable-items/items/ashvale_brass_key.json",
+        "sha256": "da4d5c2d44c97e05cae28dc4371e07b79217bff89d117b4934d77a2b023a8b77"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "objects/chest.json",
+      "pointer": "/key_id",
+      "kind": "item",
+      "id": "ashvale_brass_key",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-reachable-items/items/ashvale_brass_key.json",
+        "sha256": "da4d5c2d44c97e05cae28dc4371e07b79217bff89d117b4934d77a2b023a8b77"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "objects/chest.json",
+      "pointer": "/contents/0",
+      "kind": "item",
+      "id": "potion_healing",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-reachable-items/items/potion_healing.json",
+        "sha256": "c7d6154f39d85bfe7da81ee09b7f69db8e2f5196274d21c3d1d38eff03254886"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "objects/chest.json",
+      "pointer": "/contents/1",
+      "kind": "item",
+      "id": "potion_healing",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-reachable-items/items/potion_healing.json",
+        "sha256": "c7d6154f39d85bfe7da81ee09b7f69db8e2f5196274d21c3d1d38eff03254886"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "objects/key.json",
+      "pointer": "/contents/0",
+      "kind": "item",
+      "id": "ashvale_brass_key",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-reachable-items/items/ashvale_brass_key.json",
+        "sha256": "da4d5c2d44c97e05cae28dc4371e07b79217bff89d117b4934d77a2b023a8b77"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "generation/sequential_dungeon.json",
+      "pointer": "/0/intermediate_distribution/2/items/0",
+      "kind": "item",
+      "id": "gold_100",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-reachable-items/items/gold_100.json",
+        "sha256": "d6a35e427766ee2d236dff5af9458a67e3571e19395a14fc9558a1f9e2a905ff"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "generation/generated_loot_room.json",
+      "pointer": "/0/items/0",
+      "kind": "item",
+      "id": "gold_100",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-reachable-items/items/gold_100.json",
+        "sha256": "d6a35e427766ee2d236dff5af9458a67e3571e19395a14fc9558a1f9e2a905ff"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "tables/dungeon_events.json",
+      "pointer": "/events/0/choices/0/success/effects/0/item_id",
+      "kind": "item",
+      "id": "gold_100",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-reachable-items/items/gold_100.json",
+        "sha256": "d6a35e427766ee2d236dff5af9458a67e3571e19395a14fc9558a1f9e2a905ff"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "tables/dungeon_events.json",
+      "pointer": "/events/0/choices/0/success/effects/1/item_id",
+      "kind": "item",
+      "id": "potion_healing",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-reachable-items/items/potion_healing.json",
+        "sha256": "c7d6154f39d85bfe7da81ee09b7f69db8e2f5196274d21c3d1d38eff03254886"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "tables/dungeon_events.json",
+      "pointer": "/events/0/choices/0/failure/effects/2/item_id",
+      "kind": "item",
+      "id": "gold_50",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-reachable-items/items/gold_50.json",
+        "sha256": "d527e138af03005542b6b6f69c1a7413e33317d9e8e6525198991c1f6152751b"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "tables/dungeon_events.json",
+      "pointer": "/events/0/choices/1/effects/2/item_id",
+      "kind": "item",
+      "id": "gold_100",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-reachable-items/items/gold_100.json",
+        "sha256": "d6a35e427766ee2d236dff5af9458a67e3571e19395a14fc9558a1f9e2a905ff"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "tables/dungeon_events.json",
+      "pointer": "/events/1/data/monsters/0",
+      "kind": "creature",
+      "id": "skeleton",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-creatures/encounters/skeleton.json",
+        "sha256": "7751281316adc3da8cc9943be8a14eeaaf939e9fb9a236a77b9acc6955458a87"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "tables/dungeon_events.json",
+      "pointer": "/events/1/data/monsters/1",
+      "kind": "creature",
+      "id": "skeleton",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-creatures/encounters/skeleton.json",
+        "sha256": "7751281316adc3da8cc9943be8a14eeaaf939e9fb9a236a77b9acc6955458a87"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "tables/dungeon_events.json",
+      "pointer": "/events/1/data/monsters/2",
+      "kind": "creature",
+      "id": "zombie",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-creatures/encounters/zombie.json",
+        "sha256": "d939db27cb683596a37a6437bf3db5cc28a9be08275af4a886d337a62b72358a"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "tables/dungeon_events.json",
+      "pointer": "/events/4/choices/1/success/effects/0/item_id",
+      "kind": "item",
+      "id": "gold_50",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-reachable-items/items/gold_50.json",
+        "sha256": "d527e138af03005542b6b6f69c1a7413e33317d9e8e6525198991c1f6152751b"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "tables/dungeon_events.json",
+      "pointer": "/events/5/effects/0/item_id",
+      "kind": "item",
+      "id": "gold_100",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-reachable-items/items/gold_100.json",
+        "sha256": "d6a35e427766ee2d236dff5af9458a67e3571e19395a14fc9558a1f9e2a905ff"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "tables/dungeon_events.json",
+      "pointer": "/events/5/effects/1/item_id",
+      "kind": "item",
+      "id": "gold_100",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-reachable-items/items/gold_100.json",
+        "sha256": "d6a35e427766ee2d236dff5af9458a67e3571e19395a14fc9558a1f9e2a905ff"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "tables/dungeon_events.json",
+      "pointer": "/events/5/effects/2/item_id",
+      "kind": "item",
+      "id": "potion_greater_healing",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-reachable-items/items/potion_greater_healing.json",
+        "sha256": "46bf8bac5c5a5d8860f674336c8c209f231ab219f49757cdda05503a49563c59"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "tables/dungeon_events.json",
+      "pointer": "/events/6/data/monsters/0",
+      "kind": "creature",
+      "id": "ooze",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-creatures/encounters/ooze.json",
+        "sha256": "cbb61fe660c9e3dc47751dbdda25796443fcb968bbc34c97a989a0d2529a2741"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "tables/dungeon_events.json",
+      "pointer": "/events/6/data/monsters/1",
+      "kind": "creature",
+      "id": "ooze",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-creatures/encounters/ooze.json",
+        "sha256": "cbb61fe660c9e3dc47751dbdda25796443fcb968bbc34c97a989a0d2529a2741"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "events/dungeon_events__trapped_chest.json",
+      "pointer": "/choices/0/success/effects/0/item_id",
+      "kind": "item",
+      "id": "gold_100",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-reachable-items/items/gold_100.json",
+        "sha256": "d6a35e427766ee2d236dff5af9458a67e3571e19395a14fc9558a1f9e2a905ff"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "events/dungeon_events__trapped_chest.json",
+      "pointer": "/choices/0/success/effects/1/item_id",
+      "kind": "item",
+      "id": "potion_healing",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-reachable-items/items/potion_healing.json",
+        "sha256": "c7d6154f39d85bfe7da81ee09b7f69db8e2f5196274d21c3d1d38eff03254886"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "events/dungeon_events__trapped_chest.json",
+      "pointer": "/choices/0/failure/effects/2/item_id",
+      "kind": "item",
+      "id": "gold_50",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-reachable-items/items/gold_50.json",
+        "sha256": "d527e138af03005542b6b6f69c1a7413e33317d9e8e6525198991c1f6152751b"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "events/dungeon_events__trapped_chest.json",
+      "pointer": "/choices/1/effects/2/item_id",
+      "kind": "item",
+      "id": "gold_100",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-reachable-items/items/gold_100.json",
+        "sha256": "d6a35e427766ee2d236dff5af9458a67e3571e19395a14fc9558a1f9e2a905ff"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "events/dungeon_events__undead_ambush.json",
+      "pointer": "/data/monsters/0",
+      "kind": "creature",
+      "id": "skeleton",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-creatures/encounters/skeleton.json",
+        "sha256": "7751281316adc3da8cc9943be8a14eeaaf939e9fb9a236a77b9acc6955458a87"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "events/dungeon_events__undead_ambush.json",
+      "pointer": "/data/monsters/1",
+      "kind": "creature",
+      "id": "skeleton",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-creatures/encounters/skeleton.json",
+        "sha256": "7751281316adc3da8cc9943be8a14eeaaf939e9fb9a236a77b9acc6955458a87"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "events/dungeon_events__undead_ambush.json",
+      "pointer": "/data/monsters/2",
+      "kind": "creature",
+      "id": "zombie",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-creatures/encounters/zombie.json",
+        "sha256": "d939db27cb683596a37a6437bf3db5cc28a9be08275af4a886d337a62b72358a"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "events/dungeon_events__ghostly_warning.json",
+      "pointer": "/choices/1/success/effects/0/item_id",
+      "kind": "item",
+      "id": "gold_50",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-reachable-items/items/gold_50.json",
+        "sha256": "d527e138af03005542b6b6f69c1a7413e33317d9e8e6525198991c1f6152751b"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "events/dungeon_events__treasure_room.json",
+      "pointer": "/effects/0/item_id",
+      "kind": "item",
+      "id": "gold_100",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-reachable-items/items/gold_100.json",
+        "sha256": "d6a35e427766ee2d236dff5af9458a67e3571e19395a14fc9558a1f9e2a905ff"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "events/dungeon_events__treasure_room.json",
+      "pointer": "/effects/1/item_id",
+      "kind": "item",
+      "id": "gold_100",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-reachable-items/items/gold_100.json",
+        "sha256": "d6a35e427766ee2d236dff5af9458a67e3571e19395a14fc9558a1f9e2a905ff"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "events/dungeon_events__treasure_room.json",
+      "pointer": "/effects/2/item_id",
+      "kind": "item",
+      "id": "potion_greater_healing",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-reachable-items/items/potion_greater_healing.json",
+        "sha256": "46bf8bac5c5a5d8860f674336c8c209f231ab219f49757cdda05503a49563c59"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "events/dungeon_events__ooze_encounter.json",
+      "pointer": "/data/monsters/0",
+      "kind": "creature",
+      "id": "ooze",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-creatures/encounters/ooze.json",
+        "sha256": "cbb61fe660c9e3dc47751dbdda25796443fcb968bbc34c97a989a0d2529a2741"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "events/dungeon_events__ooze_encounter.json",
+      "pointer": "/data/monsters/1",
+      "kind": "creature",
+      "id": "ooze",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-creatures/encounters/ooze.json",
+        "sha256": "cbb61fe660c9e3dc47751dbdda25796443fcb968bbc34c97a989a0d2529a2741"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "tables/forest_events.json",
+      "pointer": "/events/0/data/monsters/0",
+      "kind": "creature",
+      "id": "goblin",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-creatures/encounters/goblin.json",
+        "sha256": "da5e9370fff91bbfd93433db9ac66758dfbfd8c997debdfd9fa63f31c8895177"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "tables/forest_events.json",
+      "pointer": "/events/0/data/monsters/1",
+      "kind": "creature",
+      "id": "goblin",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-creatures/encounters/goblin.json",
+        "sha256": "da5e9370fff91bbfd93433db9ac66758dfbfd8c997debdfd9fa63f31c8895177"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "tables/forest_events.json",
+      "pointer": "/events/0/data/monsters/2",
+      "kind": "creature",
+      "id": "goblin",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-creatures/encounters/goblin.json",
+        "sha256": "da5e9370fff91bbfd93433db9ac66758dfbfd8c997debdfd9fa63f31c8895177"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "tables/forest_events.json",
+      "pointer": "/events/1/data/items/0",
+      "kind": "item",
+      "id": "potion_healing",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-reachable-items/items/potion_healing.json",
+        "sha256": "c7d6154f39d85bfe7da81ee09b7f69db8e2f5196274d21c3d1d38eff03254886"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "tables/forest_events.json",
+      "pointer": "/events/1/data/items/1",
+      "kind": "item",
+      "id": "torch",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-reachable-items/../crown-equipment/items/torch.json",
+        "sha256": "6395fbadeb291313de4e300c9b11116a2d769912e59e49d2a7956cdcc71e6311"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "tables/forest_events.json",
+      "pointer": "/events/1/data/items/2",
+      "kind": "item",
+      "id": "rope",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-equipment/items/rope.json",
+        "sha256": "1d7fec5885c412867fdadc96b70e3e10e9724b17c1c9d60b1c87915497e005f5"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "tables/forest_events.json",
+      "pointer": "/events/1/data/items/3",
+      "kind": "item",
+      "id": "antidote",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-reachable-items/items/antidote.json",
+        "sha256": "324b738bc1e383d60c156545c678e948197a94a9c0f8d43653f91627bb347842"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "tables/forest_events.json",
+      "pointer": "/events/1/data/items/4",
+      "kind": "item",
+      "id": "dagger",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-reachable-items/../crown-equipment/items/dagger.json",
+        "sha256": "1e581e557159a1461829ab5e2ffcae7e192db9fe56901f178d0f85125092b80e"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "tables/forest_events.json",
+      "pointer": "/events/2/choices/1/success/effects/0/item_id",
+      "kind": "item",
+      "id": "potion_healing",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-reachable-items/items/potion_healing.json",
+        "sha256": "c7d6154f39d85bfe7da81ee09b7f69db8e2f5196274d21c3d1d38eff03254886"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "tables/forest_events.json",
+      "pointer": "/events/2/choices/1/success/effects/1/item_id",
+      "kind": "item",
+      "id": "gold_50",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-reachable-items/items/gold_50.json",
+        "sha256": "d527e138af03005542b6b6f69c1a7413e33317d9e8e6525198991c1f6152751b"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "tables/forest_events.json",
+      "pointer": "/events/3/success/effects/0/item_id",
+      "kind": "item",
+      "id": "gold_50",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-reachable-items/items/gold_50.json",
+        "sha256": "d527e138af03005542b6b6f69c1a7413e33317d9e8e6525198991c1f6152751b"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "tables/forest_events.json",
+      "pointer": "/events/3/success/effects/1/item_id",
+      "kind": "item",
+      "id": "potion_healing",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-reachable-items/items/potion_healing.json",
+        "sha256": "c7d6154f39d85bfe7da81ee09b7f69db8e2f5196274d21c3d1d38eff03254886"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "tables/forest_events.json",
+      "pointer": "/events/4/choices/0/effects/0/monsters/0",
+      "kind": "creature",
+      "id": "wolf",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-creatures/encounters/wolf.json",
+        "sha256": "a376b5f4d1a9892b4c2b70cb8b76ed2fbba2c3106799f808d944165edecb3b1b"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "tables/forest_events.json",
+      "pointer": "/events/4/choices/0/effects/0/monsters/1",
+      "kind": "creature",
+      "id": "wolf",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-creatures/encounters/wolf.json",
+        "sha256": "a376b5f4d1a9892b4c2b70cb8b76ed2fbba2c3106799f808d944165edecb3b1b"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "tables/forest_events.json",
+      "pointer": "/events/4/choices/0/effects/0/monsters/2",
+      "kind": "creature",
+      "id": "wolf",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-creatures/encounters/wolf.json",
+        "sha256": "a376b5f4d1a9892b4c2b70cb8b76ed2fbba2c3106799f808d944165edecb3b1b"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "tables/forest_events.json",
+      "pointer": "/events/4/choices/1/failure/effects/0/monsters/0",
+      "kind": "creature",
+      "id": "wolf",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-creatures/encounters/wolf.json",
+        "sha256": "a376b5f4d1a9892b4c2b70cb8b76ed2fbba2c3106799f808d944165edecb3b1b"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "tables/forest_events.json",
+      "pointer": "/events/4/choices/1/failure/effects/0/monsters/1",
+      "kind": "creature",
+      "id": "wolf",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-creatures/encounters/wolf.json",
+        "sha256": "a376b5f4d1a9892b4c2b70cb8b76ed2fbba2c3106799f808d944165edecb3b1b"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "tables/forest_events.json",
+      "pointer": "/events/4/choices/1/failure/effects/0/monsters/2",
+      "kind": "creature",
+      "id": "wolf",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-creatures/encounters/wolf.json",
+        "sha256": "a376b5f4d1a9892b4c2b70cb8b76ed2fbba2c3106799f808d944165edecb3b1b"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "tables/forest_events.json",
+      "pointer": "/events/5/chain_event/choices/2/success/effects/0/item_id",
+      "kind": "item",
+      "id": "gold_100",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-reachable-items/items/gold_100.json",
+        "sha256": "d6a35e427766ee2d236dff5af9458a67e3571e19395a14fc9558a1f9e2a905ff"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "tables/forest_events.json",
+      "pointer": "/events/6/choices/0/success/effects/0/item_id",
+      "kind": "item",
+      "id": "gold_50",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-reachable-items/items/gold_50.json",
+        "sha256": "d527e138af03005542b6b6f69c1a7413e33317d9e8e6525198991c1f6152751b"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "tables/forest_events.json",
+      "pointer": "/events/6/choices/1/effects/0/item_id",
+      "kind": "item",
+      "id": "gold_50",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-reachable-items/items/gold_50.json",
+        "sha256": "d527e138af03005542b6b6f69c1a7413e33317d9e8e6525198991c1f6152751b"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "tables/forest_events.json",
+      "pointer": "/events/7/data/monsters/0",
+      "kind": "creature",
+      "id": "giant_spider",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-creatures/encounters/giant_spider.json",
+        "sha256": "5fe9c6cae0fd6b35a21aacc8f488d1eea56cac3f06ae2fdef475161070d7ce4a"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "events/forest_events__goblin_ambush.json",
+      "pointer": "/data/monsters/0",
+      "kind": "creature",
+      "id": "goblin",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-creatures/encounters/goblin.json",
+        "sha256": "da5e9370fff91bbfd93433db9ac66758dfbfd8c997debdfd9fa63f31c8895177"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "events/forest_events__goblin_ambush.json",
+      "pointer": "/data/monsters/1",
+      "kind": "creature",
+      "id": "goblin",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-creatures/encounters/goblin.json",
+        "sha256": "da5e9370fff91bbfd93433db9ac66758dfbfd8c997debdfd9fa63f31c8895177"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "events/forest_events__goblin_ambush.json",
+      "pointer": "/data/monsters/2",
+      "kind": "creature",
+      "id": "goblin",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-creatures/encounters/goblin.json",
+        "sha256": "da5e9370fff91bbfd93433db9ac66758dfbfd8c997debdfd9fa63f31c8895177"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "events/forest_events__wandering_merchant.json",
+      "pointer": "/data/items/0",
+      "kind": "item",
+      "id": "potion_healing",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-reachable-items/items/potion_healing.json",
+        "sha256": "c7d6154f39d85bfe7da81ee09b7f69db8e2f5196274d21c3d1d38eff03254886"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "events/forest_events__wandering_merchant.json",
+      "pointer": "/data/items/1",
+      "kind": "item",
+      "id": "torch",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-reachable-items/../crown-equipment/items/torch.json",
+        "sha256": "6395fbadeb291313de4e300c9b11116a2d769912e59e49d2a7956cdcc71e6311"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "events/forest_events__wandering_merchant.json",
+      "pointer": "/data/items/2",
+      "kind": "item",
+      "id": "rope",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-equipment/items/rope.json",
+        "sha256": "1d7fec5885c412867fdadc96b70e3e10e9724b17c1c9d60b1c87915497e005f5"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "events/forest_events__wandering_merchant.json",
+      "pointer": "/data/items/3",
+      "kind": "item",
+      "id": "antidote",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-reachable-items/items/antidote.json",
+        "sha256": "324b738bc1e383d60c156545c678e948197a94a9c0f8d43653f91627bb347842"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "events/forest_events__wandering_merchant.json",
+      "pointer": "/data/items/4",
+      "kind": "item",
+      "id": "dagger",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-reachable-items/../crown-equipment/items/dagger.json",
+        "sha256": "1e581e557159a1461829ab5e2ffcae7e192db9fe56901f178d0f85125092b80e"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "events/forest_events__mysterious_shrine.json",
+      "pointer": "/choices/1/success/effects/0/item_id",
+      "kind": "item",
+      "id": "potion_healing",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-reachable-items/items/potion_healing.json",
+        "sha256": "c7d6154f39d85bfe7da81ee09b7f69db8e2f5196274d21c3d1d38eff03254886"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "events/forest_events__mysterious_shrine.json",
+      "pointer": "/choices/1/success/effects/1/item_id",
+      "kind": "item",
+      "id": "gold_50",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-reachable-items/items/gold_50.json",
+        "sha256": "d527e138af03005542b6b6f69c1a7413e33317d9e8e6525198991c1f6152751b"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "events/forest_events__hidden_cache.json",
+      "pointer": "/success/effects/0/item_id",
+      "kind": "item",
+      "id": "gold_50",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-reachable-items/items/gold_50.json",
+        "sha256": "d527e138af03005542b6b6f69c1a7413e33317d9e8e6525198991c1f6152751b"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "events/forest_events__hidden_cache.json",
+      "pointer": "/success/effects/1/item_id",
+      "kind": "item",
+      "id": "potion_healing",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-reachable-items/items/potion_healing.json",
+        "sha256": "c7d6154f39d85bfe7da81ee09b7f69db8e2f5196274d21c3d1d38eff03254886"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "events/forest_events__wolf_pack.json",
+      "pointer": "/choices/0/effects/0/monsters/0",
+      "kind": "creature",
+      "id": "wolf",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-creatures/encounters/wolf.json",
+        "sha256": "a376b5f4d1a9892b4c2b70cb8b76ed2fbba2c3106799f808d944165edecb3b1b"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "events/forest_events__wolf_pack.json",
+      "pointer": "/choices/0/effects/0/monsters/1",
+      "kind": "creature",
+      "id": "wolf",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-creatures/encounters/wolf.json",
+        "sha256": "a376b5f4d1a9892b4c2b70cb8b76ed2fbba2c3106799f808d944165edecb3b1b"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "events/forest_events__wolf_pack.json",
+      "pointer": "/choices/0/effects/0/monsters/2",
+      "kind": "creature",
+      "id": "wolf",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-creatures/encounters/wolf.json",
+        "sha256": "a376b5f4d1a9892b4c2b70cb8b76ed2fbba2c3106799f808d944165edecb3b1b"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "events/forest_events__wolf_pack.json",
+      "pointer": "/choices/1/failure/effects/0/monsters/0",
+      "kind": "creature",
+      "id": "wolf",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-creatures/encounters/wolf.json",
+        "sha256": "a376b5f4d1a9892b4c2b70cb8b76ed2fbba2c3106799f808d944165edecb3b1b"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "events/forest_events__wolf_pack.json",
+      "pointer": "/choices/1/failure/effects/0/monsters/1",
+      "kind": "creature",
+      "id": "wolf",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-creatures/encounters/wolf.json",
+        "sha256": "a376b5f4d1a9892b4c2b70cb8b76ed2fbba2c3106799f808d944165edecb3b1b"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "events/forest_events__wolf_pack.json",
+      "pointer": "/choices/1/failure/effects/0/monsters/2",
+      "kind": "creature",
+      "id": "wolf",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-creatures/encounters/wolf.json",
+        "sha256": "a376b5f4d1a9892b4c2b70cb8b76ed2fbba2c3106799f808d944165edecb3b1b"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "events/forest_events__fairy_ring.json",
+      "pointer": "/chain_event/choices/2/success/effects/0/item_id",
+      "kind": "item",
+      "id": "gold_100",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-reachable-items/items/gold_100.json",
+        "sha256": "d6a35e427766ee2d236dff5af9458a67e3571e19395a14fc9558a1f9e2a905ff"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "events/forest_events__fallen_traveler.json",
+      "pointer": "/choices/0/success/effects/0/item_id",
+      "kind": "item",
+      "id": "gold_50",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-reachable-items/items/gold_50.json",
+        "sha256": "d527e138af03005542b6b6f69c1a7413e33317d9e8e6525198991c1f6152751b"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "events/forest_events__fallen_traveler.json",
+      "pointer": "/choices/1/effects/0/item_id",
+      "kind": "item",
+      "id": "gold_50",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-reachable-items/items/gold_50.json",
+        "sha256": "d527e138af03005542b6b6f69c1a7413e33317d9e8e6525198991c1f6152751b"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "events/forest_events__spider_nest.json",
+      "pointer": "/data/monsters/0",
+      "kind": "creature",
+      "id": "giant_spider",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-creatures/encounters/giant_spider.json",
+        "sha256": "5fe9c6cae0fd6b35a21aacc8f488d1eea56cac3f06ae2fdef475161070d7ce4a"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "events/forest_events__fairy_court.json",
+      "pointer": "/choices/2/success/effects/0/item_id",
+      "kind": "item",
+      "id": "gold_100",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-reachable-items/items/gold_100.json",
+        "sha256": "d6a35e427766ee2d236dff5af9458a67e3571e19395a14fc9558a1f9e2a905ff"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "tables/mountain_events.json",
+      "pointer": "/events/2/success/effects/0/item_id",
+      "kind": "item",
+      "id": "gold_100",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-reachable-items/items/gold_100.json",
+        "sha256": "d6a35e427766ee2d236dff5af9458a67e3571e19395a14fc9558a1f9e2a905ff"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "tables/mountain_events.json",
+      "pointer": "/events/3/choices/0/effects/0/monsters/0",
+      "kind": "creature",
+      "id": "bandit",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-creatures/encounters/bandit.json",
+        "sha256": "d848507c07f516c308c146df4a9f03bb5eba0367fd130e0e5c2663d2f53aefeb"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "tables/mountain_events.json",
+      "pointer": "/events/3/choices/0/effects/0/monsters/1",
+      "kind": "creature",
+      "id": "bandit",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-creatures/encounters/bandit.json",
+        "sha256": "d848507c07f516c308c146df4a9f03bb5eba0367fd130e0e5c2663d2f53aefeb"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "tables/mountain_events.json",
+      "pointer": "/events/3/choices/0/effects/0/monsters/2",
+      "kind": "creature",
+      "id": "bandit",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-creatures/encounters/bandit.json",
+        "sha256": "d848507c07f516c308c146df4a9f03bb5eba0367fd130e0e5c2663d2f53aefeb"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "tables/mountain_events.json",
+      "pointer": "/events/3/choices/1/failure/effects/0/monsters/0",
+      "kind": "creature",
+      "id": "bandit",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-creatures/encounters/bandit.json",
+        "sha256": "d848507c07f516c308c146df4a9f03bb5eba0367fd130e0e5c2663d2f53aefeb"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "tables/mountain_events.json",
+      "pointer": "/events/3/choices/1/failure/effects/0/monsters/1",
+      "kind": "creature",
+      "id": "bandit",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-creatures/encounters/bandit.json",
+        "sha256": "d848507c07f516c308c146df4a9f03bb5eba0367fd130e0e5c2663d2f53aefeb"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "tables/mountain_events.json",
+      "pointer": "/events/4/choices/1/effects/0/item_id",
+      "kind": "item",
+      "id": "potion_healing",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-reachable-items/items/potion_healing.json",
+        "sha256": "c7d6154f39d85bfe7da81ee09b7f69db8e2f5196274d21c3d1d38eff03254886"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "tables/mountain_events.json",
+      "pointer": "/events/5/success/effects/0/item_id",
+      "kind": "item",
+      "id": "gold_100",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-reachable-items/items/gold_100.json",
+        "sha256": "d6a35e427766ee2d236dff5af9458a67e3571e19395a14fc9558a1f9e2a905ff"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "tables/mountain_events.json",
+      "pointer": "/events/5/success/effects/1/item_id",
+      "kind": "item",
+      "id": "torch",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-reachable-items/../crown-equipment/items/torch.json",
+        "sha256": "6395fbadeb291313de4e300c9b11116a2d769912e59e49d2a7956cdcc71e6311"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "events/mountain_events__eagle_nest.json",
+      "pointer": "/success/effects/0/item_id",
+      "kind": "item",
+      "id": "gold_100",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-reachable-items/items/gold_100.json",
+        "sha256": "d6a35e427766ee2d236dff5af9458a67e3571e19395a14fc9558a1f9e2a905ff"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "events/mountain_events__bandit_camp.json",
+      "pointer": "/choices/0/effects/0/monsters/0",
+      "kind": "creature",
+      "id": "bandit",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-creatures/encounters/bandit.json",
+        "sha256": "d848507c07f516c308c146df4a9f03bb5eba0367fd130e0e5c2663d2f53aefeb"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "events/mountain_events__bandit_camp.json",
+      "pointer": "/choices/0/effects/0/monsters/1",
+      "kind": "creature",
+      "id": "bandit",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-creatures/encounters/bandit.json",
+        "sha256": "d848507c07f516c308c146df4a9f03bb5eba0367fd130e0e5c2663d2f53aefeb"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "events/mountain_events__bandit_camp.json",
+      "pointer": "/choices/0/effects/0/monsters/2",
+      "kind": "creature",
+      "id": "bandit",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-creatures/encounters/bandit.json",
+        "sha256": "d848507c07f516c308c146df4a9f03bb5eba0367fd130e0e5c2663d2f53aefeb"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "events/mountain_events__bandit_camp.json",
+      "pointer": "/choices/1/failure/effects/0/monsters/0",
+      "kind": "creature",
+      "id": "bandit",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-creatures/encounters/bandit.json",
+        "sha256": "d848507c07f516c308c146df4a9f03bb5eba0367fd130e0e5c2663d2f53aefeb"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "events/mountain_events__bandit_camp.json",
+      "pointer": "/choices/1/failure/effects/0/monsters/1",
+      "kind": "creature",
+      "id": "bandit",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-creatures/encounters/bandit.json",
+        "sha256": "d848507c07f516c308c146df4a9f03bb5eba0367fd130e0e5c2663d2f53aefeb"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "events/mountain_events__mountain_spring.json",
+      "pointer": "/choices/1/effects/0/item_id",
+      "kind": "item",
+      "id": "potion_healing",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-reachable-items/items/potion_healing.json",
+        "sha256": "c7d6154f39d85bfe7da81ee09b7f69db8e2f5196274d21c3d1d38eff03254886"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "events/mountain_events__collapsed_mine.json",
+      "pointer": "/success/effects/0/item_id",
+      "kind": "item",
+      "id": "gold_100",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-reachable-items/items/gold_100.json",
+        "sha256": "d6a35e427766ee2d236dff5af9458a67e3571e19395a14fc9558a1f9e2a905ff"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "events/mountain_events__collapsed_mine.json",
+      "pointer": "/success/effects/1/item_id",
+      "kind": "item",
+      "id": "torch",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-reachable-items/../crown-equipment/items/torch.json",
+        "sha256": "6395fbadeb291313de4e300c9b11116a2d769912e59e49d2a7956cdcc71e6311"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "tables/town_events.json",
+      "pointer": "/events/0/choices/0/success/effects/1/item_id",
+      "kind": "item",
+      "id": "gold_50",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-reachable-items/items/gold_50.json",
+        "sha256": "d527e138af03005542b6b6f69c1a7413e33317d9e8e6525198991c1f6152751b"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "tables/town_events.json",
+      "pointer": "/events/1/data/items/0",
+      "kind": "item",
+      "id": "potion_healing",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-reachable-items/items/potion_healing.json",
+        "sha256": "c7d6154f39d85bfe7da81ee09b7f69db8e2f5196274d21c3d1d38eff03254886"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "tables/town_events.json",
+      "pointer": "/events/1/data/items/1",
+      "kind": "item",
+      "id": "potion_greater_healing",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-reachable-items/items/potion_greater_healing.json",
+        "sha256": "46bf8bac5c5a5d8860f674336c8c209f231ab219f49757cdda05503a49563c59"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "tables/town_events.json",
+      "pointer": "/events/1/data/items/2",
+      "kind": "item",
+      "id": "antidote",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-reachable-items/items/antidote.json",
+        "sha256": "324b738bc1e383d60c156545c678e948197a94a9c0f8d43653f91627bb347842"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "tables/town_events.json",
+      "pointer": "/events/1/data/items/3",
+      "kind": "item",
+      "id": "torch",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-reachable-items/../crown-equipment/items/torch.json",
+        "sha256": "6395fbadeb291313de4e300c9b11116a2d769912e59e49d2a7956cdcc71e6311"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "tables/town_events.json",
+      "pointer": "/events/1/data/items/4",
+      "kind": "item",
+      "id": "rope",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-equipment/items/rope.json",
+        "sha256": "1d7fec5885c412867fdadc96b70e3e10e9724b17c1c9d60b1c87915497e005f5"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "tables/town_events.json",
+      "pointer": "/events/1/data/items/5",
+      "kind": "item",
+      "id": "dagger",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-reachable-items/../crown-equipment/items/dagger.json",
+        "sha256": "1e581e557159a1461829ab5e2ffcae7e192db9fe56901f178d0f85125092b80e"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "tables/town_events.json",
+      "pointer": "/events/1/data/items/6",
+      "kind": "item",
+      "id": "shortbow",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-reachable-items/../crown-equipment/items/shortbow.json",
+        "sha256": "dcf9b71ed6f51c7fc70c52c6dc0f3a560c2e7e50babb35125c0887783f2cdcaa"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "tables/town_events.json",
+      "pointer": "/events/1/data/items/7",
+      "kind": "item",
+      "id": "leather_armor",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-reachable-items/../crown-equipment/items/leather_armor.json",
+        "sha256": "4fd1cc7f31c7255e98338633fbcc62a446b1745a35928a480f3b986f0b800a4f"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "tables/town_events.json",
+      "pointer": "/events/1/data/items/8",
+      "kind": "item",
+      "id": "scale_mail",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-reachable-items/items/scale_mail.json",
+        "sha256": "7c907cba50c464e26b808298a3e1e5e10dd5fba43f7672e16cda172200424ee4"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "tables/town_events.json",
+      "pointer": "/events/4/choices/0/effects/0/monsters/0",
+      "kind": "creature",
+      "id": "goblin",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-creatures/encounters/goblin.json",
+        "sha256": "da5e9370fff91bbfd93433db9ac66758dfbfd8c997debdfd9fa63f31c8895177"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "tables/town_events.json",
+      "pointer": "/events/4/choices/0/effects/0/monsters/1",
+      "kind": "creature",
+      "id": "goblin",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-creatures/encounters/goblin.json",
+        "sha256": "da5e9370fff91bbfd93433db9ac66758dfbfd8c997debdfd9fa63f31c8895177"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "tables/town_events.json",
+      "pointer": "/events/4/choices/0/effects/0/monsters/2",
+      "kind": "creature",
+      "id": "goblin_chief",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-creatures/encounters/goblin_chief.json",
+        "sha256": "f4fa845546eb8c8d9b814b344f0cfb6bf776d83ddd2b30236b3fb569e44fb7db"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "tables/town_events.json",
+      "pointer": "/events/4/choices/0/reward/item_id",
+      "kind": "item",
+      "id": "gold_100",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-reachable-items/items/gold_100.json",
+        "sha256": "d6a35e427766ee2d236dff5af9458a67e3571e19395a14fc9558a1f9e2a905ff"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "events/town_events__tavern_brawl.json",
+      "pointer": "/choices/0/success/effects/1/item_id",
+      "kind": "item",
+      "id": "gold_50",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-reachable-items/items/gold_50.json",
+        "sha256": "d527e138af03005542b6b6f69c1a7413e33317d9e8e6525198991c1f6152751b"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "events/town_events__town_merchant.json",
+      "pointer": "/data/items/0",
+      "kind": "item",
+      "id": "potion_healing",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-reachable-items/items/potion_healing.json",
+        "sha256": "c7d6154f39d85bfe7da81ee09b7f69db8e2f5196274d21c3d1d38eff03254886"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "events/town_events__town_merchant.json",
+      "pointer": "/data/items/1",
+      "kind": "item",
+      "id": "potion_greater_healing",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-reachable-items/items/potion_greater_healing.json",
+        "sha256": "46bf8bac5c5a5d8860f674336c8c209f231ab219f49757cdda05503a49563c59"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "events/town_events__town_merchant.json",
+      "pointer": "/data/items/2",
+      "kind": "item",
+      "id": "antidote",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-reachable-items/items/antidote.json",
+        "sha256": "324b738bc1e383d60c156545c678e948197a94a9c0f8d43653f91627bb347842"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "events/town_events__town_merchant.json",
+      "pointer": "/data/items/3",
+      "kind": "item",
+      "id": "torch",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-reachable-items/../crown-equipment/items/torch.json",
+        "sha256": "6395fbadeb291313de4e300c9b11116a2d769912e59e49d2a7956cdcc71e6311"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "events/town_events__town_merchant.json",
+      "pointer": "/data/items/4",
+      "kind": "item",
+      "id": "rope",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-equipment/items/rope.json",
+        "sha256": "1d7fec5885c412867fdadc96b70e3e10e9724b17c1c9d60b1c87915497e005f5"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "events/town_events__town_merchant.json",
+      "pointer": "/data/items/5",
+      "kind": "item",
+      "id": "dagger",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-reachable-items/../crown-equipment/items/dagger.json",
+        "sha256": "1e581e557159a1461829ab5e2ffcae7e192db9fe56901f178d0f85125092b80e"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "events/town_events__town_merchant.json",
+      "pointer": "/data/items/6",
+      "kind": "item",
+      "id": "shortbow",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-reachable-items/../crown-equipment/items/shortbow.json",
+        "sha256": "dcf9b71ed6f51c7fc70c52c6dc0f3a560c2e7e50babb35125c0887783f2cdcaa"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "events/town_events__town_merchant.json",
+      "pointer": "/data/items/7",
+      "kind": "item",
+      "id": "leather_armor",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-reachable-items/../crown-equipment/items/leather_armor.json",
+        "sha256": "4fd1cc7f31c7255e98338633fbcc62a446b1745a35928a480f3b986f0b800a4f"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "events/town_events__town_merchant.json",
+      "pointer": "/data/items/8",
+      "kind": "item",
+      "id": "scale_mail",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-reachable-items/items/scale_mail.json",
+        "sha256": "7c907cba50c464e26b808298a3e1e5e10dd5fba43f7672e16cda172200424ee4"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "events/town_events__quest_board.json",
+      "pointer": "/choices/0/effects/0/monsters/0",
+      "kind": "creature",
+      "id": "goblin",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-creatures/encounters/goblin.json",
+        "sha256": "da5e9370fff91bbfd93433db9ac66758dfbfd8c997debdfd9fa63f31c8895177"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "events/town_events__quest_board.json",
+      "pointer": "/choices/0/effects/0/monsters/1",
+      "kind": "creature",
+      "id": "goblin",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-creatures/encounters/goblin.json",
+        "sha256": "da5e9370fff91bbfd93433db9ac66758dfbfd8c997debdfd9fa63f31c8895177"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "events/town_events__quest_board.json",
+      "pointer": "/choices/0/effects/0/monsters/2",
+      "kind": "creature",
+      "id": "goblin_chief",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-creatures/encounters/goblin_chief.json",
+        "sha256": "f4fa845546eb8c8d9b814b344f0cfb6bf776d83ddd2b30236b3fb569e44fb7db"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "events/town_events__quest_board.json",
+      "pointer": "/choices/0/reward/item_id",
+      "kind": "item",
+      "id": "gold_100",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-reachable-items/items/gold_100.json",
+        "sha256": "d6a35e427766ee2d236dff5af9458a67e3571e19395a14fc9558a1f9e2a905ff"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "objectives/crown_goals.json",
+      "pointer": "/goals/0/item_id",
+      "kind": "item",
+      "id": "crown_fragment",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-reachable-items/items/crown_fragment.json",
+        "sha256": "79c4ae0cde21274f25d9d2c2a9acfac34a986139c8f380dbf96b8c1e1f6aa713"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "objectives/crown_goals.json",
+      "pointer": "/goals/1/monster_id",
+      "kind": "creature",
+      "id": "lich_king",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-creatures/encounters/lich_king.json",
+        "sha256": "c9d4fc4e1d86f400ac98e11245cae1987545cf6683603f590b64d91a3aa28ce3"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "rewards/ruins_of_ashvale_clear.json",
+      "pointer": "/0/item_id",
+      "kind": "item",
+      "id": "crown_fragment",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-reachable-items/items/crown_fragment.json",
+        "sha256": "79c4ae0cde21274f25d9d2c2a9acfac34a986139c8f380dbf96b8c1e1f6aa713"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "rewards/ruins_of_ashvale_clear.json",
+      "pointer": "/1/item_id",
+      "kind": "item",
+      "id": "gold_100",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-reachable-items/items/gold_100.json",
+        "sha256": "d6a35e427766ee2d236dff5af9458a67e3571e19395a14fc9558a1f9e2a905ff"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "rewards/caverns_of_gloom_clear.json",
+      "pointer": "/0/item_id",
+      "kind": "item",
+      "id": "crown_fragment",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-reachable-items/items/crown_fragment.json",
+        "sha256": "79c4ae0cde21274f25d9d2c2a9acfac34a986139c8f380dbf96b8c1e1f6aa713"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "rewards/caverns_of_gloom_clear.json",
+      "pointer": "/1/item_id",
+      "kind": "item",
+      "id": "gold_100",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-reachable-items/items/gold_100.json",
+        "sha256": "d6a35e427766ee2d236dff5af9458a67e3571e19395a14fc9558a1f9e2a905ff"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "rewards/caverns_of_gloom_clear.json",
+      "pointer": "/2/item_id",
+      "kind": "item",
+      "id": "potion_greater_healing",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-reachable-items/items/potion_greater_healing.json",
+        "sha256": "46bf8bac5c5a5d8860f674336c8c209f231ab219f49757cdda05503a49563c59"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "rewards/tower_of_the_lich_clear.json",
+      "pointer": "/0/item_id",
+      "kind": "item",
+      "id": "crown_fragment",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-reachable-items/items/crown_fragment.json",
+        "sha256": "79c4ae0cde21274f25d9d2c2a9acfac34a986139c8f380dbf96b8c1e1f6aa713"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "rewards/quest_board_bounty.json",
+      "pointer": "/effects/0/monsters/0",
+      "kind": "creature",
+      "id": "goblin",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-creatures/encounters/goblin.json",
+        "sha256": "da5e9370fff91bbfd93433db9ac66758dfbfd8c997debdfd9fa63f31c8895177"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "rewards/quest_board_bounty.json",
+      "pointer": "/effects/0/monsters/1",
+      "kind": "creature",
+      "id": "goblin",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-creatures/encounters/goblin.json",
+        "sha256": "da5e9370fff91bbfd93433db9ac66758dfbfd8c997debdfd9fa63f31c8895177"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "rewards/quest_board_bounty.json",
+      "pointer": "/effects/0/monsters/2",
+      "kind": "creature",
+      "id": "goblin_chief",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-creatures/encounters/goblin_chief.json",
+        "sha256": "f4fa845546eb8c8d9b814b344f0cfb6bf776d83ddd2b30236b3fb569e44fb7db"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "rewards/quest_board_bounty.json",
+      "pointer": "/reward/item_id",
+      "kind": "item",
+      "id": "gold_100",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-reachable-items/items/gold_100.json",
+        "sha256": "d6a35e427766ee2d236dff5af9458a67e3571e19395a14fc9558a1f9e2a905ff"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "supplies/camp_and_inn.json",
+      "pointer": "/1/monster_pool/0",
+      "kind": "creature",
+      "id": "goblin",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-creatures/encounters/goblin.json",
+        "sha256": "da5e9370fff91bbfd93433db9ac66758dfbfd8c997debdfd9fa63f31c8895177"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "supplies/camp_and_inn.json",
+      "pointer": "/1/monster_pool/1",
+      "kind": "creature",
+      "id": "wolf",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-creatures/encounters/wolf.json",
+        "sha256": "a376b5f4d1a9892b4c2b70cb8b76ed2fbba2c3106799f808d944165edecb3b1b"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "supplies/camp_and_inn.json",
+      "pointer": "/1/monster_pool/2",
+      "kind": "creature",
+      "id": "bandit",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-creatures/encounters/bandit.json",
+        "sha256": "d848507c07f516c308c146df4a9f03bb5eba0367fd130e0e5c2663d2f53aefeb"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "supplies/camp_and_inn.json",
+      "pointer": "/1/monster_pool/3",
+      "kind": "creature",
+      "id": "giant_spider",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-creatures/encounters/giant_spider.json",
+        "sha256": "5fe9c6cae0fd6b35a21aacc8f488d1eea56cac3f06ae2fdef475161070d7ce4a"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    },
+    {
+      "world_candidate": "supplies/camp_and_inn.json",
+      "pointer": "/1/monster_pool/4",
+      "kind": "creature",
+      "id": "skeleton",
+      "candidate": {
+        "path": "docs/planning/preparation/crown-creatures/encounters/skeleton.json",
+        "sha256": "7751281316adc3da8cc9943be8a14eeaaf939e9fb9a236a77b9acc6955458a87"
+      },
+      "boundary": "Currency tokens are gold amounts; item/monster presence is not payment proof."
+    }
+  ]
+}

@@ -1,0 +1,88 @@
+{
+  "schema": "crown-equipment-candidate/1",
+  "id": "cartographers_tools",
+  "name": "Cartographer's Tools",
+  "kind": "tool",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring intent only; not registered engine syntax.",
+  "rules": {
+    "authority": "SRD 5.2.1",
+    "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      93
+    ],
+    "section": "Cartographer's Tools",
+    "text": "Ability: wisdom. Utilize: Draft a map of a small area (DC 15). Craft: Map. Tool proficiency adds PB to ability checks using the tool; if also proficient in a skill used with the check, gain Advantage. Each Artisan tool needs its own proficiency.",
+    "source_context": "../source-pages.json"
+  },
+  "definition": {
+    "id": "cartographers_tools",
+    "name": "Cartographer's Tools",
+    "ability": "wisdom",
+    "weight_lb": 6,
+    "cost_gp": 15,
+    "utilize": "Draft a map of a small area (DC 15)",
+    "craft_source_list": "Map"
+  },
+  "authored_operations": [
+    "Utilize chooses one task: Draft a map of a small area (DC 15). Use wisdom, the declared DC and actual tool copy; apply PB for the matching proficiency and Advantage when the applicable skill is also proficient.",
+    "Crafting needs the source procedure, materials, time, proficiency and legal result definition; this list grants no products. Keep unavailable craft consumers explicit rather than synthesizing items."
+  ],
+  "retained_runtime_seeds": [
+    {
+      "path": "data/core/items/imported_magic_tools.json",
+      "array_index": 10,
+      "file_sha256": "7403cb6637b668bbfd13787473f467f618af88874c60c0a696adad165255caca",
+      "definition": {
+        "id": "cartographers_tools",
+        "name": "Cartographer's Tools",
+        "description": "",
+        "type": "tool",
+        "effects": [],
+        "value": 15
+      }
+    },
+    {
+      "path": "data/core/items/imported_magic_tools.json",
+      "array_index": 11,
+      "file_sha256": "7403cb6637b668bbfd13787473f467f618af88874c60c0a696adad165255caca",
+      "definition": {
+        "id": "cartographers_tools",
+        "name": "Cartographer's Tools",
+        "description": "{'type': 'list', 'style': 'list-hang-notitle', 'items': [{'name': 'Ability:', 'type': 'item', 'entries': ['Wisdom']}, {'name': 'Utilize:', 'type': 'item', 'entries': ['Draft a map of a small area (15)']}, {'name': 'Craft:', 'type': 'item', 'entries': ['Map']}]}",
+        "type": "tool",
+        "effects": [],
+        "value": 15
+      }
+    }
+  ],
+  "manifest_overrides": [
+    {
+      "type": "item",
+      "id": "cartographers_tools",
+      "winner": "res://data/core/items/imported_magic_tools.json#12",
+      "replaces": [
+        "res://data/core/items/imported_magic_tools.json#11"
+      ]
+    }
+  ],
+  "required_mapping": [
+    "tools",
+    "crafting"
+  ],
+  "consumers": [
+    {
+      "choice_id": "chosen_tool"
+    }
+  ],
+  "unsupported_behavior": [
+    {
+      "group": "tools",
+      "requirement": "Map exact variant proficiency, declared tool ability/DC, PB plus applicable skill Advantage and actual Utilize task outcomes. Do not use a generic +PB check as every tool action."
+    },
+    {
+      "group": "crafting",
+      "requirement": "Craft source lists are preserved, not executable recipes or item grants. Reconcile the official crafting procedures and result definitions later; absent result definitions remain dependencies, not reasons to expand this package pass."
+    }
+  ]
+}

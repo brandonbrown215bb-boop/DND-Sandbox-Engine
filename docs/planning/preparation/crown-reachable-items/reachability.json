@@ -1,0 +1,3041 @@
+{
+  "schema": "crown-item-reachability/1",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "method": "Static source/reference inventory for writing. No production Godot export or gameplay availability check was run. Shop structural selection is not a second implementation of gameplay rules and does not certify loaded precedence or use behavior.",
+  "historical_shop": {
+    "source": "docs/planning/crown-content-scope.md#current-merchant-ids",
+    "registry_sha256": "01d6a4c6cd2327c72cd546fb68f3891715e7d6de8cacc08cc7902dfa54eb7129",
+    "item_ids": [
+      "antidote",
+      "battleaxe",
+      "black_pearl_powder_500gp",
+      "blowgun",
+      "breastplate",
+      "chain_mail",
+      "chain_shirt",
+      "club",
+      "dagger",
+      "dart",
+      "diamond_300gp",
+      "flail",
+      "gentle_repose_copper",
+      "glaive",
+      "greataxe",
+      "greatclub",
+      "greatsword",
+      "halberd",
+      "half_plate_armor",
+      "hand_crossbow",
+      "handaxe",
+      "heavy_crossbow",
+      "hide_armor",
+      "incense_10gp",
+      "javelin",
+      "lance",
+      "lantern_bullseye",
+      "leather_armor",
+      "light_crossbow",
+      "light_hammer",
+      "longbow",
+      "longsword",
+      "mace",
+      "maul",
+      "morningstar",
+      "mushroom_powder_25gp",
+      "musket",
+      "net",
+      "padded_armor",
+      "pearl_100gp",
+      "pike",
+      "pistol",
+      "plate_armor",
+      "potion_greater_healing",
+      "potion_healing",
+      "potion_superior_healing",
+      "potion_supreme_healing",
+      "quarterstaff",
+      "rapier",
+      "ring_mail",
+      "scale_mail",
+      "scimitar",
+      "shield",
+      "shortbow",
+      "shortsword",
+      "sickle",
+      "sling",
+      "spear",
+      "splint_armor",
+      "studded_leather_armor",
+      "trident",
+      "war_pick",
+      "warhammer",
+      "whip"
+    ]
+  },
+  "current_source_shop_leads": {
+    "count": 66,
+    "item_ids": [
+      "antidote",
+      "battleaxe",
+      "black_pearl_powder_500gp",
+      "blowgun",
+      "breastplate",
+      "chain_mail",
+      "chain_shirt",
+      "club",
+      "dagger",
+      "dart",
+      "diamond_300gp",
+      "diamond_50gp",
+      "druidic_focus_quarterstaff",
+      "flail",
+      "gentle_repose_copper",
+      "glaive",
+      "greataxe",
+      "greatclub",
+      "greatsword",
+      "halberd",
+      "half_plate_armor",
+      "hand_crossbow",
+      "handaxe",
+      "heavy_crossbow",
+      "hide_armor",
+      "incense_10gp",
+      "javelin",
+      "lance",
+      "lantern_bullseye",
+      "leather_armor",
+      "light_crossbow",
+      "light_hammer",
+      "longbow",
+      "longsword",
+      "mace",
+      "maul",
+      "morningstar",
+      "mushroom_powder_25gp",
+      "musket",
+      "net",
+      "padded_armor",
+      "pearl_100gp",
+      "pike",
+      "pistol",
+      "plate_armor",
+      "potion_greater_healing",
+      "potion_healing",
+      "potion_superior_healing",
+      "potion_supreme_healing",
+      "quarterstaff",
+      "rapier",
+      "ring_mail",
+      "scale_mail",
+      "scimitar",
+      "shield",
+      "shortbow",
+      "shortsword",
+      "sickle",
+      "sling",
+      "spear",
+      "splint_armor",
+      "studded_leather_armor",
+      "trident",
+      "war_pick",
+      "warhammer",
+      "whip"
+    ],
+    "additional_ids_since_pinned_inventory": [
+      "diamond_50gp",
+      "druidic_focus_quarterstaff"
+    ],
+    "predicate_source": "src/ui/shop.gd::_is_buyable_item",
+    "predicate_sha256": "260becf906a0ea404eed8c86b1d603de0ff1b4abe7719603ee0e85ae9f496e2d",
+    "effect_name_source": "src/events/event_resolver.gd::SUPPORTED_EFFECT_TYPES",
+    "effect_name_source_sha256": "b114b09342b9b1ec15f59e4a125c475e45d28fc4b0a76dda23caa34935c759da"
+  },
+  "companions": [
+    {
+      "id": "aldric",
+      "class_id": "cleric",
+      "current_class_seed_items": [
+        "chain_shirt",
+        "shield",
+        "mace",
+        "holy_symbol",
+        "priests_pack"
+      ],
+      "source": "data/core/classes/cleric.json",
+      "source_sha256": "370d2a37dcbf5b78b5289873c8a42e000bedeb5383b3cebafb3c2f10f7450620",
+      "intended_package": "../crown-equipment/packages.json",
+      "boundary": "PartyManager.create_companion calls Character.initialize; current class seeds differ from the intended 2024 packages. No companion creation or seed replacement in this pass."
+    },
+    {
+      "id": "mira",
+      "class_id": "ranger",
+      "current_class_seed_items": [
+        "leather_armor",
+        "longbow",
+        "shortsword"
+      ],
+      "source": "data/core/classes/ranger.json",
+      "source_sha256": "4f769bc8eb56b3dd19a8d9ee10c0be3743e0176df61a9ec0c0bd15e56a5e840a",
+      "intended_package": "../crown-equipment/packages.json",
+      "boundary": "PartyManager.create_companion calls Character.initialize; current class seeds differ from the intended 2024 packages. No companion creation or seed replacement in this pass."
+    },
+    {
+      "id": "rowan",
+      "class_id": "rogue",
+      "current_class_seed_items": [
+        "leather_armor",
+        "rapier",
+        "shortbow",
+        "dagger",
+        "thieves_tools"
+      ],
+      "source": "data/core/classes/rogue.json",
+      "source_sha256": "c272d35beebef5449232bcef4e5eaf0743ffa9dee2288b95050c6c6c1f9fcda7",
+      "intended_package": "../crown-equipment/packages.json",
+      "boundary": "PartyManager.create_companion calls Character.initialize; current class seeds differ from the intended 2024 packages. No companion creation or seed replacement in this pass."
+    }
+  ],
+  "direct_monster_reward_metadata": [
+    {
+      "monster_id": "goblin",
+      "source": "data/core/monsters/core_monsters.json",
+      "array_index": 0,
+      "loot_table": [
+        {
+          "item_id": "gold_50",
+          "chance": 0.3
+        },
+        {
+          "item_id": "dagger",
+          "chance": 0.2
+        }
+      ]
+    },
+    {
+      "monster_id": "goblin_chief",
+      "source": "data/core/monsters/core_monsters.json",
+      "array_index": 1,
+      "loot_table": [
+        {
+          "item_id": "gold_100",
+          "chance": 0.5
+        },
+        {
+          "item_id": "potion_healing",
+          "chance": 0.3
+        }
+      ]
+    },
+    {
+      "monster_id": "skeleton",
+      "source": "data/core/monsters/core_monsters.json",
+      "array_index": 2,
+      "loot_table": [
+        {
+          "item_id": "gold_50",
+          "chance": 0.2
+        }
+      ]
+    },
+    {
+      "monster_id": "zombie",
+      "source": "data/core/monsters/core_monsters.json",
+      "array_index": 3,
+      "loot_table": []
+    },
+    {
+      "monster_id": "wolf",
+      "source": "data/core/monsters/core_monsters.json",
+      "array_index": 4,
+      "loot_table": []
+    },
+    {
+      "monster_id": "bandit",
+      "source": "data/core/monsters/core_monsters.json",
+      "array_index": 5,
+      "loot_table": [
+        {
+          "item_id": "gold_50",
+          "chance": 0.4
+        }
+      ]
+    },
+    {
+      "monster_id": "giant_spider",
+      "source": "data/core/monsters/core_monsters.json",
+      "array_index": 6,
+      "loot_table": [
+        {
+          "item_id": "gold_50",
+          "chance": 0.3
+        },
+        {
+          "item_id": "antidote",
+          "chance": 0.2
+        }
+      ]
+    },
+    {
+      "monster_id": "ooze",
+      "source": "data/core/monsters/core_monsters.json",
+      "array_index": 7,
+      "loot_table": []
+    },
+    {
+      "monster_id": "wight",
+      "source": "data/core/monsters/core_monsters.json",
+      "array_index": 8,
+      "loot_table": [
+        {
+          "item_id": "longsword",
+          "chance": 0.3
+        },
+        {
+          "item_id": "gold_100",
+          "chance": 0.5
+        }
+      ]
+    },
+    {
+      "monster_id": "lich_king",
+      "source": "data/core/monsters/core_monsters.json",
+      "array_index": 9,
+      "loot_table": [
+        {
+          "item_id": "crown_fragment",
+          "chance": 1.0
+        },
+        {
+          "item_id": "gold_100",
+          "chance": 1.0
+        },
+        {
+          "item_id": "gold_100",
+          "chance": 1.0
+        },
+        {
+          "item_id": "potion_greater_healing",
+          "chance": 1.0
+        }
+      ]
+    }
+  ],
+  "items": [
+    {
+      "candidate_id": "antidote",
+      "candidate_path": "items/antidote.json",
+      "evidence": [
+        {
+          "channel": "historical_shop_inventory",
+          "path": "docs/planning/crown-content-scope.md",
+          "sha256": "3bcb9799865f1779aa7da1c1b041a6ac938c33491dfd502641593bf767a8528e",
+          "details": "Pinned 64-ID Windows export inventory; retained below, not rerun here."
+        },
+        {
+          "channel": "source_shop_candidate",
+          "path": "data/core/items/consumables.json",
+          "sha256": "045f413d89391312c1e3a175351f90427accde8f21b8d087abc1d6c5d9c3ec2d",
+          "json_pointer": "/2",
+          "details": "Positive shop type/value and, for consumables, declared supported effect names. This is a source selection lead, not a loaded availability certification; manifest wins remain authoritative."
+        },
+        {
+          "channel": "monster_reward_metadata",
+          "path": "data/core/monsters/core_monsters.json",
+          "sha256": "33bf505c91476b32f7dd2887dd0caa19521e4a9e206392b8d803090b105eb8c2",
+          "json_pointer": "/6/loot_table/1/item_id",
+          "details": "Loot-table metadata retained; combat currently copies it into entities. This is not proof that a post-combat roll/grant host executes it."
+        }
+      ]
+    },
+    {
+      "candidate_id": "ashvale_brass_key",
+      "candidate_path": "items/ashvale_brass_key.json",
+      "evidence": [
+        {
+          "channel": "campaign_goal_loot_or_tactical_object",
+          "path": "data/core/campaigns/the_lost_crown.json",
+          "sha256": "3352b2d22be36e68591bfdf4ec73b8201f2bec6c69a3a60b0c8beb7d5074db44",
+          "json_pointer": "/dungeons/ruins_of_ashvale/tactical_rooms/1/objects/0/key_id"
+        },
+        {
+          "channel": "campaign_goal_loot_or_tactical_object",
+          "path": "data/core/campaigns/the_lost_crown.json",
+          "sha256": "3352b2d22be36e68591bfdf4ec73b8201f2bec6c69a3a60b0c8beb7d5074db44",
+          "json_pointer": "/dungeons/ruins_of_ashvale/tactical_rooms/1/objects/1/key_id"
+        },
+        {
+          "channel": "campaign_goal_loot_or_tactical_object",
+          "path": "data/core/campaigns/the_lost_crown.json",
+          "sha256": "3352b2d22be36e68591bfdf4ec73b8201f2bec6c69a3a60b0c8beb7d5074db44",
+          "json_pointer": "/dungeons/ruins_of_ashvale/tactical_rooms/1/objects/5/contents/0"
+        }
+      ]
+    },
+    {
+      "candidate_id": "battleaxe",
+      "candidate_path": "items/battleaxe.json",
+      "evidence": [
+        {
+          "channel": "historical_shop_inventory",
+          "path": "docs/planning/crown-content-scope.md",
+          "sha256": "3bcb9799865f1779aa7da1c1b041a6ac938c33491dfd502641593bf767a8528e",
+          "details": "Pinned 64-ID Windows export inventory; retained below, not rerun here."
+        },
+        {
+          "channel": "source_shop_candidate",
+          "path": "data/core/items/imported_base_items.json",
+          "sha256": "d450331c5dc1756fccc025c42e7f60bc6312a6829e59814e9864878a4abaae42",
+          "json_pointer": "/3",
+          "details": "Positive shop type/value and, for consumables, declared supported effect names. This is a source selection lead, not a loaded availability certification; manifest wins remain authoritative."
+        },
+        {
+          "channel": "pact_weapon_form",
+          "path": "docs/planning/preparation/crown-characters/invocations/pact_of_the_blade.json",
+          "sha256": "ae155ef90caa35d254f685caa6208383178e4d8dd77360795f165e32016b4046",
+          "json_pointer": "/rules"
+        }
+      ]
+    },
+    {
+      "candidate_id": "black_pearl_powder_500gp",
+      "candidate_path": "items/black_pearl_powder_500gp.json",
+      "evidence": [
+        {
+          "channel": "historical_shop_inventory",
+          "path": "docs/planning/crown-content-scope.md",
+          "sha256": "3bcb9799865f1779aa7da1c1b041a6ac938c33491dfd502641593bf767a8528e",
+          "details": "Pinned 64-ID Windows export inventory; retained below, not rerun here."
+        },
+        {
+          "channel": "source_shop_candidate",
+          "path": "data/core/items/srd_gear.json",
+          "sha256": "ed873f9a0967f5bb6e20241428e4f53b92c011fa547321af69798ece822b57d4",
+          "json_pointer": "/32",
+          "details": "Positive shop type/value and, for consumables, declared supported effect names. This is a source selection lead, not a loaded availability certification; manifest wins remain authoritative."
+        }
+      ]
+    },
+    {
+      "candidate_id": "blowgun",
+      "candidate_path": "items/blowgun.json",
+      "evidence": [
+        {
+          "channel": "historical_shop_inventory",
+          "path": "docs/planning/crown-content-scope.md",
+          "sha256": "3bcb9799865f1779aa7da1c1b041a6ac938c33491dfd502641593bf767a8528e",
+          "details": "Pinned 64-ID Windows export inventory; retained below, not rerun here."
+        },
+        {
+          "channel": "source_shop_candidate",
+          "path": "data/core/items/imported_base_items.json",
+          "sha256": "d450331c5dc1756fccc025c42e7f60bc6312a6829e59814e9864878a4abaae42",
+          "json_pointer": "/4",
+          "details": "Positive shop type/value and, for consumables, declared supported effect names. This is a source selection lead, not a loaded availability certification; manifest wins remain authoritative."
+        }
+      ]
+    },
+    {
+      "candidate_id": "bolts",
+      "candidate_path": "items/bolts.json",
+      "evidence": [
+        {
+          "channel": "weapon_ammunition_dependency",
+          "candidate_ids": [
+            "hand_crossbow",
+            "heavy_crossbow",
+            "light_crossbow"
+          ],
+          "source": "SRD 5.2.1 p.91"
+        }
+      ]
+    },
+    {
+      "candidate_id": "book_of_shadows",
+      "candidate_path": "items/book_of_shadows.json",
+      "evidence": [
+        {
+          "channel": "character_created_output",
+          "path": "docs/planning/preparation/crown-characters/invocations/pact_of_the_tome.json",
+          "sha256": "8baa3a52546fbe7e306be5124cc5fb64cf6b39f8108f38bd4bed93b7ea61e3d8",
+          "json_pointer": "/rules"
+        }
+      ]
+    },
+    {
+      "candidate_id": "breastplate",
+      "candidate_path": "items/breastplate.json",
+      "evidence": [
+        {
+          "channel": "historical_shop_inventory",
+          "path": "docs/planning/crown-content-scope.md",
+          "sha256": "3bcb9799865f1779aa7da1c1b041a6ac938c33491dfd502641593bf767a8528e",
+          "details": "Pinned 64-ID Windows export inventory; retained below, not rerun here."
+        },
+        {
+          "channel": "source_shop_candidate",
+          "path": "data/core/items/imported_base_items.json",
+          "sha256": "d450331c5dc1756fccc025c42e7f60bc6312a6829e59814e9864878a4abaae42",
+          "json_pointer": "/5",
+          "details": "Positive shop type/value and, for consumables, declared supported effect names. This is a source selection lead, not a loaded availability certification; manifest wins remain authoritative."
+        }
+      ]
+    },
+    {
+      "candidate_id": "chain_mail",
+      "candidate_path": "../crown-equipment/items/chain_mail.json",
+      "evidence": [
+        {
+          "channel": "historical_shop_inventory",
+          "path": "docs/planning/crown-content-scope.md",
+          "sha256": "3bcb9799865f1779aa7da1c1b041a6ac938c33491dfd502641593bf767a8528e",
+          "details": "Pinned 64-ID Windows export inventory; retained below, not rerun here."
+        },
+        {
+          "channel": "source_shop_candidate",
+          "path": "data/core/items/armor.json",
+          "sha256": "a54147bee457f31cff9b7003814837328d43e617d3e24ab0195c876d13cd1c01",
+          "json_pointer": "/1",
+          "details": "Positive shop type/value and, for consumables, declared supported effect names. This is a source selection lead, not a loaded availability certification; manifest wins remain authoritative."
+        }
+      ]
+    },
+    {
+      "candidate_id": "chain_shirt",
+      "candidate_path": "../crown-equipment/items/chain_shirt.json",
+      "evidence": [
+        {
+          "channel": "historical_shop_inventory",
+          "path": "docs/planning/crown-content-scope.md",
+          "sha256": "3bcb9799865f1779aa7da1c1b041a6ac938c33491dfd502641593bf767a8528e",
+          "details": "Pinned 64-ID Windows export inventory; retained below, not rerun here."
+        },
+        {
+          "channel": "source_shop_candidate",
+          "path": "data/core/items/imported_base_items.json",
+          "sha256": "d450331c5dc1756fccc025c42e7f60bc6312a6829e59814e9864878a4abaae42",
+          "json_pointer": "/7",
+          "details": "Positive shop type/value and, for consumables, declared supported effect names. This is a source selection lead, not a loaded availability certification; manifest wins remain authoritative."
+        },
+        {
+          "channel": "companion_class_seed",
+          "path": "data/core/classes/cleric.json",
+          "sha256": "370d2a37dcbf5b78b5289873c8a42e000bedeb5383b3cebafb3c2f10f7450620",
+          "json_pointer": "/starting_equipment/0",
+          "details": "aldric: current source initialization lead; intended revised package stays in equipment set."
+        }
+      ]
+    },
+    {
+      "candidate_id": "clairvoyance_glass_eye_100gp",
+      "candidate_path": "items/clairvoyance_glass_eye_100gp.json",
+      "evidence": [
+        {
+          "channel": "spell_material",
+          "path": "docs/planning/preparation/crown-spells/clairvoyance.json",
+          "sha256": "e48d72ce62b4acea21a1fee81684e7578e34ca319ded5029c3690d18c6e0fd86",
+          "json_pointer": "/casting/material"
+        }
+      ]
+    },
+    {
+      "candidate_id": "clairvoyance_jeweled_horn_100gp",
+      "candidate_path": "items/clairvoyance_jeweled_horn_100gp.json",
+      "evidence": [
+        {
+          "channel": "spell_material",
+          "path": "docs/planning/preparation/crown-spells/clairvoyance.json",
+          "sha256": "e48d72ce62b4acea21a1fee81684e7578e34ca319ded5029c3690d18c6e0fd86",
+          "json_pointer": "/casting/material"
+        }
+      ]
+    },
+    {
+      "candidate_id": "clean_water",
+      "candidate_path": "items/clean_water.json",
+      "evidence": [
+        {
+          "channel": "spell_created_output",
+          "path": "docs/planning/preparation/crown-spells/create_or_destroy_water.json",
+          "sha256": "b817d98f908ba8b602c23e3579ce55e40395853ad1c6901706a9b2e4e30d3300",
+          "json_pointer": "/rules"
+        },
+        {
+          "channel": "spell_created_output",
+          "path": "docs/planning/preparation/crown-spells/create_food_and_water.json",
+          "sha256": "2a794ab324cf943603156453a5c0bd90387d30b523be43148facbb4cf65a2766",
+          "json_pointer": "/rules"
+        }
+      ]
+    },
+    {
+      "candidate_id": "club",
+      "candidate_path": "items/club.json",
+      "evidence": [
+        {
+          "channel": "historical_shop_inventory",
+          "path": "docs/planning/crown-content-scope.md",
+          "sha256": "3bcb9799865f1779aa7da1c1b041a6ac938c33491dfd502641593bf767a8528e",
+          "details": "Pinned 64-ID Windows export inventory; retained below, not rerun here."
+        },
+        {
+          "channel": "source_shop_candidate",
+          "path": "data/core/items/weapons.json",
+          "sha256": "6f6314edd2f971deea6f5d058e0e5f913757a662b2340a8a01c52d60432e0df5",
+          "json_pointer": "/7",
+          "details": "Positive shop type/value and, for consumables, declared supported effect names. This is a source selection lead, not a loaded availability certification; manifest wins remain authoritative."
+        },
+        {
+          "channel": "pact_weapon_form",
+          "path": "docs/planning/preparation/crown-characters/invocations/pact_of_the_blade.json",
+          "sha256": "ae155ef90caa35d254f685caa6208383178e4d8dd77360795f165e32016b4046",
+          "json_pointer": "/rules"
+        }
+      ]
+    },
+    {
+      "candidate_id": "component_pouch",
+      "candidate_path": "items/component_pouch.json",
+      "evidence": [
+        {
+          "channel": "spell_material",
+          "path": "docs/planning/preparation/crown-spells/aid.json",
+          "sha256": "7bef83de3ef3e53908ed9ab7a99c9647607944b11ea9580de02d9bc006db03eb",
+          "json_pointer": "/casting/material"
+        },
+        {
+          "channel": "spell_material",
+          "path": "docs/planning/preparation/crown-spells/alarm.json",
+          "sha256": "b352e225ab1ca9ffae0277ba92fa5d556246f95e3940c4e1672f66349a2588a6",
+          "json_pointer": "/casting/material"
+        },
+        {
+          "channel": "spell_material",
+          "path": "docs/planning/preparation/crown-spells/animal_friendship.json",
+          "sha256": "266f06738d4515d17c1f4a28806352bb5cfdf1c0e75a84188493eca2e5f3eb15",
+          "json_pointer": "/casting/material"
+        },
+        {
+          "channel": "spell_material",
+          "path": "docs/planning/preparation/crown-spells/animal_messenger.json",
+          "sha256": "f0ee92d96fcdcf2865f0d4acc8f670232c111c5f11ea355dd9188a08be8eab7b",
+          "json_pointer": "/casting/material"
+        },
+        {
+          "channel": "spell_material",
+          "path": "docs/planning/preparation/crown-spells/animate_dead.json",
+          "sha256": "45ad4be01f071ea803bd21741e9c96beaff51d4494599fa5d99b2be13cfa2327",
+          "json_pointer": "/casting/material"
+        },
+        {
+          "channel": "spell_material",
+          "path": "docs/planning/preparation/crown-spells/bane.json",
+          "sha256": "2ac330a8e6955b7899b1f320c8a371e8c64968aec40d3f68da214deada060fcd",
+          "json_pointer": "/casting/material"
+        },
+        {
+          "channel": "spell_material",
+          "path": "docs/planning/preparation/crown-spells/barkskin.json",
+          "sha256": "4f71c86c519af084e9d641f31b89379e3cf8814d9a4ca0f51adc8404a2e73233",
+          "json_pointer": "/casting/material"
+        },
+        {
+          "channel": "spell_material",
+          "path": "docs/planning/preparation/crown-spells/color_spray.json",
+          "sha256": "b125941b6a93f5bb9176e5cd15d246353c5b63dd15d08cbe14dcd5ec1903d06c",
+          "json_pointer": "/casting/material"
+        },
+        {
+          "channel": "spell_material",
+          "path": "docs/planning/preparation/crown-spells/comprehend_languages.json",
+          "sha256": "14c367acc46404b7630023d6ff9c2e89642d2dd5202922fb41abaf9788fbad5e",
+          "json_pointer": "/casting/material"
+        },
+        {
+          "channel": "spell_material",
+          "path": "docs/planning/preparation/crown-spells/create_or_destroy_water.json",
+          "sha256": "b817d98f908ba8b602c23e3579ce55e40395853ad1c6901706a9b2e4e30d3300",
+          "json_pointer": "/casting/material"
+        },
+        {
+          "channel": "spell_material",
+          "path": "docs/planning/preparation/crown-spells/dancing_lights.json",
+          "sha256": "c671457cb332ccc4745515d3a9498d59b06ab5b79b5e1432be2ee9e1c4479d98",
+          "json_pointer": "/casting/material"
+        },
+        {
+          "channel": "spell_material",
+          "path": "docs/planning/preparation/crown-spells/darkness.json",
+          "sha256": "7d8766409d9d37870587a465bf9dfa33544663f1e43811556e2fc067a71059bd",
+          "json_pointer": "/casting/material"
+        },
+        {
+          "channel": "spell_material",
+          "path": "docs/planning/preparation/crown-spells/darkvision.json",
+          "sha256": "1a14634f79fcac218226528ffa03a9c8f2937a82949406821aed280d6871b680",
+          "json_pointer": "/casting/material"
+        },
+        {
+          "channel": "spell_material",
+          "path": "docs/planning/preparation/crown-spells/detect_poison_and_disease.json",
+          "sha256": "2a4fe489ebec8031494a7d2c8940678728b31795cb3df73983edfb54211cbf47",
+          "json_pointer": "/casting/material"
+        },
+        {
+          "channel": "spell_material",
+          "path": "docs/planning/preparation/crown-spells/dragons_breath.json",
+          "sha256": "1a8cda4e05f81088e7ec007e7d472a552ef249381c563469bfb0fbf8f46f6044",
+          "json_pointer": "/casting/material"
+        },
+        {
+          "channel": "spell_material",
+          "path": "docs/planning/preparation/crown-spells/enhance_ability.json",
+          "sha256": "6be34d2eede0054d3406d1c949bc683d89b95f5f148c05629c676b744c599a9f",
+          "json_pointer": "/casting/material"
+        },
+        {
+          "channel": "spell_material",
+          "path": "docs/planning/preparation/crown-spells/enlarge-reduce.json",
+          "sha256": "8a5fe95a10d354cf4d812830b65da15636e136440bae3e6b67fef7a071721420",
+          "json_pointer": "/casting/material"
+        },
+        {
+          "channel": "spell_material",
+          "path": "docs/planning/preparation/crown-spells/false_life.json",
+          "sha256": "9fa3b6a3388bc9d2c48ad451b20f6432e615f576dad9d44edbce345e83764ea0",
+          "json_pointer": "/casting/material"
+        },
+        {
+          "channel": "spell_material",
+          "path": "docs/planning/preparation/crown-spells/fear.json",
+          "sha256": "21b561c5be0c948bfc8fe28ee247335d52d4af2861c81ad832f160db6b9ee6ae",
+          "json_pointer": "/casting/material"
+        },
+        {
+          "channel": "spell_material",
+          "path": "docs/planning/preparation/crown-spells/feather_fall.json",
+          "sha256": "7b5dfdc0ebf0e99a461b01deb4f17fbf1a26df3ce9927c734ec9bbad9bf5a43d",
+          "json_pointer": "/casting/material"
+        },
+        {
+          "channel": "spell_material",
+          "path": "docs/planning/preparation/crown-spells/fireball.json",
+          "sha256": "4e6b0ddef1c94651a711e557c9f3af0f19808d82aa85c207c88201cbbdbc0ac6",
+          "json_pointer": "/casting/material"
+        },
+        {
+          "channel": "spell_material",
+          "path": "docs/planning/preparation/crown-spells/flame_blade.json",
+          "sha256": "3c7b316e8eda6f4ef2cc3a67f3abcee2aa04d731ad764879bf81c6d25bdffb0c",
+          "json_pointer": "/casting/material"
+        },
+        {
+          "channel": "spell_material",
+          "path": "docs/planning/preparation/crown-spells/flaming_sphere.json",
+          "sha256": "0aa85b8c9d73ba00251eb41e1878277a90e2705acb4d3fa811aed81e8ba21672",
+          "json_pointer": "/casting/material"
+        },
+        {
+          "channel": "spell_material",
+          "path": "docs/planning/preparation/crown-spells/fly.json",
+          "sha256": "e65c63dc983e0d269f3389ede026cab9da340165c36c445bf1f28966683dac66",
+          "json_pointer": "/casting/material"
+        },
+        {
+          "channel": "spell_material",
+          "path": "docs/planning/preparation/crown-spells/gaseous_form.json",
+          "sha256": "818740b1a8a835f3bc3e53ad645e0d0fbc82153f55f2971fa2d40c8554d406cb",
+          "json_pointer": "/casting/material"
+        },
+        {
+          "channel": "spell_material",
+          "path": "docs/planning/preparation/crown-spells/goodberry.json",
+          "sha256": "9da8a7f1b1c7873779e9f1628bd68db59a3632b94c2dc5fbf949a779f6af8973",
+          "json_pointer": "/casting/material"
+        },
+        {
+          "channel": "spell_material",
+          "path": "docs/planning/preparation/crown-spells/grease.json",
+          "sha256": "76272f46d92c2e7e46144bdd912c3eeade8b3044f764590ae99be8b028a2b57c",
+          "json_pointer": "/casting/material"
+        },
+        {
+          "channel": "spell_material",
+          "path": "docs/planning/preparation/crown-spells/gust_of_wind.json",
+          "sha256": "286a90c631bdd266b5d197aa10d50ac7c4c466f3ee799307796ee89dd84435f1",
+          "json_pointer": "/casting/material"
+        },
+        {
+          "channel": "spell_material",
+          "path": "docs/planning/preparation/crown-spells/haste.json",
+          "sha256": "7c3f55e01c5ffdedba5a87b1688d39a3771a27649af27f339b7a920aebc9b177",
+          "json_pointer": "/casting/material"
+        },
+        {
+          "channel": "spell_material",
+          "path": "docs/planning/preparation/crown-spells/heat_metal.json",
+          "sha256": "4779166d84da4bbc6e35f70843cee1bba97b52ca9328a870988b02e2c449be9e",
+          "json_pointer": "/casting/material"
+        },
+        {
+          "channel": "spell_material",
+          "path": "docs/planning/preparation/crown-spells/hex.json",
+          "sha256": "75e61e8ba1c489b1a5ca1df1e218f5a657417b256fbbfc79f3b96a1100bb6b5a",
+          "json_pointer": "/casting/material"
+        },
+        {
+          "channel": "spell_material",
+          "path": "docs/planning/preparation/crown-spells/hold_person.json",
+          "sha256": "c197646cb0315735d2bb0a1d46e0fbf456adc85a42871cedc9eb0cade04f30e3",
+          "json_pointer": "/casting/material"
+        },
+        {
+          "channel": "spell_material",
+          "path": "docs/planning/preparation/crown-spells/hypnotic_pattern.json",
+          "sha256": "d73c3a4ca9b8b52be6e64637a420f21c9f0a193f08ce9d82344721e559e67ed0",
+          "json_pointer": "/casting/material"
+        },
+        {
+          "channel": "spell_material",
+          "path": "docs/planning/preparation/crown-spells/ice_knife.json",
+          "sha256": "7fee275f594e309e1456548faaa688588e8885b32ece31ba2fe01913e29594b2",
+          "json_pointer": "/casting/material"
+        },
+        {
+          "channel": "spell_material",
+          "path": "docs/planning/preparation/crown-spells/invisibility.json",
+          "sha256": "15362a5d2d1082a215e7612bcda681b0f3e76a79803b92876441188ee3d8af26",
+          "json_pointer": "/casting/material"
+        },
+        {
+          "channel": "spell_material",
+          "path": "docs/planning/preparation/crown-spells/jump.json",
+          "sha256": "78cbdd2aa004895c289bb78ab3f620d98ab25ba3cf9aff0a6225ddbf2eb76dda",
+          "json_pointer": "/casting/material"
+        },
+        {
+          "channel": "spell_material",
+          "path": "docs/planning/preparation/crown-spells/leomunds_tiny_hut.json",
+          "sha256": "c353723d829d5d4a86bd6425c52e1b64551f515bca959b70008b05d3be75edc6",
+          "json_pointer": "/casting/material"
+        },
+        {
+          "channel": "spell_material",
+          "path": "docs/planning/preparation/crown-spells/levitate.json",
+          "sha256": "f0e71415ab21cf0f1622b64012da0e45188c16236b46baa433c787595c89e2f8",
+          "json_pointer": "/casting/material"
+        },
+        {
+          "channel": "spell_material",
+          "path": "docs/planning/preparation/crown-spells/light.json",
+          "sha256": "70015f6a197ec0547df10e1cc77651b8af5a0d70e5d05c38ffb757388b2d2ad4",
+          "json_pointer": "/casting/material"
+        },
+        {
+          "channel": "spell_material",
+          "path": "docs/planning/preparation/crown-spells/lightning_bolt.json",
+          "sha256": "f223fc4bd8f0b7414d7355f30dc6f4c00c20dec22825a1ef8afbe522dcd942e0",
+          "json_pointer": "/casting/material"
+        },
+        {
+          "channel": "spell_material",
+          "path": "docs/planning/preparation/crown-spells/locate_animals_or_plants.json",
+          "sha256": "f0b2446736c2ee0f61330e56f028331526fd377ff4bd538ab1a15fbd188be009",
+          "json_pointer": "/casting/material"
+        },
+        {
+          "channel": "spell_material",
+          "path": "docs/planning/preparation/crown-spells/locate_object.json",
+          "sha256": "a7bf2a7dae794a1439a201a45a81fce351ed1d8ce2fc9ceebbfc731a8a564f47",
+          "json_pointer": "/casting/material"
+        },
+        {
+          "channel": "spell_material",
+          "path": "docs/planning/preparation/crown-spells/longstrider.json",
+          "sha256": "1d96c18f2499694dd2acb1ac1888807e85cecc56ad2736db21543b96d7ebf838",
+          "json_pointer": "/casting/material"
+        },
+        {
+          "channel": "spell_material",
+          "path": "docs/planning/preparation/crown-spells/mage_armor.json",
+          "sha256": "7000dd0a693e85a85b89fce171a672d067c921745bc42be4af7961f13f2fb414",
+          "json_pointer": "/casting/material"
+        },
+        {
+          "channel": "spell_material",
+          "path": "docs/planning/preparation/crown-spells/major_image.json",
+          "sha256": "25657e5788c88de10c10d7b9c76197349e75128d78dabcf0b4db3983471463af",
+          "json_pointer": "/casting/material"
+        },
+        {
+          "channel": "spell_material",
+          "path": "docs/planning/preparation/crown-spells/melfs_acid_arrow.json",
+          "sha256": "dfda29f1c19d38aa6d00dc70b1b94bd0654b497710edf83d8696c4d24615b277",
+          "json_pointer": "/casting/material"
+        },
+        {
+          "channel": "spell_material",
+          "path": "docs/planning/preparation/crown-spells/mending.json",
+          "sha256": "5618d825311903bd83b05f686745e0f26ebb5a66498fe10a8e9189abb9f6fdb1",
+          "json_pointer": "/casting/material"
+        },
+        {
+          "channel": "spell_material",
+          "path": "docs/planning/preparation/crown-spells/message.json",
+          "sha256": "d3a52f6872b77acf4567f25e2c7087471c5e7b9ee85db210f4021725c58f48bc",
+          "json_pointer": "/casting/material"
+        },
+        {
+          "channel": "spell_material",
+          "path": "docs/planning/preparation/crown-spells/minor_illusion.json",
+          "sha256": "0e53cdf1e7738af8a620082fbf5bacea1b02f266d388e9b9902d30e119eb2d07",
+          "json_pointer": "/casting/material"
+        },
+        {
+          "channel": "spell_material",
+          "path": "docs/planning/preparation/crown-spells/moonbeam.json",
+          "sha256": "6c20e2d9c129fff88cd1875b9b8881bc6fb73ff14389228a09fe17df4ab97fcc",
+          "json_pointer": "/casting/material"
+        },
+        {
+          "channel": "spell_material",
+          "path": "docs/planning/preparation/crown-spells/nystuls_magic_aura.json",
+          "sha256": "1fd413d3a06d1c48a811249d7cf2c54c0157092896b042f2f642d14300f703eb",
+          "json_pointer": "/casting/material"
+        },
+        {
+          "channel": "spell_material",
+          "path": "docs/planning/preparation/crown-spells/pass_without_trace.json",
+          "sha256": "1786bdfb114f0035f75b3779ce9896cfec33103b63f54e976bad33e66483fdfb",
+          "json_pointer": "/casting/material"
+        },
+        {
+          "channel": "spell_material",
+          "path": "docs/planning/preparation/crown-spells/phantasmal_force.json",
+          "sha256": "c4ef12b50420d4c64fe1ac9061e79b0886d1dd58014fa5bc26accf334000189f",
+          "json_pointer": "/casting/material"
+        },
+        {
+          "channel": "spell_material",
+          "path": "docs/planning/preparation/crown-spells/rope_trick.json",
+          "sha256": "37ec73b5f015e4ff0674c727ff25fab249c85e34342a4b1a662ed6dd0b2ff995",
+          "json_pointer": "/casting/material"
+        },
+        {
+          "channel": "spell_material",
+          "path": "docs/planning/preparation/crown-spells/sanctuary.json",
+          "sha256": "5626562681a3e17af53df790ea2e54f8afc0d390dbea1bb4ca6f679c383f5c32",
+          "json_pointer": "/casting/material"
+        },
+        {
+          "channel": "spell_material",
+          "path": "docs/planning/preparation/crown-spells/see_invisibility.json",
+          "sha256": "1ca5b190438632018f3df5c4fdea7af66566da1ba411474db2419e864c67764f",
+          "json_pointer": "/casting/material"
+        },
+        {
+          "channel": "spell_material",
+          "path": "docs/planning/preparation/crown-spells/sending.json",
+          "sha256": "aee6e7ba45757fae2395532d708ab1b0abc03b24b7d09c530af92a71edd6704d",
+          "json_pointer": "/casting/material"
+        },
+        {
+          "channel": "spell_material",
+          "path": "docs/planning/preparation/crown-spells/shatter.json",
+          "sha256": "8e9a3ba4999f794eb4af66b7cfee9b1271dec6521512933f6050a7529ea27ca4",
+          "json_pointer": "/casting/material"
+        },
+        {
+          "channel": "spell_material",
+          "path": "docs/planning/preparation/crown-spells/shield_of_faith.json",
+          "sha256": "0e1867678dd5b3d0d77ac54d4d1f81ac05f386e77ba720328f53bef7731cdbdf",
+          "json_pointer": "/casting/material"
+        },
+        {
+          "channel": "spell_material",
+          "path": "docs/planning/preparation/crown-spells/shillelagh.json",
+          "sha256": "2b66d43cd3db7257272462e25abe0e7593c650a3750418bd9945abd6b7b96dbb",
+          "json_pointer": "/casting/material"
+        },
+        {
+          "channel": "spell_material",
+          "path": "docs/planning/preparation/crown-spells/silent_image.json",
+          "sha256": "859445bf1619aae8f3f1e95359a37823ac1e53e6f3a4a5af6feb66ccfdb77093",
+          "json_pointer": "/casting/material"
+        },
+        {
+          "channel": "spell_material",
+          "path": "docs/planning/preparation/crown-spells/sleep.json",
+          "sha256": "af1c8364ea3c7ef31773d5ff741b4125536f033bb1d762b69c28ce6e37ae9d37",
+          "json_pointer": "/casting/material"
+        },
+        {
+          "channel": "spell_material",
+          "path": "docs/planning/preparation/crown-spells/sleet_storm.json",
+          "sha256": "601668eec5f66791bf3ad1a9cbb4b78d264e96c4c76987757e5d754ab4bf6eb9",
+          "json_pointer": "/casting/material"
+        },
+        {
+          "channel": "spell_material",
+          "path": "docs/planning/preparation/crown-spells/slow.json",
+          "sha256": "7b1dee5080596484f0a68c396a48ef61eaef3333c413027a4bf702d57b795f4c",
+          "json_pointer": "/casting/material"
+        },
+        {
+          "channel": "spell_material",
+          "path": "docs/planning/preparation/crown-spells/speak_with_dead.json",
+          "sha256": "76e6b983ef71be1e5c160971332745757f5370cf6c5a04c4e742ef28890deca3",
+          "json_pointer": "/casting/material"
+        },
+        {
+          "channel": "spell_material",
+          "path": "docs/planning/preparation/crown-spells/spider_climb.json",
+          "sha256": "97fcced371226d8b2cf4cef59d2b8c52ae1edcbf6e32afdd363ee25b5d360d0b",
+          "json_pointer": "/casting/material"
+        },
+        {
+          "channel": "spell_material",
+          "path": "docs/planning/preparation/crown-spells/spike_growth.json",
+          "sha256": "2f532626c82d8459b613d79be67c6a22cdd0b8217ff731d937ecffc9c540f623",
+          "json_pointer": "/casting/material"
+        },
+        {
+          "channel": "spell_material",
+          "path": "docs/planning/preparation/crown-spells/spirit_guardians.json",
+          "sha256": "b28de2cc28a38bb4de9faeb8468888c9030abe2720b6a6bfd549354c6871ec61",
+          "json_pointer": "/casting/material"
+        },
+        {
+          "channel": "spell_material",
+          "path": "docs/planning/preparation/crown-spells/stinking_cloud.json",
+          "sha256": "3df8a846f3be3a39706781f6ac8183be13ff41cfbedd1cba02faedf375325b66",
+          "json_pointer": "/casting/material"
+        },
+        {
+          "channel": "spell_material",
+          "path": "docs/planning/preparation/crown-spells/suggestion.json",
+          "sha256": "d4e12f5f061059391a99bfc183d4db9097f07feafa3882392c297171ab8e7407",
+          "json_pointer": "/casting/material"
+        },
+        {
+          "channel": "spell_material",
+          "path": "docs/planning/preparation/crown-spells/tashas_hideous_laughter.json",
+          "sha256": "12ff91e91c886e7eb6c8b3ea4228669f946bffd8c074048a86ea13e8868ca45a",
+          "json_pointer": "/casting/material"
+        },
+        {
+          "channel": "spell_material",
+          "path": "docs/planning/preparation/crown-spells/tensers_floating_disk.json",
+          "sha256": "1da1b306e84110d1186fac4c4ca127fd3fb36a3d7d98eb14dc3e513a4ebf7ca3",
+          "json_pointer": "/casting/material"
+        },
+        {
+          "channel": "spell_material",
+          "path": "docs/planning/preparation/crown-spells/tongues.json",
+          "sha256": "bc9737770fcde559f51509d5bfff35e7bc33459be21c4f5d8841ef4c0e17f7ac",
+          "json_pointer": "/casting/material"
+        },
+        {
+          "channel": "spell_material",
+          "path": "docs/planning/preparation/crown-spells/unseen_servant.json",
+          "sha256": "9d06826f722ddaa4cb7addc33b79b513d17ccfee42ece996395fba84d81beb9d",
+          "json_pointer": "/casting/material"
+        },
+        {
+          "channel": "spell_material",
+          "path": "docs/planning/preparation/crown-spells/water_breathing.json",
+          "sha256": "4ac3c84e1820eb42f8f02c8f4f579b049747aeed43e6f224621b1622b3c97741",
+          "json_pointer": "/casting/material"
+        },
+        {
+          "channel": "spell_material",
+          "path": "docs/planning/preparation/crown-spells/water_walk.json",
+          "sha256": "4ba4e5abb2af3645f331cca151a3693af83ab37d16ac62b027f8f5fad0f9397f",
+          "json_pointer": "/casting/material"
+        },
+        {
+          "channel": "spell_material",
+          "path": "docs/planning/preparation/crown-spells/web.json",
+          "sha256": "b13df0249566d2abc8b8895dc9979e577810cb3ae2b719512c1008de6d9c44d2",
+          "json_pointer": "/casting/material"
+        },
+        {
+          "channel": "spell_material",
+          "path": "docs/planning/preparation/crown-spells/wind_wall.json",
+          "sha256": "cdc68a14191e01c2c1d91f76b9b29cceb2d05654910f28f26afa257f8dec8b1a",
+          "json_pointer": "/casting/material"
+        }
+      ]
+    },
+    {
+      "candidate_id": "copper_piece",
+      "candidate_path": "items/copper_piece.json",
+      "evidence": [
+        {
+          "channel": "spell_material",
+          "path": "docs/planning/preparation/crown-spells/detect_thoughts.json",
+          "sha256": "eeb67a1efcc828865bc6c60a9c2db6951cd34934cd5e9f4c12f27a2003a521b7",
+          "json_pointer": "/casting/material"
+        }
+      ]
+    },
+    {
+      "candidate_id": "created_food",
+      "candidate_path": "items/created_food.json",
+      "evidence": [
+        {
+          "channel": "spell_created_output",
+          "path": "docs/planning/preparation/crown-spells/create_food_and_water.json",
+          "sha256": "2a794ab324cf943603156453a5c0bd90387d30b523be43148facbb4cf65a2766",
+          "json_pointer": "/rules"
+        }
+      ]
+    },
+    {
+      "candidate_id": "crossbow_bolt_case",
+      "candidate_path": "items/crossbow_bolt_case.json",
+      "evidence": [
+        {
+          "channel": "ammunition_storage_dependency",
+          "candidate_ids": [
+            "bolts"
+          ],
+          "source": "SRD 5.2.1 p.96; separate storage, not a free grant"
+        }
+      ]
+    },
+    {
+      "candidate_id": "crown_fragment",
+      "candidate_path": "items/crown_fragment.json",
+      "evidence": [
+        {
+          "channel": "campaign_goal_loot_or_tactical_object",
+          "path": "data/core/campaigns/the_lost_crown.json",
+          "sha256": "3352b2d22be36e68591bfdf4ec73b8201f2bec6c69a3a60b0c8beb7d5074db44",
+          "json_pointer": "/win_condition/goals/0/item_id"
+        },
+        {
+          "channel": "campaign_goal_loot_or_tactical_object",
+          "path": "data/core/campaigns/the_lost_crown.json",
+          "sha256": "3352b2d22be36e68591bfdf4ec73b8201f2bec6c69a3a60b0c8beb7d5074db44",
+          "json_pointer": "/dungeons/ruins_of_ashvale/loot/0/item_id"
+        },
+        {
+          "channel": "campaign_goal_loot_or_tactical_object",
+          "path": "data/core/campaigns/the_lost_crown.json",
+          "sha256": "3352b2d22be36e68591bfdf4ec73b8201f2bec6c69a3a60b0c8beb7d5074db44",
+          "json_pointer": "/dungeons/caverns_of_gloom/loot/0/item_id"
+        },
+        {
+          "channel": "campaign_goal_loot_or_tactical_object",
+          "path": "data/core/campaigns/the_lost_crown.json",
+          "sha256": "3352b2d22be36e68591bfdf4ec73b8201f2bec6c69a3a60b0c8beb7d5074db44",
+          "json_pointer": "/dungeons/tower_of_the_lich/loot/0/item_id"
+        },
+        {
+          "channel": "monster_reward_metadata",
+          "path": "data/core/monsters/core_monsters.json",
+          "sha256": "33bf505c91476b32f7dd2887dd0caa19521e4a9e206392b8d803090b105eb8c2",
+          "json_pointer": "/9/loot_table/0/item_id",
+          "details": "Loot-table metadata retained; combat currently copies it into entities. This is not proof that a post-combat roll/grant host executes it."
+        }
+      ]
+    },
+    {
+      "candidate_id": "dagger",
+      "candidate_path": "../crown-equipment/items/dagger.json",
+      "evidence": [
+        {
+          "channel": "historical_shop_inventory",
+          "path": "docs/planning/crown-content-scope.md",
+          "sha256": "3bcb9799865f1779aa7da1c1b041a6ac938c33491dfd502641593bf767a8528e",
+          "details": "Pinned 64-ID Windows export inventory; retained below, not rerun here."
+        },
+        {
+          "channel": "source_shop_candidate",
+          "path": "data/core/items/imported_base_items.json",
+          "sha256": "d450331c5dc1756fccc025c42e7f60bc6312a6829e59814e9864878a4abaae42",
+          "json_pointer": "/9",
+          "details": "Positive shop type/value and, for consumables, declared supported effect names. This is a source selection lead, not a loaded availability certification; manifest wins remain authoritative."
+        },
+        {
+          "channel": "monster_reward_metadata",
+          "path": "data/core/monsters/core_monsters.json",
+          "sha256": "33bf505c91476b32f7dd2887dd0caa19521e4a9e206392b8d803090b105eb8c2",
+          "json_pointer": "/0/loot_table/1/item_id",
+          "details": "Loot-table metadata retained; combat currently copies it into entities. This is not proof that a post-combat roll/grant host executes it."
+        },
+        {
+          "channel": "companion_class_seed",
+          "path": "data/core/classes/rogue.json",
+          "sha256": "c272d35beebef5449232bcef4e5eaf0743ffa9dee2288b95050c6c6c1f9fcda7",
+          "json_pointer": "/starting_equipment/3",
+          "details": "rowan: current source initialization lead; intended revised package stays in equipment set."
+        },
+        {
+          "channel": "pact_weapon_form",
+          "path": "docs/planning/preparation/crown-characters/invocations/pact_of_the_blade.json",
+          "sha256": "ae155ef90caa35d254f685caa6208383178e4d8dd77360795f165e32016b4046",
+          "json_pointer": "/rules"
+        }
+      ]
+    },
+    {
+      "candidate_id": "dart",
+      "candidate_path": "items/dart.json",
+      "evidence": [
+        {
+          "channel": "historical_shop_inventory",
+          "path": "docs/planning/crown-content-scope.md",
+          "sha256": "3bcb9799865f1779aa7da1c1b041a6ac938c33491dfd502641593bf767a8528e",
+          "details": "Pinned 64-ID Windows export inventory; retained below, not rerun here."
+        },
+        {
+          "channel": "source_shop_candidate",
+          "path": "data/core/items/weapons.json",
+          "sha256": "6f6314edd2f971deea6f5d058e0e5f913757a662b2340a8a01c52d60432e0df5",
+          "json_pointer": "/14",
+          "details": "Positive shop type/value and, for consumables, declared supported effect names. This is a source selection lead, not a loaded availability certification; manifest wins remain authoritative."
+        }
+      ]
+    },
+    {
+      "candidate_id": "diamond_300gp",
+      "candidate_path": "items/diamond_300gp.json",
+      "evidence": [
+        {
+          "channel": "historical_shop_inventory",
+          "path": "docs/planning/crown-content-scope.md",
+          "sha256": "3bcb9799865f1779aa7da1c1b041a6ac938c33491dfd502641593bf767a8528e",
+          "details": "Pinned 64-ID Windows export inventory; retained below, not rerun here."
+        },
+        {
+          "channel": "source_shop_candidate",
+          "path": "data/core/items/recovery_components.json",
+          "sha256": "7627b8744080116b2c5f8f2560d371bf0c50732fb8401264f4d863e39ac6dcd3",
+          "json_pointer": "/0",
+          "details": "Positive shop type/value and, for consumables, declared supported effect names. This is a source selection lead, not a loaded availability certification; manifest wins remain authoritative."
+        },
+        {
+          "channel": "spell_material",
+          "path": "docs/planning/preparation/crown-spells/revivify.json",
+          "sha256": "d5e1924da2df00c37f783e4d602a05f2967c32dafd8452b061eb34d58121472a",
+          "json_pointer": "/casting/material"
+        }
+      ]
+    },
+    {
+      "candidate_id": "diamond_50gp",
+      "candidate_path": "items/diamond_50gp.json",
+      "evidence": [
+        {
+          "channel": "source_shop_candidate",
+          "path": "data/core/items/crown_sc_04_components.json",
+          "sha256": "0cb366eca3c8a0a5b5cdf6d10fea0795b3e47ea15e373797276ecc112cac0a6e",
+          "json_pointer": "/0",
+          "details": "Positive shop type/value and, for consumables, declared supported effect names. This is a source selection lead, not a loaded availability certification; manifest wins remain authoritative."
+        },
+        {
+          "channel": "spell_material",
+          "path": "docs/planning/preparation/crown-spells/chromatic_orb.json",
+          "sha256": "484f685e00564902405f32452bb3a6433ccc8e1b67e025a4dcd13088da023db9",
+          "json_pointer": "/casting/material"
+        }
+      ]
+    },
+    {
+      "candidate_id": "diamond_dust_200gp",
+      "candidate_path": "items/diamond_dust_200gp.json",
+      "evidence": [
+        {
+          "channel": "spell_material",
+          "path": "docs/planning/preparation/crown-spells/glyph_of_warding.json",
+          "sha256": "4715c36e07b80c015061423011c2e1052e665f7690c11747712e74b435d706ca",
+          "json_pointer": "/casting/material"
+        }
+      ]
+    },
+    {
+      "candidate_id": "diamond_dust_25gp",
+      "candidate_path": "items/diamond_dust_25gp.json",
+      "evidence": [
+        {
+          "channel": "spell_material",
+          "path": "docs/planning/preparation/crown-spells/nondetection.json",
+          "sha256": "473d91b208b8c04d19b3958a052b34a1d1a2bb87a814d2b571cc5b983f6ed3d6",
+          "json_pointer": "/casting/material"
+        }
+      ]
+    },
+    {
+      "candidate_id": "divinatory_tokens_25gp",
+      "candidate_path": "items/divinatory_tokens_25gp.json",
+      "evidence": [
+        {
+          "channel": "spell_material",
+          "path": "docs/planning/preparation/crown-spells/augury.json",
+          "sha256": "18086f8aaa6e152fced3cdf2226edbf5062c6b68647f83ce41d5992f04c0fe54",
+          "json_pointer": "/casting/material"
+        }
+      ]
+    },
+    {
+      "candidate_id": "druidic_focus_quarterstaff",
+      "candidate_path": "../crown-equipment/items/druidic_focus_quarterstaff.json",
+      "evidence": [
+        {
+          "channel": "source_shop_candidate",
+          "path": "data/core/items/weapons.json",
+          "sha256": "6f6314edd2f971deea6f5d058e0e5f913757a662b2340a8a01c52d60432e0df5",
+          "json_pointer": "/38",
+          "details": "Positive shop type/value and, for consumables, declared supported effect names. This is a source selection lead, not a loaded availability certification; manifest wins remain authoritative."
+        }
+      ]
+    },
+    {
+      "candidate_id": "firearm_bullets",
+      "candidate_path": "items/firearm_bullets.json",
+      "evidence": [
+        {
+          "channel": "weapon_ammunition_dependency",
+          "candidate_ids": [
+            "musket",
+            "pistol"
+          ],
+          "source": "SRD 5.2.1 p.91"
+        }
+      ]
+    },
+    {
+      "candidate_id": "flail",
+      "candidate_path": "../crown-equipment/items/flail.json",
+      "evidence": [
+        {
+          "channel": "historical_shop_inventory",
+          "path": "docs/planning/crown-content-scope.md",
+          "sha256": "3bcb9799865f1779aa7da1c1b041a6ac938c33491dfd502641593bf767a8528e",
+          "details": "Pinned 64-ID Windows export inventory; retained below, not rerun here."
+        },
+        {
+          "channel": "source_shop_candidate",
+          "path": "data/core/items/imported_base_items.json",
+          "sha256": "d450331c5dc1756fccc025c42e7f60bc6312a6829e59814e9864878a4abaae42",
+          "json_pointer": "/11",
+          "details": "Positive shop type/value and, for consumables, declared supported effect names. This is a source selection lead, not a loaded availability certification; manifest wins remain authoritative."
+        },
+        {
+          "channel": "pact_weapon_form",
+          "path": "docs/planning/preparation/crown-characters/invocations/pact_of_the_blade.json",
+          "sha256": "ae155ef90caa35d254f685caa6208383178e4d8dd77360795f165e32016b4046",
+          "json_pointer": "/rules"
+        }
+      ]
+    },
+    {
+      "candidate_id": "gentle_repose_copper",
+      "candidate_path": "items/gentle_repose_copper.json",
+      "evidence": [
+        {
+          "channel": "historical_shop_inventory",
+          "path": "docs/planning/crown-content-scope.md",
+          "sha256": "3bcb9799865f1779aa7da1c1b041a6ac938c33491dfd502641593bf767a8528e",
+          "details": "Pinned 64-ID Windows export inventory; retained below, not rerun here."
+        },
+        {
+          "channel": "source_shop_candidate",
+          "path": "data/core/items/recovery_components.json",
+          "sha256": "7627b8744080116b2c5f8f2560d371bf0c50732fb8401264f4d863e39ac6dcd3",
+          "json_pointer": "/1",
+          "details": "Positive shop type/value and, for consumables, declared supported effect names. This is a source selection lead, not a loaded availability certification; manifest wins remain authoritative."
+        },
+        {
+          "channel": "spell_material",
+          "path": "docs/planning/preparation/crown-spells/gentle_repose.json",
+          "sha256": "da9d6243eb1c58c4bdc04529acada6d055e60fd7b0dd7d40446793b529cd4df2",
+          "json_pointer": "/casting/material"
+        }
+      ]
+    },
+    {
+      "candidate_id": "glaive",
+      "candidate_path": "items/glaive.json",
+      "evidence": [
+        {
+          "channel": "historical_shop_inventory",
+          "path": "docs/planning/crown-content-scope.md",
+          "sha256": "3bcb9799865f1779aa7da1c1b041a6ac938c33491dfd502641593bf767a8528e",
+          "details": "Pinned 64-ID Windows export inventory; retained below, not rerun here."
+        },
+        {
+          "channel": "source_shop_candidate",
+          "path": "data/core/items/imported_base_items.json",
+          "sha256": "d450331c5dc1756fccc025c42e7f60bc6312a6829e59814e9864878a4abaae42",
+          "json_pointer": "/12",
+          "details": "Positive shop type/value and, for consumables, declared supported effect names. This is a source selection lead, not a loaded availability certification; manifest wins remain authoritative."
+        },
+        {
+          "channel": "pact_weapon_form",
+          "path": "docs/planning/preparation/crown-characters/invocations/pact_of_the_blade.json",
+          "sha256": "ae155ef90caa35d254f685caa6208383178e4d8dd77360795f165e32016b4046",
+          "json_pointer": "/rules"
+        }
+      ]
+    },
+    {
+      "candidate_id": "gold_100",
+      "candidate_path": "items/gold_100.json",
+      "evidence": [
+        {
+          "channel": "campaign_goal_loot_or_tactical_object",
+          "path": "data/core/campaigns/the_lost_crown.json",
+          "sha256": "3352b2d22be36e68591bfdf4ec73b8201f2bec6c69a3a60b0c8beb7d5074db44",
+          "json_pointer": "/dungeons/ruins_of_ashvale/loot/1/item_id"
+        },
+        {
+          "channel": "campaign_goal_loot_or_tactical_object",
+          "path": "data/core/campaigns/the_lost_crown.json",
+          "sha256": "3352b2d22be36e68591bfdf4ec73b8201f2bec6c69a3a60b0c8beb7d5074db44",
+          "json_pointer": "/dungeons/caverns_of_gloom/loot/1/item_id"
+        },
+        {
+          "channel": "event_grant",
+          "path": "data/core/events/dungeon_events.json",
+          "sha256": "db368f21178462a95f0bb78028ec8e10441f6467e4a6bb7b3843d6ecaeb20d35",
+          "json_pointer": "/events/0/choices/0/success/effects/0/item_id"
+        },
+        {
+          "channel": "event_grant",
+          "path": "data/core/events/dungeon_events.json",
+          "sha256": "db368f21178462a95f0bb78028ec8e10441f6467e4a6bb7b3843d6ecaeb20d35",
+          "json_pointer": "/events/0/choices/1/effects/2/item_id"
+        },
+        {
+          "channel": "event_grant",
+          "path": "data/core/events/dungeon_events.json",
+          "sha256": "db368f21178462a95f0bb78028ec8e10441f6467e4a6bb7b3843d6ecaeb20d35",
+          "json_pointer": "/events/5/effects/0/item_id"
+        },
+        {
+          "channel": "event_grant",
+          "path": "data/core/events/dungeon_events.json",
+          "sha256": "db368f21178462a95f0bb78028ec8e10441f6467e4a6bb7b3843d6ecaeb20d35",
+          "json_pointer": "/events/5/effects/1/item_id"
+        },
+        {
+          "channel": "event_grant",
+          "path": "data/core/events/forest_events.json",
+          "sha256": "d4510f0da5ad26db2611a506fb58c79c35247610ac61ea39be48d30824feac09",
+          "json_pointer": "/events/5/chain_event/choices/2/success/effects/0/item_id"
+        },
+        {
+          "channel": "event_grant",
+          "path": "data/core/events/mountain_events.json",
+          "sha256": "28c24bea91c714a4c49e7c7b6358adf5dea15b8f06d69dca29ef79542f0a6fd3",
+          "json_pointer": "/events/2/success/effects/0/item_id"
+        },
+        {
+          "channel": "event_grant",
+          "path": "data/core/events/mountain_events.json",
+          "sha256": "28c24bea91c714a4c49e7c7b6358adf5dea15b8f06d69dca29ef79542f0a6fd3",
+          "json_pointer": "/events/5/success/effects/0/item_id"
+        },
+        {
+          "channel": "event_grant",
+          "path": "data/core/events/town_events.json",
+          "sha256": "cc2833d086c100b57a67f114d11888312e7074fdebe601d94151d17e9c310098",
+          "json_pointer": "/events/4/choices/0/reward/item_id"
+        },
+        {
+          "channel": "generated_dungeon_loot",
+          "path": "src/dungeon/dungeon_generator.gd",
+          "sha256": "88af7259bb15ebdba9e864b6fc59468d6a262946f7bde20ac33d8cb64921ca7e",
+          "details": "generate_dungeon intermediate LOOT branch: gold_100, optional potion_healing; tactical override clears these."
+        },
+        {
+          "channel": "monster_reward_metadata",
+          "path": "data/core/monsters/core_monsters.json",
+          "sha256": "33bf505c91476b32f7dd2887dd0caa19521e4a9e206392b8d803090b105eb8c2",
+          "json_pointer": "/1/loot_table/0/item_id",
+          "details": "Loot-table metadata retained; combat currently copies it into entities. This is not proof that a post-combat roll/grant host executes it."
+        },
+        {
+          "channel": "monster_reward_metadata",
+          "path": "data/core/monsters/core_monsters.json",
+          "sha256": "33bf505c91476b32f7dd2887dd0caa19521e4a9e206392b8d803090b105eb8c2",
+          "json_pointer": "/8/loot_table/1/item_id",
+          "details": "Loot-table metadata retained; combat currently copies it into entities. This is not proof that a post-combat roll/grant host executes it."
+        },
+        {
+          "channel": "monster_reward_metadata",
+          "path": "data/core/monsters/core_monsters.json",
+          "sha256": "33bf505c91476b32f7dd2887dd0caa19521e4a9e206392b8d803090b105eb8c2",
+          "json_pointer": "/9/loot_table/1/item_id",
+          "details": "Loot-table metadata retained; combat currently copies it into entities. This is not proof that a post-combat roll/grant host executes it."
+        },
+        {
+          "channel": "monster_reward_metadata",
+          "path": "data/core/monsters/core_monsters.json",
+          "sha256": "33bf505c91476b32f7dd2887dd0caa19521e4a9e206392b8d803090b105eb8c2",
+          "json_pointer": "/9/loot_table/2/item_id",
+          "details": "Loot-table metadata retained; combat currently copies it into entities. This is not proof that a post-combat roll/grant host executes it."
+        }
+      ]
+    },
+    {
+      "candidate_id": "gold_50",
+      "candidate_path": "items/gold_50.json",
+      "evidence": [
+        {
+          "channel": "event_grant",
+          "path": "data/core/events/dungeon_events.json",
+          "sha256": "db368f21178462a95f0bb78028ec8e10441f6467e4a6bb7b3843d6ecaeb20d35",
+          "json_pointer": "/events/0/choices/0/failure/effects/2/item_id"
+        },
+        {
+          "channel": "event_grant",
+          "path": "data/core/events/dungeon_events.json",
+          "sha256": "db368f21178462a95f0bb78028ec8e10441f6467e4a6bb7b3843d6ecaeb20d35",
+          "json_pointer": "/events/4/choices/1/success/effects/0/item_id"
+        },
+        {
+          "channel": "event_grant",
+          "path": "data/core/events/forest_events.json",
+          "sha256": "d4510f0da5ad26db2611a506fb58c79c35247610ac61ea39be48d30824feac09",
+          "json_pointer": "/events/2/choices/1/success/effects/1/item_id"
+        },
+        {
+          "channel": "event_grant",
+          "path": "data/core/events/forest_events.json",
+          "sha256": "d4510f0da5ad26db2611a506fb58c79c35247610ac61ea39be48d30824feac09",
+          "json_pointer": "/events/3/success/effects/0/item_id"
+        },
+        {
+          "channel": "event_grant",
+          "path": "data/core/events/forest_events.json",
+          "sha256": "d4510f0da5ad26db2611a506fb58c79c35247610ac61ea39be48d30824feac09",
+          "json_pointer": "/events/6/choices/0/success/effects/0/item_id"
+        },
+        {
+          "channel": "event_grant",
+          "path": "data/core/events/forest_events.json",
+          "sha256": "d4510f0da5ad26db2611a506fb58c79c35247610ac61ea39be48d30824feac09",
+          "json_pointer": "/events/6/choices/1/effects/0/item_id"
+        },
+        {
+          "channel": "event_grant",
+          "path": "data/core/events/town_events.json",
+          "sha256": "cc2833d086c100b57a67f114d11888312e7074fdebe601d94151d17e9c310098",
+          "json_pointer": "/events/0/choices/0/success/effects/1/item_id"
+        },
+        {
+          "channel": "monster_reward_metadata",
+          "path": "data/core/monsters/core_monsters.json",
+          "sha256": "33bf505c91476b32f7dd2887dd0caa19521e4a9e206392b8d803090b105eb8c2",
+          "json_pointer": "/0/loot_table/0/item_id",
+          "details": "Loot-table metadata retained; combat currently copies it into entities. This is not proof that a post-combat roll/grant host executes it."
+        },
+        {
+          "channel": "monster_reward_metadata",
+          "path": "data/core/monsters/core_monsters.json",
+          "sha256": "33bf505c91476b32f7dd2887dd0caa19521e4a9e206392b8d803090b105eb8c2",
+          "json_pointer": "/2/loot_table/0/item_id",
+          "details": "Loot-table metadata retained; combat currently copies it into entities. This is not proof that a post-combat roll/grant host executes it."
+        },
+        {
+          "channel": "monster_reward_metadata",
+          "path": "data/core/monsters/core_monsters.json",
+          "sha256": "33bf505c91476b32f7dd2887dd0caa19521e4a9e206392b8d803090b105eb8c2",
+          "json_pointer": "/5/loot_table/0/item_id",
+          "details": "Loot-table metadata retained; combat currently copies it into entities. This is not proof that a post-combat roll/grant host executes it."
+        },
+        {
+          "channel": "monster_reward_metadata",
+          "path": "data/core/monsters/core_monsters.json",
+          "sha256": "33bf505c91476b32f7dd2887dd0caa19521e4a9e206392b8d803090b105eb8c2",
+          "json_pointer": "/6/loot_table/0/item_id",
+          "details": "Loot-table metadata retained; combat currently copies it into entities. This is not proof that a post-combat roll/grant host executes it."
+        }
+      ]
+    },
+    {
+      "candidate_id": "gold_dust_25gp",
+      "candidate_path": "items/gold_dust_25gp.json",
+      "evidence": [
+        {
+          "channel": "spell_material",
+          "path": "docs/planning/preparation/crown-spells/arcane_lock.json",
+          "sha256": "c3decd009fa7b253be37a8acda7d10d7c35a7d339db9d9de79f5e56be9b5018b",
+          "json_pointer": "/casting/material"
+        }
+      ]
+    },
+    {
+      "candidate_id": "goodberry_batch",
+      "candidate_path": "items/goodberry_batch.json",
+      "evidence": [
+        {
+          "channel": "spell_created_output",
+          "path": "docs/planning/preparation/crown-spells/goodberry.json",
+          "sha256": "9da8a7f1b1c7873779e9f1628bd68db59a3632b94c2dc5fbf949a779f6af8973",
+          "json_pointer": "/rules"
+        }
+      ]
+    },
+    {
+      "candidate_id": "greataxe",
+      "candidate_path": "../crown-equipment/items/greataxe.json",
+      "evidence": [
+        {
+          "channel": "historical_shop_inventory",
+          "path": "docs/planning/crown-content-scope.md",
+          "sha256": "3bcb9799865f1779aa7da1c1b041a6ac938c33491dfd502641593bf767a8528e",
+          "details": "Pinned 64-ID Windows export inventory; retained below, not rerun here."
+        },
+        {
+          "channel": "source_shop_candidate",
+          "path": "data/core/items/imported_base_items.json",
+          "sha256": "d450331c5dc1756fccc025c42e7f60bc6312a6829e59814e9864878a4abaae42",
+          "json_pointer": "/13",
+          "details": "Positive shop type/value and, for consumables, declared supported effect names. This is a source selection lead, not a loaded availability certification; manifest wins remain authoritative."
+        },
+        {
+          "channel": "pact_weapon_form",
+          "path": "docs/planning/preparation/crown-characters/invocations/pact_of_the_blade.json",
+          "sha256": "ae155ef90caa35d254f685caa6208383178e4d8dd77360795f165e32016b4046",
+          "json_pointer": "/rules"
+        }
+      ]
+    },
+    {
+      "candidate_id": "greatclub",
+      "candidate_path": "items/greatclub.json",
+      "evidence": [
+        {
+          "channel": "historical_shop_inventory",
+          "path": "docs/planning/crown-content-scope.md",
+          "sha256": "3bcb9799865f1779aa7da1c1b041a6ac938c33491dfd502641593bf767a8528e",
+          "details": "Pinned 64-ID Windows export inventory; retained below, not rerun here."
+        },
+        {
+          "channel": "source_shop_candidate",
+          "path": "data/core/items/weapons.json",
+          "sha256": "6f6314edd2f971deea6f5d058e0e5f913757a662b2340a8a01c52d60432e0df5",
+          "json_pointer": "/8",
+          "details": "Positive shop type/value and, for consumables, declared supported effect names. This is a source selection lead, not a loaded availability certification; manifest wins remain authoritative."
+        },
+        {
+          "channel": "pact_weapon_form",
+          "path": "docs/planning/preparation/crown-characters/invocations/pact_of_the_blade.json",
+          "sha256": "ae155ef90caa35d254f685caa6208383178e4d8dd77360795f165e32016b4046",
+          "json_pointer": "/rules"
+        }
+      ]
+    },
+    {
+      "candidate_id": "greatsword",
+      "candidate_path": "../crown-equipment/items/greatsword.json",
+      "evidence": [
+        {
+          "channel": "historical_shop_inventory",
+          "path": "docs/planning/crown-content-scope.md",
+          "sha256": "3bcb9799865f1779aa7da1c1b041a6ac938c33491dfd502641593bf767a8528e",
+          "details": "Pinned 64-ID Windows export inventory; retained below, not rerun here."
+        },
+        {
+          "channel": "source_shop_candidate",
+          "path": "data/core/items/imported_base_items.json",
+          "sha256": "d450331c5dc1756fccc025c42e7f60bc6312a6829e59814e9864878a4abaae42",
+          "json_pointer": "/15",
+          "details": "Positive shop type/value and, for consumables, declared supported effect names. This is a source selection lead, not a loaded availability certification; manifest wins remain authoritative."
+        },
+        {
+          "channel": "pact_weapon_form",
+          "path": "docs/planning/preparation/crown-characters/invocations/pact_of_the_blade.json",
+          "sha256": "ae155ef90caa35d254f685caa6208383178e4d8dd77360795f165e32016b4046",
+          "json_pointer": "/rules"
+        }
+      ]
+    },
+    {
+      "candidate_id": "halberd",
+      "candidate_path": "items/halberd.json",
+      "evidence": [
+        {
+          "channel": "historical_shop_inventory",
+          "path": "docs/planning/crown-content-scope.md",
+          "sha256": "3bcb9799865f1779aa7da1c1b041a6ac938c33491dfd502641593bf767a8528e",
+          "details": "Pinned 64-ID Windows export inventory; retained below, not rerun here."
+        },
+        {
+          "channel": "source_shop_candidate",
+          "path": "data/core/items/imported_base_items.json",
+          "sha256": "d450331c5dc1756fccc025c42e7f60bc6312a6829e59814e9864878a4abaae42",
+          "json_pointer": "/16",
+          "details": "Positive shop type/value and, for consumables, declared supported effect names. This is a source selection lead, not a loaded availability certification; manifest wins remain authoritative."
+        },
+        {
+          "channel": "pact_weapon_form",
+          "path": "docs/planning/preparation/crown-characters/invocations/pact_of_the_blade.json",
+          "sha256": "ae155ef90caa35d254f685caa6208383178e4d8dd77360795f165e32016b4046",
+          "json_pointer": "/rules"
+        }
+      ]
+    },
+    {
+      "candidate_id": "half_plate_armor",
+      "candidate_path": "items/half_plate_armor.json",
+      "evidence": [
+        {
+          "channel": "historical_shop_inventory",
+          "path": "docs/planning/crown-content-scope.md",
+          "sha256": "3bcb9799865f1779aa7da1c1b041a6ac938c33491dfd502641593bf767a8528e",
+          "details": "Pinned 64-ID Windows export inventory; retained below, not rerun here."
+        },
+        {
+          "channel": "source_shop_candidate",
+          "path": "data/core/items/imported_base_items.json",
+          "sha256": "d450331c5dc1756fccc025c42e7f60bc6312a6829e59814e9864878a4abaae42",
+          "json_pointer": "/17",
+          "details": "Positive shop type/value and, for consumables, declared supported effect names. This is a source selection lead, not a loaded availability certification; manifest wins remain authoritative."
+        }
+      ]
+    },
+    {
+      "candidate_id": "hand_crossbow",
+      "candidate_path": "items/hand_crossbow.json",
+      "evidence": [
+        {
+          "channel": "historical_shop_inventory",
+          "path": "docs/planning/crown-content-scope.md",
+          "sha256": "3bcb9799865f1779aa7da1c1b041a6ac938c33491dfd502641593bf767a8528e",
+          "details": "Pinned 64-ID Windows export inventory; retained below, not rerun here."
+        },
+        {
+          "channel": "source_shop_candidate",
+          "path": "data/core/items/imported_base_items.json",
+          "sha256": "d450331c5dc1756fccc025c42e7f60bc6312a6829e59814e9864878a4abaae42",
+          "json_pointer": "/18",
+          "details": "Positive shop type/value and, for consumables, declared supported effect names. This is a source selection lead, not a loaded availability certification; manifest wins remain authoritative."
+        }
+      ]
+    },
+    {
+      "candidate_id": "handaxe",
+      "candidate_path": "../crown-equipment/items/handaxe.json",
+      "evidence": [
+        {
+          "channel": "historical_shop_inventory",
+          "path": "docs/planning/crown-content-scope.md",
+          "sha256": "3bcb9799865f1779aa7da1c1b041a6ac938c33491dfd502641593bf767a8528e",
+          "details": "Pinned 64-ID Windows export inventory; retained below, not rerun here."
+        },
+        {
+          "channel": "source_shop_candidate",
+          "path": "data/core/items/imported_base_items.json",
+          "sha256": "d450331c5dc1756fccc025c42e7f60bc6312a6829e59814e9864878a4abaae42",
+          "json_pointer": "/19",
+          "details": "Positive shop type/value and, for consumables, declared supported effect names. This is a source selection lead, not a loaded availability certification; manifest wins remain authoritative."
+        },
+        {
+          "channel": "pact_weapon_form",
+          "path": "docs/planning/preparation/crown-characters/invocations/pact_of_the_blade.json",
+          "sha256": "ae155ef90caa35d254f685caa6208383178e4d8dd77360795f165e32016b4046",
+          "json_pointer": "/rules"
+        }
+      ]
+    },
+    {
+      "candidate_id": "heavy_crossbow",
+      "candidate_path": "items/heavy_crossbow.json",
+      "evidence": [
+        {
+          "channel": "historical_shop_inventory",
+          "path": "docs/planning/crown-content-scope.md",
+          "sha256": "3bcb9799865f1779aa7da1c1b041a6ac938c33491dfd502641593bf767a8528e",
+          "details": "Pinned 64-ID Windows export inventory; retained below, not rerun here."
+        },
+        {
+          "channel": "source_shop_candidate",
+          "path": "data/core/items/imported_base_items.json",
+          "sha256": "d450331c5dc1756fccc025c42e7f60bc6312a6829e59814e9864878a4abaae42",
+          "json_pointer": "/20",
+          "details": "Positive shop type/value and, for consumables, declared supported effect names. This is a source selection lead, not a loaded availability certification; manifest wins remain authoritative."
+        }
+      ]
+    },
+    {
+      "candidate_id": "hide_armor",
+      "candidate_path": "items/hide_armor.json",
+      "evidence": [
+        {
+          "channel": "historical_shop_inventory",
+          "path": "docs/planning/crown-content-scope.md",
+          "sha256": "3bcb9799865f1779aa7da1c1b041a6ac938c33491dfd502641593bf767a8528e",
+          "details": "Pinned 64-ID Windows export inventory; retained below, not rerun here."
+        },
+        {
+          "channel": "source_shop_candidate",
+          "path": "data/core/items/imported_base_items.json",
+          "sha256": "d450331c5dc1756fccc025c42e7f60bc6312a6829e59814e9864878a4abaae42",
+          "json_pointer": "/21",
+          "details": "Positive shop type/value and, for consumables, declared supported effect names. This is a source selection lead, not a loaded availability certification; manifest wins remain authoritative."
+        }
+      ]
+    },
+    {
+      "candidate_id": "holy_symbol",
+      "candidate_path": "../crown-equipment/items/holy_symbol.json",
+      "evidence": [
+        {
+          "channel": "companion_class_seed",
+          "path": "data/core/classes/cleric.json",
+          "sha256": "370d2a37dcbf5b78b5289873c8a42e000bedeb5383b3cebafb3c2f10f7450620",
+          "json_pointer": "/starting_equipment/3",
+          "details": "aldric: current source initialization lead; intended revised package stays in equipment set."
+        },
+        {
+          "channel": "spell_material",
+          "path": "docs/planning/preparation/crown-spells/bless.json",
+          "sha256": "8f59b1ebd5b7536eb513134ea2fb65fe58144b32552b64ee17ce45504054bf4c",
+          "json_pointer": "/casting/material"
+        }
+      ]
+    },
+    {
+      "candidate_id": "holy_water",
+      "candidate_path": "../crown-equipment/items/holy_water.json",
+      "evidence": [
+        {
+          "channel": "spell_material",
+          "path": "docs/planning/preparation/crown-spells/protection_from_evil_and_good.json",
+          "sha256": "4074cdc678e956db4b9960a220df563782b23b536e16d2edf1e543f844c639f5",
+          "json_pointer": "/casting/material"
+        }
+      ]
+    },
+    {
+      "candidate_id": "incense_10gp",
+      "candidate_path": "items/incense_10gp.json",
+      "evidence": [
+        {
+          "channel": "historical_shop_inventory",
+          "path": "docs/planning/crown-content-scope.md",
+          "sha256": "3bcb9799865f1779aa7da1c1b041a6ac938c33491dfd502641593bf767a8528e",
+          "details": "Pinned 64-ID Windows export inventory; retained below, not rerun here."
+        },
+        {
+          "channel": "source_shop_candidate",
+          "path": "data/core/items/familiar_components.json",
+          "sha256": "ca8b6450af0bf1d092019e0201b9899fb5442ba4ebd51d159eb3abb1b88c4dd9",
+          "json_pointer": "/0",
+          "details": "Positive shop type/value and, for consumables, declared supported effect names. This is a source selection lead, not a loaded availability certification; manifest wins remain authoritative."
+        },
+        {
+          "channel": "spell_material",
+          "path": "docs/planning/preparation/crown-spells/find_familiar.json",
+          "sha256": "b4d4813a1cedd5ba3f5a37f3028598d2a67c2e27b0132358071387563e3ba35a",
+          "json_pointer": "/casting/material"
+        }
+      ]
+    },
+    {
+      "candidate_id": "ink",
+      "candidate_path": "../crown-equipment/items/ink.json",
+      "evidence": [
+        {
+          "channel": "spell_material",
+          "path": "docs/planning/preparation/crown-spells/illusory_script.json",
+          "sha256": "8c38e442468c60dd1d3256e2080c5cca8bf4336cfc03666729769ee25031c189",
+          "json_pointer": "/casting/material"
+        }
+      ]
+    },
+    {
+      "candidate_id": "jade_dust_10gp",
+      "candidate_path": "items/jade_dust_10gp.json",
+      "evidence": [
+        {
+          "channel": "spell_material",
+          "path": "docs/planning/preparation/crown-spells/magic_mouth.json",
+          "sha256": "817d042c66adde4af4816dfdf762d3de995f148c6f4a6674757b06d0b46b0e24",
+          "json_pointer": "/casting/material"
+        }
+      ]
+    },
+    {
+      "candidate_id": "javelin",
+      "candidate_path": "../crown-equipment/items/javelin.json",
+      "evidence": [
+        {
+          "channel": "historical_shop_inventory",
+          "path": "docs/planning/crown-content-scope.md",
+          "sha256": "3bcb9799865f1779aa7da1c1b041a6ac938c33491dfd502641593bf767a8528e",
+          "details": "Pinned 64-ID Windows export inventory; retained below, not rerun here."
+        },
+        {
+          "channel": "source_shop_candidate",
+          "path": "data/core/items/weapons.json",
+          "sha256": "6f6314edd2f971deea6f5d058e0e5f913757a662b2340a8a01c52d60432e0df5",
+          "json_pointer": "/9",
+          "details": "Positive shop type/value and, for consumables, declared supported effect names. This is a source selection lead, not a loaded availability certification; manifest wins remain authoritative."
+        },
+        {
+          "channel": "pact_weapon_form",
+          "path": "docs/planning/preparation/crown-characters/invocations/pact_of_the_blade.json",
+          "sha256": "ae155ef90caa35d254f685caa6208383178e4d8dd77360795f165e32016b4046",
+          "json_pointer": "/rules"
+        }
+      ]
+    },
+    {
+      "candidate_id": "lance",
+      "candidate_path": "items/lance.json",
+      "evidence": [
+        {
+          "channel": "historical_shop_inventory",
+          "path": "docs/planning/crown-content-scope.md",
+          "sha256": "3bcb9799865f1779aa7da1c1b041a6ac938c33491dfd502641593bf767a8528e",
+          "details": "Pinned 64-ID Windows export inventory; retained below, not rerun here."
+        },
+        {
+          "channel": "source_shop_candidate",
+          "path": "data/core/items/imported_base_items.json",
+          "sha256": "d450331c5dc1756fccc025c42e7f60bc6312a6829e59814e9864878a4abaae42",
+          "json_pointer": "/24",
+          "details": "Positive shop type/value and, for consumables, declared supported effect names. This is a source selection lead, not a loaded availability certification; manifest wins remain authoritative."
+        },
+        {
+          "channel": "pact_weapon_form",
+          "path": "docs/planning/preparation/crown-characters/invocations/pact_of_the_blade.json",
+          "sha256": "ae155ef90caa35d254f685caa6208383178e4d8dd77360795f165e32016b4046",
+          "json_pointer": "/rules"
+        }
+      ]
+    },
+    {
+      "candidate_id": "lantern_bullseye",
+      "candidate_path": "../crown-equipment/items/lantern_bullseye.json",
+      "evidence": [
+        {
+          "channel": "historical_shop_inventory",
+          "path": "docs/planning/crown-content-scope.md",
+          "sha256": "3bcb9799865f1779aa7da1c1b041a6ac938c33491dfd502641593bf767a8528e",
+          "details": "Pinned 64-ID Windows export inventory; retained below, not rerun here."
+        },
+        {
+          "channel": "source_shop_candidate",
+          "path": "data/core/items/srd_gear.json",
+          "sha256": "ed873f9a0967f5bb6e20241428e4f53b92c011fa547321af69798ece822b57d4",
+          "json_pointer": "/22",
+          "details": "Positive shop type/value and, for consumables, declared supported effect names. This is a source selection lead, not a loaded availability certification; manifest wins remain authoritative."
+        }
+      ]
+    },
+    {
+      "candidate_id": "leather_armor",
+      "candidate_path": "../crown-equipment/items/leather_armor.json",
+      "evidence": [
+        {
+          "channel": "historical_shop_inventory",
+          "path": "docs/planning/crown-content-scope.md",
+          "sha256": "3bcb9799865f1779aa7da1c1b041a6ac938c33491dfd502641593bf767a8528e",
+          "details": "Pinned 64-ID Windows export inventory; retained below, not rerun here."
+        },
+        {
+          "channel": "source_shop_candidate",
+          "path": "data/core/items/armor.json",
+          "sha256": "a54147bee457f31cff9b7003814837328d43e617d3e24ab0195c876d13cd1c01",
+          "json_pointer": "/0",
+          "details": "Positive shop type/value and, for consumables, declared supported effect names. This is a source selection lead, not a loaded availability certification; manifest wins remain authoritative."
+        },
+        {
+          "channel": "companion_class_seed",
+          "path": "data/core/classes/ranger.json",
+          "sha256": "4f769bc8eb56b3dd19a8d9ee10c0be3743e0176df61a9ec0c0bd15e56a5e840a",
+          "json_pointer": "/starting_equipment/0",
+          "details": "mira: current source initialization lead; intended revised package stays in equipment set."
+        },
+        {
+          "channel": "companion_class_seed",
+          "path": "data/core/classes/rogue.json",
+          "sha256": "c272d35beebef5449232bcef4e5eaf0743ffa9dee2288b95050c6c6c1f9fcda7",
+          "json_pointer": "/starting_equipment/0",
+          "details": "rowan: current source initialization lead; intended revised package stays in equipment set."
+        }
+      ]
+    },
+    {
+      "candidate_id": "light_crossbow",
+      "candidate_path": "items/light_crossbow.json",
+      "evidence": [
+        {
+          "channel": "historical_shop_inventory",
+          "path": "docs/planning/crown-content-scope.md",
+          "sha256": "3bcb9799865f1779aa7da1c1b041a6ac938c33491dfd502641593bf767a8528e",
+          "details": "Pinned 64-ID Windows export inventory; retained below, not rerun here."
+        },
+        {
+          "channel": "source_shop_candidate",
+          "path": "data/core/items/imported_base_items.json",
+          "sha256": "d450331c5dc1756fccc025c42e7f60bc6312a6829e59814e9864878a4abaae42",
+          "json_pointer": "/28",
+          "details": "Positive shop type/value and, for consumables, declared supported effect names. This is a source selection lead, not a loaded availability certification; manifest wins remain authoritative."
+        }
+      ]
+    },
+    {
+      "candidate_id": "light_hammer",
+      "candidate_path": "items/light_hammer.json",
+      "evidence": [
+        {
+          "channel": "historical_shop_inventory",
+          "path": "docs/planning/crown-content-scope.md",
+          "sha256": "3bcb9799865f1779aa7da1c1b041a6ac938c33491dfd502641593bf767a8528e",
+          "details": "Pinned 64-ID Windows export inventory; retained below, not rerun here."
+        },
+        {
+          "channel": "source_shop_candidate",
+          "path": "data/core/items/imported_base_items.json",
+          "sha256": "d450331c5dc1756fccc025c42e7f60bc6312a6829e59814e9864878a4abaae42",
+          "json_pointer": "/29",
+          "details": "Positive shop type/value and, for consumables, declared supported effect names. This is a source selection lead, not a loaded availability certification; manifest wins remain authoritative."
+        },
+        {
+          "channel": "pact_weapon_form",
+          "path": "docs/planning/preparation/crown-characters/invocations/pact_of_the_blade.json",
+          "sha256": "ae155ef90caa35d254f685caa6208383178e4d8dd77360795f165e32016b4046",
+          "json_pointer": "/rules"
+        }
+      ]
+    },
+    {
+      "candidate_id": "longbow",
+      "candidate_path": "../crown-equipment/items/longbow.json",
+      "evidence": [
+        {
+          "channel": "historical_shop_inventory",
+          "path": "docs/planning/crown-content-scope.md",
+          "sha256": "3bcb9799865f1779aa7da1c1b041a6ac938c33491dfd502641593bf767a8528e",
+          "details": "Pinned 64-ID Windows export inventory; retained below, not rerun here."
+        },
+        {
+          "channel": "source_shop_candidate",
+          "path": "data/core/items/imported_base_items.json",
+          "sha256": "d450331c5dc1756fccc025c42e7f60bc6312a6829e59814e9864878a4abaae42",
+          "json_pointer": "/30",
+          "details": "Positive shop type/value and, for consumables, declared supported effect names. This is a source selection lead, not a loaded availability certification; manifest wins remain authoritative."
+        },
+        {
+          "channel": "companion_class_seed",
+          "path": "data/core/classes/ranger.json",
+          "sha256": "4f769bc8eb56b3dd19a8d9ee10c0be3743e0176df61a9ec0c0bd15e56a5e840a",
+          "json_pointer": "/starting_equipment/1",
+          "details": "mira: current source initialization lead; intended revised package stays in equipment set."
+        }
+      ]
+    },
+    {
+      "candidate_id": "longsword",
+      "candidate_path": "../crown-equipment/items/longsword.json",
+      "evidence": [
+        {
+          "channel": "historical_shop_inventory",
+          "path": "docs/planning/crown-content-scope.md",
+          "sha256": "3bcb9799865f1779aa7da1c1b041a6ac938c33491dfd502641593bf767a8528e",
+          "details": "Pinned 64-ID Windows export inventory; retained below, not rerun here."
+        },
+        {
+          "channel": "source_shop_candidate",
+          "path": "data/core/items/imported_base_items.json",
+          "sha256": "d450331c5dc1756fccc025c42e7f60bc6312a6829e59814e9864878a4abaae42",
+          "json_pointer": "/31",
+          "details": "Positive shop type/value and, for consumables, declared supported effect names. This is a source selection lead, not a loaded availability certification; manifest wins remain authoritative."
+        },
+        {
+          "channel": "monster_reward_metadata",
+          "path": "data/core/monsters/core_monsters.json",
+          "sha256": "33bf505c91476b32f7dd2887dd0caa19521e4a9e206392b8d803090b105eb8c2",
+          "json_pointer": "/8/loot_table/0/item_id",
+          "details": "Loot-table metadata retained; combat currently copies it into entities. This is not proof that a post-combat roll/grant host executes it."
+        },
+        {
+          "channel": "pact_weapon_form",
+          "path": "docs/planning/preparation/crown-characters/invocations/pact_of_the_blade.json",
+          "sha256": "ae155ef90caa35d254f685caa6208383178e4d8dd77360795f165e32016b4046",
+          "json_pointer": "/rules"
+        }
+      ]
+    },
+    {
+      "candidate_id": "mace",
+      "candidate_path": "../crown-equipment/items/mace.json",
+      "evidence": [
+        {
+          "channel": "historical_shop_inventory",
+          "path": "docs/planning/crown-content-scope.md",
+          "sha256": "3bcb9799865f1779aa7da1c1b041a6ac938c33491dfd502641593bf767a8528e",
+          "details": "Pinned 64-ID Windows export inventory; retained below, not rerun here."
+        },
+        {
+          "channel": "source_shop_candidate",
+          "path": "data/core/items/imported_base_items.json",
+          "sha256": "d450331c5dc1756fccc025c42e7f60bc6312a6829e59814e9864878a4abaae42",
+          "json_pointer": "/32",
+          "details": "Positive shop type/value and, for consumables, declared supported effect names. This is a source selection lead, not a loaded availability certification; manifest wins remain authoritative."
+        },
+        {
+          "channel": "companion_class_seed",
+          "path": "data/core/classes/cleric.json",
+          "sha256": "370d2a37dcbf5b78b5289873c8a42e000bedeb5383b3cebafb3c2f10f7450620",
+          "json_pointer": "/starting_equipment/2",
+          "details": "aldric: current source initialization lead; intended revised package stays in equipment set."
+        },
+        {
+          "channel": "pact_weapon_form",
+          "path": "docs/planning/preparation/crown-characters/invocations/pact_of_the_blade.json",
+          "sha256": "ae155ef90caa35d254f685caa6208383178e4d8dd77360795f165e32016b4046",
+          "json_pointer": "/rules"
+        }
+      ]
+    },
+    {
+      "candidate_id": "maul",
+      "candidate_path": "items/maul.json",
+      "evidence": [
+        {
+          "channel": "historical_shop_inventory",
+          "path": "docs/planning/crown-content-scope.md",
+          "sha256": "3bcb9799865f1779aa7da1c1b041a6ac938c33491dfd502641593bf767a8528e",
+          "details": "Pinned 64-ID Windows export inventory; retained below, not rerun here."
+        },
+        {
+          "channel": "source_shop_candidate",
+          "path": "data/core/items/imported_base_items.json",
+          "sha256": "d450331c5dc1756fccc025c42e7f60bc6312a6829e59814e9864878a4abaae42",
+          "json_pointer": "/33",
+          "details": "Positive shop type/value and, for consumables, declared supported effect names. This is a source selection lead, not a loaded availability certification; manifest wins remain authoritative."
+        },
+        {
+          "channel": "pact_weapon_form",
+          "path": "docs/planning/preparation/crown-characters/invocations/pact_of_the_blade.json",
+          "sha256": "ae155ef90caa35d254f685caa6208383178e4d8dd77360795f165e32016b4046",
+          "json_pointer": "/rules"
+        }
+      ]
+    },
+    {
+      "candidate_id": "morningstar",
+      "candidate_path": "items/morningstar.json",
+      "evidence": [
+        {
+          "channel": "historical_shop_inventory",
+          "path": "docs/planning/crown-content-scope.md",
+          "sha256": "3bcb9799865f1779aa7da1c1b041a6ac938c33491dfd502641593bf767a8528e",
+          "details": "Pinned 64-ID Windows export inventory; retained below, not rerun here."
+        },
+        {
+          "channel": "source_shop_candidate",
+          "path": "data/core/items/imported_base_items.json",
+          "sha256": "d450331c5dc1756fccc025c42e7f60bc6312a6829e59814e9864878a4abaae42",
+          "json_pointer": "/34",
+          "details": "Positive shop type/value and, for consumables, declared supported effect names. This is a source selection lead, not a loaded availability certification; manifest wins remain authoritative."
+        },
+        {
+          "channel": "pact_weapon_form",
+          "path": "docs/planning/preparation/crown-characters/invocations/pact_of_the_blade.json",
+          "sha256": "ae155ef90caa35d254f685caa6208383178e4d8dd77360795f165e32016b4046",
+          "json_pointer": "/rules"
+        }
+      ]
+    },
+    {
+      "candidate_id": "mushroom_powder_25gp",
+      "candidate_path": "items/mushroom_powder_25gp.json",
+      "evidence": [
+        {
+          "channel": "historical_shop_inventory",
+          "path": "docs/planning/crown-content-scope.md",
+          "sha256": "3bcb9799865f1779aa7da1c1b041a6ac938c33491dfd502641593bf767a8528e",
+          "details": "Pinned 64-ID Windows export inventory; retained below, not rerun here."
+        },
+        {
+          "channel": "source_shop_candidate",
+          "path": "data/core/items/srd_gear.json",
+          "sha256": "ed873f9a0967f5bb6e20241428e4f53b92c011fa547321af69798ece822b57d4",
+          "json_pointer": "/47",
+          "details": "Positive shop type/value and, for consumables, declared supported effect names. This is a source selection lead, not a loaded availability certification; manifest wins remain authoritative."
+        }
+      ]
+    },
+    {
+      "candidate_id": "musket",
+      "candidate_path": "items/musket.json",
+      "evidence": [
+        {
+          "channel": "historical_shop_inventory",
+          "path": "docs/planning/crown-content-scope.md",
+          "sha256": "3bcb9799865f1779aa7da1c1b041a6ac938c33491dfd502641593bf767a8528e",
+          "details": "Pinned 64-ID Windows export inventory; retained below, not rerun here."
+        },
+        {
+          "channel": "source_shop_candidate",
+          "path": "data/core/items/imported_base_items.json",
+          "sha256": "d450331c5dc1756fccc025c42e7f60bc6312a6829e59814e9864878a4abaae42",
+          "json_pointer": "/35",
+          "details": "Positive shop type/value and, for consumables, declared supported effect names. This is a source selection lead, not a loaded availability certification; manifest wins remain authoritative."
+        }
+      ]
+    },
+    {
+      "candidate_id": "needles",
+      "candidate_path": "items/needles.json",
+      "evidence": [
+        {
+          "channel": "weapon_ammunition_dependency",
+          "candidate_ids": [
+            "blowgun"
+          ],
+          "source": "SRD 5.2.1 p.91"
+        }
+      ]
+    },
+    {
+      "candidate_id": "net",
+      "candidate_path": "items/net.json",
+      "evidence": [
+        {
+          "channel": "historical_shop_inventory",
+          "path": "docs/planning/crown-content-scope.md",
+          "sha256": "3bcb9799865f1779aa7da1c1b041a6ac938c33491dfd502641593bf767a8528e",
+          "details": "Pinned 64-ID Windows export inventory; retained below, not rerun here."
+        },
+        {
+          "channel": "source_shop_candidate",
+          "path": "data/core/items/imported_base_items.json",
+          "sha256": "d450331c5dc1756fccc025c42e7f60bc6312a6829e59814e9864878a4abaae42",
+          "json_pointer": "/36",
+          "details": "Positive shop type/value and, for consumables, declared supported effect names. This is a source selection lead, not a loaded availability certification; manifest wins remain authoritative."
+        }
+      ]
+    },
+    {
+      "candidate_id": "pact_weapon",
+      "candidate_path": "items/pact_weapon.json",
+      "evidence": [
+        {
+          "channel": "character_created_output",
+          "path": "docs/planning/preparation/crown-characters/invocations/pact_of_the_blade.json",
+          "sha256": "ae155ef90caa35d254f685caa6208383178e4d8dd77360795f165e32016b4046",
+          "json_pointer": "/rules"
+        }
+      ]
+    },
+    {
+      "candidate_id": "padded_armor",
+      "candidate_path": "items/padded_armor.json",
+      "evidence": [
+        {
+          "channel": "historical_shop_inventory",
+          "path": "docs/planning/crown-content-scope.md",
+          "sha256": "3bcb9799865f1779aa7da1c1b041a6ac938c33491dfd502641593bf767a8528e",
+          "details": "Pinned 64-ID Windows export inventory; retained below, not rerun here."
+        },
+        {
+          "channel": "source_shop_candidate",
+          "path": "data/core/items/imported_base_items.json",
+          "sha256": "d450331c5dc1756fccc025c42e7f60bc6312a6829e59814e9864878a4abaae42",
+          "json_pointer": "/37",
+          "details": "Positive shop type/value and, for consumables, declared supported effect names. This is a source selection lead, not a loaded availability certification; manifest wins remain authoritative."
+        }
+      ]
+    },
+    {
+      "candidate_id": "pearl_100gp",
+      "candidate_path": "items/pearl_100gp.json",
+      "evidence": [
+        {
+          "channel": "historical_shop_inventory",
+          "path": "docs/planning/crown-content-scope.md",
+          "sha256": "3bcb9799865f1779aa7da1c1b041a6ac938c33491dfd502641593bf767a8528e",
+          "details": "Pinned 64-ID Windows export inventory; retained below, not rerun here."
+        },
+        {
+          "channel": "source_shop_candidate",
+          "path": "data/core/items/srd_gear.json",
+          "sha256": "ed873f9a0967f5bb6e20241428e4f53b92c011fa547321af69798ece822b57d4",
+          "json_pointer": "/48",
+          "details": "Positive shop type/value and, for consumables, declared supported effect names. This is a source selection lead, not a loaded availability certification; manifest wins remain authoritative."
+        },
+        {
+          "channel": "spell_material",
+          "path": "docs/planning/preparation/crown-spells/identify.json",
+          "sha256": "bb28513b7aab36c77a6083135603ec5e3fe6b260e8aefe3c9c6841d1ceb2e843",
+          "json_pointer": "/casting/material"
+        }
+      ]
+    },
+    {
+      "candidate_id": "pike",
+      "candidate_path": "items/pike.json",
+      "evidence": [
+        {
+          "channel": "historical_shop_inventory",
+          "path": "docs/planning/crown-content-scope.md",
+          "sha256": "3bcb9799865f1779aa7da1c1b041a6ac938c33491dfd502641593bf767a8528e",
+          "details": "Pinned 64-ID Windows export inventory; retained below, not rerun here."
+        },
+        {
+          "channel": "source_shop_candidate",
+          "path": "data/core/items/imported_base_items.json",
+          "sha256": "d450331c5dc1756fccc025c42e7f60bc6312a6829e59814e9864878a4abaae42",
+          "json_pointer": "/38",
+          "details": "Positive shop type/value and, for consumables, declared supported effect names. This is a source selection lead, not a loaded availability certification; manifest wins remain authoritative."
+        },
+        {
+          "channel": "pact_weapon_form",
+          "path": "docs/planning/preparation/crown-characters/invocations/pact_of_the_blade.json",
+          "sha256": "ae155ef90caa35d254f685caa6208383178e4d8dd77360795f165e32016b4046",
+          "json_pointer": "/rules"
+        }
+      ]
+    },
+    {
+      "candidate_id": "pistol",
+      "candidate_path": "items/pistol.json",
+      "evidence": [
+        {
+          "channel": "historical_shop_inventory",
+          "path": "docs/planning/crown-content-scope.md",
+          "sha256": "3bcb9799865f1779aa7da1c1b041a6ac938c33491dfd502641593bf767a8528e",
+          "details": "Pinned 64-ID Windows export inventory; retained below, not rerun here."
+        },
+        {
+          "channel": "source_shop_candidate",
+          "path": "data/core/items/imported_base_items.json",
+          "sha256": "d450331c5dc1756fccc025c42e7f60bc6312a6829e59814e9864878a4abaae42",
+          "json_pointer": "/39",
+          "details": "Positive shop type/value and, for consumables, declared supported effect names. This is a source selection lead, not a loaded availability certification; manifest wins remain authoritative."
+        }
+      ]
+    },
+    {
+      "candidate_id": "plate_armor",
+      "candidate_path": "items/plate_armor.json",
+      "evidence": [
+        {
+          "channel": "historical_shop_inventory",
+          "path": "docs/planning/crown-content-scope.md",
+          "sha256": "3bcb9799865f1779aa7da1c1b041a6ac938c33491dfd502641593bf767a8528e",
+          "details": "Pinned 64-ID Windows export inventory; retained below, not rerun here."
+        },
+        {
+          "channel": "source_shop_candidate",
+          "path": "data/core/items/imported_base_items.json",
+          "sha256": "d450331c5dc1756fccc025c42e7f60bc6312a6829e59814e9864878a4abaae42",
+          "json_pointer": "/40",
+          "details": "Positive shop type/value and, for consumables, declared supported effect names. This is a source selection lead, not a loaded availability certification; manifest wins remain authoritative."
+        }
+      ]
+    },
+    {
+      "candidate_id": "platinum_ring_50gp",
+      "candidate_path": "items/platinum_ring_50gp.json",
+      "evidence": [
+        {
+          "channel": "spell_material",
+          "path": "docs/planning/preparation/crown-spells/warding_bond.json",
+          "sha256": "4780155f53a68dc7a291764dc3dd1aa708686ca852c060dec9ce3fdeebc50752",
+          "json_pointer": "/casting/material"
+        }
+      ]
+    },
+    {
+      "candidate_id": "potion_greater_healing",
+      "candidate_path": "items/potion_greater_healing.json",
+      "evidence": [
+        {
+          "channel": "historical_shop_inventory",
+          "path": "docs/planning/crown-content-scope.md",
+          "sha256": "3bcb9799865f1779aa7da1c1b041a6ac938c33491dfd502641593bf767a8528e",
+          "details": "Pinned 64-ID Windows export inventory; retained below, not rerun here."
+        },
+        {
+          "channel": "source_shop_candidate",
+          "path": "data/core/items/consumables.json",
+          "sha256": "045f413d89391312c1e3a175351f90427accde8f21b8d087abc1d6c5d9c3ec2d",
+          "json_pointer": "/1",
+          "details": "Positive shop type/value and, for consumables, declared supported effect names. This is a source selection lead, not a loaded availability certification; manifest wins remain authoritative."
+        },
+        {
+          "channel": "campaign_goal_loot_or_tactical_object",
+          "path": "data/core/campaigns/the_lost_crown.json",
+          "sha256": "3352b2d22be36e68591bfdf4ec73b8201f2bec6c69a3a60b0c8beb7d5074db44",
+          "json_pointer": "/dungeons/caverns_of_gloom/loot/2/item_id"
+        },
+        {
+          "channel": "event_grant",
+          "path": "data/core/events/dungeon_events.json",
+          "sha256": "db368f21178462a95f0bb78028ec8e10441f6467e4a6bb7b3843d6ecaeb20d35",
+          "json_pointer": "/events/5/effects/2/item_id"
+        },
+        {
+          "channel": "monster_reward_metadata",
+          "path": "data/core/monsters/core_monsters.json",
+          "sha256": "33bf505c91476b32f7dd2887dd0caa19521e4a9e206392b8d803090b105eb8c2",
+          "json_pointer": "/9/loot_table/3/item_id",
+          "details": "Loot-table metadata retained; combat currently copies it into entities. This is not proof that a post-combat roll/grant host executes it."
+        }
+      ]
+    },
+    {
+      "candidate_id": "potion_healing",
+      "candidate_path": "items/potion_healing.json",
+      "evidence": [
+        {
+          "channel": "historical_shop_inventory",
+          "path": "docs/planning/crown-content-scope.md",
+          "sha256": "3bcb9799865f1779aa7da1c1b041a6ac938c33491dfd502641593bf767a8528e",
+          "details": "Pinned 64-ID Windows export inventory; retained below, not rerun here."
+        },
+        {
+          "channel": "source_shop_candidate",
+          "path": "data/core/items/consumables.json",
+          "sha256": "045f413d89391312c1e3a175351f90427accde8f21b8d087abc1d6c5d9c3ec2d",
+          "json_pointer": "/0",
+          "details": "Positive shop type/value and, for consumables, declared supported effect names. This is a source selection lead, not a loaded availability certification; manifest wins remain authoritative."
+        },
+        {
+          "channel": "campaign_goal_loot_or_tactical_object",
+          "path": "data/core/campaigns/the_lost_crown.json",
+          "sha256": "3352b2d22be36e68591bfdf4ec73b8201f2bec6c69a3a60b0c8beb7d5074db44",
+          "json_pointer": "/dungeons/ruins_of_ashvale/tactical_rooms/1/objects/1/contents/0"
+        },
+        {
+          "channel": "campaign_goal_loot_or_tactical_object",
+          "path": "data/core/campaigns/the_lost_crown.json",
+          "sha256": "3352b2d22be36e68591bfdf4ec73b8201f2bec6c69a3a60b0c8beb7d5074db44",
+          "json_pointer": "/dungeons/ruins_of_ashvale/tactical_rooms/1/objects/1/contents/1"
+        },
+        {
+          "channel": "event_grant",
+          "path": "data/core/events/dungeon_events.json",
+          "sha256": "db368f21178462a95f0bb78028ec8e10441f6467e4a6bb7b3843d6ecaeb20d35",
+          "json_pointer": "/events/0/choices/0/success/effects/1/item_id"
+        },
+        {
+          "channel": "event_grant",
+          "path": "data/core/events/forest_events.json",
+          "sha256": "d4510f0da5ad26db2611a506fb58c79c35247610ac61ea39be48d30824feac09",
+          "json_pointer": "/events/2/choices/1/success/effects/0/item_id"
+        },
+        {
+          "channel": "event_grant",
+          "path": "data/core/events/forest_events.json",
+          "sha256": "d4510f0da5ad26db2611a506fb58c79c35247610ac61ea39be48d30824feac09",
+          "json_pointer": "/events/3/success/effects/1/item_id"
+        },
+        {
+          "channel": "event_grant",
+          "path": "data/core/events/mountain_events.json",
+          "sha256": "28c24bea91c714a4c49e7c7b6358adf5dea15b8f06d69dca29ef79542f0a6fd3",
+          "json_pointer": "/events/4/choices/1/effects/0/item_id"
+        },
+        {
+          "channel": "generated_dungeon_loot",
+          "path": "src/dungeon/dungeon_generator.gd",
+          "sha256": "88af7259bb15ebdba9e864b6fc59468d6a262946f7bde20ac33d8cb64921ca7e",
+          "details": "generate_dungeon intermediate LOOT branch: gold_100, optional potion_healing; tactical override clears these."
+        },
+        {
+          "channel": "monster_reward_metadata",
+          "path": "data/core/monsters/core_monsters.json",
+          "sha256": "33bf505c91476b32f7dd2887dd0caa19521e4a9e206392b8d803090b105eb8c2",
+          "json_pointer": "/1/loot_table/1/item_id",
+          "details": "Loot-table metadata retained; combat currently copies it into entities. This is not proof that a post-combat roll/grant host executes it."
+        }
+      ]
+    },
+    {
+      "candidate_id": "potion_superior_healing",
+      "candidate_path": "items/potion_superior_healing.json",
+      "evidence": [
+        {
+          "channel": "historical_shop_inventory",
+          "path": "docs/planning/crown-content-scope.md",
+          "sha256": "3bcb9799865f1779aa7da1c1b041a6ac938c33491dfd502641593bf767a8528e",
+          "details": "Pinned 64-ID Windows export inventory; retained below, not rerun here."
+        },
+        {
+          "channel": "source_shop_candidate",
+          "path": "data/core/items/imported_magic_consumables.json",
+          "sha256": "7f3c9209d3a996aa3658277b50ccaa96eaa0a4764f65ef3eed5b905c79dab580",
+          "json_pointer": "/77",
+          "details": "Positive shop type/value and, for consumables, declared supported effect names. This is a source selection lead, not a loaded availability certification; manifest wins remain authoritative."
+        }
+      ]
+    },
+    {
+      "candidate_id": "potion_supreme_healing",
+      "candidate_path": "items/potion_supreme_healing.json",
+      "evidence": [
+        {
+          "channel": "historical_shop_inventory",
+          "path": "docs/planning/crown-content-scope.md",
+          "sha256": "3bcb9799865f1779aa7da1c1b041a6ac938c33491dfd502641593bf767a8528e",
+          "details": "Pinned 64-ID Windows export inventory; retained below, not rerun here."
+        },
+        {
+          "channel": "source_shop_candidate",
+          "path": "data/core/items/imported_magic_consumables.json",
+          "sha256": "7f3c9209d3a996aa3658277b50ccaa96eaa0a4764f65ef3eed5b905c79dab580",
+          "json_pointer": "/79",
+          "details": "Positive shop type/value and, for consumables, declared supported effect names. This is a source selection lead, not a loaded availability certification; manifest wins remain authoritative."
+        }
+      ]
+    },
+    {
+      "candidate_id": "pouch",
+      "candidate_path": "../crown-equipment/items/pouch.json",
+      "evidence": [
+        {
+          "channel": "ammunition_storage_dependency",
+          "candidate_ids": [
+            "firearm_bullets",
+            "sling_bullets",
+            "needles"
+          ],
+          "source": "SRD 5.2.1 p.96; separate storage, not a free grant"
+        }
+      ]
+    },
+    {
+      "candidate_id": "prestidigitation_trinket",
+      "candidate_path": "items/prestidigitation_trinket.json",
+      "evidence": [
+        {
+          "channel": "spell_created_output",
+          "path": "docs/planning/preparation/crown-spells/prestidigitation.json",
+          "sha256": "cde1265c595370cf018486eaa092d7962012fa27fc1f1544130942126a48b719",
+          "json_pointer": "/rules"
+        }
+      ]
+    },
+    {
+      "candidate_id": "priests_pack",
+      "candidate_path": "../crown-equipment/items/priests_pack.json",
+      "evidence": [
+        {
+          "channel": "companion_class_seed",
+          "path": "data/core/classes/cleric.json",
+          "sha256": "370d2a37dcbf5b78b5289873c8a42e000bedeb5383b3cebafb3c2f10f7450620",
+          "json_pointer": "/starting_equipment/4",
+          "details": "aldric: current source initialization lead; intended revised package stays in equipment set."
+        }
+      ]
+    },
+    {
+      "candidate_id": "quarterstaff",
+      "candidate_path": "../crown-equipment/items/quarterstaff.json",
+      "evidence": [
+        {
+          "channel": "historical_shop_inventory",
+          "path": "docs/planning/crown-content-scope.md",
+          "sha256": "3bcb9799865f1779aa7da1c1b041a6ac938c33491dfd502641593bf767a8528e",
+          "details": "Pinned 64-ID Windows export inventory; retained below, not rerun here."
+        },
+        {
+          "channel": "source_shop_candidate",
+          "path": "data/core/items/weapons.json",
+          "sha256": "6f6314edd2f971deea6f5d058e0e5f913757a662b2340a8a01c52d60432e0df5",
+          "json_pointer": "/4",
+          "details": "Positive shop type/value and, for consumables, declared supported effect names. This is a source selection lead, not a loaded availability certification; manifest wins remain authoritative."
+        },
+        {
+          "channel": "pact_weapon_form",
+          "path": "docs/planning/preparation/crown-characters/invocations/pact_of_the_blade.json",
+          "sha256": "ae155ef90caa35d254f685caa6208383178e4d8dd77360795f165e32016b4046",
+          "json_pointer": "/rules"
+        }
+      ]
+    },
+    {
+      "candidate_id": "rapier",
+      "candidate_path": "items/rapier.json",
+      "evidence": [
+        {
+          "channel": "historical_shop_inventory",
+          "path": "docs/planning/crown-content-scope.md",
+          "sha256": "3bcb9799865f1779aa7da1c1b041a6ac938c33491dfd502641593bf767a8528e",
+          "details": "Pinned 64-ID Windows export inventory; retained below, not rerun here."
+        },
+        {
+          "channel": "source_shop_candidate",
+          "path": "data/core/items/imported_base_items.json",
+          "sha256": "d450331c5dc1756fccc025c42e7f60bc6312a6829e59814e9864878a4abaae42",
+          "json_pointer": "/42",
+          "details": "Positive shop type/value and, for consumables, declared supported effect names. This is a source selection lead, not a loaded availability certification; manifest wins remain authoritative."
+        },
+        {
+          "channel": "companion_class_seed",
+          "path": "data/core/classes/rogue.json",
+          "sha256": "c272d35beebef5449232bcef4e5eaf0743ffa9dee2288b95050c6c6c1f9fcda7",
+          "json_pointer": "/starting_equipment/1",
+          "details": "rowan: current source initialization lead; intended revised package stays in equipment set."
+        },
+        {
+          "channel": "pact_weapon_form",
+          "path": "docs/planning/preparation/crown-characters/invocations/pact_of_the_blade.json",
+          "sha256": "ae155ef90caa35d254f685caa6208383178e4d8dd77360795f165e32016b4046",
+          "json_pointer": "/rules"
+        }
+      ]
+    },
+    {
+      "candidate_id": "ring_mail",
+      "candidate_path": "items/ring_mail.json",
+      "evidence": [
+        {
+          "channel": "historical_shop_inventory",
+          "path": "docs/planning/crown-content-scope.md",
+          "sha256": "3bcb9799865f1779aa7da1c1b041a6ac938c33491dfd502641593bf767a8528e",
+          "details": "Pinned 64-ID Windows export inventory; retained below, not rerun here."
+        },
+        {
+          "channel": "source_shop_candidate",
+          "path": "data/core/items/imported_base_items.json",
+          "sha256": "d450331c5dc1756fccc025c42e7f60bc6312a6829e59814e9864878a4abaae42",
+          "json_pointer": "/44",
+          "details": "Positive shop type/value and, for consumables, declared supported effect names. This is a source selection lead, not a loaded availability certification; manifest wins remain authoritative."
+        }
+      ]
+    },
+    {
+      "candidate_id": "rock_gnome_clockwork",
+      "candidate_path": "items/rock_gnome_clockwork.json",
+      "evidence": [
+        {
+          "channel": "character_created_output",
+          "path": "docs/planning/preparation/crown-characters/species/gnome.json",
+          "sha256": "e55968dbba303117dc685f36c1226030da30233b1c3f684dc45f4ab697575407",
+          "json_pointer": "/rules"
+        }
+      ]
+    },
+    {
+      "candidate_id": "ruby_dust_50gp",
+      "candidate_path": "items/ruby_dust_50gp.json",
+      "evidence": [
+        {
+          "channel": "spell_material",
+          "path": "docs/planning/preparation/crown-spells/continual_flame.json",
+          "sha256": "8d4cba7f52cfff5539a2e16425ff7bd6a36387eb7e54d166e58cca8339a1396e",
+          "json_pointer": "/casting/material"
+        }
+      ]
+    },
+    {
+      "candidate_id": "salt_silver_100gp",
+      "candidate_path": "items/salt_silver_100gp.json",
+      "evidence": [
+        {
+          "channel": "spell_material",
+          "path": "docs/planning/preparation/crown-spells/magic_circle.json",
+          "sha256": "17dab4da8d41497b3730afc3393750142d9ce9d3af01c45746c15598f04c4d29",
+          "json_pointer": "/casting/material"
+        }
+      ]
+    },
+    {
+      "candidate_id": "scale_mail",
+      "candidate_path": "items/scale_mail.json",
+      "evidence": [
+        {
+          "channel": "historical_shop_inventory",
+          "path": "docs/planning/crown-content-scope.md",
+          "sha256": "3bcb9799865f1779aa7da1c1b041a6ac938c33491dfd502641593bf767a8528e",
+          "details": "Pinned 64-ID Windows export inventory; retained below, not rerun here."
+        },
+        {
+          "channel": "source_shop_candidate",
+          "path": "data/core/items/armor.json",
+          "sha256": "a54147bee457f31cff9b7003814837328d43e617d3e24ab0195c876d13cd1c01",
+          "json_pointer": "/2",
+          "details": "Positive shop type/value and, for consumables, declared supported effect names. This is a source selection lead, not a loaded availability certification; manifest wins remain authoritative."
+        }
+      ]
+    },
+    {
+      "candidate_id": "scimitar",
+      "candidate_path": "../crown-equipment/items/scimitar.json",
+      "evidence": [
+        {
+          "channel": "historical_shop_inventory",
+          "path": "docs/planning/crown-content-scope.md",
+          "sha256": "3bcb9799865f1779aa7da1c1b041a6ac938c33491dfd502641593bf767a8528e",
+          "details": "Pinned 64-ID Windows export inventory; retained below, not rerun here."
+        },
+        {
+          "channel": "source_shop_candidate",
+          "path": "data/core/items/imported_base_items.json",
+          "sha256": "d450331c5dc1756fccc025c42e7f60bc6312a6829e59814e9864878a4abaae42",
+          "json_pointer": "/46",
+          "details": "Positive shop type/value and, for consumables, declared supported effect names. This is a source selection lead, not a loaded availability certification; manifest wins remain authoritative."
+        },
+        {
+          "channel": "pact_weapon_form",
+          "path": "docs/planning/preparation/crown-characters/invocations/pact_of_the_blade.json",
+          "sha256": "ae155ef90caa35d254f685caa6208383178e4d8dd77360795f165e32016b4046",
+          "json_pointer": "/rules"
+        }
+      ]
+    },
+    {
+      "candidate_id": "shield",
+      "candidate_path": "../crown-equipment/items/shield.json",
+      "evidence": [
+        {
+          "channel": "historical_shop_inventory",
+          "path": "docs/planning/crown-content-scope.md",
+          "sha256": "3bcb9799865f1779aa7da1c1b041a6ac938c33491dfd502641593bf767a8528e",
+          "details": "Pinned 64-ID Windows export inventory; retained below, not rerun here."
+        },
+        {
+          "channel": "source_shop_candidate",
+          "path": "data/core/items/armor.json",
+          "sha256": "a54147bee457f31cff9b7003814837328d43e617d3e24ab0195c876d13cd1c01",
+          "json_pointer": "/3",
+          "details": "Positive shop type/value and, for consumables, declared supported effect names. This is a source selection lead, not a loaded availability certification; manifest wins remain authoritative."
+        },
+        {
+          "channel": "companion_class_seed",
+          "path": "data/core/classes/cleric.json",
+          "sha256": "370d2a37dcbf5b78b5289873c8a42e000bedeb5383b3cebafb3c2f10f7450620",
+          "json_pointer": "/starting_equipment/1",
+          "details": "aldric: current source initialization lead; intended revised package stays in equipment set."
+        }
+      ]
+    },
+    {
+      "candidate_id": "shortbow",
+      "candidate_path": "../crown-equipment/items/shortbow.json",
+      "evidence": [
+        {
+          "channel": "historical_shop_inventory",
+          "path": "docs/planning/crown-content-scope.md",
+          "sha256": "3bcb9799865f1779aa7da1c1b041a6ac938c33491dfd502641593bf767a8528e",
+          "details": "Pinned 64-ID Windows export inventory; retained below, not rerun here."
+        },
+        {
+          "channel": "source_shop_candidate",
+          "path": "data/core/items/imported_base_items.json",
+          "sha256": "d450331c5dc1756fccc025c42e7f60bc6312a6829e59814e9864878a4abaae42",
+          "json_pointer": "/48",
+          "details": "Positive shop type/value and, for consumables, declared supported effect names. This is a source selection lead, not a loaded availability certification; manifest wins remain authoritative."
+        },
+        {
+          "channel": "companion_class_seed",
+          "path": "data/core/classes/rogue.json",
+          "sha256": "c272d35beebef5449232bcef4e5eaf0743ffa9dee2288b95050c6c6c1f9fcda7",
+          "json_pointer": "/starting_equipment/2",
+          "details": "rowan: current source initialization lead; intended revised package stays in equipment set."
+        }
+      ]
+    },
+    {
+      "candidate_id": "shortsword",
+      "candidate_path": "../crown-equipment/items/shortsword.json",
+      "evidence": [
+        {
+          "channel": "historical_shop_inventory",
+          "path": "docs/planning/crown-content-scope.md",
+          "sha256": "3bcb9799865f1779aa7da1c1b041a6ac938c33491dfd502641593bf767a8528e",
+          "details": "Pinned 64-ID Windows export inventory; retained below, not rerun here."
+        },
+        {
+          "channel": "source_shop_candidate",
+          "path": "data/core/items/imported_base_items.json",
+          "sha256": "d450331c5dc1756fccc025c42e7f60bc6312a6829e59814e9864878a4abaae42",
+          "json_pointer": "/49",
+          "details": "Positive shop type/value and, for consumables, declared supported effect names. This is a source selection lead, not a loaded availability certification; manifest wins remain authoritative."
+        },
+        {
+          "channel": "companion_class_seed",
+          "path": "data/core/classes/ranger.json",
+          "sha256": "4f769bc8eb56b3dd19a8d9ee10c0be3743e0176df61a9ec0c0bd15e56a5e840a",
+          "json_pointer": "/starting_equipment/2",
+          "details": "mira: current source initialization lead; intended revised package stays in equipment set."
+        },
+        {
+          "channel": "pact_weapon_form",
+          "path": "docs/planning/preparation/crown-characters/invocations/pact_of_the_blade.json",
+          "sha256": "ae155ef90caa35d254f685caa6208383178e4d8dd77360795f165e32016b4046",
+          "json_pointer": "/rules"
+        }
+      ]
+    },
+    {
+      "candidate_id": "sickle",
+      "candidate_path": "../crown-equipment/items/sickle.json",
+      "evidence": [
+        {
+          "channel": "historical_shop_inventory",
+          "path": "docs/planning/crown-content-scope.md",
+          "sha256": "3bcb9799865f1779aa7da1c1b041a6ac938c33491dfd502641593bf767a8528e",
+          "details": "Pinned 64-ID Windows export inventory; retained below, not rerun here."
+        },
+        {
+          "channel": "source_shop_candidate",
+          "path": "data/core/items/imported_base_items.json",
+          "sha256": "d450331c5dc1756fccc025c42e7f60bc6312a6829e59814e9864878a4abaae42",
+          "json_pointer": "/51",
+          "details": "Positive shop type/value and, for consumables, declared supported effect names. This is a source selection lead, not a loaded availability certification; manifest wins remain authoritative."
+        },
+        {
+          "channel": "pact_weapon_form",
+          "path": "docs/planning/preparation/crown-characters/invocations/pact_of_the_blade.json",
+          "sha256": "ae155ef90caa35d254f685caa6208383178e4d8dd77360795f165e32016b4046",
+          "json_pointer": "/rules"
+        }
+      ]
+    },
+    {
+      "candidate_id": "sling",
+      "candidate_path": "items/sling.json",
+      "evidence": [
+        {
+          "channel": "historical_shop_inventory",
+          "path": "docs/planning/crown-content-scope.md",
+          "sha256": "3bcb9799865f1779aa7da1c1b041a6ac938c33491dfd502641593bf767a8528e",
+          "details": "Pinned 64-ID Windows export inventory; retained below, not rerun here."
+        },
+        {
+          "channel": "source_shop_candidate",
+          "path": "data/core/items/weapons.json",
+          "sha256": "6f6314edd2f971deea6f5d058e0e5f913757a662b2340a8a01c52d60432e0df5",
+          "json_pointer": "/16",
+          "details": "Positive shop type/value and, for consumables, declared supported effect names. This is a source selection lead, not a loaded availability certification; manifest wins remain authoritative."
+        }
+      ]
+    },
+    {
+      "candidate_id": "sling_bullets",
+      "candidate_path": "items/sling_bullets.json",
+      "evidence": [
+        {
+          "channel": "weapon_ammunition_dependency",
+          "candidate_ids": [
+            "sling"
+          ],
+          "source": "SRD 5.2.1 p.91"
+        }
+      ]
+    },
+    {
+      "candidate_id": "spear",
+      "candidate_path": "../crown-equipment/items/spear.json",
+      "evidence": [
+        {
+          "channel": "historical_shop_inventory",
+          "path": "docs/planning/crown-content-scope.md",
+          "sha256": "3bcb9799865f1779aa7da1c1b041a6ac938c33491dfd502641593bf767a8528e",
+          "details": "Pinned 64-ID Windows export inventory; retained below, not rerun here."
+        },
+        {
+          "channel": "source_shop_candidate",
+          "path": "data/core/items/imported_base_items.json",
+          "sha256": "d450331c5dc1756fccc025c42e7f60bc6312a6829e59814e9864878a4abaae42",
+          "json_pointer": "/53",
+          "details": "Positive shop type/value and, for consumables, declared supported effect names. This is a source selection lead, not a loaded availability certification; manifest wins remain authoritative."
+        },
+        {
+          "channel": "pact_weapon_form",
+          "path": "docs/planning/preparation/crown-characters/invocations/pact_of_the_blade.json",
+          "sha256": "ae155ef90caa35d254f685caa6208383178e4d8dd77360795f165e32016b4046",
+          "json_pointer": "/rules"
+        }
+      ]
+    },
+    {
+      "candidate_id": "splint_armor",
+      "candidate_path": "items/splint_armor.json",
+      "evidence": [
+        {
+          "channel": "historical_shop_inventory",
+          "path": "docs/planning/crown-content-scope.md",
+          "sha256": "3bcb9799865f1779aa7da1c1b041a6ac938c33491dfd502641593bf767a8528e",
+          "details": "Pinned 64-ID Windows export inventory; retained below, not rerun here."
+        },
+        {
+          "channel": "source_shop_candidate",
+          "path": "data/core/items/imported_base_items.json",
+          "sha256": "d450331c5dc1756fccc025c42e7f60bc6312a6829e59814e9864878a4abaae42",
+          "json_pointer": "/54",
+          "details": "Positive shop type/value and, for consumables, declared supported effect names. This is a source selection lead, not a loaded availability certification; manifest wins remain authoritative."
+        }
+      ]
+    },
+    {
+      "candidate_id": "studded_leather_armor",
+      "candidate_path": "../crown-equipment/items/studded_leather_armor.json",
+      "evidence": [
+        {
+          "channel": "historical_shop_inventory",
+          "path": "docs/planning/crown-content-scope.md",
+          "sha256": "3bcb9799865f1779aa7da1c1b041a6ac938c33491dfd502641593bf767a8528e",
+          "details": "Pinned 64-ID Windows export inventory; retained below, not rerun here."
+        },
+        {
+          "channel": "source_shop_candidate",
+          "path": "data/core/items/imported_base_items.json",
+          "sha256": "d450331c5dc1756fccc025c42e7f60bc6312a6829e59814e9864878a4abaae42",
+          "json_pointer": "/55",
+          "details": "Positive shop type/value and, for consumables, declared supported effect names. This is a source selection lead, not a loaded availability certification; manifest wins remain authoritative."
+        }
+      ]
+    },
+    {
+      "candidate_id": "thieves_tools",
+      "candidate_path": "../crown-equipment/items/thieves_tools.json",
+      "evidence": [
+        {
+          "channel": "companion_class_seed",
+          "path": "data/core/classes/rogue.json",
+          "sha256": "c272d35beebef5449232bcef4e5eaf0743ffa9dee2288b95050c6c6c1f9fcda7",
+          "json_pointer": "/starting_equipment/4",
+          "details": "rowan: current source initialization lead; intended revised package stays in equipment set."
+        }
+      ]
+    },
+    {
+      "candidate_id": "tinker_scrap_item",
+      "candidate_path": "items/tinker_scrap_item.json",
+      "evidence": [
+        {
+          "channel": "tool_created_output",
+          "path": "docs/planning/preparation/crown-equipment/items/tinkers_tools.json",
+          "sha256": "4e52c091775124688d9ff98e2a7b5f6adca7c7cbdc86ad163a87dab2961002c0",
+          "json_pointer": "/definition/utilize"
+        }
+      ]
+    },
+    {
+      "candidate_id": "torch",
+      "candidate_path": "../crown-equipment/items/torch.json",
+      "evidence": [
+        {
+          "channel": "event_grant",
+          "path": "data/core/events/mountain_events.json",
+          "sha256": "28c24bea91c714a4c49e7c7b6358adf5dea15b8f06d69dca29ef79542f0a6fd3",
+          "json_pointer": "/events/5/success/effects/1/item_id"
+        }
+      ]
+    },
+    {
+      "candidate_id": "trident",
+      "candidate_path": "items/trident.json",
+      "evidence": [
+        {
+          "channel": "historical_shop_inventory",
+          "path": "docs/planning/crown-content-scope.md",
+          "sha256": "3bcb9799865f1779aa7da1c1b041a6ac938c33491dfd502641593bf767a8528e",
+          "details": "Pinned 64-ID Windows export inventory; retained below, not rerun here."
+        },
+        {
+          "channel": "source_shop_candidate",
+          "path": "data/core/items/imported_base_items.json",
+          "sha256": "d450331c5dc1756fccc025c42e7f60bc6312a6829e59814e9864878a4abaae42",
+          "json_pointer": "/56",
+          "details": "Positive shop type/value and, for consumables, declared supported effect names. This is a source selection lead, not a loaded availability certification; manifest wins remain authoritative."
+        },
+        {
+          "channel": "pact_weapon_form",
+          "path": "docs/planning/preparation/crown-characters/invocations/pact_of_the_blade.json",
+          "sha256": "ae155ef90caa35d254f685caa6208383178e4d8dd77360795f165e32016b4046",
+          "json_pointer": "/rules"
+        }
+      ]
+    },
+    {
+      "candidate_id": "war_pick",
+      "candidate_path": "items/war_pick.json",
+      "evidence": [
+        {
+          "channel": "historical_shop_inventory",
+          "path": "docs/planning/crown-content-scope.md",
+          "sha256": "3bcb9799865f1779aa7da1c1b041a6ac938c33491dfd502641593bf767a8528e",
+          "details": "Pinned 64-ID Windows export inventory; retained below, not rerun here."
+        },
+        {
+          "channel": "source_shop_candidate",
+          "path": "data/core/items/imported_base_items.json",
+          "sha256": "d450331c5dc1756fccc025c42e7f60bc6312a6829e59814e9864878a4abaae42",
+          "json_pointer": "/57",
+          "details": "Positive shop type/value and, for consumables, declared supported effect names. This is a source selection lead, not a loaded availability certification; manifest wins remain authoritative."
+        },
+        {
+          "channel": "pact_weapon_form",
+          "path": "docs/planning/preparation/crown-characters/invocations/pact_of_the_blade.json",
+          "sha256": "ae155ef90caa35d254f685caa6208383178e4d8dd77360795f165e32016b4046",
+          "json_pointer": "/rules"
+        }
+      ]
+    },
+    {
+      "candidate_id": "warhammer",
+      "candidate_path": "items/warhammer.json",
+      "evidence": [
+        {
+          "channel": "historical_shop_inventory",
+          "path": "docs/planning/crown-content-scope.md",
+          "sha256": "3bcb9799865f1779aa7da1c1b041a6ac938c33491dfd502641593bf767a8528e",
+          "details": "Pinned 64-ID Windows export inventory; retained below, not rerun here."
+        },
+        {
+          "channel": "source_shop_candidate",
+          "path": "data/core/items/imported_base_items.json",
+          "sha256": "d450331c5dc1756fccc025c42e7f60bc6312a6829e59814e9864878a4abaae42",
+          "json_pointer": "/58",
+          "details": "Positive shop type/value and, for consumables, declared supported effect names. This is a source selection lead, not a loaded availability certification; manifest wins remain authoritative."
+        },
+        {
+          "channel": "pact_weapon_form",
+          "path": "docs/planning/preparation/crown-characters/invocations/pact_of_the_blade.json",
+          "sha256": "ae155ef90caa35d254f685caa6208383178e4d8dd77360795f165e32016b4046",
+          "json_pointer": "/rules"
+        }
+      ]
+    },
+    {
+      "candidate_id": "whip",
+      "candidate_path": "items/whip.json",
+      "evidence": [
+        {
+          "channel": "historical_shop_inventory",
+          "path": "docs/planning/crown-content-scope.md",
+          "sha256": "3bcb9799865f1779aa7da1c1b041a6ac938c33491dfd502641593bf767a8528e",
+          "details": "Pinned 64-ID Windows export inventory; retained below, not rerun here."
+        },
+        {
+          "channel": "source_shop_candidate",
+          "path": "data/core/items/imported_base_items.json",
+          "sha256": "d450331c5dc1756fccc025c42e7f60bc6312a6829e59814e9864878a4abaae42",
+          "json_pointer": "/59",
+          "details": "Positive shop type/value and, for consumables, declared supported effect names. This is a source selection lead, not a loaded availability certification; manifest wins remain authoritative."
+        },
+        {
+          "channel": "pact_weapon_form",
+          "path": "docs/planning/preparation/crown-characters/invocations/pact_of_the_blade.json",
+          "sha256": "ae155ef90caa35d254f685caa6208383178e4d8dd77360795f165e32016b4046",
+          "json_pointer": "/rules"
+        }
+      ]
+    }
+  ],
+  "retained_boundaries": [
+    "Current combat copies loot_table metadata but this source search found no generic post-combat loot-table settlement; actual campaign/generated/event grants are separate. No new loot behavior is asserted.",
+    "Currency wrappers follow different current hosts: dungeon rewards special-case gold_ IDs; EventResolver give_item calls inventory.add_item. Reconcile actual reward receipts before promoting a unified currency definition.",
+    "Tactical key/contents records are item consumers; doors, chests, trap payloads, creature bodies and room-state authoring stay in the world/creature pass.",
+    "Pact of Blade binding can use a magic weapon actually found; it does not make every dormant magic-weapon shell reachable or grant its template. No currently named Crown root supplies those dormant shells.",
+    "Craft lists in equipment candidates retain potential outputs. Selecting every generic craftable object, magic crafting recipe or wished-for item is not this finite acquisition pass; preserve those dependencies for the appropriate selected procedure."
+  ]
+}

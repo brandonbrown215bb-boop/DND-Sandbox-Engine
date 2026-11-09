@@ -1,0 +1,313 @@
+{
+  "schema": "crown-character-candidate/1",
+  "id": "draconic_sorcery",
+  "name": "Draconic Sorcery",
+  "kind": "subclass",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "scope": {
+    "total_character_level_maximum": 5
+  },
+  "operation_language": "authoring intent only; not registered engine syntax",
+  "runtime_support": "Retained definitions are reuse material, not proof of full rules. Every authored operation needs contract mapping and later production-path verification before promotion.",
+  "class_id": "sorcerer",
+  "class_level": 3,
+  "features": [
+    {
+      "id": "draconic_sorcery_draconic_resilience",
+      "name": "Draconic Resilience",
+      "class_level": 3,
+      "rules": {
+        "authority": "SRD 5.2.1",
+        "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+        "pages": [
+          69
+        ],
+        "text": "Level 3: Draconic Resilience\nThe magic in your body manifests physical traits\nof your draconic gift. Your Hit Point maximum increases by 3, and it increases by 1 whenever you\ngain another Sorcerer level.\nParts of you are also covered by dragon-like\nscales. While you aren’t wearing armor, your base\nArmor Class equals 10 plus your Dexterity and Charisma modifiers."
+      },
+      "revised_reference_entries": [
+        "The magic in your body manifests physical traits of your draconic gift. Your {@variantrule Hit Points|XPHB|Hit Point} maximum increases by 3, and it increases by 1 whenever you gain another Sorcerer level.",
+        "Parts of you are also covered by dragon-like scales. While you aren't wearing armor, your base {@variantrule Armor Class|XPHB} equals 10 plus your Dexterity and Charisma modifiers."
+      ],
+      "authored_operations": [
+        {
+          "trigger": "Sorcerer3 and each later Sorcerer level",
+          "cost": "none",
+          "effects": [
+            "Max HP+3 at3; +1 for each subsequent Sorcerer level",
+            "No armor: alternative base AC10+DEX+CHA; Shield allowed but training still required for its AC benefit"
+          ],
+          "ending_and_identity": "Exact source owns the grant/state; remove temporary effects at the declared ending; never replay acquisition on restore.",
+          "required_extension_groups": [
+            "progression",
+            "stats"
+          ]
+        }
+      ],
+      "unsupported_behavior": [
+        {
+          "groups": [
+            "progression",
+            "stats"
+          ],
+          "requirement": {
+            "trigger": "Sorcerer3 and each later Sorcerer level",
+            "cost": "none",
+            "effects": [
+              "Max HP+3 at3; +1 for each subsequent Sorcerer level",
+              "No armor: alternative base AC10+DEX+CHA; Shield allowed but training still required for its AC benefit"
+            ],
+            "ending": "Exact source owns the grant/state; remove temporary effects at the declared ending; never replay acquisition on restore."
+          },
+          "mapping_boundary": "Map this complete sequence to shared contracts; retained native behavior and fragments do not certify it.",
+          "status": "unmapped_or_unverified_candidate"
+        }
+      ]
+    },
+    {
+      "id": "sorcerer_draconic_spells",
+      "name": "Draconic Spells",
+      "class_level": 3,
+      "rules": {
+        "authority": "SRD 5.2.1",
+        "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+        "pages": [
+          70
+        ],
+        "text": "Level 3: Draconic Spells\nWhen you reach a Sorcerer level specified in the\nDraconic Spells table, you thereafter always have\nthe listed spells prepared. Draconic Spells\nSorcerer\nLevel Spells\n3 Alter Self, Chromatic Orb, Command,\nDragon’s Breath\n5 Fear, Fly\n7 Arcane Eye, Charm Monster\n9 Legend Lore, Summon Dragon"
+      },
+      "revised_reference_entries": [
+        "When you reach a Sorcerer level specified in the Draconic Spells table, you thereafter always have the listed spells prepared.",
+        {
+          "type": "table",
+          "caption": "Draconic Spells",
+          "colLabels": [
+            "Sorcerer Level",
+            "Spells"
+          ],
+          "colStyles": [
+            "col-2 text-center",
+            "col-10"
+          ],
+          "rows": [
+            [
+              "3rd",
+              "{@spell Alter Self|XPHB}, {@spell Chromatic Orb|XPHB}, {@spell Command|XPHB}, {@spell Dragon's Breath|XPHB}"
+            ],
+            [
+              "5th",
+              "{@spell Fear|XPHB}, {@spell Fly|XPHB}"
+            ],
+            [
+              "7th",
+              "{@spell Arcane Eye|XPHB}, {@spell Charm Monster|XPHB}"
+            ],
+            [
+              "9th",
+              "{@spell Legend Lore|XPHB}, {@spell Summon Dragon|XPHB}"
+            ]
+          ]
+        }
+      ],
+      "authored_operations": [
+        {
+          "trigger": "Class level3 and5",
+          "cost": "Normal spell costs except explicit grant elsewhere",
+          "effects": [
+            "Always prepare exact in-band table spells without counting class limit; grant as own-class spells"
+          ],
+          "ending_and_identity": "Exact subclass ownership",
+          "required_extension_groups": [
+            "casting",
+            "choices"
+          ]
+        }
+      ],
+      "unsupported_behavior": [
+        {
+          "groups": [
+            "casting",
+            "choices"
+          ],
+          "requirement": {
+            "trigger": "Class level3 and5",
+            "cost": "Normal spell costs except explicit grant elsewhere",
+            "effects": [
+              "Always prepare exact in-band table spells without counting class limit; grant as own-class spells"
+            ],
+            "ending": "Exact subclass ownership"
+          },
+          "mapping_boundary": "Map this complete sequence to shared contracts; retained native behavior and fragments do not certify it.",
+          "status": "unmapped_or_unverified_candidate"
+        }
+      ]
+    }
+  ],
+  "reused_from": [
+    "_staging/subclass-staging/staged/draconic_sorcery.json",
+    "reference/2024/classes/sorcerer.json",
+    "docs/planning/preparation/draconic-sorcery.candidate.json"
+  ],
+  "retained_runtime_seed": {
+    "id": "draconic_sorcery",
+    "name": "Draconic Sorcery",
+    "class_id": "sorcerer",
+    "rights": "srd_ok",
+    "rules_status": "2024-partial",
+    "features_by_level": {
+      "3": [
+        {
+          "id": "draconic_sorcery_spells_3",
+          "name": "Draconic Sorcery Spells (Level 3)",
+          "description": "You always have Alter Self, Chromatic Orb, Command, Dragon'S Breath prepared.",
+          "type": "passive",
+          "effects": [
+            {
+              "type": "always_prepared_spells",
+              "spells": [
+                "alter_self",
+                "chromatic_orb",
+                "command",
+                "dragons_breath"
+              ]
+            }
+          ],
+          "rules_source": "dnd-2024-srd-5.2.1",
+          "rules_status": "2024-partial"
+        },
+        {
+          "id": "draconic_sorcery_draconic_resilience",
+          "name": "Draconic Resilience",
+          "description": "The magic in your body manifests physical traits of your draconic gift. Your Point maximum increases by 3, and it increases by 1 whenever you gain another Sorcerer level. Parts of you are also covered by dragon-like scales. While you aren't wearing armor, your base Class equals …",
+          "type": "passive",
+          "effects": [],
+          "rules_source": "dnd-2024-srd-5.2.1",
+          "rules_status": "reference-only",
+          "enabled": false
+        }
+      ],
+      "5": [
+        {
+          "id": "draconic_sorcery_spells_5",
+          "name": "Draconic Sorcery Spells (Level 5)",
+          "description": "You always have Fear, Fly prepared.",
+          "type": "passive",
+          "effects": [
+            {
+              "type": "always_prepared_spells",
+              "spells": [
+                "fear",
+                "fly"
+              ]
+            }
+          ],
+          "rules_source": "dnd-2024-srd-5.2.1",
+          "rules_status": "2024-partial"
+        }
+      ]
+    }
+  },
+  "always_prepared_spells_by_class_level": {
+    "3": [
+      "alter_self",
+      "chromatic_orb",
+      "command",
+      "dragons_breath"
+    ],
+    "5": [
+      "fear",
+      "fly"
+    ]
+  },
+  "recovered_current_contract_fragments": {
+    "preparation": {
+      "status": "candidate-not-loaded",
+      "assignment": "G6 (docs/planning/crown-parallel-work.md)",
+      "source": "SRD 5.2.1, Sorcerer Subclass: Draconic Sorcery, PDF pp.69-70",
+      "scope": "Sorcerer levels 3-5 only. Level 6+ features (Elemental Affinity, Dragon Wings, Dragon Companion) and Draconic Spells rows 7 and 9 are deliberately omitted.",
+      "loading": "This file lives outside data/core and data/mods and is never read by DataLoader. It is not acceptance, not an enabled placeholder, and must not be copied into data/core/subclasses until every entry in missing_consumers has an accepted generic owner.",
+      "source_map": "draconic-sorcery.md"
+    },
+    "missing_consumers": [
+      {
+        "clause": "Draconic Resilience: Hit Point maximum increases by 3, and by 1 whenever you gain another Sorcerer level",
+        "gap": "No feature-owned, class-level-scaled permanent max-HP grant. PermanentProgressionRules max_hp_delta is fixed-amount, opt-in permanent_progression only and rejects subclasses; MaxHpSourceRules (S-130) is a reversible fixed-amount effect host. Needs a generic once-only, saved, per-class-level grant (V-026)."
+      },
+      {
+        "clause": "Draconic Resilience: while you aren't wearing armor, base AC = 10 + DEX + CHA (Shield allowed, but its benefit needs Shield training, SRD p.92)",
+        "gap": "Existing unarmored_defense host fits the formula, but (a) Character._equipment_base_ac adds a Shield's ac_bonus without checking Shield training; (b) get_feature_effect takes the first unarmored_defense effect rather than a chosen/best base (SRD p.7 Only One Base AC); (c) Character.level_up does not call _recalculate_ac, so a level-3 grant leaves cached base_ac stale until equipment changes."
+      }
+    ],
+    "candidate": {
+      "id": "draconic_sorcery",
+      "name": "Draconic Sorcery",
+      "class_id": "sorcerer",
+      "rules_status": "reference-only",
+      "features_by_level": {
+        "3": [
+          {
+            "id": "draconic_sorcery_draconic_resilience",
+            "name": "Draconic Resilience",
+            "description": "The magic in your body manifests physical traits of your draconic gift. Your Hit Point maximum increases by 3, and it increases by 1 whenever you gain another Sorcerer level. Parts of you are also covered by dragon-like scales. While you aren't wearing armor, your base Armor Class equals 10 plus your Dexterity and Charisma modifiers.",
+            "type": "passive",
+            "effects": [
+              {
+                "type": "unarmored_defense",
+                "ability": "CHA",
+                "allows_shield": true
+              }
+            ],
+            "unmapped_clauses": [
+              "Hit Point maximum +3 at grant, +1 per later Sorcerer level (no existing owner; see missing_consumers[0])"
+            ],
+            "rules_source": "dnd-2024-srd-5.2.1",
+            "rules_status": "reference-only"
+          },
+          {
+            "id": "draconic_sorcery_draconic_spells_3",
+            "name": "Draconic Spells (Level 3)",
+            "description": "You always have Alter Self, Chromatic Orb, Command, and Dragon's Breath prepared.",
+            "type": "passive",
+            "effects": [
+              {
+                "type": "always_prepared_spells",
+                "spells": [
+                  "alter_self",
+                  "chromatic_orb",
+                  "command",
+                  "dragons_breath"
+                ]
+              }
+            ],
+            "rules_source": "dnd-2024-srd-5.2.1",
+            "rules_status": "reference-only"
+          }
+        ],
+        "5": [
+          {
+            "id": "draconic_sorcery_draconic_spells_5",
+            "name": "Draconic Spells (Level 5)",
+            "description": "You always have Fear and Fly prepared.",
+            "type": "passive",
+            "effects": [
+              {
+                "type": "always_prepared_spells",
+                "spells": [
+                  "fear",
+                  "fly"
+                ]
+              }
+            ],
+            "rules_source": "dnd-2024-srd-5.2.1",
+            "rules_status": "reference-only"
+          }
+        ]
+      }
+    }
+  },
+  "source_revision": "2a19eb1d (existing working-tree definitions and recovered drafts read on 2026-11-08)",
+  "reused_input_hashes": {
+    "_staging/subclass-staging/staged/draconic_sorcery.json": "76722df256a84a4b2f9691066a9563446328e4591ceaa53fe62db48149dbd7c6",
+    "reference/2024/classes/sorcerer.json": "46be2eb57db956002f7f0b4d6d86255f60121a61c07a3ec9fa1a315a6798bd4f",
+    "docs/planning/preparation/draconic-sorcery.candidate.json": "9515041c50c9b0fb7eade19f0e02ed6736ba6c07bdb5b0699267c66fe0cc4820"
+  }
+}

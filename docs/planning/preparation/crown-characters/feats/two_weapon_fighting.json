@@ -1,0 +1,54 @@
+{
+  "schema": "crown-character-candidate/1",
+  "id": "two_weapon_fighting",
+  "name": "Two-Weapon Fighting",
+  "kind": "feat",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "scope": {
+    "total_character_level_maximum": 5
+  },
+  "operation_language": "authoring intent only; not registered engine syntax",
+  "runtime_support": "Retained definitions are reuse material, not proof of full rules. Every authored operation needs contract mapping and later production-path verification before promotion.",
+  "definition": {
+    "category": "Fighting Style",
+    "repeatable": false,
+    "prerequisites": {
+      "feature": "Fighting Style"
+    }
+  },
+  "rules": {
+    "authority": "SRD 5.2.1",
+    "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      88
+    ],
+    "text": "Two-Weapon Fighting\nFighting Style Feat (Prerequisite: Fighting Style\nFeature)\nWhen you make an extra attack as a result of using\na weapon that has the Light property, you can add\nyour ability modifier to the damage of that attack if\nyou aren’t already adding it to the damage."
+  },
+  "authored_operations": [
+    {
+      "trigger": "Extra attack resulting from weapon Light property",
+      "effects": [
+        "Add ability modifier to that attack’s damage only if not already adding it; includes legal Nick timing without spending an extra Bonus Action"
+      ],
+      "required_extension_groups": [
+        "attacks",
+        "rolls"
+      ],
+      "ending_and_identity": "Exact acquired feat instance owns parameters, budgets and grants; once-only acquisition and per-turn receipts; no replay on restore."
+    }
+  ],
+  "reused_from": [],
+  "retained_runtime_seed": null,
+  "unsupported_behavior": [
+    {
+      "groups": [
+        "attacks",
+        "rolls"
+      ],
+      "requirement": "Add ability modifier to that attack’s damage only if not already adding it; includes legal Nick timing without spending an extra Bonus Action",
+      "status": "candidate_mapping_and_full_host_verification_required"
+    }
+  ],
+  "source_revision": "2a19eb1d (existing working-tree definitions and recovered drafts read on 2026-11-08)",
+  "reused_input_hashes": {}
+}

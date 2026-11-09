@@ -1,0 +1,130 @@
+{
+  "schema": "crown-world-candidate/1",
+  "id": "forest_events__fairy_court",
+  "name": "The Fairy Court",
+  "kind": "events",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring declarations only; not registered engine opcodes.",
+  "required_extensions": [
+    "discovery",
+    "objectives_rewards",
+    "rest_time"
+  ],
+  "authored_operations": [
+    {
+      "operation": "settle_ordered_branch",
+      "seed_pointer": "/choices/0/effects",
+      "effects": [
+        {
+          "type": "grant_condition",
+          "condition": "fairy_luck",
+          "duration": 10
+        },
+        {
+          "type": "heal",
+          "value": "3d6"
+        }
+      ],
+      "condition": null,
+      "requirement": "Retain order, exact quantities/formulas, recipient, costs, branch descriptions and occurrence identity; no repeated payment when a child resumes."
+    },
+    {
+      "operation": "resolve_authored_check",
+      "seed_pointer": "/choices/2/check",
+      "check": {
+        "ability": "DEX",
+        "dc": 16
+      },
+      "requirement": "Keep ability, skill/context, DC and optional familiar Help exactly. Choose actor and actual context; settle one branch once; never silently convert an ability check into a saving throw."
+    },
+    {
+      "operation": "settle_ordered_branch",
+      "seed_pointer": "/choices/2/success/effects",
+      "effects": [
+        {
+          "type": "give_item",
+          "item_id": "gold_100"
+        }
+      ],
+      "condition": null,
+      "requirement": "Retain order, exact quantities/formulas, recipient, costs, branch descriptions and occurrence identity; no repeated payment when a child resumes."
+    },
+    {
+      "operation": "settle_ordered_branch",
+      "seed_pointer": "/choices/2/failure/effects",
+      "effects": [
+        {
+          "type": "grant_condition",
+          "condition": "cursed",
+          "duration": 5
+        }
+      ],
+      "condition": null,
+      "requirement": "Retain order, exact quantities/formulas, recipient, costs, branch descriptions and occurrence identity; no repeated payment when a child resumes."
+    }
+  ],
+  "blockers": [
+    "Retain numeric event duration/unit and custom condition IDs as authored. Generic marker support is not proof of defined mechanical benefit, cure scope or turn/clock conversion; map each declared condition to its actual rule.",
+    "Nested popup/teleport state and origin return need actual continuation mapping. Decline text alone has no return effect; do not fabricate a Fairy Court map."
+  ],
+  "retained_input": {
+    "path": "data/core/events/forest_events.json",
+    "sha256": "d4510f0da5ad26db2611a506fb58c79c35247610ac61ea39be48d30824feac09",
+    "pointer": "/events/5/chain_event",
+    "payload": {
+      "id": "fairy_court",
+      "name": "The Fairy Court",
+      "description": "You materialize in a moonlit glade. Tiny winged figures dance around you. A fairy queen approaches.",
+      "type": "choice",
+      "choices": [
+        {
+          "text": "Accept her gift",
+          "effects": [
+            {
+              "type": "grant_condition",
+              "condition": "fairy_luck",
+              "duration": 10
+            },
+            {
+              "type": "heal",
+              "value": "3d6"
+            }
+          ]
+        },
+        {
+          "text": "Politely decline",
+          "description": "The fairy queen nods respectfully. 'Wise, perhaps. Or foolish.' You find yourself back where you started."
+        },
+        {
+          "text": "Try to steal fairy treasure",
+          "check": {
+            "ability": "DEX",
+            "dc": 16
+          },
+          "success": {
+            "description": "Quick as a shadow, you pocket a handful of glittering fairy dust!",
+            "effects": [
+              {
+                "type": "give_item",
+                "item_id": "gold_100"
+              }
+            ]
+          },
+          "failure": {
+            "description": "The fairies catch you! They curse you with bad luck and eject you from the glade.",
+            "effects": [
+              {
+                "type": "grant_condition",
+                "condition": "cursed",
+                "duration": 5
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "authority": "Custom Crown campaign event, not an SRD trap/NPC/spell replacement",
+  "table_id": "forest_events",
+  "occurrence_policy": "Table may roll again; same in-flight occurrence must not reroll/reapply on reopen. Campaign-specific uniqueness beyond generated room claims is unresolved, not silently global once-per-event-ID."
+}

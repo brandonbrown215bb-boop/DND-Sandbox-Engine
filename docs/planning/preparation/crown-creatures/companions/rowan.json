@@ -1,0 +1,575 @@
+{
+  "schema": "crown-creature-candidate/1",
+  "id": "rowan",
+  "name": "Rowan",
+  "kind": "campaign_companion",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring intent only; not registered engine syntax. Mapping requirements do not assert the whole referenced engine slice is absent.",
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile all source clauses, mappings and source differences before later production-path verification. Keep native paths until replacements cover them."
+  },
+  "source": {
+    "path": "data/core/campaigns/the_lost_crown.json",
+    "sha256": "3352b2d22be36e68591bfdf4ec73b8201f2bec6c69a3a60b0c8beb7d5074db44",
+    "pointer": "/companions/rowan",
+    "payload": {
+      "name": "Rowan",
+      "race_id": "human",
+      "class_id": "rogue",
+      "ability_scores": {
+        "STR": 10,
+        "DEX": 16,
+        "CON": 12,
+        "INT": 14,
+        "WIS": 10,
+        "CHA": 12
+      }
+    },
+    "authority": "Crown campaign composition, not an SRD NPC stat block"
+  },
+  "class_candidate": {
+    "path": "docs/planning/preparation/crown-characters/classes/rogue.json",
+    "sha256": "6dbfd59d97a2e7ba352534046f19982096fc3e91aca44724a9ecfd1791a67797"
+  },
+  "species_candidate": {
+    "path": "docs/planning/preparation/crown-characters/species/human.json",
+    "sha256": "79f7fcdb67124df011d45b3fe1b0e9a36273a57767b3f3516e2e3c11871b57f8"
+  },
+  "current_class_seed": {
+    "path": "data/core/classes/rogue.json",
+    "sha256": "c272d35beebef5449232bcef4e5eaf0743ffa9dee2288b95050c6c6c1f9fcda7",
+    "payload": {
+      "id": "rogue",
+      "name": "Rogue",
+      "description": "Rogue class. 2024 SRD 5.2.1 progression; some tactical class features are recorded as unavailable.",
+      "hit_die": "d8",
+      "primary_ability": "DEX",
+      "saving_throw_proficiencies": [
+        "DEX",
+        "INT"
+      ],
+      "armor_proficiencies": [
+        "light"
+      ],
+      "weapon_proficiencies": [
+        "simple",
+        "martial"
+      ],
+      "creation_proficiency_choices": true,
+      "tool_proficiency_grants": [
+        "thieves_tools"
+      ],
+      "skill_choices": {
+        "pick": 4,
+        "from": [
+          "Acrobatics",
+          "Athletics",
+          "Deception",
+          "Insight",
+          "Intimidation",
+          "Investigation",
+          "Perception",
+          "Persuasion",
+          "Sleight of Hand",
+          "Stealth"
+        ]
+      },
+      "starting_equipment": [
+        "leather_armor",
+        "rapier",
+        "shortbow",
+        "dagger",
+        "thieves_tools"
+      ],
+      "spell_slots_by_character_level": {},
+      "features_by_level": {
+        "1": [
+          {
+            "id": "rogue_expertise",
+            "name": "Expertise",
+            "type": "passive",
+            "description": "Choose two proficient skills for Expertise through the shared saved choice path.",
+            "effects": [
+              {
+                "type": "skill_expertise_choice",
+                "count": 2
+              }
+            ],
+            "rules_source": "dnd-2024-srd-5.2.1",
+            "rules_status": "2024-supported"
+          },
+          {
+            "id": "rogue_sneak_attack",
+            "name": "Sneak Attack",
+            "type": "passive",
+            "description": "Once per turn, add the level-scaled Sneak Attack dice to an eligible finesse or ranged weapon hit when you have Advantage or an ally is near the target.",
+            "effects": [
+              {
+                "type": "sneak_attack",
+                "dice": "1d6",
+                "dice_by_level": {
+                  "1": "1d6",
+                  "3": "2d6",
+                  "5": "3d6",
+                  "7": "4d6",
+                  "9": "5d6",
+                  "11": "6d6",
+                  "13": "7d6",
+                  "15": "8d6",
+                  "17": "9d6",
+                  "19": "10d6"
+                }
+              }
+            ],
+            "rules_source": "dnd-2024-srd-5.2.1",
+            "rules_status": "2024-partial"
+          },
+          {
+            "id": "rogue_thieves_cant",
+            "name": "Thieves' Cant",
+            "type": "passive",
+            "description": "Thieves' Cant and the additional language choice are not represented by the game.",
+            "effects": [],
+            "enabled": false,
+            "rules_source": "dnd-2024-srd-5.2.1",
+            "rules_status": "reference-only"
+          },
+          {
+            "id": "rogue_weapon_mastery",
+            "name": "Weapon Mastery",
+            "type": "passive",
+            "description": "Choose two proficient weapon types using the shared saved Weapon Mastery path.",
+            "effects": [
+              {
+                "type": "weapon_mastery",
+                "capacity_by_level": {
+                  "1": 2
+                }
+              }
+            ],
+            "rules_source": "dnd-2024-srd-5.2.1",
+            "rules_status": "2024-supported"
+          }
+        ],
+        "2": [
+          {
+            "id": "rogue_cunning_action",
+            "name": "Cunning Action",
+            "type": "active",
+            "description": "Use the shared Bonus Action path to Dash, Disengage, or Hide.",
+            "effects": [],
+            "action_cost": "bonus_action",
+            "uses": 1,
+            "uses_per": "turn",
+            "rules_source": "dnd-2024-srd-5.2.1",
+            "rules_status": "2024-supported"
+          }
+        ],
+        "3": [
+          {
+            "id": "rogue_subclass",
+            "name": "Rogue Subclass",
+            "type": "passive",
+            "description": "Choose a Rogue subclass. Subclass features are stored in separate records; no Rogue subclass records currently ship.",
+            "effects": [],
+            "enabled": false,
+            "rules_source": "dnd-2024-srd-5.2.1",
+            "rules_status": "reference-only"
+          },
+          {
+            "id": "rogue_steady_aim",
+            "name": "Steady Aim",
+            "type": "active",
+            "description": "As a Bonus Action, gain Advantage on the next attack this turn, provided you have not moved; your Speed becomes 0 until the turn ends.",
+            "effects": [
+              {
+                "type": "rogue_steady_aim"
+              }
+            ],
+            "action_cost": "bonus_action",
+            "uses": 1,
+            "uses_per": "turn",
+            "enabled": true,
+            "rules_source": "dnd-2024-srd-5.2.1",
+            "rules_status": "2024-supported"
+          }
+        ],
+        "4": [
+          {
+            "id": "rogue_ability_improvement_4",
+            "name": "Ability Score Improvement",
+            "type": "passive",
+            "effects": [
+              {
+                "type": "asi"
+              }
+            ],
+            "rules_source": "dnd-2024-srd-5.2.1",
+            "rules_status": "2024-supported"
+          }
+        ],
+        "5": [
+          {
+            "id": "rogue_uncanny_dodge",
+            "name": "Uncanny Dodge",
+            "type": "active",
+            "description": "Use your Reaction to halve damage from an attack that hits you.",
+            "effects": [
+              {
+                "type": "reaction",
+                "reaction": "uncanny_dodge"
+              }
+            ],
+            "action_cost": "reaction",
+            "uses": 1,
+            "uses_per": "combat",
+            "rules_source": "dnd-2024-srd-5.2.1",
+            "rules_status": "2024-supported"
+          },
+          {
+            "id": "rogue_cunning_strike",
+            "name": "Cunning Strike",
+            "type": "passive",
+            "description": "When you deal Sneak Attack damage, trade Sneak Attack dice for Poison, Trip, Withdraw, or (at level 14) Daze, Knock Out, and Obscure. You can apply up to two distinct effects.",
+            "effects": [
+              {
+                "type": "cunning_strike"
+              }
+            ],
+            "enabled": true,
+            "rules_source": "dnd-2024-srd-5.2.1",
+            "rules_status": "2024-partial"
+          }
+        ],
+        "6": [
+          {
+            "id": "rogue_expertise_6",
+            "name": "Expertise",
+            "type": "passive",
+            "description": "Choose two more proficient skills for Expertise through the shared saved choice path.",
+            "effects": [
+              {
+                "type": "skill_expertise_choice",
+                "count": 2
+              }
+            ],
+            "rules_source": "dnd-2024-srd-5.2.1",
+            "rules_status": "2024-supported"
+          }
+        ],
+        "7": [
+          {
+            "id": "rogue_evasion",
+            "name": "Evasion",
+            "type": "passive",
+            "description": "Shared Evasion behavior applies to Dexterity saves for damaging area effects.",
+            "effects": [
+              {
+                "type": "evasion"
+              }
+            ],
+            "rules_source": "dnd-2024-srd-5.2.1",
+            "rules_status": "2024-partial"
+          },
+          {
+            "id": "rogue_reliable_talent",
+            "name": "Reliable Talent",
+            "type": "passive",
+            "description": "On a proficient ability check, a d20 result below 10 counts as 10.",
+            "effects": [
+              {
+                "type": "ability_check_floor",
+                "ability": "DEX",
+                "applies_to": [
+                  "ability_check"
+                ],
+                "minimum_roll": 10,
+                "requires_proficiency": true
+              }
+            ],
+            "rules_source": "dnd-2024-srd-5.2.1",
+            "rules_status": "2024-supported"
+          }
+        ],
+        "8": [
+          {
+            "id": "rogue_ability_improvement_8",
+            "name": "Ability Score Improvement",
+            "type": "passive",
+            "effects": [
+              {
+                "type": "asi"
+              }
+            ],
+            "rules_source": "dnd-2024-srd-5.2.1",
+            "rules_status": "2024-supported"
+          }
+        ],
+        "9": [
+          {
+            "id": "rogue_subclass_feature_9",
+            "name": "Rogue Subclass Feature",
+            "type": "passive",
+            "description": "Subclass progression is stored in separate subclass records.",
+            "effects": [],
+            "enabled": false,
+            "rules_source": "dnd-2024-srd-5.2.1",
+            "rules_status": "reference-only"
+          }
+        ],
+        "10": [
+          {
+            "id": "rogue_ability_improvement_10",
+            "name": "Ability Score Improvement",
+            "type": "passive",
+            "effects": [
+              {
+                "type": "asi"
+              }
+            ],
+            "rules_source": "dnd-2024-srd-5.2.1",
+            "rules_status": "2024-supported"
+          }
+        ],
+        "11": [
+          {
+            "id": "rogue_improved_cunning_strike",
+            "name": "Improved Cunning Strike",
+            "type": "passive",
+            "description": "You can use up to two distinct Cunning Strike effects when you deal Sneak Attack damage, paying the die cost for each.",
+            "effects": [
+              {
+                "type": "cunning_strike"
+              }
+            ],
+            "enabled": true,
+            "rules_source": "dnd-2024-srd-5.2.1",
+            "rules_status": "2024-supported"
+          }
+        ],
+        "12": [
+          {
+            "id": "rogue_ability_improvement_12",
+            "name": "Ability Score Improvement",
+            "type": "passive",
+            "effects": [
+              {
+                "type": "asi"
+              }
+            ],
+            "rules_source": "dnd-2024-srd-5.2.1",
+            "rules_status": "2024-supported"
+          }
+        ],
+        "13": [
+          {
+            "id": "rogue_subclass_feature_13",
+            "name": "Rogue Subclass Feature",
+            "type": "passive",
+            "description": "Subclass progression is stored in separate subclass records.",
+            "effects": [],
+            "enabled": false,
+            "rules_source": "dnd-2024-srd-5.2.1",
+            "rules_status": "reference-only"
+          }
+        ],
+        "14": [
+          {
+            "id": "rogue_devious_strikes",
+            "name": "Devious Strikes",
+            "type": "passive",
+            "description": "Adds Daze (2d6), Knock Out (6d6), and Obscure (3d6) as Cunning Strike options.",
+            "effects": [
+              {
+                "type": "cunning_strike"
+              }
+            ],
+            "enabled": true,
+            "rules_source": "dnd-2024-srd-5.2.1",
+            "rules_status": "2024-supported"
+          }
+        ],
+        "15": [
+          {
+            "id": "rogue_slippery_mind",
+            "name": "Slippery Mind",
+            "type": "passive",
+            "description": "Gain proficiency in Wisdom and Charisma saving throws.",
+            "effects": [
+              {
+                "type": "saving_throw_proficiency",
+                "abilities": [
+                  "WIS",
+                  "CHA"
+                ]
+              }
+            ],
+            "rules_source": "dnd-2024-srd-5.2.1",
+            "rules_status": "2024-supported"
+          }
+        ],
+        "16": [
+          {
+            "id": "rogue_ability_improvement_16",
+            "name": "Ability Score Improvement",
+            "type": "passive",
+            "effects": [
+              {
+                "type": "asi"
+              }
+            ],
+            "rules_source": "dnd-2024-srd-5.2.1",
+            "rules_status": "2024-supported"
+          }
+        ],
+        "17": [
+          {
+            "id": "rogue_subclass_feature_17",
+            "name": "Rogue Subclass Feature",
+            "type": "passive",
+            "description": "Subclass progression is stored in separate subclass records.",
+            "effects": [],
+            "enabled": false,
+            "rules_source": "dnd-2024-srd-5.2.1",
+            "rules_status": "reference-only"
+          }
+        ],
+        "18": [
+          {
+            "id": "rogue_elusive",
+            "name": "Elusive",
+            "type": "passive",
+            "description": "Attack rolls against you cannot have Advantage unless you are Incapacitated.",
+            "effects": [
+              {
+                "type": "elusive"
+              }
+            ],
+            "enabled": true,
+            "rules_source": "dnd-2024-srd-5.2.1",
+            "rules_status": "2024-supported"
+          }
+        ],
+        "19": [
+          {
+            "id": "rogue_epic_boon",
+            "name": "Epic Boon",
+            "type": "passive",
+            "description": "Choose an Epic Boon through the shared Character Sheet path.",
+            "effects": [
+              {
+                "type": "epic_boon_choice",
+                "options": [
+                  "irresistible_offense",
+                  "combat_prowess",
+                  "spell_recall"
+                ]
+              }
+            ],
+            "rules_source": "dnd-2024-srd-5.2.1",
+            "rules_status": "2024-partial"
+          }
+        ],
+        "20": [
+          {
+            "id": "rogue_stroke_of_luck",
+            "name": "Stroke of Luck",
+            "type": "triggered",
+            "description": "Once per Short or Long Rest, turn a failed D20 Test into a 20. The current prompt supports event skill checks.",
+            "effects": [
+              {
+                "type": "stroke_of_luck"
+              }
+            ],
+            "uses": 1,
+            "uses_per": "short_rest",
+            "enabled": true,
+            "rules_source": "dnd-2024-srd-5.2.1",
+            "rules_status": "2024-partial"
+          }
+        ]
+      },
+      "subclass_level": 3
+    }
+  },
+  "equipment_reachability": [
+    {
+      "id": "rowan",
+      "class_id": "rogue",
+      "current_class_seed_items": [
+        "leather_armor",
+        "rapier",
+        "shortbow",
+        "dagger",
+        "thieves_tools"
+      ],
+      "source": "data/core/classes/rogue.json",
+      "source_sha256": "c272d35beebef5449232bcef4e5eaf0743ffa9dee2288b95050c6c6c1f9fcda7",
+      "intended_package": "../crown-equipment/packages.json",
+      "boundary": "PartyManager.create_companion calls Character.initialize; current class seeds differ from the intended 2024 packages. No companion creation or seed replacement in this pass."
+    }
+  ],
+  "source_consumers": [
+    {
+      "path": "src/autoload/party_manager.gd",
+      "sha256": "0a26a8e2e6c4bd1e7e230b2f4dc54e7acccd0a07695d57f6121362c19cf06966"
+    },
+    {
+      "path": "src/characters/character.gd",
+      "sha256": "f99ec256dc07ef7d2226b5d4537afa42c2011f6edf7fc97fcee7a9980cce6bd6"
+    }
+  ],
+  "authored_operations": [
+    {
+      "trigger": "Campaign initialization",
+      "intent": "Create one level-1 Character with exact name/species/class/ability seed, stable companion and character IDs; no generated NPC monster stats."
+    },
+    {
+      "trigger": "Recruit, decline, return, dismiss or replace",
+      "intent": "Use existing roster states and four stable slots/owner seats; replacement inherits legal slot ownership; retain character HP/inventory/progression on rerecruit."
+    },
+    {
+      "trigger": "Crown milestone / level-up through 5",
+      "intent": "Reuse linked class/species package and actual legal choices, once-only grants and spell permissions. Do not retroactively replay equipment or origin grants on restore."
+    }
+  ],
+  "blockers": [
+    "map_party",
+    "map_forms",
+    "map_items"
+  ],
+  "explicit_blockers": [
+    "Campaign seed does not specify a 2024 background, lineage, skills/tools, subclass at 3 or later selectable features/spells. Resolve these as explicit legal choices or authored campaign defaults before promotion; do not label missing choices complete.",
+    "Fixed ability scores are campaign seeds. Do not add new background/species increases on top without an explicit reconciliation of how these seeds were built.",
+    "Current initializer/default class gear is not proof of the intended 2024 package. Reuse companion item links from reachable-item pass and package equipment; no additional free starting set on recruit."
+  ],
+  "equipment_candidate_links": [
+    {
+      "item_id": "leather_armor",
+      "candidate": "../crown-equipment/items/leather_armor.json",
+      "blocker": null
+    },
+    {
+      "item_id": "rapier",
+      "candidate": "../crown-reachable-items/items/rapier.json",
+      "blocker": null
+    },
+    {
+      "item_id": "shortbow",
+      "candidate": "../crown-equipment/items/shortbow.json",
+      "blocker": null
+    },
+    {
+      "item_id": "dagger",
+      "candidate": "../crown-equipment/items/dagger.json",
+      "blocker": null
+    },
+    {
+      "item_id": "thieves_tools",
+      "candidate": "../crown-equipment/items/thieves_tools.json",
+      "blocker": null
+    }
+  ]
+}

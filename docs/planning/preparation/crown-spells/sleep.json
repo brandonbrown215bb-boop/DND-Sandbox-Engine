@@ -1,0 +1,161 @@
+{
+  "format": "crown-spell-candidate/1",
+  "id": "sleep",
+  "name": "Sleep",
+  "level": 1,
+  "status": "written_unverified_not_loaded",
+  "source": {
+    "authority": "SRD 5.2.1",
+    "url": "https://media.dndbeyond.com/compendium-images/srd/5.2/SRD_CC_v5.2.1.pdf",
+    "sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      163
+    ],
+    "header": {
+      "Casting Time": "Action",
+      "Range": "60 feet",
+      "Components": "V, S, M (a pinch of sand or rose petals)",
+      "Duration": "Concentration, up to 1 minute"
+    },
+    "attribution": "System Reference Document 5.2.1, Wizards of the Coast LLC; CC BY 4.0."
+  },
+  "casting": {
+    "casting_time": "Action",
+    "kind": "action",
+    "seconds": null,
+    "ritual_available": false,
+    "range": {
+      "source": "60 feet",
+      "kind": "distance",
+      "feet": 60
+    },
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "a pinch of sand or rose petals",
+    "duration": "Concentration, up to 1 minute",
+    "concentration": true,
+    "spell_lists": [
+      "bard",
+      "sorcerer",
+      "wizard"
+    ]
+  },
+  "authored_intent": "5-foot sphere; WIS save or Incapacitated through next-turn-end repeat save; failure becomes Unconscious; damage or shake wakes; non-sleeping/Exhaustion-immune targets automatically succeed.",
+  "rules": [
+    {
+      "id": "r001",
+      "text": "Each creature of your choice in a 5-foot-radius Sphere centered on a point within range must succeed on a Wisdom saving throw or have the Incapacitated condition until the end of its next turn, at which point it must repeat the save."
+    },
+    {
+      "id": "r002",
+      "text": "If the target fails the second save, the target has the Unconscious condition for the duration."
+    },
+    {
+      "id": "r003",
+      "text": "The spell ends on a target if it takes damage or someone within 5 feet of it takes an action to shake it out of the spell’s effect."
+    },
+    {
+      "id": "r004",
+      "text": "Creatures that don’t sleep, such as elves, or that have Immunity to the Exhaustion condition automatically succeed on saves against this spell."
+    }
+  ],
+  "authored_operations": [
+    {
+      "operation": "shared_definition_reference",
+      "parameters": {
+        "definition": "runtime_draft.definition"
+      },
+      "status": "shared_definition_reference_unverified",
+      "required_source_rules": [
+        "r001",
+        "r002",
+        "r003",
+        "r004"
+      ]
+    }
+  ],
+  "runtime_draft": {
+    "origin": "existing_shared_definition",
+    "definition": {
+      "area_creature_choice": true,
+      "area_radius": 1.0,
+      "attack_type": "none",
+      "casting_time": "action",
+      "classes": [
+        "bard",
+        "sorcerer",
+        "wizard"
+      ],
+      "components": [
+        "V",
+        "S",
+        "M"
+      ],
+      "concentration": true,
+      "description": "Each creature of your choice in a 5-foot-radius Sphere centered on a point within range must succeed on a Wisdom saving throw or have the Incapacitated condition until the end of its next turn, at which point it must repeat the save. If the target fails the second save, the target has the Unconscious condition for the duration. The spell ends on a target if it takes damage or someone within 5 feet of it takes an action to shake it out of the spell’s effect. Creatures that don’t sleep, such as elves, or that have Immunity to the Exhaustion condition automatically succeed on saves against this spell.",
+      "duration": "Concentration, up to 1 minute",
+      "duration_seconds": 60,
+      "effects": [
+        {
+          "radius": 1.0,
+          "shape": "sphere",
+          "type": "area_selection"
+        },
+        {
+          "condition": "incapacitated",
+          "on_failed_save": true,
+          "type": "grant_condition"
+        }
+      ],
+      "end_on_any_damage": true,
+      "end_on_shake_action": true,
+      "execution": "shared",
+      "id": "sleep",
+      "level": 1,
+      "material": "a pinch of sand or rose petals",
+      "name": "Sleep",
+      "range": 12,
+      "repeat_save": "WIS",
+      "repeat_save_schedule": "target_turn_end",
+      "repeat_save_stages": [
+        {
+          "condition": "incapacitated",
+          "on_failure": "advance",
+          "on_success": "end",
+          "successes_required": 1.0
+        },
+        {
+          "condition": "unconscious",
+          "final": true
+        }
+      ],
+      "rules_source": "SRD 5.2.1",
+      "rules_status": "authoring-draft-unverified",
+      "save": "WIS",
+      "save_auto_success_traits": [
+        "magical_sleep_immunity"
+      ],
+      "school": "enchantment",
+      "target": "area"
+    },
+    "fragments": {},
+    "coverage": "Unverified. Neither a full definition nor a fragment certifies all source rules or controls. Required extensions are not silently waived."
+  },
+  "required_extensions": [],
+  "audit": {
+    "source": "docs/audits/spells.md",
+    "batch": "088-3",
+    "production_definition_at_authoring": "res://data/core/spells/core_spells.json#8",
+    "baseline_execution": "shared",
+    "source_revision": "2a19eb1d",
+    "existing_conversion_label": "converted"
+  },
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile every source rule and required extension, then implement and verify through production paths before any deliberate promotion. Keep native behavior until covered."
+  }
+}

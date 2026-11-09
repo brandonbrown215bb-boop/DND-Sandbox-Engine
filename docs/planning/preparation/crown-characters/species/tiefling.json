@@ -1,0 +1,196 @@
+{
+  "schema": "crown-character-candidate/1",
+  "id": "tiefling",
+  "name": "Tiefling",
+  "kind": "species",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "scope": {
+    "total_character_level_maximum": 5
+  },
+  "operation_language": "authoring intent only; not registered engine syntax",
+  "runtime_support": "Retained definitions are reuse material, not proof of full rules. Every authored operation needs contract mapping and later production-path verification before promotion.",
+  "rules": {
+    "authority": "SRD 5.2.1",
+    "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      86
+    ],
+    "text": "Tiefling\nCreature Type: Humanoid\nSize: Medium (about 4–7 feet tall) or Small (about 3–4\nfeet tall), chosen when you select this species\nSpeed: 30 feet\nAs a Tiefling, you have the following special traits.\nDarkvision.\nYou have Darkvision with a range of\n60 feet.\nFiendish Legacy.\nYou are the recipient of a legacy\nthat grants you supernatural abilities. Choose a legacy from the Fiendish Legacies table. You gain the\nlevel 1 benefit of the chosen legacy.\nWhen you reach character levels 3 and 5, you\nlearn a higher-level spell, as shown on the table.\nYou always have that spell prepared. You can cast it\nonce without a spell slot, and you regain the ability\nto cast it in that way when you finish a Long Rest.\nYou can also cast the spell using any spell slots you\nhave of the appropriate level.\nIntelligence, Wisdom, or Charisma is your spellcasting ability for the spells you cast with this trait\n(choose the ability when you select the legacy).\nOtherworldly Presence.\nYou know the\nThaumaturgy\ncantrip. When you cast it with this trait, the\nspell uses the same spellcasting ability you use for\nyour Fiendish Legacy trait.\nLevel 3 Level 5\nRay of Sickness Hold Person\nFalse Life Ray of Enfeeblement\nHellish Rebuke Darkness",
+    "table_context_pages": [
+      86
+    ]
+  },
+  "definition": {
+    "size": [
+      "Medium",
+      "Small"
+    ],
+    "speed_feet": 30,
+    "darkvision_feet": 60,
+    "choices": {
+      "legacy": [
+        "abyssal",
+        "chthonic",
+        "infernal"
+      ],
+      "spellcasting_ability": [
+        "INT",
+        "WIS",
+        "CHA"
+      ]
+    },
+    "legacies": {
+      "abyssal": {
+        "resistance": "Poison",
+        "cantrip": "poison_spray",
+        "3": "ray_of_sickness",
+        "5": "hold_person"
+      },
+      "chthonic": {
+        "resistance": "Necrotic",
+        "cantrip": "chill_touch",
+        "3": "false_life",
+        "5": "ray_of_enfeeblement"
+      },
+      "infernal": {
+        "resistance": "Fire",
+        "cantrip": "fire_bolt",
+        "3": "hellish_rebuke",
+        "5": "darkness"
+      }
+    },
+    "creature_type": "Humanoid",
+    "ability_score_increases": {},
+    "languages": {
+      "fixed": [
+        "Common"
+      ],
+      "choose": 2,
+      "from": [
+        "Common Sign Language",
+        "Draconic",
+        "Dwarvish",
+        "Elvish",
+        "Giant",
+        "Gnomish",
+        "Goblin",
+        "Halfling",
+        "Orc"
+      ],
+      "source": "creation p20; species supplies no fixed ancestral language"
+    }
+  },
+  "authored_operations": [
+    {
+      "name": "Base species and creation grants",
+      "trigger": "Creation confirmation",
+      "cost": "One species; listed size and language choices",
+      "effects": [
+        "Humanoid creature type",
+        "Choose listed size; use declared Speed in feet; no fixed species ASIs",
+        "Know Common and choose two Standard Languages",
+        "Darkvision 60 feet; lineage override applies; execute observer-specific sight rather than an overworld vision bonus"
+      ],
+      "required_extension_groups": [
+        "progression",
+        "choices",
+        "languages",
+        "movement",
+        "world"
+      ],
+      "ending_and_identity": "Save exact selected species/size/languages; grant once; preserve legacy records separately."
+    },
+    {
+      "name": "Fiendish Legacy",
+      "trigger": "Select legacy; character3/5",
+      "cost": "none for grants; each levelled spell has one free cast per Long Rest or slots",
+      "effects": [
+        "Grant chosen Resistance and cantrip; always prepare level3/5 spell grants with independently tracked free uses"
+      ],
+      "required_extension_groups": [
+        "choices",
+        "casting",
+        "resources"
+      ],
+      "ending_and_identity": "Exact species/selected trait source; respect source ending; permanent grants once at actual character level."
+    },
+    {
+      "name": "Otherworldly Presence",
+      "trigger": "Creation",
+      "cost": "none",
+      "effects": [
+        "Know Thaumaturgy using selected legacy spellcasting ability"
+      ],
+      "required_extension_groups": [
+        "casting"
+      ],
+      "ending_and_identity": "Exact species/selected trait source; respect source ending; permanent grants once at actual character level."
+    },
+    {
+      "name": "Lineage/legacy spell grants",
+      "trigger": "Character levels1,3,5 regardless of class allocation",
+      "cost": "Each levelled spell separately once per Long Rest without slot, OR appropriate available slot; normal casting costs",
+      "effects": [
+        "Grant chosen cantrip and always-prepared spells using INT/WIS/CHA selected at lineage/legacy acquisition; no class spell-list requirement",
+        "Do not consume free use when slot mode selected; do not grant free spell slots"
+      ],
+      "required_extension_groups": [
+        "choices",
+        "casting",
+        "resources"
+      ]
+    }
+  ],
+  "reused_from": [
+    "data/core/races/tiefling.json"
+  ],
+  "retained_runtime_seed": {
+    "id": "tiefling",
+    "name": "Tiefling",
+    "description": "Tiefling race. Source: XPHB.",
+    "ability_bonuses": {},
+    "speed": 6,
+    "size": "small",
+    "languages": [
+      "Common"
+    ],
+    "proficiencies": [],
+    "traits": [
+      {
+        "id": "tiefling_darkvision",
+        "name": "Darkvision",
+        "description": "You have {@sense Darkvision} with a range of 60 feet.",
+        "effects": []
+      },
+      {
+        "id": "tiefling_fiendish_legacy",
+        "name": "Fiendish Legacy",
+        "description": "You are the recipient of a legacy that grants you supernatural abilities. Choose a legacy from the Fiendish Legacies table. You gain the level 1 benefit of the chosen legacy. When you reach character levels 3 and 5, you learn a higher-level spell, as shown on the table. You always have that spell prepared. You can cast it once without a spell slot, and you regain the ability to cast it in that way when you finish a Long Rest. You can also cast the spell using any spell slots you have of the appropriate level. Intelligence, Wisdom, or Charisma is your spellcasting ability for the spells you cast with this trait (choose the ability when you select the legacy). {'type': 'table', 'caption': 'Fiendish Legacies', 'colLabels': ['Legacy', 'Level 1', 'Level 3', 'Level 5'], 'colStyles': ['col-2', 'col-6', 'col-2', 'col-2'], 'rows': [['Abyssal', 'You have Resistance to Poison damage. You also know the Poison Spray cantrip.', 'Ray of Sickness', 'Hold Person'], ['Chthonic', 'You have Resistance to Necrotic damage. You also know the Chill Touch cantrip.', 'False Life', 'Ray of Enfeeblement'], ['Infernal', 'You have Resistance to Fire damage. You also know the Fire Bolt cantrip.', 'Hellish Rebuke', 'Darkness']]}",
+        "effects": []
+      },
+      {
+        "id": "tiefling_otherworldly_presence",
+        "name": "Otherworldly Presence",
+        "description": "You know the Thaumaturgy cantrip. When you cast it with this trait, the spell uses the same spellcasting ability you use for your Fiendish Legacy Trait.",
+        "effects": []
+      }
+    ],
+    "darkvision": true,
+    "darkvision_feet": 60
+  },
+  "unsupported_behavior": [
+    {
+      "groups": [
+        "casting",
+        "choices",
+        "resources"
+      ],
+      "requirement": "2024 choices, character-level grants and full named trait outcomes must map to shared hosts. Legacy seed is comparison material only: never inherit its fixed ASIs, old weapon grants or other unselected traits.",
+      "status": "mapping_and_host_verification_required"
+    }
+  ],
+  "source_revision": "2a19eb1d (existing working-tree definitions and recovered drafts read on 2026-11-08)",
+  "reused_input_hashes": {
+    "data/core/races/tiefling.json": "2034a9ab00181a5bcf3334a6e4949582e1c1db1ec79aabf0d961e59d9ae8e644"
+  }
+}

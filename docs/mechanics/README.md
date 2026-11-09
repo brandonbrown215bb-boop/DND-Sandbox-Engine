@@ -27,6 +27,7 @@ behavior before reopening a finding or claiming broader support.
 |---|---|
 | Creature/object occupancy, internal interactions, moving containers and legal release | [Containment](containment.md) |
 | Exact projected vessel cargo, passengers, movement and endings | [Projected vessels](projected-vessels.md) |
+| Exact ammunition shots and one-minute encounter recovery (S-249/CXM-01) | [Ammunition](ammunition.md) |
 | Exact container compartments/contents and attached parts (S-196/S-210; PARTIAL) | [Exact contents and parts](exact-contents-and-parts.md) |
 | Character-anchored tether groups, exact escape/rescue and source cleanup | [Tethers](tethers.md) |
 | Recipient Temporary HP and chosen/lingering protections (VS-84/85/86 accepted) | [Temporary HP and entry protections](temporary-hp-and-entry-protections.md) |

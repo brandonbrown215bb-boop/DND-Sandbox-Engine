@@ -1,0 +1,179 @@
+{
+  "schema": "crown-reachable-item-candidate/1",
+  "id": "potion_healing",
+  "name": "Potion of Healing",
+  "kind": "potion",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring intent only; not registered engine syntax.",
+  "rules": {
+    "authority": "SRD 5.2.1",
+    "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      99,
+      204,
+      206,
+      236
+    ],
+    "text": "Regain 2d4 + 2 Hit Points when drinking. Rarity common; red liquid glimmers when agitated. A typical potion is 1 ounce in a vial. Drinking or administering requires a Bonus Action; immediate effect uses up the potion. Potion-mixing rules/table on p.204 apply when selected.",
+    "source_context": "../source-pages.json"
+  },
+  "definition": {
+    "id": "potion_healing",
+    "name": "Potion of Healing",
+    "healing": "2d4 + 2",
+    "rarity": "common",
+    "typical_liquid_ounces": 1,
+    "source_rarity_value_gp": 50,
+    "source_weight_lb": 0.5
+  },
+  "authored_operations": [
+    "Choose self drink or actual eligible recipient administration; spend one Bonus Action and one exact potion copy once, restoring 2d4 + 2 HP subject to current healing rules.",
+    "The basic Healing potion explicitly allows administering to another creature within 5 feet (p.99). General potion category allows administration but does not supply a separate reach distance for higher potions; map the actual interaction host without inventing ranged use.",
+    "Map p.204 mixing/miscibility separately, preserving exact potions and source effects; a supported heal effect does not implement that procedure."
+  ],
+  "retained_runtime_seeds": [
+    {
+      "path": "data/core/items/consumables.json",
+      "array_index": 0,
+      "file_sha256": "045f413d89391312c1e3a175351f90427accde8f21b8d087abc1d6c5d9c3ec2d",
+      "definition": {
+        "id": "potion_healing",
+        "weight": 0.5,
+        "name": "Potion of Healing",
+        "description": "A vial of glowing red liquid. Heals 2d4 + 2 hit points.",
+        "type": "consumable",
+        "action_cost": "bonus_action",
+        "effects": [
+          {
+            "type": "heal",
+            "value": "2d4 + 2"
+          }
+        ],
+        "value": 50
+      }
+    },
+    {
+      "path": "data/core/items/imported_magic_consumables.json",
+      "array_index": 44,
+      "file_sha256": "7f3c9209d3a996aa3658277b50ccaa96eaa0a4764f65ef3eed5b905c79dab580",
+      "definition": {
+        "id": "potion_healing",
+        "name": "Potion of Healing",
+        "description": "You regain 2d4 + 2 hit points when you drink this potion. The potion's red liquid glimmers when agitated.",
+        "type": "consumable",
+        "action_cost": "action",
+        "effects": [
+          {
+            "type": "heal",
+            "value": "2d4+2"
+          }
+        ],
+        "value": 50
+      }
+    },
+    {
+      "path": "data/core/items/imported_magic_consumables.json",
+      "array_index": 45,
+      "file_sha256": "7f3c9209d3a996aa3658277b50ccaa96eaa0a4764f65ef3eed5b905c79dab580",
+      "definition": {
+        "id": "potion_healing",
+        "name": "Potion of Healing",
+        "description": "This potion is a magic item. As a Bonus Action, you can drink it or administer it to another creature within 5 feet of yourself. The creature that drinks the magical red fluid in this vial regains 2d4 + 2 Hit Points. The potion's red liquid glimmers when agitated.",
+        "type": "consumable",
+        "action_cost": "action",
+        "effects": [
+          {
+            "type": "heal",
+            "value": "2d4+2"
+          }
+        ],
+        "value": 50
+      }
+    }
+  ],
+  "manifest_overrides": [
+    {
+      "type": "item",
+      "id": "potion_healing",
+      "winner": "res://data/core/items/consumables.json#1",
+      "replaces": [
+        "res://data/core/items/imported_magic_consumables.json#45",
+        "res://data/core/items/imported_magic_consumables.json#46"
+      ]
+    }
+  ],
+  "required_mapping": [
+    "potions"
+  ],
+  "pricing_reconciliation": "Source rarity value is reference valuation, not a command to change Crown shop prices. Retained seed shop values remain unchanged; reconcile campaign pricing before promotion.",
+  "consumers": [
+    {
+      "channel": "historical_shop_inventory",
+      "path": "docs/planning/crown-content-scope.md",
+      "sha256": "3bcb9799865f1779aa7da1c1b041a6ac938c33491dfd502641593bf767a8528e",
+      "details": "Pinned 64-ID Windows export inventory; retained below, not rerun here."
+    },
+    {
+      "channel": "source_shop_candidate",
+      "path": "data/core/items/consumables.json",
+      "sha256": "045f413d89391312c1e3a175351f90427accde8f21b8d087abc1d6c5d9c3ec2d",
+      "json_pointer": "/0",
+      "details": "Positive shop type/value and, for consumables, declared supported effect names. This is a source selection lead, not a loaded availability certification; manifest wins remain authoritative."
+    },
+    {
+      "channel": "campaign_goal_loot_or_tactical_object",
+      "path": "data/core/campaigns/the_lost_crown.json",
+      "sha256": "3352b2d22be36e68591bfdf4ec73b8201f2bec6c69a3a60b0c8beb7d5074db44",
+      "json_pointer": "/dungeons/ruins_of_ashvale/tactical_rooms/1/objects/1/contents/0"
+    },
+    {
+      "channel": "campaign_goal_loot_or_tactical_object",
+      "path": "data/core/campaigns/the_lost_crown.json",
+      "sha256": "3352b2d22be36e68591bfdf4ec73b8201f2bec6c69a3a60b0c8beb7d5074db44",
+      "json_pointer": "/dungeons/ruins_of_ashvale/tactical_rooms/1/objects/1/contents/1"
+    },
+    {
+      "channel": "event_grant",
+      "path": "data/core/events/dungeon_events.json",
+      "sha256": "db368f21178462a95f0bb78028ec8e10441f6467e4a6bb7b3843d6ecaeb20d35",
+      "json_pointer": "/events/0/choices/0/success/effects/1/item_id"
+    },
+    {
+      "channel": "event_grant",
+      "path": "data/core/events/forest_events.json",
+      "sha256": "d4510f0da5ad26db2611a506fb58c79c35247610ac61ea39be48d30824feac09",
+      "json_pointer": "/events/2/choices/1/success/effects/0/item_id"
+    },
+    {
+      "channel": "event_grant",
+      "path": "data/core/events/forest_events.json",
+      "sha256": "d4510f0da5ad26db2611a506fb58c79c35247610ac61ea39be48d30824feac09",
+      "json_pointer": "/events/3/success/effects/1/item_id"
+    },
+    {
+      "channel": "event_grant",
+      "path": "data/core/events/mountain_events.json",
+      "sha256": "28c24bea91c714a4c49e7c7b6358adf5dea15b8f06d69dca29ef79542f0a6fd3",
+      "json_pointer": "/events/4/choices/1/effects/0/item_id"
+    },
+    {
+      "channel": "generated_dungeon_loot",
+      "path": "src/dungeon/dungeon_generator.gd",
+      "sha256": "88af7259bb15ebdba9e864b6fc59468d6a262946f7bde20ac33d8cb64921ca7e",
+      "details": "generate_dungeon intermediate LOOT branch: gold_100, optional potion_healing; tactical override clears these."
+    },
+    {
+      "channel": "monster_reward_metadata",
+      "path": "data/core/monsters/core_monsters.json",
+      "sha256": "33bf505c91476b32f7dd2887dd0caa19521e4a9e206392b8d803090b105eb8c2",
+      "json_pointer": "/1/loot_table/1/item_id",
+      "details": "Loot-table metadata retained; combat currently copies it into entities. This is not proof that a post-combat roll/grant host executes it."
+    }
+  ],
+  "unsupported_behavior": [
+    {
+      "group": "potions",
+      "requirement": "Drink or administer as a Bonus Action, consume exact copy once, settle real healing and preserve actual target/range/quantity. Retain potion mixing source/table as an explicit unmapped procedure; do not imply generic heal supports it."
+    }
+  ]
+}

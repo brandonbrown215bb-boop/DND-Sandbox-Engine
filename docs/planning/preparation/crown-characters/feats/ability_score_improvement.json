@@ -1,0 +1,75 @@
+{
+  "schema": "crown-character-candidate/1",
+  "id": "ability_score_improvement",
+  "name": "Ability Score Improvement",
+  "kind": "feat",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "scope": {
+    "total_character_level_maximum": 5
+  },
+  "operation_language": "authoring intent only; not registered engine syntax",
+  "runtime_support": "Retained definitions are reuse material, not proof of full rules. Every authored operation needs contract mapping and later production-path verification before promotion.",
+  "definition": {
+    "category": "General",
+    "repeatable": true,
+    "prerequisites": {
+      "character_level": 4
+    },
+    "parameters": {
+      "pattern": [
+        [
+          2
+        ],
+        [
+          1,
+          1
+        ]
+      ],
+      "abilities": [
+        "STR",
+        "DEX",
+        "CON",
+        "INT",
+        "WIS",
+        "CHA"
+      ],
+      "distinct_abilities": true,
+      "maximum": 20
+    }
+  },
+  "rules": {
+    "authority": "SRD 5.2.1",
+    "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      87
+    ],
+    "text": "Ability Score Improvement\nGeneral Feat (Prerequisite: Level 4+)\nIncrease one ability score of your choice by 2, or\nincrease two ability scores of your choice by 1. This\nfeat can’t increase an ability score above 20.\nRepeatable.\nYou can take this feat more than\nonce."
+  },
+  "authored_operations": [
+    {
+      "trigger": "Acquisition",
+      "effects": [
+        "Increase one chosen score by2 OR two different chosen scores by1, cap20; permanent ability ownership and CON-linked HP update once"
+      ],
+      "required_extension_groups": [
+        "choices",
+        "progression"
+      ],
+      "ending_and_identity": "Exact acquired feat instance owns parameters, budgets and grants; once-only acquisition and per-turn receipts; no replay on restore."
+    }
+  ],
+  "reused_from": [],
+  "retained_runtime_seed": null,
+  "unsupported_behavior": [
+    {
+      "groups": [
+        "choices",
+        "progression"
+      ],
+      "requirement": "Increase one chosen score by2 OR two different chosen scores by1, cap20; permanent ability ownership and CON-linked HP update once",
+      "status": "candidate_mapping_and_full_host_verification_required"
+    }
+  ],
+  "source_revision": "2a19eb1d (existing working-tree definitions and recovered drafts read on 2026-11-08)",
+  "reused_input_hashes": {}
+}

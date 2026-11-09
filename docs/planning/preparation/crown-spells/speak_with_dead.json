@@ -1,0 +1,166 @@
+{
+  "format": "crown-spell-candidate/1",
+  "id": "speak_with_dead",
+  "name": "Speak with Dead",
+  "level": 3,
+  "status": "written_unverified_not_loaded",
+  "source": {
+    "authority": "SRD 5.2.1",
+    "url": "https://media.dndbeyond.com/compendium-images/srd/5.2/SRD_CC_v5.2.1.pdf",
+    "sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      164
+    ],
+    "header": {
+      "Casting Time": "Action",
+      "Range": "10 feet",
+      "Components": "V, S, M (burning incense)",
+      "Duration": "10 minutes"
+    },
+    "attribution": "System Reference Document 5.2.1, Wizards of the Coast LLC; CC BY 4.0."
+  },
+  "casting": {
+    "casting_time": "Action",
+    "kind": "action",
+    "seconds": null,
+    "ritual_available": false,
+    "range": {
+      "source": "10 feet",
+      "kind": "distance",
+      "feet": 10
+    },
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "burning incense",
+    "duration": "10 minutes",
+    "concentration": false,
+    "spell_lists": [
+      "bard",
+      "cleric",
+      "wizard"
+    ]
+  },
+  "authored_intent": "Corpse with mouth and not Undead; up to five questions in ten minutes; no corpse reuse within ten days; prior-life knowledge only, no compulsion to truthful/friendly answers, no future speculation.",
+  "rules": [
+    {
+      "id": "r001",
+      "text": "You grant the semblance of life to a corpse of your choice within range, allowing it to answer questions you pose."
+    },
+    {
+      "id": "r002",
+      "text": "The corpse must have a mouth, and this spell fails if the deceased creature was Undead when it died."
+    },
+    {
+      "id": "r003",
+      "text": "The spell also fails if the corpse was the target of this spell within the past 10 days."
+    },
+    {
+      "id": "r004",
+      "text": "Until the spell ends, you can ask the corpse up to five questions."
+    },
+    {
+      "id": "r005",
+      "text": "The corpse knows only what it knew in life, including the languages it knew."
+    },
+    {
+      "id": "r006",
+      "text": "Answers are usually brief, cryptic, or repetitive, and the corpse is under no compulsion to offer a truthful answer if you are antagonistic toward it or it recognizes you as an enemy."
+    },
+    {
+      "id": "r007",
+      "text": "This spell doesn’t return the creature’s soul to its body, only its animating spirit."
+    },
+    {
+      "id": "r008",
+      "text": "Thus, the corpse can’t learn new information, doesn’t comprehend anything that has happened since it died, and can’t speculate about future events."
+    }
+  ],
+  "authored_operations": [
+    {
+      "operation": "question_remains",
+      "parameters": {
+        "requires_mouth": true,
+        "exclude": "was_undead_when_died",
+        "repeat_lockout_days": 10,
+        "questions_max": 5,
+        "known_languages_only": true,
+        "knowledge": "known_in_life_only",
+        "hostile_answer": "not_compelled_truth",
+        "no_new_information_or_future_speculation": true
+      },
+      "status": "authoring_declaration_not_a_registered_opcode",
+      "required_source_rules": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006",
+        "r007",
+        "r008"
+      ]
+    }
+  ],
+  "runtime_draft": {
+    "origin": "proposed_operations",
+    "definition": null,
+    "fragments": {},
+    "coverage": "Unverified. Neither a full definition nor a fragment certifies all source rules or controls. Required extensions are not silently waived."
+  },
+  "required_extensions": [
+    {
+      "group": "communication",
+      "requirement": "Reuse represented language/hearing where applicable, then implement the spell-specific recipients, range, content, answers, secrecy and source lifetime.",
+      "spell_specific_intent": "Corpse with mouth and not Undead; up to five questions in ten minutes; no corpse reuse within ten days; prior-life knowledge only, no compulsion to truthful/friendly answers, no future speculation.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006",
+        "r007",
+        "r008"
+      ],
+      "existing_owner_to_reuse": "src/combat/communication_rules.gd",
+      "slice_references": "S-194/S-218/S-219",
+      "disposition": "requires_mapping_or_host_completion",
+      "note": "This is an authored handoff requirement, not a fresh runtime failure or claim that the whole referenced slice is missing."
+    },
+    {
+      "group": "death_and_remains",
+      "requirement": "Retain exact dead/living/corpse identity, death timing, source restrictions and actual stabilization/revival/remains changes; preserve excluded deaths and missing parts.",
+      "spell_specific_intent": "Corpse with mouth and not Undead; up to five questions in ten minutes; no corpse reuse within ten days; prior-life knowledge only, no compulsion to truthful/friendly answers, no future speculation.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006",
+        "r007",
+        "r008"
+      ],
+      "existing_owner_to_reuse": "src/combat/zero_hp_aftermath_rules.gd",
+      "slice_references": "S-119/S-120/S-175/S-176",
+      "disposition": "requires_mapping_or_host_completion",
+      "note": "This is an authored handoff requirement, not a fresh runtime failure or claim that the whole referenced slice is missing."
+    }
+  ],
+  "audit": {
+    "source": "docs/audits/spells.md",
+    "batch": "088-7",
+    "production_definition_at_authoring": "res://data/core/spells/imported_spells.json#172",
+    "baseline_execution": "native",
+    "source_revision": "2a19eb1d",
+    "existing_conversion_label": "queued"
+  },
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile every source rule and required extension, then implement and verify through production paths before any deliberate promotion. Keep native behavior until covered."
+  }
+}

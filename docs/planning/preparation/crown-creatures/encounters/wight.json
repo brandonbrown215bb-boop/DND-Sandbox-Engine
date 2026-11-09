@@ -1,0 +1,433 @@
+{
+  "schema": "crown-creature-candidate/1",
+  "id": "crown_wight",
+  "name": "Wight",
+  "kind": "campaign_encounter",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring intent only; not registered engine syntax. Mapping requirements do not assert the whole referenced engine slice is absent.",
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile all source clauses, mappings and source differences before later production-path verification. Keep native paths until replacements cover them."
+  },
+  "source": {
+    "path": "data/core/monsters/core_monsters.json",
+    "sha256": "33bf505c91476b32f7dd2887dd0caa19521e4a9e206392b8d803090b105eb8c2",
+    "pointer": "/8",
+    "payload": {
+      "id": "wight",
+      "name": "Wight",
+      "description": "An undead warrior possessed by a malevolent spirit.",
+      "size": "medium",
+      "challenge_rating": 3,
+      "hit_points": "6d8 + 18",
+      "armor_class": 14,
+      "speed": 6,
+      "ability_scores": {
+        "STR": 15,
+        "DEX": 14,
+        "CON": 16,
+        "INT": 10,
+        "WIS": 13,
+        "CHA": 15
+      },
+      "damage_immunities": [
+        "poison"
+      ],
+      "condition_immunities": [
+        "exhaustion",
+        "poisoned"
+      ],
+      "attacks": [
+        {
+          "name": "Life Drain",
+          "ability": "STR",
+          "damage": "1d6 + 2",
+          "damage_type": "necrotic",
+          "range": 1,
+          "extra_effects": [
+            {
+              "type": "reduce_max_hp",
+              "value": "damage_dealt"
+            }
+          ]
+        },
+        {
+          "name": "Longsword",
+          "ability": "STR",
+          "damage": "1d8 + 2",
+          "damage_type": "slashing",
+          "range": 1
+        },
+        {
+          "name": "Longbow",
+          "ability": "DEX",
+          "damage": "1d8 + 2",
+          "damage_type": "piercing",
+          "range": 8
+        }
+      ],
+      "ai_behavior": "aggressive",
+      "special_abilities": [
+        {
+          "id": "multiattack",
+          "name": "Multiattack",
+          "description": "Makes two longsword attacks or two longbow attacks."
+        },
+        {
+          "id": "sunlight_sensitivity",
+          "name": "Sunlight Sensitivity",
+          "description": "Disadvantage on attack rolls in sunlight."
+        }
+      ],
+      "loot_table": [
+        {
+          "item_id": "longsword",
+          "chance": 0.3
+        },
+        {
+          "item_id": "gold_100",
+          "chance": 0.5
+        }
+      ],
+      "xp": 700
+    },
+    "authority": "Existing Crown authored creature; not asserted SRD 5.2.1 compliance"
+  },
+  "retained_definitions": [
+    {
+      "path": "data/core/monsters/core_monsters.json",
+      "sha256": "33bf505c91476b32f7dd2887dd0caa19521e4a9e206392b8d803090b105eb8c2",
+      "pointer": "/8",
+      "payload": {
+        "id": "wight",
+        "name": "Wight",
+        "description": "An undead warrior possessed by a malevolent spirit.",
+        "size": "medium",
+        "challenge_rating": 3,
+        "hit_points": "6d8 + 18",
+        "armor_class": 14,
+        "speed": 6,
+        "ability_scores": {
+          "STR": 15,
+          "DEX": 14,
+          "CON": 16,
+          "INT": 10,
+          "WIS": 13,
+          "CHA": 15
+        },
+        "damage_immunities": [
+          "poison"
+        ],
+        "condition_immunities": [
+          "exhaustion",
+          "poisoned"
+        ],
+        "attacks": [
+          {
+            "name": "Life Drain",
+            "ability": "STR",
+            "damage": "1d6 + 2",
+            "damage_type": "necrotic",
+            "range": 1,
+            "extra_effects": [
+              {
+                "type": "reduce_max_hp",
+                "value": "damage_dealt"
+              }
+            ]
+          },
+          {
+            "name": "Longsword",
+            "ability": "STR",
+            "damage": "1d8 + 2",
+            "damage_type": "slashing",
+            "range": 1
+          },
+          {
+            "name": "Longbow",
+            "ability": "DEX",
+            "damage": "1d8 + 2",
+            "damage_type": "piercing",
+            "range": 8
+          }
+        ],
+        "ai_behavior": "aggressive",
+        "special_abilities": [
+          {
+            "id": "multiattack",
+            "name": "Multiattack",
+            "description": "Makes two longsword attacks or two longbow attacks."
+          },
+          {
+            "id": "sunlight_sensitivity",
+            "name": "Sunlight Sensitivity",
+            "description": "Disadvantage on attack rolls in sunlight."
+          }
+        ],
+        "loot_table": [
+          {
+            "item_id": "longsword",
+            "chance": 0.3
+          },
+          {
+            "item_id": "gold_100",
+            "chance": 0.5
+          }
+        ],
+        "xp": 700
+      },
+      "manifest_declarations": [
+        {
+          "type": "monster",
+          "id": "wight",
+          "winner": "res://data/core/monsters/core_monsters.json#9",
+          "replaces": [
+            "res://data/core/monsters/imported_monsters.json#422"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "data/core/monsters/imported_monsters.json",
+      "sha256": "f57bee1e93f185a89575bed3d8b2b610b53cfd3b7f2eb56448d1dd64a0126c5f",
+      "pointer": "/421",
+      "payload": {
+        "id": "wight",
+        "name": "Wight",
+        "hit_points": "6d8 + 18",
+        "armor_class": 14,
+        "speed": 6,
+        "ability_scores": {
+          "STR": 15,
+          "DEX": 14,
+          "CON": 16,
+          "INT": 10,
+          "WIS": 13,
+          "CHA": 15
+        },
+        "attacks": [
+          {
+            "name": "Claws",
+            "ability": "STR",
+            "damage": "1d6",
+            "range": 1,
+            "damage_type": "slashing"
+          }
+        ],
+        "ai_behavior": "aggressive"
+      },
+      "manifest_declarations": [
+        {
+          "type": "monster",
+          "id": "wight",
+          "winner": "res://data/core/monsters/core_monsters.json#9",
+          "replaces": [
+            "res://data/core/monsters/imported_monsters.json#422"
+          ]
+        }
+      ]
+    }
+  ],
+  "campaign_monster_id": "wight",
+  "srd_comparison_candidate": "statblocks/wight.json",
+  "conversion_policy": "Preserve campaign identity and all existing custom rules. Source-reconcile overlapping SRD creatures explicitly; candidate authoring does not replace a campaign definition. Goblin Chief and Lich King have no automatic official replacement.",
+  "authored_operations": [
+    {
+      "key": "attack_0",
+      "trigger": "Selected action attack",
+      "budget": "action; multiattack only if explicitly granted",
+      "full_rule_payload": {
+        "name": "Life Drain",
+        "ability": "STR",
+        "damage": "1d6 + 2",
+        "damage_type": "necrotic",
+        "range": 1,
+        "extra_effects": [
+          {
+            "type": "reduce_max_hp",
+            "value": "damage_dealt"
+          }
+        ]
+      },
+      "steps": [
+        "Resolve authored range/ability/damage and each declared extra effect in order through shared operations.",
+        "Retain separate save-only, after-hit, max-HP, corrosion and condition outcomes; native effect-name recognition is not complete behavior."
+      ],
+      "blockers": [
+        "map_attacks",
+        "map_conditions"
+      ],
+      "behavior_plan": {
+        "budget": "action or member of source-declared Multiattack",
+        "resolution": "Printed campaign attack with native ability/cell range; source conversion must settle feet and explicit final attack modifiers",
+        "hit_damage": {
+          "formula": "1d6 + 2",
+          "type": "necrotic"
+        },
+        "after_hit_in_order": [
+          {
+            "type": "reduce_max_hp",
+            "value": "damage_dealt"
+          }
+        ],
+        "source_boundary": "Keep current custom attack separate from official comparison; map every save, defense, condition ending, max-HP or exact-item effect explicitly."
+      }
+    },
+    {
+      "key": "attack_1",
+      "trigger": "Selected action attack",
+      "budget": "action; multiattack only if explicitly granted",
+      "full_rule_payload": {
+        "name": "Longsword",
+        "ability": "STR",
+        "damage": "1d8 + 2",
+        "damage_type": "slashing",
+        "range": 1
+      },
+      "steps": [
+        "Resolve authored range/ability/damage and each declared extra effect in order through shared operations.",
+        "Retain separate save-only, after-hit, max-HP, corrosion and condition outcomes; native effect-name recognition is not complete behavior."
+      ],
+      "blockers": [
+        "map_attacks",
+        "map_conditions"
+      ],
+      "behavior_plan": {
+        "budget": "action or member of source-declared Multiattack",
+        "resolution": "Printed campaign attack with native ability/cell range; source conversion must settle feet and explicit final attack modifiers",
+        "hit_damage": {
+          "formula": "1d8 + 2",
+          "type": "slashing"
+        },
+        "after_hit_in_order": [],
+        "source_boundary": "Keep current custom attack separate from official comparison; map every save, defense, condition ending, max-HP or exact-item effect explicitly."
+      }
+    },
+    {
+      "key": "attack_2",
+      "trigger": "Selected action attack",
+      "budget": "action; multiattack only if explicitly granted",
+      "full_rule_payload": {
+        "name": "Longbow",
+        "ability": "DEX",
+        "damage": "1d8 + 2",
+        "damage_type": "piercing",
+        "range": 8
+      },
+      "steps": [
+        "Resolve authored range/ability/damage and each declared extra effect in order through shared operations.",
+        "Retain separate save-only, after-hit, max-HP, corrosion and condition outcomes; native effect-name recognition is not complete behavior."
+      ],
+      "blockers": [
+        "map_attacks",
+        "map_conditions"
+      ],
+      "behavior_plan": {
+        "budget": "action or member of source-declared Multiattack",
+        "resolution": "Printed campaign attack with native ability/cell range; source conversion must settle feet and explicit final attack modifiers",
+        "hit_damage": {
+          "formula": "1d8 + 2",
+          "type": "piercing"
+        },
+        "after_hit_in_order": [],
+        "source_boundary": "Keep current custom attack separate from official comparison; map every save, defense, condition ending, max-HP or exact-item effect explicitly."
+      }
+    },
+    {
+      "key": "trait_0",
+      "full_rule_payload": {
+        "id": "multiattack",
+        "name": "Multiattack",
+        "description": "Makes two longsword attacks or two longbow attacks."
+      },
+      "steps": [
+        {
+          "intent": "Resolve declared roll or save, targets, range/reach, damage packets, multiattack choice, riders and exact action budget. A save-only action is not a weapon hit rider.",
+          "mapping_group": "attacks"
+        }
+      ],
+      "blockers": [
+        "source_reconciliation"
+      ],
+      "behavior_plan": {
+        "budget": "action",
+        "sequence": [
+          "two longsword attacks OR two longbow attacks"
+        ],
+        "policy": "Keep authored campaign sequence; no imported SRD replacement option."
+      }
+    },
+    {
+      "key": "trait_1",
+      "full_rule_payload": {
+        "id": "sunlight_sensitivity",
+        "name": "Sunlight Sensitivity",
+        "description": "Disadvantage on attack rolls in sunlight."
+      },
+      "steps": [
+        {
+          "intent": "Apply conditional Advantage/Disadvantage or roll adjustment only to the qualifying exact check/save/attack and its declared window.",
+          "mapping_group": "rolls"
+        }
+      ],
+      "blockers": [
+        "source_reconciliation"
+      ],
+      "behavior_plan": {
+        "gate": "In sunlight",
+        "effect": "Disadvantage on attack rolls",
+        "source_boundary": "Campaign seed does not include ability checks; separate SRD comparison does."
+      }
+    }
+  ],
+  "blockers": [
+    "map_statistics",
+    "source_reconciliation",
+    "map_attacks",
+    "map_items"
+  ],
+  "selection_links": [
+    "selection-links.json"
+  ],
+  "loot": {
+    "metadata": [
+      {
+        "item_id": "longsword",
+        "chance": 0.3
+      },
+      {
+        "item_id": "gold_100",
+        "chance": 0.5
+      }
+    ],
+    "item_pass": {
+      "path": "docs/planning/preparation/crown-reachable-items/reachability.json",
+      "sha256": "060c7989394a5dd9f9079bca55527b5a22dcb3d7c4e7d0568f3ae784c472220c"
+    },
+    "candidate_index": "../crown-reachable-items/index.json",
+    "settlement": "No generic post-combat payment established by the reachable-item trace. Do not duplicate campaign boss/room rewards.",
+    "candidate_links": [
+      {
+        "item_id": "longsword",
+        "candidate": "../crown-equipment/items/longsword.json"
+      },
+      {
+        "item_id": "gold_100",
+        "candidate": "../crown-reachable-items/items/gold_100.json"
+      }
+    ]
+  },
+  "spell_candidates": [],
+  "source_differences": [
+    "SRD Wight HP82, Necrotic Resistance, mixed Necrotic weapons, save-only Life Drain and24-hour Zombie creation differ from simplified Crown attacks/HP. Keep source body and campaign rules separate."
+  ],
+  "retained_runtime_observations": {
+    "source": {
+      "path": "src/combat/combat_action.gd",
+      "sha256": "2833d2c8b3f6b2fd5a6b0acf97a927d8b5299362d9e5db8517ff5506d53892f8"
+    },
+    "function": "resolve_monster_attack_effects",
+    "boundary": "Read-only code observation, not gameplay verification: after a hit poison_save/restrain/paralyze_save call saving_throw_to_dc and add_condition with max(1,duration) turn count; corrode_armor adds AC-1 modifier for duration default10 rather than damaging a carried armor copy. reduce_max_hp uses existing damage receipt and direct maxHP mutation. Do not treat these simplified interpretations as source rules or replace them here."
+  }
+}

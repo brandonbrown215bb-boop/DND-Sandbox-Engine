@@ -1,0 +1,47 @@
+{
+  "schema": "crown-world-candidate/1",
+  "id": "fallen_guard_bones",
+  "name": "Bones of a fallen temple guard",
+  "kind": "objects",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring declarations only; not registered engine opcodes.",
+  "required_extensions": [
+    "objects",
+    "bodies_actors",
+    "knowledge_social"
+  ],
+  "authored_operations": [
+    {
+      "operation": "instantiate_exact_room_object",
+      "requirement": "Preserve all retained facts and exact room/object identity; mutations and contents persist with the room. Do not respawn removed/destroyed objects on revisit."
+    }
+  ],
+  "blockers": [
+    "Former knowledge and death time are not authored. Generic Small-or-Medium description does not override actual Medium size. Preservation/animation must consume or change these exact bones once."
+  ],
+  "retained_input": {
+    "path": "data/core/campaigns/the_lost_crown.json",
+    "sha256": "3352b2d22be36e68591bfdf4ec73b8201f2bec6c69a3a60b0c8beb7d5074db44",
+    "pointer": "/dungeons/ruins_of_ashvale/tactical_rooms/1/objects/8",
+    "payload": {
+      "id": "fallen_guard_bones",
+      "name": "Bones of a fallen temple guard",
+      "kind": "remains",
+      "position": [
+        -1,
+        1
+      ],
+      "body_creature_type": "humanoid",
+      "size": "Medium",
+      "remains": "bones",
+      "preserved_until": 0,
+      "description": "An old Small or Medium Humanoid skeleton. These remains may be preserved or animated; their former knowledge is not authored.",
+      "material": "bone",
+      "hp": 10,
+      "max_hp": 10,
+      "fixed": false,
+      "removed": false,
+      "contents": []
+    }
+  }
+}

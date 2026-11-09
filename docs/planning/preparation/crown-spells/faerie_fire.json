@@ -1,0 +1,188 @@
+{
+  "format": "crown-spell-candidate/1",
+  "id": "faerie_fire",
+  "name": "Faerie Fire",
+  "level": 1,
+  "status": "written_unverified_not_loaded",
+  "source": {
+    "authority": "SRD 5.2.1",
+    "url": "https://media.dndbeyond.com/compendium-images/srd/5.2/SRD_CC_v5.2.1.pdf",
+    "sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      129
+    ],
+    "header": {
+      "Casting Time": "Action",
+      "Range": "60 feet",
+      "Components": "V",
+      "Duration": "Concentration, up to 1 minute"
+    },
+    "attribution": "System Reference Document 5.2.1, Wizards of the Coast LLC; CC BY 4.0."
+  },
+  "casting": {
+    "casting_time": "Action",
+    "kind": "action",
+    "seconds": null,
+    "ritual_available": false,
+    "range": {
+      "source": "60 feet",
+      "kind": "distance",
+      "feet": 60
+    },
+    "components": [
+      "V"
+    ],
+    "material": null,
+    "duration": "Concentration, up to 1 minute",
+    "concentration": true,
+    "spell_lists": [
+      "bard",
+      "druid"
+    ]
+  },
+  "authored_intent": "20-foot cube outlines every eligible object and failed-DEX creature in chosen color; Dim Light 10 feet; attacks have Advantage only if attacker sees outline; Invisible benefit suppressed.",
+  "rules": [
+    {
+      "id": "r001",
+      "text": "Objects in a 20-foot Cube within range are outlined in blue, green, or violet light (your choice)."
+    },
+    {
+      "id": "r002",
+      "text": "Each creature in the Cube is also outlined if it fails a Dexterity saving throw."
+    },
+    {
+      "id": "r003",
+      "text": "For the duration, objects and affected creatures shed Dim Light in a 10-foot radius and can’t benefit from the Invisible condition."
+    },
+    {
+      "id": "r004",
+      "text": "Attack rolls against an affected creature or object have Advantage if the attacker can see it."
+    }
+  ],
+  "authored_operations": [
+    {
+      "operation": "outline_area_targets",
+      "parameters": {
+        "cube_feet": 20,
+        "objects": "automatic",
+        "creatures": {
+          "save": "DEX"
+        },
+        "color_choices": [
+          "blue",
+          "green",
+          "violet"
+        ],
+        "dim_radius_feet": 10,
+        "invisible_benefit": false,
+        "attack_advantage": "only_if_attacker_sees_target"
+      },
+      "status": "authoring_declaration_not_a_registered_opcode",
+      "required_source_rules": [
+        "r001",
+        "r002",
+        "r003",
+        "r004"
+      ]
+    }
+  ],
+  "runtime_draft": {
+    "origin": "existing_shared_definition",
+    "definition": {
+      "attack_type": "none",
+      "casting_time": "action",
+      "classes": [
+        "bard",
+        "druid"
+      ],
+      "components": [
+        "V"
+      ],
+      "concentration": true,
+      "description": "Objects in a 20-foot Cube within range are outlined in blue, green, or violet light (your choice). Each creature in the Cube is also outlined if it fails a Dexterity saving throw. For the duration, objects and affected creatures shed Dim Light in a 10-foot radius and can’t benefit from the Invisible condition. Attack rolls against an affected creature or object have Advantage if the attacker can see it.",
+      "duration": "Concentration, up to 1 minute",
+      "duration_seconds": 60,
+      "effects": [
+        {
+          "shape": "cube",
+          "size": 4.0,
+          "type": "area_selection"
+        },
+        {
+          "condition": "outlined",
+          "on_failed_save": true,
+          "type": "grant_condition"
+        }
+      ],
+      "execution": "shared",
+      "id": "faerie_fire",
+      "level": 1,
+      "name": "Faerie Fire",
+      "range": 12,
+      "rules_source": "SRD 5.2.1",
+      "rules_status": "authoring-draft-unverified",
+      "save": "DEX",
+      "school": "evocation",
+      "target": "area"
+    },
+    "fragments": {},
+    "coverage": "Unverified. Neither a full definition nor a fragment certifies all source rules or controls. Required extensions are not silently waived."
+  },
+  "required_extensions": [
+    {
+      "group": "object_targets",
+      "requirement": "Complete the declared object target/control consumer and its effects; a creature-only path does not author the full spell.",
+      "spell_specific_intent": "20-foot cube outlines every eligible object and failed-DEX creature in chosen color; Dim Light 10 feet; attacks have Advantage only if attacker sees outline; Invisible benefit suppressed.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003",
+        "r004"
+      ],
+      "existing_owner_to_reuse": "src/spells/spell_cast_targeting.gd",
+      "slice_references": "S-032/S-098/S-099",
+      "disposition": "requires_mapping_or_host_completion",
+      "note": "This is an authored handoff requirement, not a fresh runtime failure or claim that the whole referenced slice is missing."
+    },
+    {
+      "group": "light_and_darkness",
+      "requirement": "Create/move/cover actual source-owned illumination and darkness, exact radii, sight exceptions and overlapping-spell ending; a marker alone is insufficient.",
+      "spell_specific_intent": "20-foot cube outlines every eligible object and failed-DEX creature in chosen color; Dim Light 10 feet; attacks have Advantage only if attacker sees outline; Invisible benefit suppressed.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003",
+        "r004"
+      ],
+      "existing_owner_to_reuse": "src/combat/combat_perception.gd",
+      "slice_references": "S-190/S-191/S-274/S-276",
+      "disposition": "requires_mapping_or_host_completion",
+      "note": "This is an authored handoff requirement, not a fresh runtime failure or claim that the whole referenced slice is missing."
+    },
+    {
+      "group": "retained_conversion_limit",
+      "requirement": "Outline eligible objects and replace the not-Blinded approximation with actual per-observer sight/light consumers.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003",
+        "r004"
+      ],
+      "disposition": "recorded_partial_or_blocked_consumer",
+      "queue_status": "partial: creature outline migrated; object outlines and exact observer sight remain missing"
+    }
+  ],
+  "audit": {
+    "source": "docs/audits/spells.md",
+    "batch": "088-6",
+    "production_definition_at_authoring": "res://data/core/spells/crown_sc_05_support_02.json#4",
+    "baseline_execution": "shared",
+    "source_revision": "2a19eb1d",
+    "existing_conversion_label": "partial: creature outline migrated; object outlines and exact observer sight remain missing"
+  },
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile every source rule and required extension, then implement and verify through production paths before any deliberate promotion. Keep native behavior until covered."
+  }
+}

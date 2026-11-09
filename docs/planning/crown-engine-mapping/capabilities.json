@@ -1,0 +1,2005 @@
+{
+  "schema": "crown-capability-assignments/1",
+  "status": "planning_only",
+  "prerequisite_semantics": "Prerequisites mean only the selected needed behavior, not completion of a whole referenced assignment or parent slice. Neutral loaded production fixtures can provide it without production catalogs. Numeric order picks ready work; independent ready work may proceed. CATALOG/JOURNEY are convergence checks, not gates on narrow promotion.",
+  "capabilities": [
+    {
+      "id": "BASE",
+      "order": 0,
+      "assignment": "REUSE",
+      "title": "Reuse shared execution and accepted proofs",
+      "slice_owner": "S-021/S-022/S-033/S-034/S-043",
+      "reuse": "SharedSpell automatic/attack/save; SharedStepExecutor ordered gates; heal/temporary_hp/grant_condition/remove_condition/weapon_attack/projectiles/delayed_damage/push/exploding_dice/leap_on_matching_dice; CombatAction typed settlement. Accepted SC-01–07 and condition/OA subsets stay accepted.",
+      "remaining": "Candidate translation and missing consumer proof. Bestow Curse support-10 packet/paid-slot repair exists locally despite older held prose; direct/delayed/aftermath/class-feature/monster/repeated-step limits remain. A valid fragment never certifies the whole candidate.",
+      "prerequisites": [],
+      "concrete_consumers": "All spells/features/items/actors; Acid Splash, Cure Wounds, Hold Person, True Strike, Ice Knife, Chromatic Orb, Shatter are concrete reusable paths.",
+      "acceptance": "Reuse unchanged focused proofs. New/renamed loaded data must traverse ordinary controls, refuse before unintended RNG/payment and settle once. No blanket repeat of accepted parent slices.",
+      "evidence": [
+        "src/spells/shared_spell.gd",
+        "src/combat/shared_step_executor.gd",
+        "docs/mechanics/shared-spells.md",
+        "docs/planning/crown-spell-conversion-queue.csv"
+      ],
+      "work_kinds": [
+        "content_wiring",
+        "gameplay_proof"
+      ],
+      "state": "planning_only",
+      "engine_state": "existing_contract",
+      "proof_state": "No gameplay acceptance performed here; reuse only the registry's named verified boundaries."
+    },
+    {
+      "id": "AMMO",
+      "order": 1,
+      "assignment": "CXM-01",
+      "title": "Exact ammunition spending and recovery",
+      "slice_owner": "S-249; S-049/S-196/S-064 reuse",
+      "reuse": "Exact inventory copies/quantities, attack budgets and campaign clock; accepted S-250 range/Heavy. Native Loading already caps ordinary Attack swings.",
+      "remaining": "No established exact debit/recovery host. Bind ammunition kind and weapon to each committed shot, hand/loading eligibility, spent encounter batch and once-only recovery. Purchase lots differ from pieces; general liquids/fuel are not prerequisites.",
+      "prerequisites": [],
+      "concrete_consumers": "Arrows/Quiver, Bolts/Case, Sling Bullets, Firearm Bullets, Blowgun Needles; bows/crossbows/Sling/Pistol/Musket/Blowgun; Fighter B/Ranger/Rogue packages and merchant links.",
+      "acceptance": "Windows production input with renamed bow/ammo: 0 refuses before RNG/action; two shots from 3 leave 1, including misses. Cancel/stale spends0, committed continuation spends1. Check actual loading/free hand and off-turn routes. One minute recovers floor(half eligible spent) once per encounter; destroyed ammunition is excluded when corrosion is wired. Both allowed DTO/relaunch routes retain counts; malformed counters refuse before replacing session.",
+      "evidence": [
+        "src/characters/inventory_copies.gd",
+        "src/combat/combat_action.gd",
+        "src/combat/combat_state.gd",
+        "docs/mechanics/exact-contents-and-parts.md"
+      ],
+      "work_kinds": [
+        "engine_extension",
+        "content_wiring",
+        "gameplay_proof"
+      ],
+      "state": "planning_only",
+      "engine_state": "missing_selected_generic_contract",
+      "proof_state": "No gameplay acceptance performed here; reuse only the registry's named verified boundaries."
+    },
+    {
+      "id": "ARMOR",
+      "order": 2,
+      "assignment": "CXM-02",
+      "title": "Worn penalties and legal base AC",
+      "slice_owner": "S-251; S-085/S-252 reuse",
+      "reuse": "Real don/doff and Shield Action; ProtectionRules/RuleUpgradeRules base alternatives and equipment queries.",
+      "remaining": "Strength Speed penalty, Stealth Disadvantage, untrained STR/DEX D20 penalties/cast refusal on actual hosts; Shield training and choice among legal AC bases. Keep native armor behavior until its consumers are covered.",
+      "prerequisites": [],
+      "concrete_consumers": "All13 armor/Shield candidates; Defense, Barbarian/Monk defense, Draconic Resilience, Mage Armor/Barkskin.",
+      "acceptance": "Real Equip/Unequip, checks/attacks/casts at/below STR threshold, trained/untrained and Shield-only. Removal clears only its penalties, never refunds movement. Compare competing base AC and checkpoint recovery; reuse accepted timing proof.",
+      "evidence": [
+        "docs/mechanics/equipment-timing.md",
+        "docs/mechanics/attack-and-ac-upgrades.md",
+        "src/characters/protection_rules.gd"
+      ],
+      "work_kinds": [
+        "engine_extension",
+        "content_wiring",
+        "gameplay_proof"
+      ],
+      "state": "planning_only",
+      "engine_state": "partial_contract_missing_or_unverified_named_hosts",
+      "proof_state": "No gameplay acceptance performed here; reuse only the registry's named verified boundaries."
+    },
+    {
+      "id": "PACK",
+      "order": 3,
+      "assignment": "CXM-03",
+      "title": "Exact starting alternatives and pack grants",
+      "slice_owner": "S-047/S-049/S-050; S-231 consumer",
+      "reuse": "G2 skill/tool choices, Monk tool copy, Explorer pack expansion, combined Druid Quarterstaff/focus, permanent-grant fit preflight/receipts.",
+      "remaining": "Wire16 full A/B/C/GP packages, six packs and linked choices once. No pack shell/contents double counting, invented Backpack fit, forced Amulet, Bard proficiency match or replay. Retained source conflicts remain explicit.",
+      "prerequisites": [],
+      "concrete_consumers": "packages.json; all12 classes/four backgrounds, Bard/Monk/Soldier choices, Holy Symbol forms; Cleric A is7GP.",
+      "acceptance": "Normal creation each alternative plus Back/Random/seat reset: exact quantities/GP, Monk/Soldier match tool, Bard independent. Full grant refuses atomically when it cannot fit; expand once. Sell/consume then reload both DTOs: no recreation. Unknown weights remain unknown.",
+      "evidence": [
+        "docs/mechanics/permanent-progression.md",
+        "docs/mechanics/progression-choices.md",
+        "src/characters/inventory.gd"
+      ],
+      "work_kinds": [
+        "engine_extension",
+        "content_wiring",
+        "gameplay_proof"
+      ],
+      "state": "planning_only",
+      "engine_state": "existing_contract_with_content_or_consumer_work",
+      "proof_state": "No gameplay acceptance performed here; reuse only the registry's named verified boundaries."
+    },
+    {
+      "id": "CARRY",
+      "order": 4,
+      "assignment": "CXM-04",
+      "title": "Capacity, mass and handling",
+      "slice_owner": "S-266; S-196/S-210 reuse",
+      "reuse": "Accepted non-nested compartments, attachments/transfers and vessel capacities; PhysicalFactsRules and exact copies.",
+      "remaining": "Equipped/carried/contained totals once; STR/size/form carry, push/drag/lift and Block/Tackle multiplier. Nested and equipped/combat content selectors exceed accepted controls. Unknown mass/volume is a source fact, never zero.",
+      "prerequisites": [],
+      "concrete_consumers": "Backpack/Quiver/Case/Pouch/Waterskin/Barrel/Bucket, Block/Tackle; Floating Disk/Levitate, Goliath Powerful Build, Mule Beast of Burden.",
+      "acceptance": "At/over limits with mixed equipment and contents: no double count, source size/multipliers correct, removing load refreshes Speed without distance refund. Full/blocked transfer preserves copies; unknown/nested unsupported cases refuse explicitly. Both DTOs recover exact contents.",
+      "evidence": [
+        "docs/mechanics/exact-contents-and-parts.md",
+        "docs/mechanics/physical-facts-space-and-movement.md",
+        "src/characters/inventory_copies.gd"
+      ],
+      "work_kinds": [
+        "engine_extension",
+        "content_wiring",
+        "gameplay_proof",
+        "source_fact"
+      ],
+      "state": "planning_only",
+      "engine_state": "partial_contract_missing_or_unverified_named_hosts",
+      "proof_state": "No gameplay acceptance performed here; reuse only the registry's named verified boundaries."
+    },
+    {
+      "id": "QUANTITY",
+      "order": 5,
+      "assignment": "CXM-05",
+      "title": "Measured portions and cumulative fuel",
+      "slice_owner": "S-197; S-196/S-064 reuse",
+      "reuse": "Exact copies, non-nested contents, clock/light owners; linked destruction cause already covers components/fuel.",
+      "remaining": "Gallons/pounds/sheets/days/flasks/uses distinct from lots; partial transfers/overflow/stock, active fuel time across extinction/rekindling. Do not invent stock, weight or servings-to-pounds conversion.",
+      "prerequisites": [],
+      "concrete_consumers": "Oil six-hour fuel, Torch/Candle/Lanterns, Waterskin/Cistern/Food Basket/Rations, ten-use Healer Kit, created batches.",
+      "acceptance": "Partial/full/overcapacity transfers lose/duplicate nothing. Burn/extinguish/wait/rekindle/reload spends only active fuel time. Exhaust finite stock once; empty vessel identity survives. Equal copies independent; malformed units/counters refuse save preflight.",
+      "evidence": [
+        "src/characters/inventory_copies.gd",
+        "src/characters/light_source_rules.gd",
+        "docs/mechanics/linked-removal-causes.md"
+      ],
+      "work_kinds": [
+        "engine_extension",
+        "content_wiring",
+        "gameplay_proof",
+        "source_fact"
+      ],
+      "state": "planning_only",
+      "engine_state": "partial_contract_missing_or_unverified_named_hosts",
+      "proof_state": "No gameplay acceptance performed here; reuse only the registry's named verified boundaries.",
+      "conditional_prerequisites": {
+        "CARRY": "Only admission/overflow into a selected measured container; burning fuel does not wait for all carrying rules."
+      }
+    },
+    {
+      "id": "COMPONENT",
+      "order": 6,
+      "assignment": "CXM-06",
+      "title": "Exact materials, hands and focus roles",
+      "slice_owner": "S-134/S-135/S-136/S-142; S-049 reuse",
+      "reuse": "Source/payment chooser, Ready prepaid materials, Chromatic Orb diamond; class-permitted held focus and same-hand M/S; exact copies.",
+      "remaining": "All183 material routes: worth/form/consumed quantity and persistent worn/held roles. Worth is not price; touched Rope/weapon target remains required. Current Somatic-only held-focus house rule is policy, not SRD.",
+      "prerequisites": [],
+      "concrete_consumers": "spell-materials.json; Warding Bond rings, Gentle Repose coins, Clairvoyance eye/horn, Revivify diamonds, Protection Holy Water; dual-role staff/Holy Symbols.",
+      "acceptance": "Normal/ritual/Ready casts: focus/pouch only substitutes unpriced unconsumed material. Wrong worth/form/hand/wear/copy refuses unpaid; paid held release never repays. Two rings checked throughout. Renamed dual-role staff works for True Strike/Shillelagh/Topple without ID branch.",
+      "evidence": [
+        "docs/mechanics/spell-permissions-and-preparation.md",
+        "docs/mechanics/spell-slots-and-ritual-casting.md",
+        "docs/mechanics/progression-choices.md"
+      ],
+      "work_kinds": [
+        "engine_extension",
+        "content_wiring",
+        "gameplay_proof",
+        "campaign_policy"
+      ],
+      "state": "planning_only",
+      "engine_state": "partial_contract_missing_or_unverified_named_hosts",
+      "proof_state": "No gameplay acceptance performed here; reuse only the registry's named verified boundaries."
+    },
+    {
+      "id": "ROLL",
+      "order": 7,
+      "assignment": "CXM-07",
+      "title": "Captured choices on remaining roll hosts",
+      "slice_owner": "S-096/S-224/S-226; S-093/S-094/S-225 reuse",
+      "reuse": "Owned bonuses/refunds/captured grants/rerolls, save condition modes and OA Help/purpose context; accepted weapon/shared-spell hosts.",
+      "remaining": "Actual off-turn/room/event checks, rolled Death Saves/Concentration choices and source-scoped D20 modifiers; automatic/natural outcomes retain precedence. Native feature behavior is not generic support.",
+      "prerequisites": [],
+      "concrete_consumers": "Bardic Inspiration/Cutting Words, Tactical Mind, Halfling Luck/Heroic Inspiration, Gnomish Cunning/Eldritch Mind, Sphinx Burst, Guidance/Beacon.",
+      "acceptance": "Qualifying and unrelated rolls on each selected host: hold/decline/stale/double callback retains original d20/DC/counters. Refund continued Tactical Mind failure to same Second Wind source. Death natural outcomes and earlier concentration damage never replay; reuse unchanged host tests.",
+      "evidence": [
+        "docs/mechanics/owned-ability-check-modifiers.md",
+        "docs/mechanics/party-intervention-and-allocation.md",
+        "docs/mechanics/core-rules-status.md"
+      ],
+      "work_kinds": [
+        "engine_extension",
+        "content_wiring",
+        "gameplay_proof"
+      ],
+      "state": "planning_only",
+      "engine_state": "partial_contract_missing_or_unverified_named_hosts",
+      "proof_state": "No gameplay acceptance performed here; reuse only the registry's named verified boundaries."
+    },
+    {
+      "id": "DICE",
+      "order": 8,
+      "assignment": "CXM-08",
+      "title": "Natural thresholds and whole damage rolls",
+      "slice_owner": "S-240; S-123/S-124/S-125/S-126 reuse",
+      "reuse": "Captured natural/critical faces, remove/maximize/reroll/multiplier operations; native Champion/GWF/Savage Attacker comparison.",
+      "remaining": "Weapon/Unarmed natural19 critical; GWF eligible1/2 become3; Savage Attacker chooses one whole weapon roll, not selected dice. Potent Cantrip half damage on miss/save excludes extra effects. Exact dice/turn locks.",
+      "prerequisites": [],
+      "concrete_consumers": "Champion, GWF, Savage Attacker, Evoker Potent Cantrip, Fiendish Vigor, Empowered/Seeking Spell.",
+      "acceptance": "Natural18/19/20 versus modified19; two-handed/Versatile/one-hand, weapon/spell dice; two whole weapon rolls leave other riders untouched. Cantrip miss/save half never applies hit-only rider. Duplicate continuation neither rerolls nor repays.",
+      "evidence": [
+        "docs/mechanics/shared-spells.md",
+        "docs/mechanics/attack-profiles.md",
+        "src/combat/combat_action.gd"
+      ],
+      "work_kinds": [
+        "engine_extension",
+        "content_wiring",
+        "gameplay_proof"
+      ],
+      "state": "planning_only",
+      "engine_state": "partial_contract_missing_or_unverified_named_hosts",
+      "proof_state": "No gameplay acceptance performed here; reuse only the registry's named verified boundaries."
+    },
+    {
+      "id": "INIT",
+      "order": 9,
+      "assignment": "CXM-09",
+      "title": "Immediate willing initiative exchange",
+      "slice_owner": "S-091 initiative owner extension; S-233 acquisition reuse",
+      "reuse": "Settled initiative/order, encounter identity, conditions and feat ownership; late/group rolls already delivered.",
+      "remaining": "Alert exact value swap immediately after owner rolls, willing same-combat ally, neither Incapacitated. Generic exchange not established; record narrow registry requirement at implementation, not a fabricated accepted S-ID.",
+      "prerequisites": [],
+      "concrete_consumers": "Alert /authored_operations/1; Criminal and legal Human/feat acquisitions.",
+      "acceptance": "Real initiative window accept swaps exact values/order once. Decline/nonconsent/incapacity/wrong combat/stale/late/double choice does nothing. Late/group actors cannot reopen old window. Pending choice remains transient.",
+      "evidence": [
+        "docs/mechanics/progression-choices.md",
+        "src/combat/combat_state.gd"
+      ],
+      "work_kinds": [
+        "engine_extension",
+        "content_wiring",
+        "gameplay_proof"
+      ],
+      "state": "planning_only",
+      "engine_state": "missing_selected_generic_contract",
+      "proof_state": "No gameplay acceptance performed here; reuse only the registry's named verified boundaries."
+    },
+    {
+      "id": "REPEAT",
+      "order": 10,
+      "assignment": "CXM-10",
+      "title": "Damage-triggered repeat saves",
+      "slice_owner": "S-087/S-092; S-072 schedules reuse",
+      "reuse": "Shared repeat saves/stages, exact condition lifetimes, target-turn scheduling and damage occurrence receipts.",
+      "remaining": "Tasha damage WIS save with Advantage alongside scheduled turn-end save; source prevents self-ending Prone. One qualifying damage occurrence, independent packet settlement.",
+      "prerequisites": [],
+      "concrete_consumers": "Tashas Hideous Laughter full rules/operations; renamed neutral repeat-save consumer.",
+      "acceptance": "Real flat/ordered/off-turn typed damage: one source-defined qualifying occurrence produces one Advantage save; independent turn-end save remains. Success removes only this source; sibling Prone remains. Held/stale/duplicate chooser never rerolls or repays.",
+      "evidence": [
+        "src/spells/shared_spell.gd",
+        "src/spells/spell_encounter_lifecycle.gd",
+        "docs/mechanics/shared-spells.md"
+      ],
+      "work_kinds": [
+        "engine_extension",
+        "content_wiring",
+        "gameplay_proof"
+      ],
+      "state": "planning_only",
+      "engine_state": "partial_contract_missing_or_unverified_named_hosts",
+      "proof_state": "No gameplay acceptance performed here; reuse only the registry's named verified boundaries."
+    },
+    {
+      "id": "BUDGET",
+      "order": 11,
+      "assignment": "CXM-11",
+      "title": "Restricted actions and Somatic cast failure",
+      "slice_owner": "S-160/S-142; S-021/S-237 reuse",
+      "reuse": "CombatTurnBudget restricted actions, Action Surge Magic exclusion, ordinary action outcomes and captured failure payment.",
+      "remaining": "Slow Action-or-Bonus/one attack/no Reactions/d4=1 Somatic failure; Haste extra restricted action/one attack/end lethargy; Stinking Cloud turn-local no Action/Bonus. Never convert restricted permission to general action.",
+      "prerequisites": [],
+      "concrete_consumers": "Slow/Haste/Stinking Cloud; Fighter Action Surge and Monk/Rogue action versions.",
+      "acceptance": "Real HUD with exhausted ordinary budgets: Haste cannot Magic/Extra Attack, Slow cannot spend both kinds or exceed one attack including substitutions. Capture one failure d4, retain prescribed costs through continuation. Exact lethargy ending and source-only permission removal.",
+      "evidence": [
+        "src/combat/combat_turn_budget.gd",
+        "docs/mechanics/ordinary-actions.md",
+        "docs/mechanics/cast-interruption-and-settlement.md"
+      ],
+      "work_kinds": [
+        "engine_extension",
+        "content_wiring",
+        "gameplay_proof"
+      ],
+      "state": "planning_only",
+      "engine_state": "partial_contract_missing_or_unverified_named_hosts",
+      "proof_state": "No gameplay acceptance performed here; reuse only the registry's named verified boundaries."
+    },
+    {
+      "id": "REACTION",
+      "order": 12,
+      "assignment": "CXM-12",
+      "title": "Qualifying off-turn spell windows",
+      "slice_owner": "S-041/S-042/S-134/S-135; S-115/S-143 reuse",
+      "reuse": "ReactionTriggers attack/damage contexts, Counterspell stopping settlement, native Shield and exact Reaction/source payments.",
+      "remaining": "Missing qualifying hit/cast/damage/fall producers across player/monster routes with exact sight/range/components; Hellish Rebuke permission. A bounded trigger does not establish every caller.",
+      "prerequisites": [],
+      "concrete_consumers": "Hellish Rebuke/Shield/Counterspell/Feather Fall; Lich spell entries; Goliath incoming choices.",
+      "acceptance": "Actual off-turn HUD/AI weapons/spells/areas: sight/range/no-Reaction/componentless checks. Decline/cancel/stale pays0; accept pays exact source once, resumes original occurrence/budgets. Counterspell refunds only eligible original slot. FALL supplies actual falling trigger later.",
+      "evidence": [
+        "src/combat/reaction_triggers.gd",
+        "src/spells/spell_cast_reactions.gd",
+        "docs/mechanics/cast-interruption-and-settlement.md"
+      ],
+      "work_kinds": [
+        "engine_extension",
+        "content_wiring",
+        "gameplay_proof"
+      ],
+      "state": "planning_only",
+      "engine_state": "partial_contract_missing_or_unverified_named_hosts",
+      "proof_state": "No gameplay acceptance performed here; reuse only the registry's named verified boundaries."
+    },
+    {
+      "id": "POSTHIT",
+      "order": 13,
+      "assignment": "CXM-13",
+      "title": "Paid post-hit casts",
+      "slice_owner": "S-041/S-135/S-146; S-076/S-123 reuse",
+      "reuse": "Captured hit/Attack units, permissions/payment, typed damage and critical provenance.",
+      "remaining": "Immediate own qualifying hit Bonus casts and Pact-only Eldritch Smite. Initial damage joins same hit; recurring save/damage/lifetime remains independent. No second attack payment or unconditional smite.",
+      "prerequisites": [],
+      "concrete_consumers": "Divine/Searing/Shining Smite, Ensnaring Strike, Paladin free Smite, Eldritch Smite; Cunning Strike pre-dice choice shares hit identity.",
+      "acceptance": "Normal multiattack hit/miss/critical: right weapon/turn/budget/source only, slot/free alternatives independent, cancel retains use. Same hit resumes once with correct critical initial dice and independent ticks/escape. Pact-only refuses ordinary slots.",
+      "evidence": [
+        "docs/mechanics/attack-unit-substitution.md",
+        "docs/mechanics/shared-spells.md",
+        "src/combat/combat_action.gd"
+      ],
+      "work_kinds": [
+        "engine_extension",
+        "content_wiring",
+        "gameplay_proof"
+      ],
+      "state": "planning_only",
+      "engine_state": "partial_contract_missing_or_unverified_named_hosts",
+      "proof_state": "No gameplay acceptance performed here; reuse only the registry's named verified boundaries.",
+      "conditional_prerequisites": {
+        "REACTION": "Only an intervening Reaction on the same captured hit; own-turn post-hit casting can use existing hit events."
+      }
+    },
+    {
+      "id": "DAMAGE_COPY",
+      "order": 14,
+      "assignment": "CXM-14",
+      "title": "Copy actual damage without splitting",
+      "slice_owner": "S-114 continuation; S-111/S-112 receipt reuse",
+      "reuse": "Final typed amount, DamageResponseRules causal/depth limits and independent recipient defenses/concentration/defeat.",
+      "remaining": "Warding Bond copy actual damage to caster; split/redirect cannot express copy. Rings/range/caster0/recast endings and feedback limit remain mandatory.",
+      "prerequisites": [],
+      "concrete_consumers": "Warding Bond damage_copy extension and two worn rings.",
+      "acceptance": "Real mixed typed damage with resistance/immunity/TempHP; source-defined actual amount copied once, caster settles own defenses/concentration/0HP. Original is not reduced again. Range/caster0/removal stops copies; stale/two-source callbacks cannot loop.",
+      "evidence": [
+        "src/combat/damage_response_rules.gd",
+        "docs/mechanics/shared-spells.md",
+        "src/combat/combat_action.gd"
+      ],
+      "work_kinds": [
+        "engine_extension",
+        "content_wiring",
+        "gameplay_proof"
+      ],
+      "state": "planning_only",
+      "engine_state": "missing_selected_generic_contract",
+      "proof_state": "No gameplay acceptance performed here; reuse only the registry's named verified boundaries.",
+      "conditional_prerequisites": {
+        "REACTION": "Only optional interrupted damage choices on a selected caller; automatic Warding Bond copying has no Reaction cost."
+      }
+    },
+    {
+      "id": "DAMAGE_HEAL",
+      "order": 15,
+      "assignment": "CXM-15",
+      "title": "Heal from actual damage dealt",
+      "slice_owner": "S-114 continuation; S-034/S-125 reuse",
+      "reuse": "Receipts distinguish raw/prevented/resolved/TempHP/HP loss; bounded counter-heal/rounding owner.",
+      "remaining": "Vampiric Touch half actual Necrotic damage dealt after defenses, exact initial/repeated attack, not raw roll fraction.",
+      "prerequisites": [],
+      "concrete_consumers": "Vampiric Touch and neutral settled-damage-to-caster-healing declaration.",
+      "acceptance": "Initial/repeat actual attacks, miss/immunity/resistance/TempHP/odd total; hold damage choice/0HP replacement then resume one heal with source rounding. No attack/cast replay; ended source offers no repeat action.",
+      "evidence": [
+        "src/combat/damage_response_rules.gd",
+        "src/combat/combat_action.gd",
+        "docs/mechanics/shared-spells.md"
+      ],
+      "work_kinds": [
+        "engine_extension",
+        "content_wiring",
+        "gameplay_proof"
+      ],
+      "state": "planning_only",
+      "engine_state": "partial_contract_missing_or_unverified_named_hosts",
+      "proof_state": "No gameplay acceptance performed here; reuse only the registry's named verified boundaries."
+    },
+    {
+      "id": "DEFLECT",
+      "order": 16,
+      "assignment": "CXM-16",
+      "title": "Reduction then optional paid redirection",
+      "slice_owner": "S-109/S-114 continuation",
+      "reuse": "Formula damage reduction, settled counters, cover/target queries and exact Focus/save modes.",
+      "remaining": "Monk Reaction total reduction d10+DEX+level; only at0 optional Focus1 and visible5ft melee or60ft ranged/no Total Cover target; DEX save uses WIS DC, two Martial Arts dice+DEX triggering type.",
+      "prerequisites": [],
+      "concrete_consumers": "Deflect Attacks; Goliath Stones Endurance; Investment familiar Resistance shares incoming window with its own payload.",
+      "acceptance": "Real melee/ranged B/P/S/mixed attack,0/nonzero/no-Reaction/Focus and range/sight/cover edges. Reduction remains if redirect declined; target cancellation spends no Focus. Accepted save/damage happens once without original attack replay.",
+      "evidence": [
+        "src/combat/damage_response_rules.gd",
+        "docs/mechanics/shared-spells.md",
+        "docs/mechanics/ordinary-actions.md"
+      ],
+      "work_kinds": [
+        "engine_extension",
+        "content_wiring",
+        "gameplay_proof"
+      ],
+      "state": "planning_only",
+      "engine_state": "partial_contract_missing_or_unverified_named_hosts",
+      "proof_state": "No gameplay acceptance performed here; reuse only the registry's named verified boundaries.",
+      "conditional_prerequisites": {
+        "REACTION": "Only exact incoming-attack choice scheduling; Hellish Rebuke/Counterspell/falling conversions are not gates."
+      }
+    },
+    {
+      "id": "RIDER",
+      "order": 17,
+      "assignment": "CXM-17",
+      "title": "Scoped hits, next results and retargeting",
+      "slice_owner": "S-076/S-077/S-080/S-086 continuation",
+      "reuse": "Owned next-result grants, once-turn limits/modes, typed riders and repaired Bestow Curse support-10 packet/paid-slot duration.",
+      "remaining": "Weapon-only versus caster attack predicates, next-attack consumption, below-max/ally/reckless conditions and exact mark transfer after0. Finish remaining curse direct/delayed/aftermath/class-feature/monster/repeated-step producers without reopening repaired packets.",
+      "prerequisites": [],
+      "concrete_consumers": "Hex/Hunters Mark/Divine Favor/Guiding Bolt, Frenzy/Sneak Attack/Colossus Slayer/Horde Breaker/Agonizing Blast, Fiend blessing/Stunning Strike success.",
+      "acceptance": "Real eligible/unrelated/off-turn/critical attacks and spells; first-hit/next-attack/miss consumption follows source. Retarget legal later-turn Bonus only after marked target0. Multi-step/projectile hits neither drop nor multiply riders; source ending leaves siblings.",
+      "evidence": [
+        "docs/mechanics/captured-grants.md",
+        "docs/mechanics/source-end-rules.md",
+        "src/combat/combat_action.gd"
+      ],
+      "work_kinds": [
+        "engine_extension",
+        "content_wiring",
+        "gameplay_proof"
+      ],
+      "state": "planning_only",
+      "engine_state": "partial_contract_missing_or_unverified_named_hosts",
+      "proof_state": "No gameplay acceptance performed here; reuse only the registry's named verified boundaries."
+    },
+    {
+      "id": "BENEFIT",
+      "order": 18,
+      "assignment": "CXM-18",
+      "title": "Recipient benefits and captured formulas",
+      "slice_owner": "S-080/S-084/S-085/S-130/S-141 continuation",
+      "reuse": "Fixed AC/walking-speed source carriers, base AC/score protections, fixed max/current-HP sources, TempHP replacement and suppression.",
+      "remaining": "Nonself/multiple recipients and per-recipient parameters; paid-slot/casting-ability formulas. Aid fixed max_hp_source exists, upcast +5 current/max needs extension. Barkskin floor17, Mage Armor option, Heroism retained TempHP, Guidance skill and Resistance type/turn budget remain exact.",
+      "prerequisites": [],
+      "concrete_consumers": "Aid/Barkskin/Mage Armor/Longstrider/Darkvision/Heroism/Guidance/Resistance/Beacon/Shield of Faith; Draconic/source species stats.",
+      "acceptance": "Normal target chooser with competing sources; slot3 Aid +10 current/max, expiry only own delta. Correct base/floor/equipment choices, independent recipient parameters, spent movement/TempHP replacement. Both checkpoints retain captured values and reject forged ones; no self-only approximation.",
+      "evidence": [
+        "docs/mechanics/source-benefit-carriers.md",
+        "docs/mechanics/source-owned-stat-protections.md",
+        "docs/mechanics/monster-max-hp-sources.md"
+      ],
+      "work_kinds": [
+        "engine_extension",
+        "content_wiring",
+        "gameplay_proof"
+      ],
+      "state": "planning_only",
+      "engine_state": "partial_contract_missing_or_unverified_named_hosts",
+      "proof_state": "No gameplay acceptance performed here; reuse only the registry's named verified boundaries."
+    },
+    {
+      "id": "LIFETIME",
+      "order": 19,
+      "assignment": "CXM-19",
+      "title": "Captured durations and source endings",
+      "slice_owner": "S-070/S-080/S-086/S-087/S-141 continuation",
+      "reuse": "Accepted flat-condition HUD duration/concentration, actor-specific rest-start expiry, source-end events and located aftermath VS-145.",
+      "remaining": "Other benefit/area/actor/item owners and room/AI/item/Reaction casts need captured settings and exact recipient endings. Long/recast/until-dispelled records require source-level validation; condition proof is not other-owner proof.",
+      "prerequisites": [],
+      "concrete_consumers": "Extended Spell, Animal Friendship, Animate Dead control, Invisibility recipients, Enlarge gear/ammo reversion, Magic Weapon/Nystuls permanence, world timers.",
+      "acceptance": "Actual noncondition owner altered duration/concentration, unchanged catalog and sibling values. Cast/action/range/item/rest/recipient-turn endings, unloaded rooms and clock jumps settle once. Both allowed saves retain deadline/paid level and reject stripped required state; no new checkpoint.",
+      "evidence": [
+        "docs/mechanics/source-end-rules.md",
+        "docs/mechanics/source-benefit-carriers.md",
+        "docs/mechanics/created-actors-and-placement.md"
+      ],
+      "work_kinds": [
+        "engine_extension",
+        "content_wiring",
+        "gameplay_proof"
+      ],
+      "state": "planning_only",
+      "engine_state": "partial_contract_missing_or_unverified_named_hosts",
+      "proof_state": "No gameplay acceptance performed here; reuse only the registry's named verified boundaries."
+    },
+    {
+      "id": "ITEM_MAGIC",
+      "order": 20,
+      "assignment": "CXM-20",
+      "title": "Exact weapon enhancements, bonds and curses",
+      "slice_owner": "S-161/S-162/S-126/S-127/S-202/S-203 continuation",
+      "reuse": "Bond/Release/Project/Dismiss controls, copy identity, linked loss causes, damage-type choices and magical-property suppression/degradation.",
+      "remaining": "Shillelagh/Magic Weapon/Sacred Weapon/pact copy, choices/hand/carry/recast ending. Remove Curse ends eligible creature/object curses; cursed-item curse remains while attunement breaks. No dormant magic catalog import.",
+      "prerequisites": [
+        "COMPONENT"
+      ],
+      "concrete_consumers": "Shillelagh/Magic Weapon/Sacred Weapon/Pact Blade/Remove Curse; created pact weapon/Book of Shadows.",
+      "acceptance": "Two identical copies independently selected, dual-role staff valid. Correct type choices on actual ordinary/Opportunity/command hosts; ending leaves catalog/sibling untouched. Drop/loss/bond uses exact cause; cursed item becomes removable with retained curse. Checkpoint preserves state.",
+      "evidence": [
+        "docs/mechanics/attack-profiles.md",
+        "docs/mechanics/created-actors-and-placement.md",
+        "docs/mechanics/linked-removal-causes.md"
+      ],
+      "work_kinds": [
+        "engine_extension",
+        "content_wiring",
+        "gameplay_proof"
+      ],
+      "state": "planning_only",
+      "engine_state": "partial_contract_missing_or_unverified_named_hosts",
+      "proof_state": "No gameplay acceptance performed here; reuse only the registry's named verified boundaries."
+    },
+    {
+      "id": "WEAPON",
+      "order": 21,
+      "assignment": "CXM-21",
+      "title": "Source weapon properties and masteries",
+      "slice_owner": "S-127; S-250/S-084/S-085 reuse",
+      "reuse": "Range/Heavy, bounded damage-type routes, nonstacking Extra Attack and native Light/Nick/Cleave/Loading hosts.",
+      "remaining": "Source-driven mastery eligibility/replacement, reach/property/hand/ability predicates on selected routes. Loading is not absent everywhere. Candidate S-255 hints do not select dormant magic templates.",
+      "prerequisites": [],
+      "concrete_consumers": "38 weapon candidates; class Mastery, Monk weapons/DEX/dice, Archery/GWF/TWF, pact weapon/True Strike.",
+      "acceptance": "Normal mastery acquisition/replacement and ordinary/Extra/Light/Nick/Cleave/Opportunity/selected creature attacks. Thrown versus Ranged, reach, hands/proficiency/exact copy; renamed item works. Upgrade switch creates/refunds no swings. Reuse unchanged range/Heavy checks.",
+      "evidence": [
+        "docs/mechanics/attack-profiles.md",
+        "docs/mechanics/attack-and-ac-upgrades.md",
+        "src/characters/fighter_rules.gd"
+      ],
+      "work_kinds": [
+        "engine_extension",
+        "content_wiring",
+        "gameplay_proof"
+      ],
+      "state": "planning_only",
+      "engine_state": "partial_contract_missing_or_unverified_named_hosts",
+      "proof_state": "No gameplay acceptance performed here; reuse only the registry's named verified boundaries.",
+      "conditional_prerequisites": {
+        "AMMO": "Only ammunition weapons and their actual shot routes; melee properties can proceed independently."
+      }
+    },
+    {
+      "id": "GRAPPLE",
+      "order": 22,
+      "assignment": "CXM-22",
+      "title": "Unarmed Grapple/Shove and exact relations",
+      "slice_owner": "S-236; S-168/S-169/S-235 reuse",
+      "reuse": "Accepted tether anchors/Escape/Rescue/Cut/source cleanup and shared Grappled consequences.",
+      "remaining": "Actual Unarmed choices/free hand/size/reach/DC; dragging/end on incapacity/out-of-reach. Grappler Damage+Grapple once-turn and size exception. Rope/Net use same relations, distinct checks.",
+      "prerequisites": [],
+      "concrete_consumers": "Monk Dexterous Attacks, Grappler/Rope/Net; Frog/Snake/Crocodile grapples and Spider Web.",
+      "acceptance": "Ordinary Unarmed chooser validates size/reach/hands and permitted STR/DEX DC. Two captors keep independent relations; incapacity/out-of-reach releases only matching grip. Drag costs/size exceptions, legal escape/help/cut and both checkpoint identities.",
+      "evidence": [
+        "docs/mechanics/tethers.md",
+        "docs/mechanics/core-rules-status.md",
+        "docs/mechanics/ordinary-actions.md"
+      ],
+      "work_kinds": [
+        "engine_extension",
+        "content_wiring",
+        "gameplay_proof"
+      ],
+      "state": "planning_only",
+      "engine_state": "partial_contract_missing_or_unverified_named_hosts",
+      "proof_state": "No gameplay acceptance performed here; reuse only the registry's named verified boundaries."
+    },
+    {
+      "id": "MOVE",
+      "order": 23,
+      "assignment": "CXM-23",
+      "title": "Fallback movement and actual jumps",
+      "slice_owner": "S-239; S-179 reuse",
+      "reuse": "Combat mode/surface/terrain queries and initial zero-spend refusal; form-specific printed speeds.",
+      "remaining": "Double-cost fallback climb/swim, crawl/voluntary stand/STR or declared DEX jumps; Jump spends10ft once-turn for up to30ft, not teleport. Moving footprints/room hosts only concrete consumers.",
+      "prerequisites": [],
+      "concrete_consumers": "Jump/Otherworldly Leap, Step of Wind/Second Story, Cat/Frog leaps, Halfling Nimbleness, Spider Climb/form sizes.",
+      "acceptance": "Actual route at/under budget, running/standing jumps, DEX substitution, Prone/Speed0, hands/surface and larger creature passage. Refusal spends0; once-turn Jump/budget survives interruption; no overlap or invented OA immunity.",
+      "evidence": [
+        "docs/mechanics/physical-facts-space-and-movement.md",
+        "docs/mechanics/ordinary-actions.md"
+      ],
+      "work_kinds": [
+        "engine_extension",
+        "content_wiring",
+        "gameplay_proof"
+      ],
+      "state": "planning_only",
+      "engine_state": "partial_contract_missing_or_unverified_named_hosts",
+      "proof_state": "No gameplay acceptance performed here; reuse only the registry's named verified boundaries."
+    },
+    {
+      "id": "GRANTED_MOVE",
+      "order": 24,
+      "assignment": "CXM-24",
+      "title": "Post-hit, Reaction and compelled movement",
+      "slice_owner": "S-241/S-183/S-269; S-179/S-148 reuse",
+      "reuse": "Open Hand15ft Push and shared/Thunderwave push delivered; ordinary child movement and actor budgets.",
+      "remaining": "Whispers target Reaction safe route; Command five orders/Fear Dash/drop; Champion/Fighter/Rogue half-Speed no-OA; Repelling Blast and charge history. Every source owns budget and OA policy.",
+      "prerequisites": [],
+      "concrete_consumers": "Whispers/Command/Fear/Gust, Turn Undead; Champion critical/Tactical Shift/Withdraw; Boar/Elk charge, Deer/Owl/Bubble Dash.",
+      "acceptance": "Actual input/AI safe/blocked/no-exit routes; Reaction belongs to target. Whispers can provoke under movement rules; Push neither provokes nor spends voluntary movement. Half-Speed moves and forced hazard crossings settle once, stale post-hit choices cannot replay.",
+      "evidence": [
+        "docs/mechanics/physical-facts-space-and-movement.md",
+        "docs/mechanics/attack-unit-substitution.md",
+        "src/combat/combat_turn_budget.gd"
+      ],
+      "work_kinds": [
+        "engine_extension",
+        "content_wiring",
+        "gameplay_proof"
+      ],
+      "state": "planning_only",
+      "engine_state": "partial_contract_missing_or_unverified_named_hosts",
+      "proof_state": "No gameplay acceptance performed here; reuse only the registry's named verified boundaries.",
+      "conditional_prerequisites": {
+        "MOVE": "Only an actual route requiring fallback climb/swim/jump/stand; floor movement reuses accepted S-179."
+      }
+    },
+    {
+      "id": "FALL",
+      "order": 25,
+      "assignment": "CXM-25",
+      "title": "Descent, falling damage and lost flight",
+      "slice_owner": "S-181; S-121/S-122/S-179 reuse",
+      "reuse": "Altitude/clearance/legal placement, damage reductions and Reaction scheduling; speed fields alone are not fall execution.",
+      "remaining": "Actual fall/descent/landing: Feather Fall60ft/round, Levitate gentle end, flight loss, Slow Fall actual damage reduction. No universal3D map gate.",
+      "prerequisites": [],
+      "concrete_consumers": "Feather Fall/Fly/Levitate/Gaseous/Spider Climb; Monk Slow Fall/Dragonborn Flight/Chain Fly40.",
+      "acceptance": "Start real falling, accept/decline Reaction, land before/after expiry and compare actual damage. End flight at altitude/incapacity: legal landing/descent or fall, no telefrag. Slow Fall reduces5*Monk level at legal window; save only allowed resulting state.",
+      "evidence": [
+        "docs/mechanics/physical-facts-space-and-movement.md",
+        "src/combat/placement_rules.gd",
+        "docs/mechanics/core-rules-status.md"
+      ],
+      "work_kinds": [
+        "engine_extension",
+        "content_wiring",
+        "gameplay_proof"
+      ],
+      "state": "planning_only",
+      "engine_state": "partial_contract_missing_or_unverified_named_hosts",
+      "proof_state": "No gameplay acceptance performed here; reuse only the registry's named verified boundaries.",
+      "conditional_prerequisites": {
+        "REACTION": "Only Feather Fall/Slow Fall's actual fall-trigger choice.",
+        "MOVE": "Only a new movement mode whose loss produces the selected fall."
+      }
+    },
+    {
+      "id": "PHASE",
+      "order": 26,
+      "assignment": "CXM-26",
+      "title": "Bounded teleport, gas/stone access and return",
+      "slice_owner": "S-177/S-178/S-180/S-181; S-121/S-122 reuse",
+      "reuse": "Plane/location facts, legal arrivals, represented random overworld travel and room/save-exit placement.",
+      "remaining": "Misty Step seen destination; Blink d6/plane/return; gas gaps/liquids/restrictions; stone volume/deformation expulsion. Fairy return policy unresolved; general planar travel outside.",
+      "prerequisites": [],
+      "concrete_consumers": "Misty Step/Cloud ancestry/Blink/Gaseous/Meld; Halfling through-space/Ooze Amorphous/Octopus Compression.",
+      "acceptance": "Seen/blocked/wrong-plane destinations, cancellation costs0. Passage may not end illegally. Blink4–6/already-Ethereal ending/60ft perception and next-turn nearest legal return retain gear. Stone destruction/deformation damage/Prone/shunt once.",
+      "evidence": [
+        "docs/mechanics/physical-facts-space-and-movement.md",
+        "docs/mechanics/created-actors-and-placement.md"
+      ],
+      "work_kinds": [
+        "engine_extension",
+        "content_wiring",
+        "gameplay_proof"
+      ],
+      "state": "planning_only",
+      "engine_state": "partial_contract_missing_or_unverified_named_hosts",
+      "proof_state": "No gameplay acceptance performed here; reuse only the registry's named verified boundaries.",
+      "conditional_prerequisites": {
+        "FALL": "Only gas/flight ending or stone expulsion that actually needs falling; Blink/Misty arrival uses existing placement."
+      }
+    },
+    {
+      "id": "BARRIER",
+      "order": 27,
+      "assignment": "CXM-27",
+      "title": "Selective crossings and occupant admission",
+      "slice_owner": "S-185/S-186; S-184/S-122 reuse",
+      "reuse": "Spatial receipts/geometry/occupancy, containment targeting and legal release.",
+      "remaining": "Hut initial encapsulation/permitted creatures+objects/level3 spell barrier; Wind selective gases/flight/projectiles; Circle type/reversal/teleport save. No generic impassability or high-level segmented walls gate.",
+      "prerequisites": [],
+      "concrete_consumers": "Tiny Hut/Wind Wall/Magic Circle; Rope Trick combat/spell boundary via CONTAIN.",
+      "acceptance": "Actual placement over permitted/excluded occupants, crossings/projectiles/boulders/spell levels and reversed Circle. Rejection spends no partial distance/payload. Hut caster leaves/recasts: only own source ends; occupants legal.",
+      "evidence": [
+        "docs/mechanics/physical-facts-space-and-movement.md",
+        "docs/mechanics/containment.md"
+      ],
+      "work_kinds": [
+        "engine_extension",
+        "content_wiring",
+        "gameplay_proof"
+      ],
+      "state": "planning_only",
+      "engine_state": "partial_contract_missing_or_unverified_named_hosts",
+      "proof_state": "No gameplay acceptance performed here; reuse only the registry's named verified boundaries.",
+      "conditional_prerequisites": {
+        "PHASE": "Only Magic Circle's intercepted teleport attempt; Hut/Wind ordinary crossings need no Blink/gas work."
+      }
+    },
+    {
+      "id": "OBJECT",
+      "order": 28,
+      "assignment": "CXM-28",
+      "title": "Exact object damage, targeting and ignition",
+      "slice_owner": "S-032/S-091/S-098/S-099/S-119 continuation",
+      "reuse": "Room/exact-part objects and CombatUtilize; Shatter no-save unattended nonmagic area-object damage and Thunderwave object push/destruction.",
+      "remaining": "Remaining single/area/projectile object selectors including collocated copies; actual eligible ignition. Unknown material/magic/equipment stays unknown. Heat Metal contact/drop/removal and Enlarge targets use exact objects.",
+      "prerequisites": [],
+      "concrete_consumers": "Eldritch Blast/Sorcerous Burst/Starry Wisp, Fire Bolt/Burning Hands/Fireball/Faerie Fire; nine world objects, Heat Metal/Light/Levitate.",
+      "acceptance": "Real chooser differentiates creature/two objects at same cell and worn versus unattended. Unknown fact cannot invent outcome. Miss/save/cover/HP/destruction affects selected copy/geometry; no worn/carried burning. Reuse accepted Shatter/Thunderwave subset.",
+      "evidence": [
+        "docs/mechanics/shared-spells.md",
+        "docs/mechanics/ordinary-actions.md",
+        "src/dungeon/local_room_shared_spells.gd"
+      ],
+      "work_kinds": [
+        "engine_extension",
+        "content_wiring",
+        "gameplay_proof"
+      ],
+      "state": "planning_only",
+      "engine_state": "partial_contract_missing_or_unverified_named_hosts",
+      "proof_state": "No gameplay acceptance performed here; reuse only the registry's named verified boundaries."
+    },
+    {
+      "id": "REPAIR",
+      "order": 29,
+      "assignment": "CXM-29",
+      "title": "Retained-object repair and corrosion",
+      "slice_owner": "S-212/S-213; S-060/S-203/S-210 reuse",
+      "reuse": "Exact copies/parts/object damage/destruction/magic loss and work clocks; native corrosion observation.",
+      "remaining": "Mending one break<=1ft/all pieces, physical function without magic/new copy. Exact ammo/weapon/armor corrosion thresholds; SRD armor penalty explicitly Mending-removable. Crown Ooze stays custom.",
+      "prerequisites": [],
+      "concrete_consumers": "Mending/Rock Gnome, Rope sections, weapons/armor, Gray Ooze Corrosive Form/Pseudopod versus custom Ooze.",
+      "acceptance": "Corrode one of two identical copies via real contact/hit; cumulative attack/AC penalty/destruction, magical exemptions/ammo destruction. Repair exact eligible all-piece copy preserving ID/attachments/charges; reject missing pieces/>1ft/magic restoration. No generic HP refill.",
+      "evidence": [
+        "docs/mechanics/exact-contents-and-parts.md",
+        "docs/mechanics/last-charge-property-loss.md",
+        "docs/mechanics/work-sites.md"
+      ],
+      "work_kinds": [
+        "engine_extension",
+        "content_wiring",
+        "gameplay_proof"
+      ],
+      "state": "planning_only",
+      "engine_state": "partial_contract_missing_or_unverified_named_hosts",
+      "proof_state": "No gameplay acceptance performed here; reuse only the registry's named verified boundaries.",
+      "conditional_prerequisites": {
+        "OBJECT": "Only a missing exact target/part or damage fact for this repair; room copy targeting already exists. Fireball ignition is not a gate."
+      }
+    },
+    {
+      "id": "TOOL",
+      "order": 30,
+      "assignment": "CXM-30",
+      "title": "Real tool tasks and consulted context",
+      "slice_owner": "S-237/S-238; S-036/S-094 reuse",
+      "reuse": "Purpose checks/owned exact tool, tool-ID Help, room Utilize/Study and proficiency-source ownership.",
+      "remaining": "Each tool ability/DC and actual task; relevant skill plus tool Advantage, consulted accurate topic Book+5, Crowbar/Costume predicates. Owning tool/proficiency is not completing task; unwritten recipe outputs stay dependencies.",
+      "prerequisites": [],
+      "concrete_consumers": "All33 tool/instrument/gaming records, Books/Crowbar/Costume, Poisoners Kit, Thieves Tools, Rope/Kit and Fast Hands.",
+      "acceptance": "Ordinary tool/operation choice with correct/wrong variant/copy/proficiency/skill; failed paid attempt/time/matching Help once, cancel/stale0. Book must be consulted/accurate for real topic. Task changes actual lock/repair/knowledge state.",
+      "evidence": [
+        "docs/mechanics/purpose-aware-check-context.md",
+        "docs/mechanics/ordinary-actions.md"
+      ],
+      "work_kinds": [
+        "engine_extension",
+        "content_wiring",
+        "gameplay_proof",
+        "source_fact"
+      ],
+      "state": "planning_only",
+      "engine_state": "partial_contract_missing_or_unverified_named_hosts",
+      "proof_state": "No gameplay acceptance performed here; reuse only the registry's named verified boundaries.",
+      "conditional_prerequisites": {
+        "OBJECT": "Only the selected task's missing actual object mutation/target; existing Utilize supports independent tasks."
+      }
+    },
+    {
+      "id": "ITEM_ATTACK",
+      "order": 31,
+      "assignment": "CXM-31",
+      "title": "Thrown items, Net, kits and potions",
+      "slice_owner": "S-256/S-146/S-237; S-049/S-064 reuse",
+      "reuse": "Bounded consumable Attack substitution, exact backpack copies, heal/stabilize and tethers.",
+      "remaining": "Acid/Holy Water/Fire/Oil one-attack replacement/DEX DC/consumption; Net save/size/restraint/rescue instead of current damage. Kit one-of-ten stabilize; potion drink/administer Bonus Action. Custom Antidote remains distinct.",
+      "prerequisites": [],
+      "concrete_consumers": "Holy Water/Net/Oil/Healer Kit/four potions/Antidote.",
+      "acceptance": "Two Attack units: substitute one, retain other and exact type/size eligibility; cancel/stale loses no copy/unit. Net rescue/cut exact source. Kit only living Unconscious0 spends1. Drink/administer actual legal target/range and healing once; save quantities.",
+      "evidence": [
+        "docs/mechanics/attack-unit-substitution.md",
+        "docs/mechanics/tethers.md",
+        "docs/mechanics/ordinary-actions.md"
+      ],
+      "work_kinds": [
+        "engine_extension",
+        "content_wiring",
+        "gameplay_proof"
+      ],
+      "state": "planning_only",
+      "engine_state": "partial_contract_missing_or_unverified_named_hosts",
+      "proof_state": "No gameplay acceptance performed here; reuse only the registry's named verified boundaries.",
+      "conditional_prerequisites": {
+        "QUANTITY": "Only exact kit-use/portion counter needed by this item; discrete consumable copies reuse S-049.",
+        "GRAPPLE": "Only Net restraint/escape relation; Holy Water/potions are independent."
+      }
+    },
+    {
+      "id": "MIX",
+      "order": 32,
+      "assignment": "CXM-32",
+      "title": "Potion miscibility table and retained effects",
+      "slice_owner": "S-214/S-215; S-049/S-064 reuse",
+      "reuse": "Exact potion copies, source effects, captured table rolls and consumption/clock owners.",
+      "remaining": "The retained p.204 mixing procedure/table is separate from drinking/healing. Translate every table result, repeated/combined effects and any lasting outcome against actual potion sources. Unsupported selected result must be explicit before unintended mutation, not silently ordinary healing.",
+      "prerequisites": [
+        "ITEM_ATTACK"
+      ],
+      "concrete_consumers": "All four Healing Potion candidates /authored_operations mixing clause and /rules source context p.204.",
+      "acceptance": "Actual two-potion mixing/use control with exact copies, seeded table boundaries and source effects. Each table branch preserves its stated consumption, effect/time/result; original roll is not rerolled on child continuation. Equal copies independent. Permanent/long results survive allowed checkpoint or remain blocked with exact missing contract; schema-only table presence is not acceptance.",
+      "evidence": [
+        "docs/mechanics/shared-spells.md",
+        "src/events/event_resolver.gd",
+        "src/characters/inventory_copies.gd"
+      ],
+      "work_kinds": [
+        "engine_extension",
+        "content_wiring",
+        "gameplay_proof"
+      ],
+      "state": "planning_only",
+      "engine_state": "partial_contract_missing_or_unverified_named_hosts",
+      "proof_state": "No gameplay acceptance performed here; reuse only the registry's named verified boundaries."
+    },
+    {
+      "id": "HAZARD",
+      "order": 33,
+      "assignment": "CXM-33",
+      "title": "Recoverable hazards and burning",
+      "slice_owner": "S-258; S-184/S-122 reuse",
+      "reuse": "Accepted entry/crossing/turn/area movement receipts, room areas and placement.",
+      "remaining": "Caltrops/Bearings level ground/first-entry/movement exceptions/ten-minute recover; Oil dousing/ground fire distinct from fuel; Web cubes/Ashvale custom1d4 heat. No generic area substitutes for source conditions.",
+      "prerequisites": [],
+      "concrete_consumers": "Caltrops/Bearings/Oil/Alchemists Fire/Web/lava fissure/timber.",
+      "acceptance": "Actual placement rejects bad ground unpaid; distinguish appearance/entry/area move/start/end and once-turn. Slow crossing exemption, recovery quantities/time, dousing+Fire ordering; no duplicate damage across sources. Checkpoint preserves remaining area/stock.",
+      "evidence": [
+        "docs/mechanics/physical-facts-space-and-movement.md",
+        "src/spells/spatial_trigger_rules.gd",
+        "src/dungeon/local_room_areas.gd"
+      ],
+      "work_kinds": [
+        "engine_extension",
+        "content_wiring",
+        "gameplay_proof"
+      ],
+      "state": "planning_only",
+      "engine_state": "partial_contract_missing_or_unverified_named_hosts",
+      "proof_state": "No gameplay acceptance performed here; reuse only the registry's named verified boundaries.",
+      "conditional_prerequisites": {
+        "QUANTITY": "Only recoverable stock/fuel counter for the selected hazard.",
+        "ITEM_ATTACK": "Only Oil dousing/thrown ignition; caltrop placement uses accepted Utilize."
+      }
+    },
+    {
+      "id": "LIGHT",
+      "order": 34,
+      "assignment": "CXM-34",
+      "title": "Located light and hearing-only targeting",
+      "slice_owner": "S-190/S-191 continuation; S-274 via DISPEL",
+      "reuse": "Observer senses/light/concealment, OA hearing/noise, portable lights and real AI/roll targeting.",
+      "remaining": "Outline light/observer-specific advantage, object covering, flame/light movement controls, fuel/hood/cones. Mockery seen OR heard target. Map reveal is not sight.",
+      "prerequisites": [],
+      "concrete_consumers": "All11 light-group spells, Lantern/Torch/Candle/Oil/Sacred Weapon/Fire Beetle/Devils Sight; Vicious Mockery.",
+      "acceptance": "Two real observers/sources; cover/uncover/extinguish/rekindle/hood proper budgets/radii. Advantage requires actual outline sight. Blinded/hearing-only versus Deafened/unseen Mockery uses known-location facts without global reveal. Reuse perception fixture subset.",
+      "evidence": [
+        "docs/mechanics/perception.md",
+        "docs/mechanics/ordinary-actions.md",
+        "src/characters/light_source_rules.gd"
+      ],
+      "work_kinds": [
+        "engine_extension",
+        "content_wiring",
+        "gameplay_proof"
+      ],
+      "state": "planning_only",
+      "engine_state": "partial_contract_missing_or_unverified_named_hosts",
+      "proof_state": "No gameplay acceptance performed here; reuse only the registry's named verified boundaries.",
+      "conditional_prerequisites": {
+        "OBJECT": "Only a missing exact object-origin/cover control.",
+        "QUANTITY": "Only fuel-powered items; spell emitters need no general fuel work."
+      }
+    },
+    {
+      "id": "ZONE",
+      "order": 35,
+      "assignment": "CXM-35",
+      "title": "Exact area, terrain and aura consumers",
+      "slice_owner": "S-184/S-179/S-098/S-099; S-075 continuation",
+      "reuse": "Accepted spatial policies, live AuraRules, exemptions, timed areas/light/obscuration.",
+      "remaining": "Wire exact appearance/entry/area-entry/start/end/per-distance policies and exclusions/speed/save/damage; vegetation/wind facts/endings and nonharm aura scope. Generic trigger existence is not every spell payload.",
+      "prerequisites": [],
+      "concrete_consumers": "Moonbeam/Conjure Animals/Spirit Guardians/Web/Entangle/Grease/Spike Growth/Sleet/Cloud/Sphere/Call Lightning/Gust; Pass without Trace/Plant Growth.",
+      "acceptance": "Actual actor versus area movement and initial/wrong-turn events; once-turn differs from Spike each5ft. Guardians all nonexcluded creatures half Speed; Conjure no half on save. Gust flames/gas and storm/plant eligibility need facts. Cleanup/unloaded clock/checkpoint exact source no replay.",
+      "evidence": [
+        "docs/mechanics/physical-facts-space-and-movement.md",
+        "docs/mechanics/condition-suppression-and-auras.md",
+        "src/spells/combat_spell_zones.gd"
+      ],
+      "work_kinds": [
+        "engine_extension",
+        "content_wiring",
+        "gameplay_proof"
+      ],
+      "state": "planning_only",
+      "engine_state": "partial_contract_missing_or_unverified_named_hosts",
+      "proof_state": "No gameplay acceptance performed here; reuse only the registry's named verified boundaries.",
+      "conditional_prerequisites": {
+        "BENEFIT": "Only the selected source speed/check/recipient benefit.",
+        "LIGHT": "Only the selected light/obscuration emitter; other area payloads use accepted perception."
+      }
+    },
+    {
+      "id": "REMOTE",
+      "order": 36,
+      "assignment": "CXM-36",
+      "title": "Borrowed senses and cast origins",
+      "slice_owner": "S-192/S-193/S-145; S-190 reuse",
+      "reuse": "Native familiar form/type menus, Bonus sight/Reaction Touch controls; exact actors, senses and source permissions.",
+      "remaining": "Shared integration for familiar/Gaze/Clairvoyance origin, sense selection/upkeep/range/plane/own-sense restrictions and Touch delivery. Reuse native pickers, do not grant omniscience.",
+      "prerequisites": [],
+      "concrete_consumers": "Familiar/Wild Companion/Chain, Clairvoyance eye/horn, Gaze of Two Minds.",
+      "acceptance": "Real sensor/cast controls at distinct locations: own/borrowed senses/special senses and100ft familiar/60ft Gaze/plane limits; correct Bonus/Reaction/upkeep. Delivery uses familiar Reaction/caster source once. Sight never implies through-barrier casting; ending restores only relevant senses.",
+      "evidence": [
+        "docs/mechanics/find-familiar-2024.md",
+        "docs/mechanics/perception.md",
+        "docs/mechanics/created-actors-and-placement.md"
+      ],
+      "work_kinds": [
+        "engine_extension",
+        "content_wiring",
+        "gameplay_proof"
+      ],
+      "state": "planning_only",
+      "engine_state": "partial_contract_missing_or_unverified_named_hosts",
+      "proof_state": "No gameplay acceptance performed here; reuse only the registry's named verified boundaries.",
+      "conditional_prerequisites": {
+        "LIGHT": "Only a missing sensor perception fact; accepted S-190 is reusable.",
+        "REACTION": "Only familiar Touch delivery scheduling not already covered by native controls."
+      }
+    },
+    {
+      "id": "DETECT",
+      "order": 37,
+      "assignment": "CXM-37",
+      "title": "Fact-limited detection and masking",
+      "slice_owner": "S-194/S-195; S-190/S-219 reuse",
+      "reuse": "Observer/plane/range facts, exact item/source state and bounded Study knowledge.",
+      "remaining": "Only authorized location/direction/kind/school/properties; material/lead thickness, detection versus sight, thoughts/probing/intrusion, Nondetection/Mask/False Aura with true identity unchanged. Unknown is explicit.",
+      "prerequisites": [],
+      "concrete_consumers": "Detect/Find Traps/Identify/Locate/Mind Spike/See Invisibility/Nondetection/Nystuls; Divine Sense/Hunter Lore/Sprite Heart Sight.",
+      "acceptance": "Actual casts on nearest/hidden/masked/wrong-type/other-plane targets and barrier thresholds. Find Traps presence/nature not location; Identify Touch throughout/full time and only supplied properties. Per-observer facts; masking never changes real type. No invented answer from unknown.",
+      "evidence": [
+        "docs/mechanics/perception.md",
+        "docs/mechanics/ordinary-actions.md",
+        "docs/mechanics/spell-foundations.md"
+      ],
+      "work_kinds": [
+        "engine_extension",
+        "content_wiring",
+        "gameplay_proof",
+        "source_fact"
+      ],
+      "state": "planning_only",
+      "engine_state": "partial_contract_missing_or_unverified_named_hosts",
+      "proof_state": "No gameplay acceptance performed here; reuse only the registry's named verified boundaries.",
+      "conditional_prerequisites": {
+        "REMOTE": "Only an actual independent sensor origin; caster-origin detection is independent."
+      }
+    },
+    {
+      "id": "LANGUAGE",
+      "order": 38,
+      "assignment": "CXM-38",
+      "title": "Language grants and bounded messages",
+      "slice_owner": "S-218; S-232/S-219 reuse",
+      "reuse": "OA local speech/verbal Help/hearing/Influence; saved languages and observer receipts.",
+      "remaining": "Common+two Standard/class secrets; written/signed/whisper/remote controls and limits, telepathy and Sending reply/block history; literal Comprehend/Tongues scope. Language does not grant knowledge/obedience.",
+      "prerequisites": [],
+      "concrete_consumers": "languages.json, Druidic/Cant/Ranger, Comprehend/Message/Sending/Tongues/Magic Mouth/Script; Animal/Plant/Dead speech.",
+      "acceptance": "Normal creation/level grants and actual message UI: wrong language/range/hearing/material barrier refuses eligible route, private content stays private. Druidic auto-read vs INT15 notice/undeciphered. Sending25-word/captured5%/8h blocking survives allowed reload without reroll/replay.",
+      "evidence": [
+        "docs/mechanics/ordinary-actions.md",
+        "docs/mechanics/progression-choices.md",
+        "src/characters/character.gd"
+      ],
+      "work_kinds": [
+        "engine_extension",
+        "content_wiring",
+        "gameplay_proof"
+      ],
+      "state": "planning_only",
+      "engine_state": "partial_contract_missing_or_unverified_named_hosts",
+      "proof_state": "No gameplay acceptance performed here; reuse only the registry's named verified boundaries."
+    },
+    {
+      "id": "KNOWLEDGE",
+      "order": 39,
+      "assignment": "CXM-39",
+      "title": "Authored answers, attitudes and divination history",
+      "slice_owner": "S-219/S-209/S-214; S-188/S-237 reuse",
+      "reuse": "Study/Field Notes and Influence retry/fulfillment, language/hearing; ADR-0023 bounded campaign outcomes.",
+      "remaining": "Actual answers/literacy/attitudes for corpse/Beast/plant/rumor/forecast/thought. Augury course<=30min/cumulative25% no-answer until Long Rest. No fake conversation log or universal GM.",
+      "prerequisites": [],
+      "concrete_consumers": "Augury/Druidcraft/Speak spells/Suggestion/Charm aftermath/Thoughts/Truth; Guard/Ghost/Hermit/Quest Board.",
+      "acceptance": "Real target/question/place: unknown stays unknown. Corpse5 questions/10min/no reuse10days, plant past-day facts, Suggestion25-word safe achievable task with real completion/damage ending. Capture repeated Augury roll once. Wrong recipient or unfinished child cannot award answer/objective.",
+      "evidence": [
+        "docs/mechanics/ordinary-actions.md",
+        "docs/decisions/0023-vocabulary-first-delivery-and-bounded-world-judgment.md"
+      ],
+      "work_kinds": [
+        "engine_extension",
+        "content_wiring",
+        "gameplay_proof",
+        "source_fact"
+      ],
+      "state": "planning_only",
+      "engine_state": "partial_contract_missing_or_unverified_named_hosts",
+      "proof_state": "No gameplay acceptance performed here; reuse only the registry's named verified boundaries.",
+      "conditional_prerequisites": {
+        "LANGUAGE": "Only the selected communication route absent from accepted local speech.",
+        "DETECT": "Only answers derived from a selected detection source; Augury/authored questions need no remote-sense gate."
+      }
+    },
+    {
+      "id": "ILLUSION",
+      "order": 40,
+      "assignment": "CXM-40",
+      "title": "Located images and per-observer disbelief",
+      "slice_owner": "S-187/S-188; S-189 only selected outcome",
+      "reuse": "Perception/Study, exact source ending and located records; ADR-0023 constrained realizations.",
+      "remaining": "Nonoccupying sound/image/duplicates, source sensory/size/tactile limits and observer discovery. Mirror Image post-hit d6 per duplicate; Sanctuary failed-save alternate target continuation. No fabricated HP/collision/GM.",
+      "prerequisites": [],
+      "concrete_consumers": "Minor/Silent/Major/Disguise/Mirror/Phantasmal/Script/Nystuls/Sanctuary and image actor records.",
+      "acceptance": "Actual locate/move/Study/attack: two observers separately disbelieve; physical and Study tests differ. Mirror thresholds2/3/4, special-sense exclusions, one duplicate destroyed per diverted hit. Sanctuary retarget retains original cost/attack and area exemption. Phantom damage exact target/cause/turn only.",
+      "evidence": [
+        "docs/mechanics/perception.md",
+        "docs/mechanics/source-end-rules.md",
+        "docs/mechanics/spell-foundations.md"
+      ],
+      "work_kinds": [
+        "engine_extension",
+        "content_wiring",
+        "gameplay_proof"
+      ],
+      "state": "planning_only",
+      "engine_state": "partial_contract_missing_or_unverified_named_hosts",
+      "proof_state": "No gameplay acceptance performed here; reuse only the registry's named verified boundaries.",
+      "conditional_prerequisites": {
+        "KNOWLEDGE": "Only the selected per-observer discovery/answer consequence; reuse existing Study receipts.",
+        "OBJECT": "Only a selected physical interaction target, not every damage spell."
+      }
+    },
+    {
+      "id": "WARD",
+      "order": 41,
+      "assignment": "CXM-41",
+      "title": "Exact locks and authorized persistent triggers",
+      "slice_owner": "S-230/S-184/S-203 continuation",
+      "reuse": "Ordinary key/tool/break interactions, Alarm/object states and spatial receipt/expiry owners.",
+      "remaining": "Arcane Lock closed target/password/authorization; Knock one lock/10min suppression/target noise; Alarm eight-hour permitted list/mental1mile/audible60ft10s; Mouth sensed30ft/message/repeat/end. Geometry/log is not full outcome.",
+      "prerequisites": [],
+      "concrete_consumers": "Arcane Lock/Knock/Alarm/Magic Mouth; Door/Chest/key and three dungeon locks.",
+      "acceptance": "Real object/spell controls with two locks/wrong key/password/excluded actor. Knock exact source suppresses10min, emits300ft noise once. Alarm waking/recipient/sound limits and duration. Revisit/reload cannot retrigger same occurrence or respawn object.",
+      "evidence": [
+        "docs/mechanics/ordinary-actions.md",
+        "docs/mechanics/physical-facts-space-and-movement.md",
+        "src/dungeon/local_room_rules.gd"
+      ],
+      "work_kinds": [
+        "engine_extension",
+        "content_wiring",
+        "gameplay_proof"
+      ],
+      "state": "planning_only",
+      "engine_state": "partial_contract_missing_or_unverified_named_hosts",
+      "proof_state": "No gameplay acceptance performed here; reuse only the registry's named verified boundaries.",
+      "conditional_prerequisites": {
+        "OBJECT": "Only a missing exact lock/object fact; ordinary room locks exist.",
+        "LANGUAGE": "Only the selected password/message route, not Sending/Tongues generally."
+      }
+    },
+    {
+      "id": "DISPEL",
+      "order": 42,
+      "assignment": "CXM-42",
+      "title": "Spell-level ending and light overlap",
+      "slice_owner": "S-276/S-274; S-116/S-190 reuse",
+      "reuse": "Exact source removal/incoming negation, paid slot snapshots, light/obscuration owners.",
+      "remaining": "Capture actual ongoing cast levels across condition/benefit/area/object. End each <=paid threshold; independent higher check DC10+level. Darkness/Daylight actual overlap threshold ending; nonspell/item properties survive.",
+      "prerequisites": [],
+      "concrete_consumers": "Dispel/Darkness/Daylight/Continual Flame/Script/Nystuls/Arcane Lock/Glyph/Hut.",
+      "acceptance": "Mixed source levels plus nonspell siblings on creature/object/effect: independent captured higher checks and correct paid slot. Opposite light overlap versus separation. Remove exact consequences everywhere; malformed/missing required level fails checkpoint validation before live mutation.",
+      "evidence": [
+        "src/spells/shared_spell.gd",
+        "docs/mechanics/source-end-rules.md",
+        "docs/mechanics/perception.md"
+      ],
+      "work_kinds": [
+        "engine_extension",
+        "content_wiring",
+        "gameplay_proof"
+      ],
+      "state": "planning_only",
+      "engine_state": "missing_selected_generic_contract",
+      "proof_state": "No gameplay acceptance performed here; reuse only the registry's named verified boundaries.",
+      "conditional_prerequisites": {
+        "LIFETIME": "Only capture/validate source cast level on each owner actually being ended.",
+        "LIGHT": "Only opposite-kind area overlap producers; ordinary Dispel source ending independent."
+      }
+    },
+    {
+      "id": "STORAGE",
+      "order": 43,
+      "assignment": "CXM-43",
+      "title": "Store and release one exact cast",
+      "slice_owner": "S-150/S-151; S-135/S-142/S-184 reuse",
+      "reuse": "Original cast snapshot/permissions/payment and ordered continuation; room object triggers/receipts.",
+      "remaining": "Glyph eligible spell storage/second costs/snapshot without normal effect, trigger targets/concentration/once release,10ft relocation/dispel ending. Universal item storage is not a gate.",
+      "prerequisites": [],
+      "concrete_consumers": "Glyph full Runes/Spell Glyph rules and200GP material.",
+      "acceptance": "One-hour real cast validates child/levels/targets, pays each cost once and stores without casting effects. Real trigger uses original numbers/new eligible targets, no second slot; duplicate/reopen cannot release twice. Move>10ft/dispel/reload retains correct active/consumed entry.",
+      "evidence": [
+        "docs/mechanics/cast-interruption-and-settlement.md",
+        "docs/mechanics/created-actors-and-placement.md",
+        "docs/mechanics/physical-facts-space-and-movement.md"
+      ],
+      "work_kinds": [
+        "engine_extension",
+        "content_wiring",
+        "gameplay_proof"
+      ],
+      "state": "planning_only",
+      "engine_state": "missing_selected_generic_contract",
+      "proof_state": "No gameplay acceptance performed here; reuse only the registry's named verified boundaries.",
+      "conditional_prerequisites": {
+        "WARD": "Only exact Glyph trigger/source-location record.",
+        "DISPEL": "Only Glyph source ending by dispel; other light/curse owners do not gate storage."
+      }
+    },
+    {
+      "id": "WORK",
+      "order": 44,
+      "assignment": "CXM-44",
+      "title": "Long casts and fixed-location work",
+      "slice_owner": "S-066/S-067/S-136/S-142 continuation",
+      "reuse": "Accepted work cell/helpers/incapacity/accrual/interruption and clock; bounded ritual normal time+10min.",
+      "remaining": "Real long/ritual targeted/spatial/ordered controls, continuous Touch/participant range and exact interruption payment. Add only named room-object/combat/overworld site hosts.",
+      "prerequisites": [],
+      "concrete_consumers": "15 long-cast spells, Identify/Mending Touch, Prayer range, Familiar hour/Plant Growth8h, copying/creation work.",
+      "acceptance": "Normal timed cast move/lose Touch/incapacitate/interrupt then complete exact elapsed time. No premature effect; refund/commit from captured source policy. Prayer recipient leaving range handled precisely. Open workflow cannot save; completed work recovers without replay.",
+      "evidence": [
+        "docs/mechanics/work-sites.md",
+        "docs/mechanics/spell-slots-and-ritual-casting.md",
+        "docs/mechanics/cast-interruption-and-settlement.md"
+      ],
+      "work_kinds": [
+        "engine_extension",
+        "content_wiring",
+        "gameplay_proof"
+      ],
+      "state": "planning_only",
+      "engine_state": "partial_contract_missing_or_unverified_named_hosts",
+      "proof_state": "No gameplay acceptance performed here; reuse only the registry's named verified boundaries."
+    },
+    {
+      "id": "REST",
+      "order": 45,
+      "assignment": "CXM-45",
+      "title": "Rest exceptions and benefit-only Short Rest",
+      "slice_owner": "S-071/S-014/S-070 continuation",
+      "reuse": "Rest-start expiry/actor-specific rest including Trance4h duration, mixed Hit Dice and real Short/Long lifecycle accepted.",
+      "remaining": "Prayer benefits/healing without false elapsed/completed-rest event, ten-minute participants/per-recipient Long Rest lockout. Wire source species/no-sleep exceptions to accepted duration host; inn reset-versus-rest policy. Do not rebuild Hit Dice or actor-specific rest duration.",
+      "prerequisites": [],
+      "concrete_consumers": "Prayer/Elf Trance, class rest recoveries and Camp/Inn. All retained source exceptions remain in ledger.",
+      "acceptance": "Real Prayer gives legal benefits/Hit Dice opportunity/2d8 once, no extra hour/completed-rest event/unrelated reset. Retry before recipient Long Rest refuses. Genuine4h/8h/interrupted rest and both DTOs retain precise lock/recovery; accepted Hit Dice proof reused.",
+      "evidence": [
+        "docs/mechanics/shared-resource-pools.md",
+        "src/characters/rest_rules.gd",
+        "docs/planning/vocabulary-slices.md"
+      ],
+      "work_kinds": [
+        "engine_extension",
+        "content_wiring",
+        "gameplay_proof",
+        "campaign_policy"
+      ],
+      "state": "planning_only",
+      "engine_state": "partial_contract_missing_or_unverified_named_hosts",
+      "proof_state": "No gameplay acceptance performed here; reuse only the registry's named verified boundaries.",
+      "conditional_prerequisites": {
+        "WORK": "Only Prayer's ten-minute continuous-participant cast; no whole long-cast catalog gate."
+      }
+    },
+    {
+      "id": "POOL",
+      "order": 46,
+      "assignment": "CXM-46",
+      "title": "Exchange destinations, refunds and recovery extras",
+      "slice_owner": "S-052/S-053/S-054/S-055/S-059/S-062 continuation",
+      "reuse": "Numeric pools, slot-to-numeric/dice/inventory exchange and result recovery accepted; separate Channel/ordinary/Pact identities.",
+      "remaining": "Pool-to-created-slot, no-action/empty/per-turn/rest exceptions, secondary recovery effects and shared Second Wind/Mind/Shift pool. Numeric recovery alone does not supply Metabolism healing.",
+      "prerequisites": [],
+      "concrete_consumers": "Bard Font/Sorcerer Font+Restoration/Druid Resurgence/Fighter Second Wind/Monk Metabolism/Warlock Cunning/Wizard Recovery.",
+      "acceptance": "Real controls cancel/stale/insufficient/overcap and mixed pools: validate both sides first. Generated slots/caps/level6 exclusion, exact rest/turn/floor/locks; failure refund same source. Checkpoint retains remaining source quantities without replay.",
+      "evidence": [
+        "docs/mechanics/shared-resource-pools.md",
+        "src/characters/resource_pool_rules.gd",
+        "docs/mechanics/spell-slots-and-ritual-casting.md"
+      ],
+      "work_kinds": [
+        "engine_extension",
+        "content_wiring",
+        "gameplay_proof"
+      ],
+      "state": "planning_only",
+      "engine_state": "partial_contract_missing_or_unverified_named_hosts",
+      "proof_state": "No gameplay acceptance performed here; reuse only the registry's named verified boundaries."
+    },
+    {
+      "id": "SUPPLY",
+      "order": 47,
+      "assignment": "CXM-47",
+      "title": "Actual intake, stock and exposure",
+      "slice_owner": "S-197/S-200/S-201; S-199 reuse",
+      "reuse": "Survival nourishment deadlines, camp/rest, measured quantities/clock and Exhaustion semantics.",
+      "remaining": "Physical intake versus magic nourishment, size pounds/gallons, spoilage/contamination/deprivation/recovery restrictions. Form/actor exceptions exact cause; servings/spring prose lack units.",
+      "prerequisites": [],
+      "concrete_consumers": "Rations/Waterskin/Cistern/Food Basket/Goodberry/Create/Purify/Plant Growth/camp/cold clothing.",
+      "acceptance": "At actual daily deadlines consume source quantities; half/no-water/food exhaustion and recovery restrictions. Goodberry not water; created food45lb spoils24h, water30gal no invented expiry; Purify modifies existing stock. Clock jump/reload neither resets deprivation nor double-consumes.",
+      "evidence": [
+        "src/characters/survival_rules.gd",
+        "src/characters/rest_rules.gd",
+        "docs/mechanics/physical-facts-space-and-movement.md"
+      ],
+      "work_kinds": [
+        "engine_extension",
+        "content_wiring",
+        "gameplay_proof",
+        "source_fact"
+      ],
+      "state": "planning_only",
+      "engine_state": "partial_contract_missing_or_unverified_named_hosts",
+      "proof_state": "No gameplay acceptance performed here; reuse only the registry's named verified boundaries.",
+      "conditional_prerequisites": {
+        "QUANTITY": "Only selected physical intake/stock units.",
+        "REST": "Only missing recipient restriction; successful Long Rest lifecycle is already accepted."
+      }
+    },
+    {
+      "id": "BREATH",
+      "order": 48,
+      "assignment": "CXM-48",
+      "title": "Environment breathing and suffocation",
+      "slice_owner": "S-205; S-200/S-201 reuse; S-204 only selected air consumer",
+      "reuse": "Actual type/size/environment/source protections and clock; no universal enclosed-air prerequisite for adaptation.",
+      "remaining": "Water Breathing retains normal respiration; Alter Self/Gift and Amphibious/water-only/Hold Breath execute actual drowning/suffocation. Hut atmosphere/gas limits separate.",
+      "prerequisites": [],
+      "concrete_consumers": "Water Breathing/Alter Self/Gift; Crab/Frog/Seahorse/Crocodile/Octopus forms and selected Hut/Rope environment.",
+      "acceptance": "Real water/air entry and breath expiration; amphibious vs water-only. Source ending underwater reaches real progression, not icon. Unknown environment explicit; allowed restore keeps clock. Do not require full S-204 when no air-volume consumer exists.",
+      "evidence": [
+        "src/characters/survival_rules.gd",
+        "docs/mechanics/physical-facts-space-and-movement.md"
+      ],
+      "work_kinds": [
+        "engine_extension",
+        "content_wiring",
+        "gameplay_proof",
+        "source_fact"
+      ],
+      "state": "planning_only",
+      "engine_state": "partial_contract_missing_or_unverified_named_hosts",
+      "proof_state": "No gameplay acceptance performed here; reuse only the registry's named verified boundaries.",
+      "conditional_prerequisites": {
+        "SUPPLY": "Only shared cause-specific exposure/deadline plumbing, not hunger/foraging or all food rules."
+      }
+    },
+    {
+      "id": "CREATION",
+      "order": 49,
+      "assignment": "CXM-49",
+      "title": "Bounded outputs and granted action controllers",
+      "slice_owner": "S-049/S-064/S-160/S-161/S-162/S-199 continuation",
+      "reuse": "Exact copies/modes/children, located source-end objects and written force/image representations.",
+      "remaining": "Physical batches versus spectral force/image/area, quantity/lifetime/end; granted Magic/Bonus controllers for breath/flame/weapon/hand/servant. Gnome fixed-effect device activation by toucher. No permanent tradeable transient output.",
+      "prerequisites": [],
+      "concrete_consumers": "Eight physical creations; utility cantrips, Rock Gnome/Tome/Blade/Tinker, spectral hand/weapon/disk and Dragons Breath.",
+      "acceptance": "Real creation/action controls: selected source output/max limits/quantity/location, no invented worth/HP/loot. Gnome toucher Bonus fires fixed effect;8h/dismantle correct copy. Granted action uses original DC/ability/range and ends with source, no recast payment. Tool output waits selected CRAFT work.",
+      "evidence": [
+        "docs/mechanics/attack-unit-substitution.md",
+        "docs/mechanics/source-end-rules.md",
+        "docs/mechanics/created-actors-and-placement.md"
+      ],
+      "work_kinds": [
+        "engine_extension",
+        "content_wiring",
+        "gameplay_proof"
+      ],
+      "state": "planning_only",
+      "engine_state": "partial_contract_missing_or_unverified_named_hosts",
+      "proof_state": "No gameplay acceptance performed here; reuse only the registry's named verified boundaries.",
+      "conditional_prerequisites": {
+        "LIFETIME": "Only the actual output/granted-action source ending.",
+        "QUANTITY": "Only food/water/batch outputs; spectral actions do not wait for gallons."
+      }
+    },
+    {
+      "id": "CRAFT",
+      "order": 50,
+      "assignment": "CXM-50",
+      "title": "Selected recipes and real world changes",
+      "slice_owner": "S-198/S-199; S-066/S-067 reuse",
+      "reuse": "Qualified site/helper/time and exact materials; finite creation boundary map.",
+      "remaining": "Only selected Tiny scrap/Tinker/repair and acquired tool outputs with source time/GP/materials. Craft lists do not grant or select every product; missing output is explicit content dependency.",
+      "prerequisites": [],
+      "concrete_consumers": "Tinker Tiny assemblies, distinct Gnome magical devices, named source repair/tool tasks; unselected lists retained.",
+      "acceptance": "One named written result: tools/materials/qualification/cost once and correct work. Interrupt per source; no early result. Completion modifies original object or creates exact output once. Missing definition reports precise dependency before expenditure.",
+      "evidence": [
+        "docs/mechanics/work-sites.md",
+        "docs/mechanics/purpose-aware-check-context.md"
+      ],
+      "work_kinds": [
+        "engine_extension",
+        "content_wiring",
+        "gameplay_proof"
+      ],
+      "state": "planning_only",
+      "engine_state": "partial_contract_missing_or_unverified_named_hosts",
+      "proof_state": "No gameplay acceptance performed here; reuse only the registry's named verified boundaries.",
+      "conditional_prerequisites": {
+        "TOOL": "Only this recipe's qualification/tool task.",
+        "WORK": "Only actual site/time host needed; existing work support reusable.",
+        "CREATION": "Only exact selected output-copy creation, not every magical controller."
+      }
+    },
+    {
+      "id": "ACTOR",
+      "order": 51,
+      "assignment": "CXM-51",
+      "title": "Source templates and shared monster actions",
+      "slice_owner": "S-154/S-155/S-126/S-134 continuation",
+      "reuse": "Parameterized factory/footprints/placement/count choices, combat-room position capture, exact actors and CombatState monster projection/cast paths.",
+      "remaining": "Full printed stats/attacks/save-only/Multiattack/recharge/daily traits through shared executor, fixed bonuses/units. No second monster interpreter or ID registration. Trait names/metadata are not executable.",
+      "prerequisites": [],
+      "concrete_consumers": "68 SRD blocks incl four held swarms, ten encounters, Steed;39/46 Wild Shape,24+7 familiar legal sets.",
+      "acceptance": "Renamed loaded statblock plus real selected blocks through ordinary spawn/form controls; printed bonus/DC/damage, Multiattack members, recharge once actual turn, daily/rest policy. Monster spells exact source/components/slot; legal footprints. Never merge/rebalance custom Crown with SRD or offer held swarm.",
+      "evidence": [
+        "docs/mechanics/created-actors-and-placement.md",
+        "docs/architecture/data-driven-2024-monster-execution-plan.md",
+        "src/combat/combat_state.gd"
+      ],
+      "work_kinds": [
+        "engine_extension",
+        "content_wiring",
+        "gameplay_proof",
+        "campaign_policy"
+      ],
+      "state": "planning_only",
+      "engine_state": "partial_contract_missing_or_unverified_named_hosts",
+      "proof_state": "No gameplay acceptance performed here; reuse only the registry's named verified boundaries.",
+      "conditional_prerequisites": {
+        "WEAPON": "Only the selected attack property/mastery absent from accepted profiles.",
+        "REACTION": "Only an actual Reaction trait; printed statistics/simple actions can proceed independently."
+      }
+    },
+    {
+      "id": "COMMAND",
+      "order": 52,
+      "assignment": "CXM-52",
+      "title": "Orders, attack substitution and mount policies",
+      "slice_owner": "S-156/S-157/S-158; narrow in-band S-147 Chain consumer",
+      "reuse": "Exact command/cost/owner-group-independent initiative/default policies and native familiar/steed recovery accepted.",
+      "remaining": "Autonomous tasks/moves/standing orders, Chain forgo-attack+familiar Reaction one attack versus Investment command Attack action; ridden/control/incapacitated owner/Life Bond/telepathy/room travel. Bring only Chain S-147 into Crown.",
+      "prerequisites": [],
+      "concrete_consumers": "Chain/Investment/Familiar/Wild Companion/Steed/Faithful/Animate Dead/Servant/Phantom.",
+      "acceptance": "Actual command controls exact owner/source; Chain one owner attack+familiar Reaction, no Multiattack. Investment Bonus Attack and Resistance Reaction distinct. Downed/dead owner/late arrival/rebuild never replays turns.60ft commands/24h control distinct from actor existence; no party slots/respawn on restore.",
+      "evidence": [
+        "docs/mechanics/created-actors-and-placement.md",
+        "docs/mechanics/find-familiar-2024.md",
+        "docs/mechanics/animate-dead-2024.md"
+      ],
+      "work_kinds": [
+        "engine_extension",
+        "content_wiring",
+        "gameplay_proof"
+      ],
+      "state": "planning_only",
+      "engine_state": "partial_contract_missing_or_unverified_named_hosts",
+      "proof_state": "No gameplay acceptance performed here; reuse only the registry's named verified boundaries.",
+      "conditional_prerequisites": {
+        "ACTOR": "Only chosen actor template/action kinds.",
+        "REMOTE": "Only specified senses/Touch delivery; commands reuse existing actor authority."
+      }
+    },
+    {
+      "id": "FORM",
+      "order": 53,
+      "assignment": "CXM-53",
+      "title": "Source retained forms and equipment",
+      "slice_owner": "S-163/S-164/S-141 continuation",
+      "reuse": "Reversible retained-stat projections, equipment chooser and persistent-room exact ground transfers accepted; reversion does not refill/reacquire.",
+      "remaining": "Full legal known forms/replace, Wild Shape stats/proficiencies/mental/HP/TempHP/breath/casting/equipment/endings; Alter/enlarge/gas/stone and Imp/Quasit only printed Speed changes. No curated menu reduction.",
+      "prerequisites": [],
+      "concrete_consumers": "Wild Shape/Wild Companion, Goliath Large Form, Alter/Enlarge/Gaseous/Meld/Moonbeam; complete form blocks/Imp/Quasit.",
+      "acceptance": "Normal Druid2/4 legal CR/type/no-Fly,4/6 known/one Long Rest replacement; swarm held. Before cost recheck size/equipment policy. Revert same actor original HP/resources, exact remaining gear, no refill. Moonbeam blocks shape change only while in area; both checkpoint forms preserve chosen source.",
+      "evidence": [
+        "docs/mechanics/created-actors-and-placement.md",
+        "docs/mechanics/physical-facts-space-and-movement.md",
+        "docs/mechanics/temporary-hp-and-entry-protections.md"
+      ],
+      "work_kinds": [
+        "engine_extension",
+        "content_wiring",
+        "gameplay_proof"
+      ],
+      "state": "planning_only",
+      "engine_state": "partial_contract_missing_or_unverified_named_hosts",
+      "proof_state": "No gameplay acceptance performed here; reuse only the registry's named verified boundaries.",
+      "conditional_prerequisites": {
+        "ACTOR": "Only legal selected source stat/trait template.",
+        "ARMOR": "Only retained equipment/base-AC consumer.",
+        "GRAPPLE": "Only a selected form's actual grapple action, not all form selection."
+      }
+    },
+    {
+      "id": "CONTAIN",
+      "order": 54,
+      "assignment": "CXM-54",
+      "title": "Source swallowing, space and cargo consumers",
+      "slice_owner": "S-170/S-171/S-172/S-167 reuse",
+      "reuse": "VS-148–151 occupancy/capacity/internal harm/escape/moving release/vessel cargo are accepted.",
+      "remaining": "Giant Frog exact swallow/internal damage/death5ft escape/Prone; Rope Trick eight Medium-or-smaller/rope/window/barrier/release; Disk follow500lb/height/gap/lag. Existing vessel ground host is not full source or travel proof.",
+      "prerequisites": [],
+      "concrete_consumers": "Giant Frog Swallow, Rope Trick, Floating Disk; steed passenger/temporary tack references.",
+      "acceptance": "Real admission/capacity/inside-outside targeting. Frog own-grapple replaces conditions/disables Bite, next-turn Acid/disgorge and corpse exit5ft Prone. Disk follows limits with exact cargo. Full/blocked ending safe deferred release; allowed restore exact occupants, no duplicated gear. Reuse unchanged containment proofs.",
+      "evidence": [
+        "docs/mechanics/containment.md",
+        "docs/mechanics/projected-vessels.md"
+      ],
+      "work_kinds": [
+        "engine_extension",
+        "content_wiring",
+        "gameplay_proof"
+      ],
+      "state": "planning_only",
+      "engine_state": "partial_contract_missing_or_unverified_named_hosts",
+      "proof_state": "No gameplay acceptance performed here; reuse only the registry's named verified boundaries.",
+      "conditional_prerequisites": {
+        "FORM": "Only when the swallowing creature is an acquired form.",
+        "PHASE": "Only Rope Trick's represented internal plane/access.",
+        "BARRIER": "Only Rope Trick's specified inside/outside effect barrier."
+      }
+    },
+    {
+      "id": "REMAINS",
+      "order": 55,
+      "assignment": "CXM-55",
+      "title": "Death, preservation, revival and delayed creation",
+      "slice_owner": "S-175/S-176; S-119/S-120/S-130/S-131 reuse",
+      "reuse": "Corpse dead/downed identity/cause/gear, explicit/max0 death, lasting Undead existence/control and aftermath records.",
+      "remaining": "Repose exact deadline pause; Revivify same actor<=1min/excluded death/1HP/missing parts, unknown facts refuse. Wight actual-damage maxHP/cure and24h Zombie/cancel/control12. Lich revival held for policy.",
+      "prerequisites": [],
+      "concrete_consumers": "Repose/Revivify/Spare/Dead speech/Animate Dead; Wight Life Drain/Zombie Fortitude/Guard/traveler facts.",
+      "acceptance": "Real death vs living0, just-before/after revive deadline with Repose/diamonds once, same gear/actor. Wight settled damage/max0/cancelled delayed creation/cap; Zombie exclusions/DC5+damage before defeat. Allowed reload cannot restart timers or recreate remains.",
+      "evidence": [
+        "docs/mechanics/party-recovery-2024.md",
+        "docs/mechanics/animate-dead-2024.md",
+        "docs/mechanics/monster-max-hp-sources.md"
+      ],
+      "work_kinds": [
+        "engine_extension",
+        "content_wiring",
+        "gameplay_proof",
+        "source_fact",
+        "campaign_policy"
+      ],
+      "state": "planning_only",
+      "engine_state": "partial_contract_missing_or_unverified_named_hosts",
+      "proof_state": "No gameplay acceptance performed here; reuse only the registry's named verified boundaries.",
+      "conditional_prerequisites": {
+        "ACTOR": "Only delayed/created Zombie template; Revivify restores original actor.",
+        "REPAIR": "Only if an actual retained-piece fact is absent; revive refusal for missing parts does not require Mending."
+      }
+    },
+    {
+      "id": "CAST",
+      "order": 56,
+      "assignment": "CXM-56",
+      "title": "Casting sources, repertoires and costed edits",
+      "slice_owner": "S-134–S-142; S-126/S-127 continuation",
+      "reuse": "Accepted permissions/payments/preparation/ordinary-Pact-fixed uses; free player HUD range/V-S/school/timing edits and flat-condition lifetime edits.",
+      "remaining": "Actual source definitions/replacement cadence, Metamagic cost/eligibility/one-option exceptions on needed noncondition/room/AI/Reaction hosts. Subtle Material exception/Twinned target progression/Extended concentration Advantage/Quickened turn limit remain whole.",
+      "prerequisites": [],
+      "concrete_consumers": "Twelve casting packages, subclass spell tables, Magic Initiate/species3/5,22 invocations/10 Metamagics/Lich slots.",
+      "acceptance": "Two sources same spell different ability/free use: normal chooser retains exact permission/payment. Own-class eligible preparation distinct from higher combined slots; no Paladin/Ranger level3 access at5. Costed edits cancel/revalidate before spend, compatible choices once/catalog unchanged. Only actual extra hosts need new proof.",
+      "evidence": [
+        "docs/mechanics/spell-permissions-and-preparation.md",
+        "docs/mechanics/spell-slots-and-ritual-casting.md",
+        "docs/mechanics/attack-profiles.md"
+      ],
+      "work_kinds": [
+        "engine_extension",
+        "content_wiring",
+        "gameplay_proof"
+      ],
+      "state": "planning_only",
+      "engine_state": "partial_contract_missing_or_unverified_named_hosts",
+      "proof_state": "No gameplay acceptance performed here; reuse only the registry's named verified boundaries.",
+      "conditional_prerequisites": {
+        "COMPONENT": "Only material/hand form absent for the selected permission/edit.",
+        "POOL": "Only exact cost/exchange needed by the selected option.",
+        "ROLL": "Only option's actual roll-choice host.",
+        "LIFETIME": "Only selected duration/concentration owner."
+      }
+    },
+    {
+      "id": "BOOK",
+      "order": 57,
+      "assignment": "CXM-57",
+      "title": "Exact books, copying and rest preparation",
+      "slice_owner": "S-046/S-048/S-137/S-161/S-162 continuation",
+      "reuse": "Source book/preparation permission, exact copies, work time and source/grant receipts.",
+      "remaining": "Wizard initial6/+2/class-level/copy/loss/time/GP, Ritual Adept reading/Memorize rest; Savant free additions distinct. Tome on-person3 cantrips+2 rituals/rest conjure/replace/end, not ritual-only slot permission.",
+      "prerequisites": [],
+      "concrete_consumers": "Wizard/Savant/Ritual/Memorize/Arcane Recovery, Spellbook item, Pact Tome/Book of Shadows; ordinary Book separate.",
+      "acceptance": "Normal book/preparation UI legal lists/levels; copy/pay once with actual book/time, interrupt no duplicated additions. Lose/replace book honors prepared/ritual source limits. Tome on-person ending/recreation exact source, no acquisition replay; chosen spells/costs recover.",
+      "evidence": [
+        "docs/mechanics/spell-permissions-and-preparation.md",
+        "docs/mechanics/spell-slots-and-ritual-casting.md",
+        "docs/mechanics/work-sites.md"
+      ],
+      "work_kinds": [
+        "engine_extension",
+        "content_wiring",
+        "gameplay_proof"
+      ],
+      "state": "planning_only",
+      "engine_state": "partial_contract_missing_or_unverified_named_hosts",
+      "proof_state": "No gameplay acceptance performed here; reuse only the registry's named verified boundaries.",
+      "conditional_prerequisites": {
+        "CAST": "Only exact book-source preparation/permission, already accepted in bounded form.",
+        "WORK": "Only copying/replacement/ritual site and time, not all long spells."
+      }
+    },
+    {
+      "id": "CHOICE",
+      "order": 58,
+      "assignment": "CXM-58",
+      "title": "Complete parameters, replacements and feats",
+      "slice_owner": "S-045/S-046/S-049/S-050; S-233/S-242 reuse",
+      "reuse": "Generation/feat prerequisites/repeat-parameter controls, G2 all-class choices and real repeatable Skilled/source grants accepted.",
+      "remaining": "Source ten feats/feature/invocation/Metamagic choices, dependency-safe replacement/cadence, ASI/Grappler ability ownership; Origin fixed list versus Lessons different-feat limit. Do not redo chooser/Skilled.",
+      "prerequisites": [],
+      "concrete_consumers": "All79 character candidates; ten feats/22 invocations/10 Metamagics, styles/Order/Land/Human.",
+      "acceptance": "Actual creation/training legal/illegal/class-total prerequisites/repeated parameters/dependency removal. Level4 ASI/CON HP once, Magic Initiate level replace, Fighter style and Land rest cadence. Back/reset/stale confirm and both DTOs keep independent sources.",
+      "evidence": [
+        "docs/mechanics/progression-choices.md",
+        "docs/mechanics/permanent-progression.md"
+      ],
+      "work_kinds": [
+        "engine_extension",
+        "content_wiring",
+        "gameplay_proof"
+      ],
+      "state": "planning_only",
+      "engine_state": "existing_contract_with_content_or_consumer_work",
+      "proof_state": "No gameplay acceptance performed here; reuse only the registry's named verified boundaries.",
+      "conditional_prerequisites": {
+        "CAST": "Only selected spell grant/parameter source.",
+        "DICE": "Only actual Savage Attacker/GWF feat effect proof.",
+        "GRAPPLE": "Only actual Grappler effect proof; acquiring other feats is independent."
+      }
+    },
+    {
+      "id": "ACQUIRE",
+      "order": 59,
+      "assignment": "CXM-59",
+      "title": "Permanent feature and resource acquisition",
+      "slice_owner": "S-047/S-048 continuation",
+      "reuse": "Permanent proficiency/equipment/ability/maxHP grants, ordered class/character receipts and fit preflight; primary G2 native path.",
+      "remaining": "Host rejects subclasses/most feature kinds/resources/secondary feature lists. Extend only selected acquired source kinds. JSON opt-in alone cannot enable it; native class paths remain until covered.",
+      "prerequisites": [],
+      "concrete_consumers": "All12 class/subclass1–5 features, species3/5 and multiclass class1 feature sources.",
+      "acceptance": "Neutral loaded primary then secondary with one selected passive/active/resource/casting source and class/total thresholds. Invalid choice/full inventory refuses whole grant. Both DTOs validate receipts; sell/consume/reload no replay. Unsupported source kinds stay explicit until their assignments pass.",
+      "evidence": [
+        "src/characters/permanent_progression_rules.gd",
+        "docs/mechanics/permanent-progression.md",
+        "src/characters/class_progression.gd"
+      ],
+      "work_kinds": [
+        "engine_extension",
+        "content_wiring",
+        "gameplay_proof"
+      ],
+      "state": "planning_only",
+      "engine_state": "partial_contract_missing_or_unverified_named_hosts",
+      "proof_state": "No gameplay acceptance performed here; reuse only the registry's named verified boundaries.",
+      "conditional_prerequisites": {
+        "PACK": "Only concrete chosen equipment grant references; fixed primitive grants already accepted.",
+        "CHOICE": "Only parameter/choice kinds in the source being acquired."
+      }
+    },
+    {
+      "id": "BACKGROUND",
+      "order": 60,
+      "assignment": "CXM-60",
+      "title": "Background creation and origins",
+      "slice_owner": "S-231; S-233/S-242/S-047 reuse",
+      "reuse": "Four adapted candidates, ability/feat parameters, tool-source ownership and complete package map.",
+      "remaining": "Production background type/loader/creation step, listed +2/+1 or+1/+1/+1, fixed feat/skills/tool/A-or50GP once. Prevent legacy species ASI stacking, no legacy rewrite.",
+      "prerequisites": [],
+      "concrete_consumers": "Acolyte/Criminal/Sage/Soldier; fixed Cleric/Wizard Initiate and chosen Gaming Set.",
+      "acceptance": "Normal four-seat creation each ability split/alternative/Back/Random/reset/stale confirm. Soldier set matches; fixed Initiate list with legal ability/spells. No revisited/reloaded double grants; both DTO source validation and legacy species boundary.",
+      "evidence": [
+        "docs/mechanics/progression-choices.md",
+        "docs/mechanics/permanent-progression.md"
+      ],
+      "work_kinds": [
+        "engine_extension",
+        "content_wiring",
+        "gameplay_proof"
+      ],
+      "state": "planning_only",
+      "engine_state": "partial_contract_missing_or_unverified_named_hosts",
+      "proof_state": "No gameplay acceptance performed here; reuse only the registry's named verified boundaries.",
+      "conditional_prerequisites": {
+        "PACK": "Only selected A package; GP alternative independent.",
+        "CHOICE": "Only selected Origin feat parameters.",
+        "ACQUIRE": "Only once-only background source grants/validation."
+      }
+    },
+    {
+      "id": "SPECIES",
+      "order": 61,
+      "assignment": "CXM-61",
+      "title": "Nine species and total-level grants",
+      "slice_owner": "S-232; S-045/S-139/S-047 reuse",
+      "reuse": "Saved species/size/languages, source spell uses/stat/condition/sense contracts; retained old species.",
+      "remaining": "Full lineage/ancestry/legacy/size/skill/ability choices and character3/5 grants regardless of class. Route traits through narrow owners, no legacy fixed ASI/weapons or species-ID branches.",
+      "prerequisites": [],
+      "concrete_consumers": "Dragonborn/Dwarf/Elf/Gnome/Goliath/Halfling/Human/Orc/Tiefling all trait operations/spell links.",
+      "acceptance": "Actual creation and mixed classes total3/5 legal options/uses/rest and no early/lost/repeated grant. Dwarf HP each total level, Orc Dash+TempHP/zero replacement, Gnome device/Large space use specific proofs. Both DTOs preserve legacy separately, no migration.",
+      "evidence": [
+        "docs/mechanics/progression-choices.md",
+        "docs/mechanics/permanent-progression.md",
+        "docs/mechanics/core-rules-status.md"
+      ],
+      "work_kinds": [
+        "engine_extension",
+        "content_wiring",
+        "gameplay_proof"
+      ],
+      "state": "planning_only",
+      "engine_state": "partial_contract_missing_or_unverified_named_hosts",
+      "proof_state": "No gameplay acceptance performed here; reuse only the registry's named verified boundaries.",
+      "conditional_prerequisites": {
+        "ACQUIRE": "Only selected permanent and total-level trait receipt kinds.",
+        "LANGUAGE": "Only creation/class language grant state; no remote-message gate.",
+        "FORM": "Only actual Large/Form traits.",
+        "FALL": "Only flight/ending consumers.",
+        "BACKGROUND": "Only exclusive ownership of creation ability increases, not completion of all background content."
+      }
+    },
+    {
+      "id": "MULTI",
+      "order": 62,
+      "assignment": "CXM-62",
+      "title": "Secondary classes through total5",
+      "slice_owner": "S-234; S-047/S-048/S-137/S-138 reuse",
+      "reuse": "Existing all/any entry gate every current/new class permanent13, offer/confirm recheck/history; combined/Pact formulas.",
+      "remaining": "Real secondary feature/subclass/resource/casting acquisition; restricted proficiencies/no starting gear/saves, HP roll choice policy unresolved. Class thresholds/nonstacking Extra Attack/baseAC. Gate code exists, production reachability unaccepted.",
+      "prerequisites": [],
+      "concrete_consumers": "multiclass.json all12 grants/half-caster round-up, class/subclass thresholds and milestone entitlements.",
+      "acceptance": "Normal legal/illegal/all-any12/13/stale permanent score, existing class after drop. Several total5 sequences cover class1/3/4, mixed slots/Pact/preparation/HP/Hit Dice and no extra gear/saves/replay. Reuse G3 gate checks; new source kinds need only their narrow proof. Both checkpoint forms retain entitlements.",
+      "evidence": [
+        "docs/mechanics/permanent-progression.md",
+        "docs/mechanics/spell-slots-and-ritual-casting.md"
+      ],
+      "work_kinds": [
+        "engine_extension",
+        "content_wiring",
+        "gameplay_proof"
+      ],
+      "state": "planning_only",
+      "engine_state": "partial_contract_missing_or_unverified_named_hosts",
+      "proof_state": "No gameplay acceptance performed here; reuse only the registry's named verified boundaries.",
+      "conditional_prerequisites": {
+        "ACQUIRE": "Only chosen secondary source/feature/subclass/resource kinds.",
+        "CAST": "Only actual caster contribution/repertoire; accepted entry gate and noncaster progress independent."
+      }
+    },
+    {
+      "id": "TRAVEL",
+      "order": 63,
+      "assignment": "CXM-63",
+      "title": "Five-mile travel stages and terrain procedures",
+      "slice_owner": "S-227/S-228; S-065/S-179/S-200 reuse",
+      "reuse": "Campaign hexes/legal arrival/events/clock/supplies and persistent position/milestones.",
+      "remaining": "Actual pace/time/terrain/road/slow-member/special speed/mount hour, marching order and once-stage distance/forage/navigation/search. Terrain aliases/yields/lost destination/vehicle applicability unresolved; no general planar/waterborne gate.",
+      "prerequisites": [
+        "SUPPLY"
+      ],
+      "concrete_consumers": "43 tiles/travel tables, Phantom Steed/Disk/Animal Messenger and actual class travel consumers.",
+      "acceptance": "Five-mile stage selected legal pace/exact elapsed time, terrain caps/roads/slow member/special speed/mount cumulative hour. Interruption/event/allowed reload never doubles time/distance/supply. Seed actual campaign yield/lost facts; unknown outcomes stay held.",
+      "evidence": [
+        "src/overworld/overworld_state.gd",
+        "src/hex/hex_tile.gd",
+        "docs/mechanics/physical-facts-space-and-movement.md"
+      ],
+      "work_kinds": [
+        "engine_extension",
+        "content_wiring",
+        "gameplay_proof",
+        "source_fact",
+        "campaign_policy"
+      ],
+      "state": "planning_only",
+      "engine_state": "partial_contract_missing_or_unverified_named_hosts",
+      "proof_state": "No gameplay acceptance performed here; reuse only the registry's named verified boundaries.",
+      "conditional_prerequisites": {
+        "COMMAND": "Only mount/created actor travelers.",
+        "FORM": "Only effective form speed/body needs.",
+        "KNOWLEDGE": "Only selected navigation/foraging/forecast outcomes, after campaign facts exist."
+      }
+    },
+    {
+      "id": "TRAP",
+      "order": 64,
+      "assignment": "CXM-64",
+      "title": "Positioned discovery, trigger and disarm",
+      "slice_owner": "S-229/S-230; OA Search/S-168/S-212 reuse",
+      "reuse": "Observer room Search, key/tool/break/Help/persistence; custom INT13 trapped_chest branches.",
+      "remaining": "Generated spatial trap with separate discovery/trigger/disarm/consequence/reset decisions. Keep original combined event until deliberate mapping. No SRD Needle/Darts substitution or inferred key consumption.",
+      "prerequisites": [],
+      "concrete_consumers": "Generated Trap Room/trapped_chest/Door/Chest/dungeon locks, Find Traps/Fast Hands.",
+      "acceptance": "Actual generated room Search wrong/right space/observer, paid tool failure/Help once. Trigger/disarm/reset persist through revisit/checkpoint, no wrong/unfinished child reward. Preserve every original branch; geometry/split/reset decisions gate only affected replacement.",
+      "evidence": [
+        "docs/mechanics/ordinary-actions.md",
+        "src/dungeon/local_room_rules.gd",
+        "src/dungeon/dungeon_generator.gd"
+      ],
+      "work_kinds": [
+        "engine_extension",
+        "content_wiring",
+        "gameplay_proof",
+        "source_fact",
+        "campaign_policy"
+      ],
+      "state": "planning_only",
+      "engine_state": "partial_contract_missing_or_unverified_named_hosts",
+      "proof_state": "No gameplay acceptance performed here; reuse only the registry's named verified boundaries.",
+      "conditional_prerequisites": {
+        "WARD": "Only matching exact lock state/key policy.",
+        "TOOL": "Only selected disarm/break task; no full tool catalog gate.",
+        "REPAIR": "Only actual broken piece facts, not general Mending."
+      }
+    },
+    {
+      "id": "EVENT",
+      "order": 65,
+      "assignment": "CXM-65",
+      "title": "Table routing and nested continuations",
+      "slice_owner": "S-214/S-215/S-217; existing event hosts reuse",
+      "reuse": "Weighted EventSystem, canonical EventResolver checks/child-combat handoff; native town direct shop/generated direct trapped_chest remain real routes.",
+      "remaining": "All4 tables/29 events delivery, shop dispatch/reveal_map fog consumer/Fairy child/return, rest/healer/custom duration semantics. Wire declared dungeon boss names/Chief bonus_hp20 and table routing currently ignored by generation; these are content wiring, not missing source values. New table roll differs from same occurrence resume; no global once-per-event-ID.",
+      "prerequisites": [],
+      "concrete_consumers": "Every table/event/branch, Fairy Ring/Court/Quest Board/Merchant/Inn/Healer/generated events.",
+      "acceptance": "Actual overworld/dungeon route and dialog branches; parent roll/GP/effects once through child open/close/reentry, unfinished child no reward. Actual fog/stock changes; boss declared name/bonus HP consumed once without replacing template. Preserve weights/leave/surprise/multiplicity. Unknown return/rest/duration remains held explicitly.",
+      "evidence": [
+        "src/events/event_system.gd",
+        "src/ui/event_dialog.gd",
+        "src/events/event_resolver.gd",
+        "src/overworld/overworld_state.gd"
+      ],
+      "work_kinds": [
+        "engine_extension",
+        "content_wiring",
+        "gameplay_proof",
+        "campaign_policy"
+      ],
+      "state": "planning_only",
+      "engine_state": "partial_contract_missing_or_unverified_named_hosts",
+      "proof_state": "No gameplay acceptance performed here; reuse only the registry's named verified boundaries.",
+      "conditional_prerequisites": {
+        "KNOWLEDGE": "Only a branch that grants/queries authored information.",
+        "REST": "Only inn/rest service; other table routing independent."
+      }
+    },
+    {
+      "id": "CLEAR_REWARD",
+      "order": 66,
+      "assignment": "CXM-66",
+      "title": "Dungeon and generated-room delivery",
+      "slice_owner": "S-216; S-049/S-048 reuse",
+      "reuse": "cleared_dungeons/mark_dungeon_cleared, generated loot/room state, native payout and milestones. claim_reward is not their actual payment route.",
+      "remaining": "Prove actual delivery/full-inventory before clear/claim, dungeon-clear distinct from generated room. Shared replacement consumes existing receipt, never pays beside native route.",
+      "prerequisites": [],
+      "concrete_consumers": "Three clear rewards/generated_loot_room/three fragments/four milestones/crown_goals active-character predicate.",
+      "acceptance": "Real boss clear/loot pickup normal/full inventory/recipient; failure cannot lose reward or misleadingly claim. Reentry/both checkpoint relaunches never duplicate GP/items/levels. Three fragments plus actual Lich defeat; active/inactive policy remains explicit. Existing shortcut fixtures keep bounded purpose.",
+      "evidence": [
+        "src/autoload/game_manager.gd",
+        "src/dungeon/local_room_view.gd",
+        "src/overworld/overworld_state.gd",
+        "src/dungeon/dungeon_generator.gd"
+      ],
+      "work_kinds": [
+        "engine_extension",
+        "content_wiring",
+        "gameplay_proof"
+      ],
+      "state": "planning_only",
+      "engine_state": "partial_contract_missing_or_unverified_named_hosts",
+      "proof_state": "No gameplay acceptance performed here; reuse only the registry's named verified boundaries.",
+      "conditional_prerequisites": {
+        "PACK": "Only reuse exact delivery preflight/receipt behavior if extended there; starting package catalog not required.",
+        "EVENT": "Only selected generated/event child that owns this reward; native dungeon clear independent."
+      }
+    },
+    {
+      "id": "EVENT_REWARD",
+      "order": 67,
+      "assignment": "CXM-67",
+      "title": "Event and bounty victory settlement",
+      "slice_owner": "S-217; S-216 continuation",
+      "reuse": "Immediate event item/gold/check branches and encounter identities; existing transient continuation concepts/exact inventory.",
+      "remaining": "Quest choice.reward has no established EventDialog consumer/bounty payment. Bind exact child victory/recipient without prepayment/resume duplicate/dungeon-monster collision. Immediate event branches separate.",
+      "prerequisites": [],
+      "concrete_consumers": "Quest Board100GP/three-monster child; Fairy/event immediate reward branches.",
+      "acceptance": "Actual bounty accept: defeat/flee/cancel0, only matching victory100GP once. Stale unrelated combat cannot claim; reopen/double callback/post-settlement allowed reload never repays. Immediate reward remains branch-owned, not later victory. No event/combat save checkpoint.",
+      "evidence": [
+        "src/ui/event_dialog.gd",
+        "src/events/event_resolver.gd",
+        "src/autoload/game_manager.gd",
+        "src/combat/combat_state.gd"
+      ],
+      "work_kinds": [
+        "engine_extension",
+        "content_wiring",
+        "gameplay_proof"
+      ],
+      "state": "planning_only",
+      "engine_state": "partial_contract_missing_or_unverified_named_hosts",
+      "proof_state": "No gameplay acceptance performed here; reuse only the registry's named verified boundaries.",
+      "conditional_prerequisites": {
+        "EVENT": "Only exact pending child-encounter/parent continuation.",
+        "CLEAR_REWARD": "Only common delivery preflight/receipt if extended; all three dungeon conversions not required."
+      }
+    },
+    {
+      "id": "MONSTER_REWARD",
+      "order": 68,
+      "assignment": "CXM-68",
+      "title": "Monster loot policy and payment route",
+      "slice_owner": "S-216/S-217; campaign decision first",
+      "reuse": "Loot metadata copied into entities; complete acquisition links. No generic post-combat table settlement established. Dungeon/event payouts separate.",
+      "remaining": "Decide whether/how metadata pays, recipient/full-inventory/chance/repeated entries/form-summon-respawn exclusions, then exact occurrence settlement. Metadata is not automatically owed drop.",
+      "prerequisites": [],
+      "concrete_consumers": "Ten encounters/42 direct occurrences, Lich repeated gold100/fragment, Wight/Ooze and item links.",
+      "acceptance": "Pin policy and overlap before implementation. After decision real victory captured rolls once, exact GP/copies/recipient, intentional repeated entries preserved. Same victory reload never repays; forms/summons/defeat/flee only explicitly authorized. Metadata inspection never passes payment proof.",
+      "evidence": [
+        "src/combat/combat_state.gd",
+        "src/autoload/game_manager.gd"
+      ],
+      "work_kinds": [
+        "campaign_policy",
+        "engine_extension",
+        "content_wiring",
+        "gameplay_proof"
+      ],
+      "state": "planning_only",
+      "engine_state": "partial_contract_missing_or_unverified_named_hosts",
+      "proof_state": "No gameplay acceptance performed here; reuse only the registry's named verified boundaries.",
+      "conditional_prerequisites": {
+        "CLEAR_REWARD": "Only collision/occurrence receipt contract at selected actual overlap.",
+        "EVENT_REWARD": "Only bounty overlap if loot policy selects same encounter; first resolve policy."
+      }
+    },
+    {
+      "id": "COMPANION",
+      "order": 69,
+      "assignment": "CXM-69",
+      "title": "Companion origins and stable recruitment",
+      "slice_owner": "S-231/S-232/S-234 consumers; S-047/S-049 reuse",
+      "reuse": "Aldric/Mira/Rowan fixed Characters/roster/stable four slots/current gear/ownership recovery.",
+      "remaining": "Explicit 2024 origins/lineage/subclass/later options without double ASI/package on recruit. Fixed scores/identity retained; active/inactive goal and failed recruit handling remain visible.",
+      "prerequisites": [],
+      "concrete_consumers": "Aldric/Mira/Rowan and current class/item reachability links.",
+      "acceptance": "Recruit/dismiss/swap/level3/4/5 after decisions: same identity/seat/scores/gear/resources. No extra package/ASI on reload/join, player/party ownership agrees. Full party cannot lose recruit/reward; fragment goal follows explicit roster policy.",
+      "evidence": [
+        "src/autoload/party_manager.gd",
+        "docs/mechanics/permanent-progression.md"
+      ],
+      "work_kinds": [
+        "campaign_policy",
+        "content_wiring",
+        "gameplay_proof"
+      ],
+      "state": "planning_only",
+      "engine_state": "existing_contract_with_content_or_consumer_work",
+      "proof_state": "No gameplay acceptance performed here; reuse only the registry's named verified boundaries.",
+      "conditional_prerequisites": {
+        "BACKGROUND": "Only selected legal default/origin source.",
+        "SPECIES": "Only selected lineage/traits.",
+        "MULTI": "Only if companion actually multiclasses; ordinary level-up sources suffice otherwise.",
+        "CLEAR_REWARD": "Only roster-fragment predicate/delivery actually affected."
+      }
+    },
+    {
+      "id": "CATALOG",
+      "order": 70,
+      "assignment": "CXM-70",
+      "title": "Complete consumer-cohort promotion",
+      "slice_owner": "S-222/S-223; proof belongs to implementing slice",
+      "reuse": "Written full rules/drafts, DataLoader and conversion register; accepted fixtures reusable.",
+      "remaining": "Only ready cohort actual definitions/controls without ID handlers. Partial stays nonloaded/refused/native until covered. No whole-engine/parent gate. This convergence list is not a prerequisite for earlier narrow promotion.",
+      "prerequisites": [],
+      "concrete_consumers": "All unique indexed candidates plus multiclass; every pointed rule/operation/blocker in requirements.json; held/excluded cases remain explicit.",
+      "acceptance": "Windows production loader/ordinary controls with neutral renamed then actual source consumer, cancel/stale/payment/cleanup/recovery. Check every pointed clause/blocker, not just schema. Update relevant slice boundary/content readiness; no enable with required clause missing.",
+      "evidence": [
+        "docs/content_pipeline.md",
+        "docs/testing.md",
+        "docs/decisions/0018-shared-data-driven-rules-runtime.md"
+      ],
+      "work_kinds": [
+        "content_wiring",
+        "gameplay_proof"
+      ],
+      "state": "planning_only",
+      "engine_state": "existing_contract_with_content_or_consumer_work",
+      "proof_state": "No gameplay acceptance performed here; reuse only the registry's named verified boundaries."
+    },
+    {
+      "id": "JOURNEY",
+      "order": 71,
+      "assignment": "CXM-71",
+      "title": "Normal creation-to-finale proof",
+      "slice_owner": "Campaign acceptance; S-216/S-217 consumers",
+      "reuse": "Existing Crown smoke/composition/balance/reentry/finale/relaunch checks and campaign loop. Staged shortcuts are bounded transition proofs.",
+      "remaining": "Normal1–4-player journey earns four milestones/three fragments/legal training/rest/recovery/finale victory/defeat. Live controls/readability/pacing separate from headless correctness.",
+      "prerequisites": [
+        "CATALOG"
+      ],
+      "concrete_consumers": "Full Crown, real companions/three dungeons/rewards/allowed checkpoints, existing native/shared composition.",
+      "acceptance": "Supported Windows runner existing scenarios plus normal journey in existing harness: create, earn1→5/fragments, choices3/4/5, rest/save/fresh relaunch, actual finale legal commands/normal stats/resources. No invulnerability/1HP replacement boss/forced victory/precompleted milestone substitute. Observe normal play, stop session; unrelated higher-level failures stay separate.",
+      "evidence": [
+        "docs/testing.md",
+        "src/viewport_harness.gd",
+        "src/crown_fresh_relaunch_probe.gd"
+      ],
+      "work_kinds": [
+        "gameplay_proof"
+      ],
+      "state": "planning_only",
+      "engine_state": "existing_contract_with_content_or_consumer_work",
+      "proof_state": "No gameplay acceptance performed here; reuse only the registry's named verified boundaries."
+    }
+  ]
+}

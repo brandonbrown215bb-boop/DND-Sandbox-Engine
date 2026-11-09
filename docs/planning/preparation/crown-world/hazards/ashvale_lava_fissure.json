@@ -1,0 +1,41 @@
+{
+  "schema": "crown-world-candidate/1",
+  "id": "ashvale_lava_fissure",
+  "name": "Ashvale lava fissure",
+  "kind": "hazards",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring declarations only; not registered engine opcodes.",
+  "required_extensions": [
+    "hazards",
+    "access_movement"
+  ],
+  "authored_operations": [
+    {
+      "operation": "resolve_authored_surface_heat",
+      "position": [
+        3,
+        -1
+      ],
+      "damage": "1d4",
+      "height_feet": 5,
+      "requirement": "Retain actual entry and continued-exposure host semantics, altitude, damage defenses and source tick identity. Water Walk does not prevent heat."
+    }
+  ],
+  "blockers": [
+    "These are campaign-authored heat parameters, not general SRD lava values. Additional weather/surface hazards are not implied."
+  ],
+  "retained_input": {
+    "path": "data/core/campaigns/the_lost_crown.json",
+    "sha256": "3352b2d22be36e68591bfdf4ec73b8201f2bec6c69a3a60b0c8beb7d5074db44",
+    "pointer": "/dungeons/ruins_of_ashvale/tactical_rooms/1/cell_terrains/0",
+    "payload": {
+      "position": [
+        3,
+        -1
+      ],
+      "surface": "lava",
+      "heat_damage_formula": "1d4",
+      "heat_height_feet": 5
+    }
+  }
+}

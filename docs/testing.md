@@ -12,6 +12,14 @@ profile. Selecting either `class_skill_selection_flow_b` or
 `class_skill_selection_reload` runs the complete sequence, so recovery always
 has all seven characters and both checkpoints to inspect.
 
+`ammunition_flow` exercises S-249 renamed ammunition through actual Attack,
+activation-choice cancellation/identical-copy replacement, Extra Attack misses,
+Loading, Shield/free-hand refusal, exact container pieces, readied target
+cancellation/release, encounter completion and Character Sheet recovery. Its
+paired `ammunition_reload` checks pending and completed recovery through both
+allowed DTOs in a fresh process. See [ammunition](mechanics/ammunition.md) for the
+bounded data contract and catalog/corrosion exclusions.
+
 The supported engine baseline is Godot 4.7.x on Windows. Provide a portable
 executable through `GODOT_BIN` or pass its path to the PowerShell runner.
 

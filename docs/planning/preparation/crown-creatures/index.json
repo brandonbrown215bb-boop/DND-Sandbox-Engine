@@ -1,0 +1,588 @@
+{
+  "schema": "crown-creature-index/1",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "candidates": [
+    {
+      "id": "srd_bandit",
+      "name": "Bandit",
+      "kind": "srd_statblock",
+      "path": "statblocks/bandit.json"
+    },
+    {
+      "id": "srd_goblin_warrior",
+      "name": "Goblin Warrior",
+      "kind": "srd_statblock",
+      "path": "statblocks/goblin_warrior.json"
+    },
+    {
+      "id": "srd_gray_ooze",
+      "name": "Gray Ooze",
+      "kind": "srd_statblock",
+      "path": "statblocks/gray_ooze.json"
+    },
+    {
+      "id": "srd_imp",
+      "name": "Imp",
+      "kind": "srd_statblock",
+      "path": "statblocks/imp.json"
+    },
+    {
+      "id": "srd_pseudodragon",
+      "name": "Pseudodragon",
+      "kind": "srd_statblock",
+      "path": "statblocks/pseudodragon.json"
+    },
+    {
+      "id": "srd_quasit",
+      "name": "Quasit",
+      "kind": "srd_statblock",
+      "path": "statblocks/quasit.json"
+    },
+    {
+      "id": "srd_skeleton",
+      "name": "Skeleton",
+      "kind": "srd_statblock",
+      "path": "statblocks/skeleton.json"
+    },
+    {
+      "id": "srd_sphinx_of_wonder",
+      "name": "Sphinx of Wonder",
+      "kind": "srd_statblock",
+      "path": "statblocks/sphinx_of_wonder.json"
+    },
+    {
+      "id": "srd_sprite",
+      "name": "Sprite",
+      "kind": "srd_statblock",
+      "path": "statblocks/sprite.json"
+    },
+    {
+      "id": "srd_wight",
+      "name": "Wight",
+      "kind": "srd_statblock",
+      "path": "statblocks/wight.json"
+    },
+    {
+      "id": "srd_zombie",
+      "name": "Zombie",
+      "kind": "srd_statblock",
+      "path": "statblocks/zombie.json"
+    },
+    {
+      "id": "srd_ape",
+      "name": "Ape",
+      "kind": "srd_statblock",
+      "path": "statblocks/ape.json"
+    },
+    {
+      "id": "srd_baboon",
+      "name": "Baboon",
+      "kind": "srd_statblock",
+      "path": "statblocks/baboon.json"
+    },
+    {
+      "id": "srd_badger",
+      "name": "Badger",
+      "kind": "srd_statblock",
+      "path": "statblocks/badger.json"
+    },
+    {
+      "id": "srd_bat",
+      "name": "Bat",
+      "kind": "srd_statblock",
+      "path": "statblocks/bat.json"
+    },
+    {
+      "id": "srd_black_bear",
+      "name": "Black Bear",
+      "kind": "srd_statblock",
+      "path": "statblocks/black_bear.json"
+    },
+    {
+      "id": "srd_boar",
+      "name": "Boar",
+      "kind": "srd_statblock",
+      "path": "statblocks/boar.json"
+    },
+    {
+      "id": "srd_camel",
+      "name": "Camel",
+      "kind": "srd_statblock",
+      "path": "statblocks/camel.json"
+    },
+    {
+      "id": "srd_cat",
+      "name": "Cat",
+      "kind": "srd_statblock",
+      "path": "statblocks/cat.json"
+    },
+    {
+      "id": "srd_constrictor_snake",
+      "name": "Constrictor Snake",
+      "kind": "srd_statblock",
+      "path": "statblocks/constrictor_snake.json"
+    },
+    {
+      "id": "srd_crab",
+      "name": "Crab",
+      "kind": "srd_statblock",
+      "path": "statblocks/crab.json"
+    },
+    {
+      "id": "srd_crocodile",
+      "name": "Crocodile",
+      "kind": "srd_statblock",
+      "path": "statblocks/crocodile.json"
+    },
+    {
+      "id": "srd_deer",
+      "name": "Deer",
+      "kind": "srd_statblock",
+      "path": "statblocks/deer.json"
+    },
+    {
+      "id": "srd_draft_horse",
+      "name": "Draft Horse",
+      "kind": "srd_statblock",
+      "path": "statblocks/draft_horse.json"
+    },
+    {
+      "id": "srd_eagle",
+      "name": "Eagle",
+      "kind": "srd_statblock",
+      "path": "statblocks/eagle.json"
+    },
+    {
+      "id": "srd_elk",
+      "name": "Elk",
+      "kind": "srd_statblock",
+      "path": "statblocks/elk.json"
+    },
+    {
+      "id": "srd_frog",
+      "name": "Frog",
+      "kind": "srd_statblock",
+      "path": "statblocks/frog.json"
+    },
+    {
+      "id": "srd_giant_badger",
+      "name": "Giant Badger",
+      "kind": "srd_statblock",
+      "path": "statblocks/giant_badger.json"
+    },
+    {
+      "id": "srd_giant_centipede",
+      "name": "Giant Centipede",
+      "kind": "srd_statblock",
+      "path": "statblocks/giant_centipede.json"
+    },
+    {
+      "id": "srd_giant_crab",
+      "name": "Giant Crab",
+      "kind": "srd_statblock",
+      "path": "statblocks/giant_crab.json"
+    },
+    {
+      "id": "srd_giant_fire_beetle",
+      "name": "Giant Fire Beetle",
+      "kind": "srd_statblock",
+      "path": "statblocks/giant_fire_beetle.json"
+    },
+    {
+      "id": "srd_giant_frog",
+      "name": "Giant Frog",
+      "kind": "srd_statblock",
+      "path": "statblocks/giant_frog.json"
+    },
+    {
+      "id": "srd_giant_goat",
+      "name": "Giant Goat",
+      "kind": "srd_statblock",
+      "path": "statblocks/giant_goat.json"
+    },
+    {
+      "id": "srd_giant_lizard",
+      "name": "Giant Lizard",
+      "kind": "srd_statblock",
+      "path": "statblocks/giant_lizard.json"
+    },
+    {
+      "id": "srd_giant_rat",
+      "name": "Giant Rat",
+      "kind": "srd_statblock",
+      "path": "statblocks/giant_rat.json"
+    },
+    {
+      "id": "srd_giant_seahorse",
+      "name": "Giant Seahorse",
+      "kind": "srd_statblock",
+      "path": "statblocks/giant_seahorse.json"
+    },
+    {
+      "id": "srd_giant_spider",
+      "name": "Giant Spider",
+      "kind": "srd_statblock",
+      "path": "statblocks/giant_spider.json"
+    },
+    {
+      "id": "srd_giant_venomous_snake",
+      "name": "Giant Venomous Snake",
+      "kind": "srd_statblock",
+      "path": "statblocks/giant_venomous_snake.json"
+    },
+    {
+      "id": "srd_giant_weasel",
+      "name": "Giant Weasel",
+      "kind": "srd_statblock",
+      "path": "statblocks/giant_weasel.json"
+    },
+    {
+      "id": "srd_giant_wolf_spider",
+      "name": "Giant Wolf Spider",
+      "kind": "srd_statblock",
+      "path": "statblocks/giant_wolf_spider.json"
+    },
+    {
+      "id": "srd_goat",
+      "name": "Goat",
+      "kind": "srd_statblock",
+      "path": "statblocks/goat.json"
+    },
+    {
+      "id": "srd_hawk",
+      "name": "Hawk",
+      "kind": "srd_statblock",
+      "path": "statblocks/hawk.json"
+    },
+    {
+      "id": "srd_hyena",
+      "name": "Hyena",
+      "kind": "srd_statblock",
+      "path": "statblocks/hyena.json"
+    },
+    {
+      "id": "srd_jackal",
+      "name": "Jackal",
+      "kind": "srd_statblock",
+      "path": "statblocks/jackal.json"
+    },
+    {
+      "id": "srd_lizard",
+      "name": "Lizard",
+      "kind": "srd_statblock",
+      "path": "statblocks/lizard.json"
+    },
+    {
+      "id": "srd_mastiff",
+      "name": "Mastiff",
+      "kind": "srd_statblock",
+      "path": "statblocks/mastiff.json"
+    },
+    {
+      "id": "srd_mule",
+      "name": "Mule",
+      "kind": "srd_statblock",
+      "path": "statblocks/mule.json"
+    },
+    {
+      "id": "srd_octopus",
+      "name": "Octopus",
+      "kind": "srd_statblock",
+      "path": "statblocks/octopus.json"
+    },
+    {
+      "id": "srd_owl",
+      "name": "Owl",
+      "kind": "srd_statblock",
+      "path": "statblocks/owl.json"
+    },
+    {
+      "id": "srd_panther",
+      "name": "Panther",
+      "kind": "srd_statblock",
+      "path": "statblocks/panther.json"
+    },
+    {
+      "id": "srd_piranha",
+      "name": "Piranha",
+      "kind": "srd_statblock",
+      "path": "statblocks/piranha.json"
+    },
+    {
+      "id": "srd_pony",
+      "name": "Pony",
+      "kind": "srd_statblock",
+      "path": "statblocks/pony.json"
+    },
+    {
+      "id": "srd_rat",
+      "name": "Rat",
+      "kind": "srd_statblock",
+      "path": "statblocks/rat.json"
+    },
+    {
+      "id": "srd_raven",
+      "name": "Raven",
+      "kind": "srd_statblock",
+      "path": "statblocks/raven.json"
+    },
+    {
+      "id": "srd_reef_shark",
+      "name": "Reef Shark",
+      "kind": "srd_statblock",
+      "path": "statblocks/reef_shark.json"
+    },
+    {
+      "id": "srd_riding_horse",
+      "name": "Riding Horse",
+      "kind": "srd_statblock",
+      "path": "statblocks/riding_horse.json"
+    },
+    {
+      "id": "srd_scorpion",
+      "name": "Scorpion",
+      "kind": "srd_statblock",
+      "path": "statblocks/scorpion.json"
+    },
+    {
+      "id": "srd_seahorse",
+      "name": "Seahorse",
+      "kind": "srd_statblock",
+      "path": "statblocks/seahorse.json"
+    },
+    {
+      "id": "srd_spider",
+      "name": "Spider",
+      "kind": "srd_statblock",
+      "path": "statblocks/spider.json"
+    },
+    {
+      "id": "srd_swarm_of_bats",
+      "name": "Swarm of Bats",
+      "kind": "srd_statblock",
+      "path": "statblocks/swarm_of_bats.json"
+    },
+    {
+      "id": "srd_swarm_of_insects",
+      "name": "Swarm of Insects",
+      "kind": "srd_statblock",
+      "path": "statblocks/swarm_of_insects.json"
+    },
+    {
+      "id": "srd_swarm_of_rats",
+      "name": "Swarm of Rats",
+      "kind": "srd_statblock",
+      "path": "statblocks/swarm_of_rats.json"
+    },
+    {
+      "id": "srd_swarm_of_ravens",
+      "name": "Swarm of Ravens",
+      "kind": "srd_statblock",
+      "path": "statblocks/swarm_of_ravens.json"
+    },
+    {
+      "id": "srd_venomous_snake",
+      "name": "Venomous Snake",
+      "kind": "srd_statblock",
+      "path": "statblocks/venomous_snake.json"
+    },
+    {
+      "id": "srd_vulture",
+      "name": "Vulture",
+      "kind": "srd_statblock",
+      "path": "statblocks/vulture.json"
+    },
+    {
+      "id": "srd_warhorse",
+      "name": "Warhorse",
+      "kind": "srd_statblock",
+      "path": "statblocks/warhorse.json"
+    },
+    {
+      "id": "srd_weasel",
+      "name": "Weasel",
+      "kind": "srd_statblock",
+      "path": "statblocks/weasel.json"
+    },
+    {
+      "id": "srd_wolf",
+      "name": "Wolf",
+      "kind": "srd_statblock",
+      "path": "statblocks/wolf.json"
+    },
+    {
+      "id": "crown_goblin",
+      "name": "Goblin",
+      "kind": "campaign_encounter",
+      "path": "encounters/goblin.json"
+    },
+    {
+      "id": "crown_goblin_chief",
+      "name": "Goblin Chief",
+      "kind": "campaign_encounter",
+      "path": "encounters/goblin_chief.json"
+    },
+    {
+      "id": "crown_skeleton",
+      "name": "Skeleton",
+      "kind": "campaign_encounter",
+      "path": "encounters/skeleton.json"
+    },
+    {
+      "id": "crown_zombie",
+      "name": "Zombie",
+      "kind": "campaign_encounter",
+      "path": "encounters/zombie.json"
+    },
+    {
+      "id": "crown_wolf",
+      "name": "Wolf",
+      "kind": "campaign_encounter",
+      "path": "encounters/wolf.json"
+    },
+    {
+      "id": "crown_bandit",
+      "name": "Bandit",
+      "kind": "campaign_encounter",
+      "path": "encounters/bandit.json"
+    },
+    {
+      "id": "crown_giant_spider",
+      "name": "Giant Spider",
+      "kind": "campaign_encounter",
+      "path": "encounters/giant_spider.json"
+    },
+    {
+      "id": "crown_ooze",
+      "name": "Gray Ooze",
+      "kind": "campaign_encounter",
+      "path": "encounters/ooze.json"
+    },
+    {
+      "id": "crown_wight",
+      "name": "Wight",
+      "kind": "campaign_encounter",
+      "path": "encounters/wight.json"
+    },
+    {
+      "id": "crown_lich_king",
+      "name": "The Lich King",
+      "kind": "campaign_encounter",
+      "path": "encounters/lich_king.json"
+    },
+    {
+      "id": "aldric",
+      "name": "Aldric",
+      "kind": "campaign_companion",
+      "path": "companions/aldric.json"
+    },
+    {
+      "id": "mira",
+      "name": "Mira",
+      "kind": "campaign_companion",
+      "path": "companions/mira.json"
+    },
+    {
+      "id": "rowan",
+      "name": "Rowan",
+      "kind": "campaign_companion",
+      "path": "companions/rowan.json"
+    },
+    {
+      "id": "find_steed",
+      "name": "Find Steed",
+      "kind": "spell_actor_template",
+      "path": "actors/find_steed.json"
+    },
+    {
+      "id": "phantom_steed",
+      "name": "Phantom Steed",
+      "kind": "spell_actor_template",
+      "path": "actors/phantom_steed.json"
+    },
+    {
+      "id": "unseen_servant",
+      "name": "Unseen Servant",
+      "kind": "spell_actor_template",
+      "path": "actors/unseen_servant.json"
+    },
+    {
+      "id": "mage_hand",
+      "name": "Mage Hand",
+      "kind": "spell_force_or_image",
+      "path": "actors/mage_hand.json"
+    },
+    {
+      "id": "spiritual_weapon",
+      "name": "Spiritual Weapon",
+      "kind": "spell_force_or_image",
+      "path": "actors/spiritual_weapon.json"
+    },
+    {
+      "id": "conjure_animals",
+      "name": "Conjure Animals",
+      "kind": "spell_force_or_image",
+      "path": "actors/conjure_animals.json"
+    },
+    {
+      "id": "dancing_lights",
+      "name": "Dancing Lights",
+      "kind": "spell_force_or_image",
+      "path": "actors/dancing_lights.json"
+    },
+    {
+      "id": "flaming_sphere",
+      "name": "Flaming Sphere",
+      "kind": "spell_force_or_image",
+      "path": "actors/flaming_sphere.json"
+    },
+    {
+      "id": "spirit_guardians",
+      "name": "Spirit Guardians",
+      "kind": "spell_force_or_image",
+      "path": "actors/spirit_guardians.json"
+    },
+    {
+      "id": "minor_illusion",
+      "name": "Minor Illusion",
+      "kind": "spell_force_or_image",
+      "path": "actors/minor_illusion.json"
+    },
+    {
+      "id": "silent_image",
+      "name": "Silent Image",
+      "kind": "spell_force_or_image",
+      "path": "actors/silent_image.json"
+    },
+    {
+      "id": "major_image",
+      "name": "Major Image",
+      "kind": "spell_force_or_image",
+      "path": "actors/major_image.json"
+    },
+    {
+      "id": "mirror_image",
+      "name": "Mirror Image",
+      "kind": "spell_force_or_image",
+      "path": "actors/mirror_image.json"
+    }
+  ],
+  "counts": {
+    "total": 94,
+    "srd_statblocks": 68,
+    "campaign_encounters": 10,
+    "campaign_companions": 3,
+    "wild_shape_levels_2_3": 39,
+    "wild_shape_levels_4_5": 46,
+    "normal_familiar": 24,
+    "pact_additional": 7,
+    "held_swarms": 4
+  },
+  "links": [
+    "selection-links.json",
+    "animal-source-inventory.json",
+    "dependency-map.json",
+    "required-extensions.json",
+    "source-pages.json"
+  ]
+}

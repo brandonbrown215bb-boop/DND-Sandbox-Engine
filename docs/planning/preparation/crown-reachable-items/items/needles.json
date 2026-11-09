@@ -1,0 +1,55 @@
+{
+  "schema": "crown-reachable-item-candidate/1",
+  "id": "needles",
+  "name": "Needles",
+  "kind": "ammunition",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring intent only; not registered engine syntax.",
+  "rules": {
+    "authority": "SRD 5.2.1",
+    "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      89,
+      94,
+      96
+    ],
+    "text": "Purchase lot: 50 Needles, weight 1 pounds, cost 1 GP. Typical storage is separate. A weapon with Ammunition needs the declared type and spends one piece on each attack. Drawing is part of attack, with a free hand to load a one-handed weapon; one minute after a fight recovers half used, rounded down.",
+    "source_context": "../source-pages.json"
+  },
+  "definition": {
+    "id": "needles",
+    "name": "Needles",
+    "unit": "piece",
+    "purchase_quantity": 50,
+    "purchase_weight_lb": 1,
+    "purchase_cost_gp": 1,
+    "typical_storage_candidate_id": "pouch"
+  },
+  "authored_operations": [
+    "Purchase lot: 50 Needles, weight 1 pounds, cost 1 GP. Typical storage is separate. A weapon with Ammunition needs the declared type and spends one piece on each attack. Drawing is part of attack, with a free hand to load a one-handed weapon; one minute after a fight recovers half used, rounded down."
+  ],
+  "retained_runtime_seeds": [],
+  "manifest_overrides": [],
+  "required_mapping": [
+    "ammunition"
+  ],
+  "consumers": [
+    {
+      "channel": "weapon_ammunition_dependency",
+      "candidate_ids": [
+        "blowgun"
+      ],
+      "source": "SRD 5.2.1 p.91"
+    }
+  ],
+  "unsupported_behavior": [
+    {
+      "group": "ammunition",
+      "requirement": "Separate piece counts, purchase lots and storage. Exact weapon type, free-hand loading, one-piece spending, one-minute floor-half recovery and Loading limits must work through attacks and checkpoints."
+    },
+    {
+      "group": "definition",
+      "requirement": "No exact current loaded-source seed at this identity. This candidate needs deliberate contract mapping/promotion; it is not an installed item."
+    }
+  ]
+}

@@ -1,0 +1,141 @@
+{
+  "format": "crown-spell-candidate/1",
+  "id": "lightning_bolt",
+  "name": "Lightning Bolt",
+  "level": 3,
+  "status": "written_unverified_not_loaded",
+  "source": {
+    "authority": "SRD 5.2.1",
+    "url": "https://media.dndbeyond.com/compendium-images/srd/5.2/SRD_CC_v5.2.1.pdf",
+    "sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      144
+    ],
+    "header": {
+      "Casting Time": "Action",
+      "Range": "Self",
+      "Components": "V, S, M (a bit of fur and a crystal rod)",
+      "Duration": "Instantaneous"
+    },
+    "attribution": "System Reference Document 5.2.1, Wizards of the Coast LLC; CC BY 4.0."
+  },
+  "casting": {
+    "casting_time": "Action",
+    "kind": "action",
+    "seconds": null,
+    "ritual_available": false,
+    "range": {
+      "source": "Self",
+      "kind": "self",
+      "feet": 0
+    },
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "a bit of fur and a crystal rod",
+    "duration": "Instantaneous",
+    "concentration": false,
+    "spell_lists": [
+      "sorcerer",
+      "wizard"
+    ]
+  },
+  "authored_intent": "Self-origin 100-foot by 5-foot line; DEX-half Lightning; higher slots add 1d6; preserve directional line selection.",
+  "rules": [
+    {
+      "id": "r001",
+      "text": "A stroke of lightning forming a 100-foot-long, 5-foot-wide Line blasts out from you in a direction you choose."
+    },
+    {
+      "id": "r002",
+      "text": "Each creature in the Line makes a Dexterity saving throw, taking 8d6 Lightning damage on a failed save or half as much damage on a successful one."
+    },
+    {
+      "id": "r003",
+      "text": "Using a Higher-Level Spell Slot."
+    },
+    {
+      "id": "r004",
+      "text": "The damage increases by 1d6 for each spell slot level above 3."
+    }
+  ],
+  "authored_operations": [
+    {
+      "operation": "shared_definition_reference",
+      "parameters": {
+        "definition": "runtime_draft.definition"
+      },
+      "status": "shared_definition_reference_unverified",
+      "required_source_rules": [
+        "r001",
+        "r002",
+        "r003",
+        "r004"
+      ]
+    }
+  ],
+  "runtime_draft": {
+    "origin": "existing_shared_definition",
+    "definition": {
+      "attack_type": "none",
+      "casting_time": "action",
+      "classes": [
+        "sorcerer",
+        "wizard"
+      ],
+      "components": [
+        "V",
+        "S",
+        "M"
+      ],
+      "concentration": false,
+      "damage": "8d6",
+      "damage_type": "lightning",
+      "description": "A stroke of lightning forming a 100-foot-long, 5-foot-wide Line blasts out from you in a direction you choose. Each creature in the Line makes a Dexterity saving throw, taking 8d6 Lightning damage on a failed save or half as much damage on a successful one. Using a Higher-Level Spell Slot. The damage increases by 1d6 for each spell slot level above 3.",
+      "duration": "Instantaneous",
+      "effects": [
+        {
+          "origin": "self",
+          "shape": "line",
+          "size": 20.0,
+          "type": "area_selection"
+        }
+      ],
+      "execution": "shared",
+      "half_on_save": true,
+      "id": "lightning_bolt",
+      "level": 3,
+      "material": "a bit of fur and a crystal rod",
+      "name": "Lightning Bolt",
+      "range": 0,
+      "rules_source": "SRD 5.2.1",
+      "rules_status": "authoring-draft-unverified",
+      "save": "DEX",
+      "school": "evocation",
+      "target": "area",
+      "upcast": {
+        "damage_per_level": "1d6",
+        "starting_level": 3.0
+      },
+      "range_kind": "self"
+    },
+    "fragments": {},
+    "coverage": "Unverified. Neither a full definition nor a fragment certifies all source rules or controls. Required extensions are not silently waived."
+  },
+  "required_extensions": [],
+  "audit": {
+    "source": "docs/audits/spells.md",
+    "batch": "088-2",
+    "production_definition_at_authoring": "res://data/core/spells/crown_sc_03.json#1",
+    "baseline_execution": "shared",
+    "source_revision": "2a19eb1d",
+    "existing_conversion_label": "converted"
+  },
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile every source rule and required extension, then implement and verify through production paths before any deliberate promotion. Keep native behavior until covered."
+  }
+}

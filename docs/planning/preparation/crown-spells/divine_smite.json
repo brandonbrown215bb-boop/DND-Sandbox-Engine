@@ -1,0 +1,132 @@
+{
+  "format": "crown-spell-candidate/1",
+  "id": "divine_smite",
+  "name": "Divine Smite",
+  "level": 1,
+  "status": "written_unverified_not_loaded",
+  "source": {
+    "authority": "SRD 5.2.1",
+    "url": "https://media.dndbeyond.com/compendium-images/srd/5.2/SRD_CC_v5.2.1.pdf",
+    "sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      125
+    ],
+    "header": {
+      "Casting Time": "Bonus Action, which you take immediately after hitting a target with a Melee weapon or an Unarmed Strike",
+      "Range": "Self",
+      "Components": "V",
+      "Duration": "Instantaneous"
+    },
+    "attribution": "System Reference Document 5.2.1, Wizards of the Coast LLC; CC BY 4.0."
+  },
+  "casting": {
+    "casting_time": "Bonus Action, which you take immediately after hitting a target with a Melee weapon or an Unarmed Strike",
+    "kind": "bonus_action",
+    "seconds": null,
+    "ritual_available": false,
+    "range": {
+      "source": "Self",
+      "kind": "self",
+      "feet": 0
+    },
+    "components": [
+      "V"
+    ],
+    "material": null,
+    "duration": "Instantaneous",
+    "concentration": false,
+    "spell_lists": [
+      "paladin"
+    ]
+  },
+  "authored_intent": "Bonus Action immediately after own melee weapon/Unarmed Strike hit; add Radiant damage to that hit, +1d8 versus Fiend/Undead; higher slots add 1d8; once-only hit/cost receipt.",
+  "rules": [
+    {
+      "id": "r001",
+      "text": "The target takes an extra 2d8 Radiant damage from the attack."
+    },
+    {
+      "id": "r002",
+      "text": "The damage increases by 1d8 if the target is a Fiend or an Undead."
+    },
+    {
+      "id": "r003",
+      "text": "Using a Higher-Level Spell Slot."
+    },
+    {
+      "id": "r004",
+      "text": "The damage increases by 1d8 for each spell slot level above 1."
+    }
+  ],
+  "authored_operations": [
+    {
+      "operation": "post_hit_cast_rider",
+      "parameters": {
+        "trigger": "casting_header",
+        "damage": "2d8",
+        "type": "radiant",
+        "extra_vs_types": {
+          "types": [
+            "fiend",
+            "undead"
+          ],
+          "damage": "1d8"
+        },
+        "upcast_per_slot": "1d8",
+        "same_hit": true
+      },
+      "status": "authoring_declaration_not_a_registered_opcode",
+      "required_source_rules": [
+        "r001",
+        "r002",
+        "r003",
+        "r004"
+      ]
+    }
+  ],
+  "runtime_draft": {
+    "origin": "fragments_only",
+    "definition": null,
+    "fragments": {
+      "triggering_hit_damage": {
+        "damage": "2d8",
+        "damage_type": "radiant",
+        "upcast": {
+          "starting_level": 1,
+          "damage_per_level": "1d8"
+        }
+      }
+    },
+    "coverage": "Unverified. Neither a full definition nor a fragment certifies all source rules or controls. Required extensions are not silently waived."
+  },
+  "required_extensions": [
+    {
+      "group": "post_hit_casts",
+      "requirement": "Keep the triggering attack/hit pending while the actor chooses and pays the extra Bonus Action/slot; merge the declared rider and retain target/source identity.",
+      "spell_specific_intent": "Bonus Action immediately after own melee weapon/Unarmed Strike hit; add Radiant damage to that hit, +1d8 versus Fiend/Undead; higher slots add 1d8; once-only hit/cost receipt.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003",
+        "r004"
+      ],
+      "existing_owner_to_reuse": "src/combat/combat_state.gd",
+      "slice_references": "S-041/S-134/S-135/S-148/S-160",
+      "disposition": "requires_mapping_or_host_completion",
+      "note": "This is an authored handoff requirement, not a fresh runtime failure or claim that the whole referenced slice is missing."
+    }
+  ],
+  "audit": {
+    "source": "docs/audits/spells.md",
+    "batch": "088-8",
+    "production_definition_at_authoring": "res://data/core/spells/core_spells.json#16",
+    "baseline_execution": "native",
+    "source_revision": "2a19eb1d",
+    "existing_conversion_label": "queued"
+  },
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile every source rule and required extension, then implement and verify through production paths before any deliberate promotion. Keep native behavior until covered."
+  }
+}

@@ -1,0 +1,81 @@
+{
+  "schema": "crown-world-candidate/1",
+  "id": "forest_events__hidden_cache",
+  "name": "Hidden Cache",
+  "kind": "events",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring declarations only; not registered engine opcodes.",
+  "required_extensions": [
+    "bodies_actors",
+    "discovery",
+    "objectives_rewards",
+    "rest_time"
+  ],
+  "authored_operations": [
+    {
+      "operation": "resolve_authored_check",
+      "seed_pointer": "/check",
+      "check": {
+        "ability": "WIS",
+        "skill": "Perception",
+        "dc": 10,
+        "familiar_help_allowed": true
+      },
+      "requirement": "Keep ability, skill/context, DC and optional familiar Help exactly. Choose actor and actual context; settle one branch once; never silently convert an ability check into a saving throw."
+    },
+    {
+      "operation": "settle_ordered_branch",
+      "seed_pointer": "/success/effects",
+      "effects": [
+        {
+          "type": "give_item",
+          "item_id": "gold_50"
+        },
+        {
+          "type": "give_item",
+          "item_id": "potion_healing"
+        }
+      ],
+      "condition": null,
+      "requirement": "Retain order, exact quantities/formulas, recipient, costs, branch descriptions and occurrence identity; no repeated payment when a child resumes."
+    }
+  ],
+  "blockers": [],
+  "retained_input": {
+    "path": "data/core/events/forest_events.json",
+    "sha256": "d4510f0da5ad26db2611a506fb58c79c35247610ac61ea39be48d30824feac09",
+    "pointer": "/events/3",
+    "payload": {
+      "id": "hidden_cache",
+      "name": "Hidden Cache",
+      "weight": 15,
+      "description": "You notice a hollow tree stump partially concealed by ferns. Something glints inside.",
+      "type": "skill_check",
+      "check": {
+        "ability": "WIS",
+        "skill": "Perception",
+        "dc": 10,
+        "familiar_help_allowed": true
+      },
+      "success": {
+        "description": "Inside the stump you find a small cache of supplies left by a previous traveler.",
+        "effects": [
+          {
+            "type": "give_item",
+            "item_id": "gold_50"
+          },
+          {
+            "type": "give_item",
+            "item_id": "potion_healing"
+          }
+        ]
+      },
+      "failure": {
+        "description": "You reach inside but find only rotting leaves and disappointed spiders."
+      }
+    }
+  },
+  "authority": "Custom Crown campaign event, not an SRD trap/NPC/spell replacement",
+  "table_id": "forest_events",
+  "occurrence_policy": "Table may roll again; same in-flight occurrence must not reroll/reapply on reopen. Campaign-specific uniqueness beyond generated room claims is unresolved, not silently global once-per-event-ID."
+}

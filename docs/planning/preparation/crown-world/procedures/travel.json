@@ -1,0 +1,170 @@
+{
+  "schema": "crown-world-candidate/1",
+  "id": "travel",
+  "name": "Travel",
+  "kind": "procedures",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring declarations only; not registered engine opcodes.",
+  "required_extensions": [
+    "travel"
+  ],
+  "authored_operations": [
+    {
+      "operation": "resolve_travel",
+      "requirement": "Represent five-mile stages, pace and terrain ceilings, good roads, slow travelers, special movement and mount fast-travel budgets; use the complete pace/rate/check tables. Bind marching order, encounter distance, navigation, foraging and search to each stage. Advance actual elapsed time once, settling timed sources and supplies, then legal arrival and events."
+    }
+  ],
+  "blockers": [
+    "Current hex movement costs and End Turn day advancement are not the SRD distance/pace clock. Terrain aliases plains/grassland, town/urban and dungeon/Underdark require campaign mapping. Foraging yields, lost-route outcomes and weather forecasts require authored facts, not invented SRD quantities."
+  ],
+  "slices": "S-065/S-179/S-227/S-228",
+  "source_context_pages": [
+    11,
+    12,
+    192
+  ],
+  "source_context": "../source-pages.json",
+  "current_owner_pins": [
+    {
+      "path": "src/overworld/overworld_state.gd",
+      "sha256": "615f9f73289038fc7fbbab80006391d6c70629875e64be1d132b4d56eb47c9a5"
+    },
+    {
+      "path": "src/hex/hex_tile.gd",
+      "sha256": "f0e27205601c291d9c4c19c49e2263311a84e1c6a529ecc7e9136138e0982550"
+    }
+  ],
+  "reuse_boundary": "Existing accepted pieces remain accepted at their documented limits; these requirements do not mark the entire slices missing.",
+  "source_parameters": {
+    "authority": "SRD 5.2.1 pp.12,192; retain full page context and source exceptions",
+    "pace_table": [
+      {
+        "pace": "Fast",
+        "feet_per_minute": 400,
+        "miles_per_hour": 4,
+        "miles_per_day": 30,
+        "check_effect": "Disadvantage on Wisdom (Perception or Survival) and Dexterity (Stealth)"
+      },
+      {
+        "pace": "Normal",
+        "feet_per_minute": 300,
+        "miles_per_hour": 3,
+        "miles_per_day": 24,
+        "check_effect": "Disadvantage on Dexterity (Stealth)"
+      },
+      {
+        "pace": "Slow",
+        "feet_per_minute": 200,
+        "miles_per_hour": 2,
+        "miles_per_day": 18,
+        "check_effect": "Advantage on Wisdom (Perception or Survival)"
+      }
+    ],
+    "mount_boost": {
+      "distance_multiplier": 2,
+      "cumulative_hours": 1,
+      "recovery": "Short or Long Rest"
+    },
+    "terrain_table": [
+      {
+        "terrain": "Arctic",
+        "maximum_pace": "Fast with appropriate equipment",
+        "encounter_distance": "6d6 x 10 feet",
+        "foraging_dc": 20,
+        "navigation_dc": 10,
+        "search_dc": 10
+      },
+      {
+        "terrain": "Coastal",
+        "maximum_pace": "Normal",
+        "encounter_distance": "2d10 x 10 feet",
+        "foraging_dc": 10,
+        "navigation_dc": 5,
+        "search_dc": 15
+      },
+      {
+        "terrain": "Desert",
+        "maximum_pace": "Normal",
+        "encounter_distance": "6d6 x 10 feet",
+        "foraging_dc": 20,
+        "navigation_dc": 10,
+        "search_dc": 10
+      },
+      {
+        "terrain": "Forest",
+        "maximum_pace": "Normal",
+        "encounter_distance": "2d8 x 10 feet",
+        "foraging_dc": 10,
+        "navigation_dc": 15,
+        "search_dc": 15
+      },
+      {
+        "terrain": "Grassland",
+        "maximum_pace": "Fast",
+        "encounter_distance": "6d6 x 10 feet",
+        "foraging_dc": 15,
+        "navigation_dc": 5,
+        "search_dc": 15
+      },
+      {
+        "terrain": "Hill",
+        "maximum_pace": "Normal",
+        "encounter_distance": "2d10 x 10 feet",
+        "foraging_dc": 15,
+        "navigation_dc": 10,
+        "search_dc": 15
+      },
+      {
+        "terrain": "Mountain",
+        "maximum_pace": "Slow",
+        "encounter_distance": "4d10 x 10 feet",
+        "foraging_dc": 20,
+        "navigation_dc": 15,
+        "search_dc": 20
+      },
+      {
+        "terrain": "Swamp",
+        "maximum_pace": "Slow",
+        "encounter_distance": "2d8 x 10 feet",
+        "foraging_dc": 10,
+        "navigation_dc": 15,
+        "search_dc": 20
+      },
+      {
+        "terrain": "Underdark",
+        "maximum_pace": "Normal",
+        "encounter_distance": "2d6 x 10 feet",
+        "foraging_dc": 20,
+        "navigation_dc": 10,
+        "search_dc": 20
+      },
+      {
+        "terrain": "Urban",
+        "maximum_pace": "Normal",
+        "encounter_distance": "2d6 x 10 feet",
+        "foraging_dc": 20,
+        "navigation_dc": 15,
+        "search_dc": 15
+      },
+      {
+        "terrain": "Waterborne",
+        "maximum_pace": "Vehicle speed",
+        "encounter_distance": "6d6 x 10 feet",
+        "foraging_dc": 15,
+        "navigation_dc": 10,
+        "search_dc": 15
+      }
+    ],
+    "roads": "Increase maximum pace one step, Slow to Normal or Normal to Fast.",
+    "slow_members": "Slow pace if any group member Speed is half or less of normal.",
+    "extended_travel": "After 8 hours/day, each additional hour each character makes CON save DC 10 + hours past 8 or gains 1 Exhaustion.",
+    "special_movement": "Miles/hour = Speed/10; Normal miles/day = miles/hour times hours traveled, typically 8. Fast miles/day times 1 1/3 rounded down; Slow times 2/3 rounded down. Flying or ignoring Difficult Terrain permits Fast regardless of terrain.",
+    "vehicle_source_reconciliation": "p.12 permits ordinary land vehicle pace selection; p.192 says vehicles use vehicle mph without choosing pace. Retain both source bodies and resolve applicability before promotion.",
+    "campaign_aliases_unresolved": [
+      "plains to Grassland",
+      "town to Urban",
+      "dungeon to Underdark; room travel is not automatically overland travel"
+    ],
+    "no_inferred_outcomes": "DCs do not supply foraging yield, navigation failure destination or encounter placement; author campaign facts separately."
+  }
+}

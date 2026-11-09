@@ -1,0 +1,1271 @@
+{
+  "schema": "crown-character-candidate/1",
+  "id": "ranger",
+  "name": "Ranger",
+  "kind": "class",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "scope": {
+    "total_character_level_maximum": 5
+  },
+  "operation_language": "authoring intent only; not registered engine syntax",
+  "runtime_support": "Retained definitions are reuse material, not proof of full rules. Every authored operation needs contract mapping and later production-path verification before promotion.",
+  "source": {
+    "authority": "SRD 5.2.1",
+    "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      57
+    ],
+    "text": "Ranger\nCore Ranger Traits\nPrimary Ability Dexterity and Wisdom\nHit Point Die D10 per Ranger level\nSaving Throw\nProficiencies\nStrength and Dexterity\nSkill Proficiencies Choose 3: Animal Handling,\nAthletics, Insight, Investigation,\nNature, Perception, Stealth, or\nSurvival\nWeapon Proficiencies Simple and Martial weapons\nArmor Training Light and Medium armor and\nShields\nStarting Equipment Choose A or B: (A) Studded\nLeather Armor, Scimitar,\nShortsword, Longbow, 20 Arrows, Quiver, Druidic Focus\n(sprig of mistletoe), Explorer’s\nPack, and 7 GP; or (B) 150 GP\nBecoming a Ranger …\nAs a Level 1 Character\n• Gain all the traits in the Core Ranger Traits table.\n• Gain the Ranger’s level 1 features, which are\nlisted in the Ranger Features table.\nAs a Multiclass Character\n• Gain the following traits from the Core Ranger\nTraits table: Hit Point Die, proficiency with Martial weapons, proficiency in one skill of your\nchoice from the Ranger’s skill list, and training\nwith Light and Medium armor and Shields.\n• Gain the Ranger’s level 1 features, which are\nlisted in the Ranger Features table. See the multiclassing rules in “Character Creation” to determine your available spell slots.\nRanger Class Features\nAs a Ranger, you gain the following class features\nwhen you reach the specified Ranger levels. These\nfeatures are listed in the Ranger Features table."
+  },
+  "reused_from": [
+    "data/core/classes/ranger.json",
+    "reference/2024/classes/ranger.json",
+    "docs/mechanics/ranger-2024.md"
+  ],
+  "acquisition": {
+    "starting_traits": {
+      "armor": [
+        "light",
+        "medium",
+        "shield"
+      ],
+      "weapons": [
+        "simple",
+        "martial"
+      ],
+      "skills": [
+        {
+          "choose": {
+            "from": [
+              "animal handling",
+              "athletics",
+              "insight",
+              "investigation",
+              "nature",
+              "perception",
+              "stealth",
+              "survival"
+            ],
+            "count": 3
+          }
+        }
+      ]
+    },
+    "multiclass_donor": {
+      "proficienciesGained": {
+        "weapons": [
+          "martial"
+        ],
+        "armor": [
+          "light",
+          "medium",
+          "shield"
+        ],
+        "skills": [
+          {
+            "choose": {
+              "from": [
+                "animal handling",
+                "athletics",
+                "insight",
+                "investigation",
+                "nature",
+                "perception",
+                "stealth",
+                "survival"
+              ],
+              "count": 1
+            }
+          }
+        ]
+      }
+    },
+    "hit_die": {
+      "number": 1,
+      "faces": 10
+    },
+    "primary_ability": [
+      {
+        "dex": true,
+        "wis": true
+      }
+    ],
+    "saving_throws": [
+      "str",
+      "dex"
+    ],
+    "grant_policy": "First total level: full Core Traits and level1 features. Later class entry: only source multiclass traits plus all class level1 features; no starting gear or saving throws. Explicit resolved grants in multiclass.json.",
+    "starting_equipment_donor": {
+      "additionalFromBackground": true,
+      "defaultData": [
+        {
+          "A": [
+            {
+              "item": "studded leather armor|xphb"
+            },
+            {
+              "item": "scimitar|xphb"
+            },
+            {
+              "item": "shortsword|xphb"
+            },
+            {
+              "item": "longbow|xphb"
+            },
+            {
+              "item": "arrows (20)|xphb"
+            },
+            {
+              "item": "quiver|xphb"
+            },
+            {
+              "item": "sprig of mistletoe|xphb"
+            },
+            {
+              "item": "explorer's pack|xphb"
+            },
+            {
+              "value": 700
+            }
+          ],
+          "B": [
+            {
+              "value": 15000
+            }
+          ]
+        }
+      ],
+      "entries": [
+        "{@i Choose A or B:} (A) {@item Studded Leather Armor|XPHB}, {@item Scimitar|XPHB}, {@item Shortsword|XPHB}, {@item Longbow|XPHB}, {@item Arrows (20)|XPHB|20 Arrows}, {@item Quiver|XPHB}, {@item Druidic Focus|XPHB} ({@item sprig of mistletoe|XPHB}), {@item Explorer's Pack|XPHB}, and 7 GP; or (B) 150 GP"
+      ]
+    },
+    "starting_equipment": {
+      "A": {
+        "gp": 7,
+        "items": [
+          {
+            "source_item_key": "studded_leather_armor",
+            "quantity": 1
+          },
+          {
+            "source_item_key": "scimitar",
+            "quantity": 1
+          },
+          {
+            "source_item_key": "shortsword",
+            "quantity": 1
+          },
+          {
+            "source_item_key": "longbow",
+            "quantity": 1
+          },
+          {
+            "source_item_key": "arrows",
+            "quantity": 20
+          },
+          {
+            "source_item_key": "quiver",
+            "quantity": 1
+          },
+          {
+            "source_item_key": "sprig_of_mistletoe",
+            "quantity": 1
+          },
+          {
+            "source_item_key": "explorers_pack",
+            "quantity": 1
+          }
+        ]
+      },
+      "B": {
+        "gp": 150,
+        "items": []
+      }
+    },
+    "equipment_mapping_notes": [
+      "source_item_key is an authoring identity, not automatically a resolved loaded item. Later inventory reconciliation records missing/choice links.",
+      "Monk chosen_tool is the same single Artisan’s Tool OR Musical Instrument chosen for proficiency. Bard instrument is a separate equipment choice.",
+      "Holy Symbol form is a choice or unresolved generic mapping; no silent form substitution."
+    ],
+    "multiclass_grants": {
+      "all": [
+        "DEX",
+        "WIS"
+      ],
+      "armor": [
+        "light",
+        "medium",
+        "shields"
+      ],
+      "weapons": [
+        "martial"
+      ],
+      "skill_choice": {
+        "pick": 1,
+        "from": "Ranger skill list"
+      },
+      "score_minimum": 13,
+      "hit_die": "d10",
+      "features": "All own-class level1 features plus later features at own-class thresholds; subclass at class3, feat entitlement at class4. See class candidate.",
+      "starting_equipment": [],
+      "saving_throws": []
+    }
+  },
+  "weapon_mastery": {
+    "counts_by_class_level": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "eligible_weapons": "weapon kinds with which owner has proficiency",
+    "replacement": "chosen kinds after Long Rest"
+  },
+  "level_hit_points": {
+    "first_total_level": "maximum class Hit Die + permanent CON modifier",
+    "later_levels": "roll class Hit Die OR use fixed average rounded up; add permanent CON modifier; minimum1 HP",
+    "fixed_average": 6,
+    "hit_dice": "Add one Hit Die of this class type; preserve separate types",
+    "project_policy": "Current bounded permanent progression uses fixed level_hit_points and existing level-up living-character heal; rolled advancement is unsupported there, not silently removed from source."
+  },
+  "features": [
+    {
+      "id": "ranger_spellcasting",
+      "name": "Spellcasting",
+      "class_level": 1,
+      "rules": {
+        "authority": "SRD 5.2.1",
+        "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+        "pages": [
+          57,
+          58
+        ],
+        "text": "Level 1: Spellcasting\nYou have learned to channel the magical essence of\nnature to cast spells. See “Spells” for the rules on\nspellcasting. The information below details how you\nuse those rules with Ranger spells, which appear in\nthe Ranger spell list later in the class’s description.\nSpell Slots.\nThe Ranger Features table shows\nhow many spell slots you have to cast your level 1+\nspells. You regain all expended slots when you finish a Long Rest.\nPrepared Spells of Level 1+\n. You prepare the\nlist of level 1+ spells that are available for you to\ncast with this feature. To start, choose two level 1\nRanger spells.\nCure Wounds\nand\nEnsnaring Strike\nare\nrecommended.\nThe number of spells on your list increases as you\ngain Ranger levels, as shown in the Prepared Spells\ncolumn of the Ranger Features table. Whenever that\nnumber increases, choose additional Ranger spells\nuntil the number of spells on your list matches the\nnumber in the Ranger Features table. The chosen\nspells must be of a level for which you have spell\nslots. For example, if you’re a level 5 Ranger, your\nlist of prepared spells can include six Ranger spells\nof level 1 or 2 in any combination.\nIf another Ranger feature gives you spells that\nyou always have prepared, those spells don’t count\nagainst the number of spells you can prepare with\nthis feature, but those spells otherwise count as\nRanger spells for you.\nRanger Features\nProficiency\nBonus Level Class Features\n1 +2 Spellcasting, Favored Enemy,\nWeapon Mastery\n2 +2 Deft Explorer, Fighting Style\n3 +2 Ranger Subclass\n4 +2 Ability Score Improvement\n5 +3 Extra Attack\n6 +3 Roving\n7 +3 Subclass feature\n8 +3 Ability Score Improvement\n9 +4 Expertise\n10 +4 Tireless\n11 +4 Subclass feature\n12 +4 Ability Score Improvement\n13 +5 Relentless Hunter\n14 +5 Nature’s Veil\n15 +5 Subclass feature\n16 +5 Ability Score Improvement\n17 +6 Precise Hunter\n18 +6 Feral Senses\n19 +6 Epic Boon\n20 +6 Foe Slayer\nChanging Your Prepared Spells.\nWhenever you\nfinish a Long Rest, you can replace one spell on your\nlist with another Ranger spell for which you have\nspell slots.\nSpellcasting Ability.\nWisdom is your spellcasting\nability for your Ranger spells.\nSpellcasting Focus.\nYou can use a Druidic Focus\nas a Spellcasting Focus for your Ranger spells."
+      },
+      "revised_reference_entries": [
+        "You have learned to channel the magical essence of nature to cast spells. See {@book chapter 7|XPHB|7} for the rules on spellcasting. The information below details how you use those rules with Ranger spells, which appear in the {@filter Ranger spell list|spells|class=Ranger} later in the class's description.",
+        {
+          "type": "entries",
+          "entries": [
+            {
+              "type": "entries",
+              "name": "Spell Slots",
+              "entries": [
+                "The Ranger Features table shows how many spell slots you have to cast your level 1+ spells. You regain all expended slots when you finish a {@variantrule Long Rest|XPHB}."
+              ]
+            },
+            {
+              "type": "entries",
+              "name": "Prepared Spells of Level 1+",
+              "entries": [
+                "You prepare the list of level 1+ spells that are available for you to cast with this feature. To start, choose two {@filter level 1 Ranger spells|spells|class=Ranger|level=1}. {@spell Cure Wounds|XPHB} and {@spell Ensnaring Strike|XPHB} are recommended.",
+                "The number of spells on your list increases as you gain Ranger levels, as shown in the Prepared Spells column of the Ranger Features table. Whenever that number increases, choose additional Ranger spells until the number of spells on your list matches the number in the Ranger Features table. The chosen spells must be of a level for which you have spell slots. For example, if you're a level 5 Ranger, your list of prepared spells can include six Ranger spells of level 1 or 2 in any combination.",
+                "If another Ranger feature gives you spells that you always have prepared, those spells don't count against the number of spells you can prepare with this feature, but those spells otherwise count as Ranger spells for you."
+              ]
+            },
+            {
+              "type": "entries",
+              "name": "Changing Your Prepared Spells",
+              "entries": [
+                "Whenever you finish a {@variantrule Long Rest|XPHB}, you can replace one spell on your list with another Ranger spell for which you have spell slots."
+              ]
+            },
+            {
+              "type": "entries",
+              "name": "Spellcasting Ability",
+              "entries": [
+                "Wisdom is your spellcasting ability for your Ranger spells."
+              ]
+            },
+            {
+              "type": "entries",
+              "name": "Spellcasting Focus",
+              "entries": [
+                "You can use a {@item Druidic Focus|XPHB} as a {@variantrule Spellcasting Focus|XPHB} for your Ranger spells."
+              ]
+            }
+          ]
+        }
+      ],
+      "authored_operations": [
+        {
+          "trigger": "Acquire class; class-level advancement; legal preparation/replacement window",
+          "cost": "Actual action, slot, components and source permission for each cast",
+          "effects": [
+            "Use class casting package in this candidate; own-class preparation eligibility even with higher multiclass slots",
+            "Preserve source cantrip replacement and preparation rules, chosen ability, focus and always-prepared exclusions"
+          ],
+          "ending_and_identity": "Distinct class source, ordinary/Pact/free/created slots and cast identities; rests recover declared pools once",
+          "required_extension_groups": [
+            "casting",
+            "choices",
+            "resources"
+          ]
+        }
+      ],
+      "unsupported_behavior": [
+        {
+          "groups": [
+            "casting",
+            "choices",
+            "resources"
+          ],
+          "requirement": {
+            "trigger": "Acquire class; class-level advancement; legal preparation/replacement window",
+            "cost": "Actual action, slot, components and source permission for each cast",
+            "effects": [
+              "Use class casting package in this candidate; own-class preparation eligibility even with higher multiclass slots",
+              "Preserve source cantrip replacement and preparation rules, chosen ability, focus and always-prepared exclusions"
+            ],
+            "ending": "Distinct class source, ordinary/Pact/free/created slots and cast identities; rests recover declared pools once"
+          },
+          "mapping_boundary": "Map this complete sequence to shared contracts; retained native behavior and fragments do not certify it.",
+          "status": "unmapped_or_unverified_candidate"
+        }
+      ]
+    },
+    {
+      "id": "ranger_favored_enemy",
+      "name": "Favored Enemy",
+      "class_level": 1,
+      "rules": {
+        "authority": "SRD 5.2.1",
+        "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+        "pages": [
+          58
+        ],
+        "text": "Level 1: Favored Enemy\nYou always have the\nHunter’s Mark\nspell prepared.\nYou can cast it twice without expending a spell slot,\nand you regain all expended uses of this ability\nwhen you finish a Long Rest.\nThe number of times you can cast the spell without a spell slot increases when you reach certain\nRanger levels, as shown in the Favored Enemy column of the Ranger Features table."
+      },
+      "revised_reference_entries": [
+        "You always have the {@spell Hunter's Mark|XPHB} spell prepared. You can cast it twice without expending a spell slot, and you regain all expended uses of this ability when you finish a {@variantrule Long Rest|XPHB}.",
+        "The number of times you can cast the spell without a spell slot increases when you reach certain Ranger levels, as shown in the Favored Enemy column of the Ranger Features table."
+      ],
+      "authored_operations": [
+        {
+          "trigger": "Acquire Ranger1; cast Hunter's Mark",
+          "cost": "Free casts2 at class1–4,3 at class5; Long Rest all; otherwise legal slot",
+          "effects": [
+            "Always prepare Hunters Mark",
+            "Execute exact spell Concentration, damage, transfer and tracking; class grants do not replace those requirements"
+          ],
+          "ending_and_identity": "Exact source owns the grant/state; remove temporary effects at the declared ending; never replay acquisition on restore.",
+          "required_extension_groups": [
+            "casting",
+            "resources",
+            "rolls"
+          ]
+        }
+      ],
+      "unsupported_behavior": [
+        {
+          "groups": [
+            "casting",
+            "resources",
+            "rolls"
+          ],
+          "requirement": {
+            "trigger": "Acquire Ranger1; cast Hunter's Mark",
+            "cost": "Free casts2 at class1–4,3 at class5; Long Rest all; otherwise legal slot",
+            "effects": [
+              "Always prepare Hunters Mark",
+              "Execute exact spell Concentration, damage, transfer and tracking; class grants do not replace those requirements"
+            ],
+            "ending": "Exact source owns the grant/state; remove temporary effects at the declared ending; never replay acquisition on restore."
+          },
+          "mapping_boundary": "Map this complete sequence to shared contracts; retained native behavior and fragments do not certify it.",
+          "status": "unmapped_or_unverified_candidate"
+        }
+      ]
+    },
+    {
+      "id": "ranger_weapon_mastery",
+      "name": "Weapon Mastery",
+      "class_level": 1,
+      "rules": {
+        "authority": "SRD 5.2.1",
+        "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+        "pages": [
+          58,
+          59
+        ],
+        "text": "Level 1: Weapon Mastery\nYour training with weapons allows you to use the\nmastery properties of two kinds of weapons of your\nFavored\nEnemy\nPrepared\nSpells\n—Spell Slots per Spell Level—\n1 2 3 4 5\n2 2 2 — — — —\n2 3 2 — — — —\n2 4 3 — — — —\n2 5 3 — — — —\n3 6 4 2 — — —\n3 6 4 2 — — —\n3 7 4 3 — — —\n3 7 4 3 — — —\n4 9 4 3 2 — —\n4 9 4 3 2 — —\n4 10 4 3 3 — —\n4 10 4 3 3 — —\n5 11 4 3 3 1 —\n5 11 4 3 3 1 —\n5 12 4 3 3 2 —\n5 12 4 3 3 2 —\n6 14 4 3 3 3 1\n6 14 4 3 3 3 1\n6 15 4 3 3 3 2\n6 15 4 3 3 3 2\nchoice with which you have proficiency, such as\nLongbows and Shortswords.\nWhenever you finish a Long Rest, you can change\nthe kinds of weapons you chose. For example, you\ncould switch to using the mastery properties of\nScimitars and Longswords."
+      },
+      "revised_reference_entries": [
+        "Your training with weapons allows you to use the {@variantrule weapon mastery properties|XPHB|mastery properties} of two kinds of {@filter weapons|items|type=simple weapon;martial weapon} of your choice with which you have proficiency, such as {@item Longbow|XPHB|Longbows} and {@item Shortsword|XPHB|Shortswords}.",
+        "Whenever you finish a {@variantrule Long Rest|XPHB}, you can change the kinds of weapons you chose. For example, you could switch to using the {@variantrule weapon mastery properties|XPHB|mastery properties} of {@item Scimitar|XPHB|Scimitars} and {@item Longsword|XPHB|Longswords}."
+      ],
+      "authored_operations": [
+        {
+          "trigger": "Acquire/replace selected weapon kinds",
+          "cost": "none",
+          "effects": [
+            "Grant only legal class-listed weapon masteries; counts and replacement window from source; exact mastery property executes on its qualifying attack"
+          ],
+          "ending_and_identity": "Exact source owns the grant/state; remove temporary effects at the declared ending; never replay acquisition on restore.",
+          "required_extension_groups": [
+            "choices",
+            "attacks"
+          ]
+        }
+      ],
+      "unsupported_behavior": [
+        {
+          "groups": [
+            "choices",
+            "attacks"
+          ],
+          "requirement": {
+            "trigger": "Acquire/replace selected weapon kinds",
+            "cost": "none",
+            "effects": [
+              "Grant only legal class-listed weapon masteries; counts and replacement window from source; exact mastery property executes on its qualifying attack"
+            ],
+            "ending": "Exact source owns the grant/state; remove temporary effects at the declared ending; never replay acquisition on restore."
+          },
+          "mapping_boundary": "Map this complete sequence to shared contracts; retained native behavior and fragments do not certify it.",
+          "status": "unmapped_or_unverified_candidate"
+        }
+      ]
+    },
+    {
+      "id": "ranger_deft_explorer",
+      "name": "Deft Explorer",
+      "class_level": 2,
+      "rules": {
+        "authority": "SRD 5.2.1",
+        "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+        "pages": [
+          59
+        ],
+        "text": "Level 2: Deft Explorer\nThanks to your travels, you gain the following\nbenefits.\nExpertise.\nChoose one of your skill proficiencies\nwith which you lack Expertise. You gain Expertise\nin that skill.\nLanguages.\nYou know two languages of your\nchoice from the language tables in “Character\nCreation.”"
+      },
+      "revised_reference_entries": [
+        "Thanks to your travels, you gain the following benefits.",
+        {
+          "type": "entries",
+          "entries": [
+            {
+              "type": "entries",
+              "name": "Expertise",
+              "entries": [
+                "Choose one of your skill proficiencies with which you lack {@variantrule Expertise|XPHB}. You gain {@variantrule Expertise|XPHB} in that skill."
+              ]
+            },
+            {
+              "type": "entries",
+              "name": "Languages",
+              "entries": [
+                "You know two languages of your choice from the language tables in {@book chapter 2|XPHB|2|Choose Languages}."
+              ]
+            }
+          ]
+        }
+      ],
+      "authored_operations": [
+        {
+          "trigger": "Acquire Ranger2",
+          "cost": "none",
+          "effects": [
+            "Expertise in one proficient skill",
+            "Learn two languages chosen from Character Creation tables"
+          ],
+          "ending_and_identity": "Exact source owns the grant/state; remove temporary effects at the declared ending; never replay acquisition on restore.",
+          "required_extension_groups": [
+            "choices",
+            "languages"
+          ]
+        }
+      ],
+      "unsupported_behavior": [
+        {
+          "groups": [
+            "choices",
+            "languages"
+          ],
+          "requirement": {
+            "trigger": "Acquire Ranger2",
+            "cost": "none",
+            "effects": [
+              "Expertise in one proficient skill",
+              "Learn two languages chosen from Character Creation tables"
+            ],
+            "ending": "Exact source owns the grant/state; remove temporary effects at the declared ending; never replay acquisition on restore."
+          },
+          "mapping_boundary": "Map this complete sequence to shared contracts; retained native behavior and fragments do not certify it.",
+          "status": "unmapped_or_unverified_candidate"
+        }
+      ]
+    },
+    {
+      "id": "ranger_fighting_style",
+      "name": "Fighting Style",
+      "class_level": 2,
+      "rules": {
+        "authority": "SRD 5.2.1",
+        "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+        "pages": [
+          59
+        ],
+        "text": "Level 2: Fighting Style\nYou gain a Fighting Style feat of your choice (see\n“Feats”). Instead of choosing one of those feats, you\ncan choose the option below.\nDruidic Warrior.\nYou learn two Druid cantrips of\nyour choice (see the Druid class’s section for a list of\nDruid spells).\nGuidance\nand\nStarry Wisp\nare recommended. The chosen cantrips count as Ranger spells\nfor you, and Wisdom is your spellcasting ability for\nthem. Whenever you gain a Ranger level, you can\nreplace one of these cantrips with another Druid\ncantrip."
+      },
+      "revised_reference_entries": [
+        "You gain a {@filter Fighting Style feat|feats|category=FS} of your choice. Instead of choosing one of those feats, you can choose the option below.",
+        {
+          "type": "entries",
+          "entries": [
+            {
+              "type": "refFeat",
+              "feat": "Druidic Warrior|XPHB"
+            }
+          ]
+        }
+      ],
+      "authored_operations": [
+        {
+          "trigger": "Acquire Ranger2",
+          "cost": "none",
+          "effects": [
+            "Choose one of the four SRD Fighting Style feats",
+            "Instead may choose Druidic Warrior: two Druid cantrips using WIS as Ranger spells; replace one on each Ranger level gain"
+          ],
+          "ending_and_identity": "Exact source owns the grant/state; remove temporary effects at the declared ending; never replay acquisition on restore.",
+          "required_extension_groups": [
+            "choices",
+            "casting",
+            "attacks"
+          ]
+        }
+      ],
+      "unsupported_behavior": [
+        {
+          "groups": [
+            "choices",
+            "casting",
+            "attacks"
+          ],
+          "requirement": {
+            "trigger": "Acquire Ranger2",
+            "cost": "none",
+            "effects": [
+              "Choose one of the four SRD Fighting Style feats",
+              "Instead may choose Druidic Warrior: two Druid cantrips using WIS as Ranger spells; replace one on each Ranger level gain"
+            ],
+            "ending": "Exact source owns the grant/state; remove temporary effects at the declared ending; never replay acquisition on restore."
+          },
+          "mapping_boundary": "Map this complete sequence to shared contracts; retained native behavior and fragments do not certify it.",
+          "status": "unmapped_or_unverified_candidate"
+        }
+      ]
+    },
+    {
+      "id": "ranger_ranger_subclass",
+      "name": "Ranger Subclass",
+      "class_level": 3,
+      "rules": {
+        "authority": "SRD 5.2.1",
+        "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+        "pages": [
+          59
+        ],
+        "text": "Level 3: Ranger Subclass\nYou gain a Ranger subclass of your choice. The\nHunter subclass is detailed after this class’s description. A subclass is a specialization that grants\nyou features at certain Ranger levels. For the rest\nof your career, you gain each of your subclass’s features that are of your Ranger level or lower."
+      },
+      "revised_reference_entries": [
+        "You gain a Ranger subclass of your choice. A subclass is a specialization that grants you features at certain Ranger levels. For the rest of your career, you gain each of your subclass's features that are of your Ranger level or lower."
+      ],
+      "authored_operations": [
+        {
+          "trigger": "Class level3",
+          "cost": "one subclass choice",
+          "effects": [
+            "Grant selected SRD subclass in-band features at actual class thresholds; no level6+ grants"
+          ],
+          "ending_and_identity": "Permanent exact subclass ownership; acquisition once",
+          "required_extension_groups": [
+            "progression",
+            "choices"
+          ]
+        }
+      ],
+      "unsupported_behavior": [
+        {
+          "groups": [
+            "progression",
+            "choices"
+          ],
+          "requirement": {
+            "trigger": "Class level3",
+            "cost": "one subclass choice",
+            "effects": [
+              "Grant selected SRD subclass in-band features at actual class thresholds; no level6+ grants"
+            ],
+            "ending": "Permanent exact subclass ownership; acquisition once"
+          },
+          "mapping_boundary": "Map this complete sequence to shared contracts; retained native behavior and fragments do not certify it.",
+          "status": "unmapped_or_unverified_candidate"
+        }
+      ]
+    },
+    {
+      "id": "ranger_ability_score_improvement",
+      "name": "Ability Score Improvement",
+      "class_level": 4,
+      "rules": {
+        "authority": "SRD 5.2.1",
+        "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+        "pages": [
+          59
+        ],
+        "text": "Level 4: Ability Score Improvement\nYou gain the Ability Score Improvement feat (see\n“Feats”) or another feat of your choice for which you\nqualify. You gain this feature again at Ranger levels\n8, 12, and 16."
+      },
+      "revised_reference_entries": [
+        "You gain the {@feat Ability Score Improvement|XPHB} feat or another {@5etools feat|feats.html} of your choice for which you qualify. You gain this feature again at Ranger levels 8, 12, and 16."
+      ],
+      "authored_operations": [
+        {
+          "trigger": "Class level 4 entitlement",
+          "cost": "one entitlement",
+          "effects": [
+            "Choose ASI or another qualifying feat; validate chosen feat category/prerequisites; source owns grant once"
+          ],
+          "ending_and_identity": "Exact source owns the grant/state; remove temporary effects at the declared ending; never replay acquisition on restore.",
+          "required_extension_groups": [
+            "choices",
+            "progression"
+          ]
+        }
+      ],
+      "unsupported_behavior": [
+        {
+          "groups": [
+            "choices",
+            "progression"
+          ],
+          "requirement": {
+            "trigger": "Class level 4 entitlement",
+            "cost": "one entitlement",
+            "effects": [
+              "Choose ASI or another qualifying feat; validate chosen feat category/prerequisites; source owns grant once"
+            ],
+            "ending": "Exact source owns the grant/state; remove temporary effects at the declared ending; never replay acquisition on restore."
+          },
+          "mapping_boundary": "Map this complete sequence to shared contracts; retained native behavior and fragments do not certify it.",
+          "status": "unmapped_or_unverified_candidate"
+        }
+      ]
+    },
+    {
+      "id": "ranger_extra_attack",
+      "name": "Extra Attack",
+      "class_level": 5,
+      "rules": {
+        "authority": "SRD 5.2.1",
+        "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+        "pages": [
+          59
+        ],
+        "text": "Level 5: Extra Attack\nYou can attack twice instead of once whenever you\ntake the Attack action on your turn."
+      },
+      "revised_reference_entries": [
+        "You can attack twice instead of once whenever you take the {@action Attack|XPHB} action on your turn."
+      ],
+      "authored_operations": [
+        {
+          "trigger": "Attack action on own turn",
+          "cost": "Attack action",
+          "effects": [
+            "Attack count becomes 2; does not add to another Extra Attack or Thirsting Blade"
+          ],
+          "ending_and_identity": "Exact source owns the grant/state; remove temporary effects at the declared ending; never replay acquisition on restore.",
+          "required_extension_groups": [
+            "attacks"
+          ]
+        }
+      ],
+      "unsupported_behavior": [
+        {
+          "groups": [
+            "attacks"
+          ],
+          "requirement": {
+            "trigger": "Attack action on own turn",
+            "cost": "Attack action",
+            "effects": [
+              "Attack count becomes 2; does not add to another Extra Attack or Thirsting Blade"
+            ],
+            "ending": "Exact source owns the grant/state; remove temporary effects at the declared ending; never replay acquisition on restore."
+          },
+          "mapping_boundary": "Map this complete sequence to shared contracts; retained native behavior and fragments do not certify it.",
+          "status": "unmapped_or_unverified_candidate"
+        }
+      ]
+    }
+  ],
+  "casting": {
+    "ability": "wis",
+    "prepared_counts_by_class_level": [
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
+    "cantrips_by_class_level": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "ordinary_slots_by_class_level": [
+      [
+        2,
+        0,
+        0
+      ],
+      [
+        2,
+        0,
+        0
+      ],
+      [
+        3,
+        0,
+        0
+      ],
+      [
+        3,
+        0,
+        0
+      ],
+      [
+        4,
+        2,
+        0
+      ]
+    ],
+    "pact_slots_by_class_level": [],
+    "pact_slot_tuple": "[number of slots, slot level]",
+    "prepared_change": "one after Long Rest",
+    "cantrip_change": "one on own-class level gain",
+    "spell_list": "SRD own-class list at spell levels0–3; spell-candidates index retains exact authoritative lists",
+    "spellbook": null,
+    "spell_choices": {
+      "0": [],
+      "1": [
+        "alarm",
+        "animal_friendship",
+        "cure_wounds",
+        "detect_magic",
+        "detect_poison_and_disease",
+        "ensnaring_strike",
+        "entangle",
+        "fog_cloud",
+        "goodberry",
+        "hunters_mark",
+        "jump",
+        "longstrider",
+        "speak_with_animals"
+      ],
+      "2": [
+        "aid",
+        "animal_messenger",
+        "barkskin",
+        "darkvision",
+        "enhance_ability",
+        "find_traps",
+        "gust_of_wind",
+        "lesser_restoration",
+        "locate_animals_or_plants",
+        "locate_object",
+        "magic_weapon",
+        "pass_without_trace",
+        "protection_from_poison",
+        "silence",
+        "spike_growth"
+      ],
+      "3": [
+        "conjure_animals",
+        "daylight",
+        "dispel_magic",
+        "meld_into_stone",
+        "nondetection",
+        "plant_growth",
+        "protection_from_energy",
+        "revivify",
+        "speak_with_plants",
+        "water_breathing",
+        "water_walk",
+        "wind_wall"
+      ]
+    },
+    "spell_choice_policy": "These are SRD list memberships through spell level3, not permission to prepare above own-class slot progression; always-prepared and feat/species permissions are additional source grants."
+  },
+  "retained_runtime_seed": {
+    "id": "ranger",
+    "name": "Ranger",
+    "description": "Ranger class. 2024 SRD 5.2.1 progression; spell options remain curated.",
+    "hit_die": "d10",
+    "primary_ability": "DEX",
+    "multiclass_prerequisite": {
+      "all": [
+        "DEX",
+        "WIS"
+      ]
+    },
+    "saving_throw_proficiencies": [
+      "STR",
+      "DEX"
+    ],
+    "armor_proficiencies": [
+      "light",
+      "medium",
+      "shields"
+    ],
+    "weapon_proficiencies": [
+      "simple",
+      "martial"
+    ],
+    "creation_proficiency_choices": true,
+    "skill_choices": {
+      "pick": 3,
+      "from": [
+        "Animal Handling",
+        "Athletics",
+        "Insight",
+        "Investigation",
+        "Nature",
+        "Perception",
+        "Stealth",
+        "Survival"
+      ]
+    },
+    "spellcasting_focus_kinds": [
+      "druidic"
+    ],
+    "starting_equipment": [
+      "leather_armor",
+      "longbow",
+      "shortsword"
+    ],
+    "spell_list_ids": [
+      "aid",
+      "alarm",
+      "animal_friendship",
+      "animal_messenger",
+      "barkskin",
+      "commune_with_nature",
+      "conjure_animals",
+      "conjure_woodland_beings",
+      "cure_wounds",
+      "darkvision",
+      "daylight",
+      "detect_magic",
+      "detect_poison_and_disease",
+      "dispel_magic",
+      "dominate_beast",
+      "enhance_ability",
+      "ensnaring_strike",
+      "entangle",
+      "find_traps",
+      "fog_cloud",
+      "freedom_of_movement",
+      "goodberry",
+      "greater_restoration",
+      "gust_of_wind",
+      "hunters_mark",
+      "jump",
+      "lesser_restoration",
+      "locate_animals_or_plants",
+      "locate_creature",
+      "locate_object",
+      "longstrider",
+      "magic_weapon",
+      "meld_into_stone",
+      "nondetection",
+      "pass_without_trace",
+      "plant_growth",
+      "protection_from_energy",
+      "protection_from_poison",
+      "revivify",
+      "silence",
+      "speak_with_animals",
+      "speak_with_plants",
+      "spike_growth",
+      "stoneskin",
+      "tree_stride",
+      "water_breathing",
+      "water_walk",
+      "wind_wall"
+    ],
+    "spell_slots_by_character_level": {
+      "1": [
+        2
+      ],
+      "2": [
+        2
+      ],
+      "3": [
+        3
+      ],
+      "4": [
+        3
+      ],
+      "5": [
+        4,
+        2
+      ]
+    },
+    "features_by_level": {
+      "1": [
+        {
+          "id": "ranger_spellcasting",
+          "name": "Spellcasting",
+          "type": "passive",
+          "description": "Wisdom-based prepared half-caster; only the class's curated spell records are available.",
+          "effects": [
+            {
+              "type": "spellcasting",
+              "ability": "WIS",
+              "spell_lists": [
+                "ranger"
+              ],
+              "default_prepared_spells": [
+                "hunters_mark"
+              ],
+              "capacity_by_level": {
+                "1": {
+                  "cantrips": 0,
+                  "prepared_spells": 2
+                },
+                "2": {
+                  "cantrips": 0,
+                  "prepared_spells": 3
+                },
+                "3": {
+                  "cantrips": 0,
+                  "prepared_spells": 4
+                },
+                "4": {
+                  "cantrips": 0,
+                  "prepared_spells": 5
+                },
+                "5": {
+                  "cantrips": 0,
+                  "prepared_spells": 6
+                },
+                "6": {
+                  "cantrips": 0,
+                  "prepared_spells": 6
+                },
+                "7": {
+                  "cantrips": 0,
+                  "prepared_spells": 7
+                },
+                "8": {
+                  "cantrips": 0,
+                  "prepared_spells": 7
+                },
+                "9": {
+                  "cantrips": 0,
+                  "prepared_spells": 9
+                },
+                "10": {
+                  "cantrips": 0,
+                  "prepared_spells": 9
+                },
+                "11": {
+                  "cantrips": 0,
+                  "prepared_spells": 10
+                },
+                "12": {
+                  "cantrips": 0,
+                  "prepared_spells": 10
+                },
+                "13": {
+                  "cantrips": 0,
+                  "prepared_spells": 11
+                },
+                "14": {
+                  "cantrips": 0,
+                  "prepared_spells": 11
+                },
+                "15": {
+                  "cantrips": 0,
+                  "prepared_spells": 12
+                },
+                "16": {
+                  "cantrips": 0,
+                  "prepared_spells": 12
+                },
+                "17": {
+                  "cantrips": 0,
+                  "prepared_spells": 14
+                },
+                "18": {
+                  "cantrips": 0,
+                  "prepared_spells": 14
+                },
+                "19": {
+                  "cantrips": 0,
+                  "prepared_spells": 15
+                },
+                "20": {
+                  "cantrips": 0,
+                  "prepared_spells": 15
+                }
+              }
+            }
+          ],
+          "rules_source": "dnd-2024-srd-5.2.1",
+          "rules_status": "2024-partial"
+        },
+        {
+          "id": "ranger_favored_enemy",
+          "name": "Favored Enemy",
+          "type": "passive",
+          "description": "Hunter's Mark is always prepared and can be cast without a spell slot 2 times per Long Rest, increasing to 3 at level 5, 4 at 9, 5 at 13, and 6 at 17.",
+          "effects": [
+            {
+              "type": "always_prepared_spells",
+              "spells": [
+                "hunters_mark"
+              ]
+            },
+            {
+              "type": "spell_free_cast",
+              "spells": [
+                "hunters_mark"
+              ],
+              "uses": 2,
+              "uses_by_level": {
+                "5": 3,
+                "9": 4,
+                "13": 5,
+                "17": 6
+              },
+              "uses_per": "long_rest"
+            }
+          ],
+          "rules_source": "dnd-2024-srd-5.2.1",
+          "rules_status": "2024-supported"
+        },
+        {
+          "id": "ranger_weapon_mastery",
+          "name": "Weapon Mastery",
+          "type": "passive",
+          "description": "Choose two proficient weapon types; uses the shared saved Weapon Mastery path.",
+          "effects": [
+            {
+              "type": "weapon_mastery",
+              "capacity_by_level": {
+                "1": 2
+              }
+            }
+          ],
+          "rules_source": "dnd-2024-srd-5.2.1",
+          "rules_status": "2024-supported"
+        }
+      ],
+      "2": [
+        {
+          "id": "ranger_deft_explorer",
+          "name": "Deft Explorer",
+          "type": "passive",
+          "description": "Choose one proficient skill for Expertise. The two language choices are not represented by the game.",
+          "effects": [
+            {
+              "type": "skill_expertise_choice",
+              "count": 1
+            }
+          ],
+          "rules_source": "dnd-2024-srd-5.2.1",
+          "rules_status": "2024-partial"
+        },
+        {
+          "id": "ranger_fighting_style",
+          "name": "Fighting Style",
+          "type": "passive",
+          "description": "Choose from the Fighting Style options supported by the shared style picker; other 2024 styles are not yet represented.",
+          "effects": [
+            {
+              "type": "feature_choice",
+              "options": [
+                {
+                  "id": "archery",
+                  "name": "Archery",
+                  "effects": [
+                    {
+                      "type": "fighting_style",
+                      "style": "archery"
+                    }
+                  ]
+                },
+                {
+                  "id": "defense",
+                  "name": "Defense",
+                  "effects": [
+                    {
+                      "type": "fighting_style",
+                      "style": "defense"
+                    }
+                  ]
+                },
+                {
+                  "id": "great_weapon_fighting",
+                  "name": "Great Weapon Fighting",
+                  "effects": [
+                    {
+                      "type": "fighting_style",
+                      "style": "great_weapon_fighting"
+                    }
+                  ]
+                },
+                {
+                  "id": "two_weapon_fighting",
+                  "name": "Two-Weapon Fighting",
+                  "effects": [
+                    {
+                      "type": "fighting_style",
+                      "style": "two_weapon_fighting"
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "rules_source": "dnd-2024-srd-5.2.1",
+          "rules_status": "2024-partial"
+        }
+      ],
+      "3": [
+        {
+          "id": "ranger_subclass",
+          "name": "Ranger Subclass",
+          "type": "passive",
+          "description": "Choose a Ranger subclass. Subclass features are maintained in separate subclass records.",
+          "effects": [],
+          "enabled": false,
+          "rules_source": "dnd-2024-srd-5.2.1",
+          "rules_status": "reference-only"
+        }
+      ],
+      "4": [
+        {
+          "id": "ranger_ability_improvement_4",
+          "name": "Ability Score Improvement",
+          "type": "passive",
+          "effects": [
+            {
+              "type": "asi"
+            }
+          ],
+          "rules_source": "dnd-2024-srd-5.2.1",
+          "rules_status": "2024-supported"
+        }
+      ],
+      "5": [
+        {
+          "id": "ranger_extra_attack",
+          "name": "Extra Attack",
+          "type": "passive",
+          "effects": [
+            {
+              "type": "extra_attack",
+              "count": 1
+            }
+          ],
+          "rules_source": "dnd-2024-srd-5.2.1",
+          "rules_status": "2024-supported"
+        }
+      ]
+    },
+    "subclass_level": 3
+  },
+  "required_extensions": [
+    "progression",
+    "choices",
+    "casting"
+  ],
+  "equipment_resolution": [
+    {
+      "option": "A",
+      "source_item_key": "studded_leather_armor",
+      "quantity": 1,
+      "runtime_item_id": "studded_leather_armor",
+      "status": "source_definition_exists_not_gameplay_verified",
+      "requirement": "Preserve quantity, exact source item facts and complete pack contents"
+    },
+    {
+      "option": "A",
+      "source_item_key": "scimitar",
+      "quantity": 1,
+      "runtime_item_id": "scimitar",
+      "status": "source_definition_exists_not_gameplay_verified",
+      "requirement": "Preserve quantity, exact source item facts and complete pack contents"
+    },
+    {
+      "option": "A",
+      "source_item_key": "shortsword",
+      "quantity": 1,
+      "runtime_item_id": "shortsword",
+      "status": "source_definition_exists_not_gameplay_verified",
+      "requirement": "Preserve quantity, exact source item facts and complete pack contents"
+    },
+    {
+      "option": "A",
+      "source_item_key": "longbow",
+      "quantity": 1,
+      "runtime_item_id": "longbow",
+      "status": "source_definition_exists_not_gameplay_verified",
+      "requirement": "Preserve quantity, exact source item facts and complete pack contents"
+    },
+    {
+      "option": "A",
+      "source_item_key": "arrows",
+      "quantity": 20,
+      "runtime_item_id": null,
+      "status": "choice_or_missing_definition",
+      "requirement": "Preserve quantity, exact source item facts and complete pack contents"
+    },
+    {
+      "option": "A",
+      "source_item_key": "quiver",
+      "quantity": 1,
+      "runtime_item_id": null,
+      "status": "choice_or_missing_definition",
+      "requirement": "Preserve quantity, exact source item facts and complete pack contents"
+    },
+    {
+      "option": "A",
+      "source_item_key": "sprig_of_mistletoe",
+      "quantity": 1,
+      "runtime_item_id": "sprig_of_mistletoe",
+      "status": "source_definition_exists_not_gameplay_verified",
+      "requirement": "Preserve quantity, exact source item facts and complete pack contents"
+    },
+    {
+      "option": "A",
+      "source_item_key": "explorers_pack",
+      "quantity": 1,
+      "runtime_item_id": "explorers_pack",
+      "status": "source_definition_exists_not_gameplay_verified",
+      "requirement": "Preserve quantity, exact source item facts and complete pack contents"
+    }
+  ],
+  "unsupported_behavior": [
+    {
+      "groups": [
+        "progression",
+        "items"
+      ],
+      "requirement": "Complete starting/multiclass acquisition, choices and equipment quantities/GP; candidate equipment_resolution retains every unresolved item or choice. No opt-in or native-path replacement is authorized by this candidate."
+    }
+  ],
+  "source_revision": "2a19eb1d (existing working-tree definitions and recovered drafts read on 2026-11-08)",
+  "reused_input_hashes": {
+    "data/core/classes/ranger.json": "4f769bc8eb56b3dd19a8d9ee10c0be3743e0176df61a9ec0c0bd15e56a5e840a",
+    "reference/2024/classes/ranger.json": "6971b8aa093a9fa673e48eb43161b46a188404ef61fca4235aa4eec94c793074",
+    "docs/mechanics/ranger-2024.md": "5ec89a31dffa40e76ded5f43d21f28574f1bad32ec4ce1d5be17e16415e35f3c"
+  }
+}

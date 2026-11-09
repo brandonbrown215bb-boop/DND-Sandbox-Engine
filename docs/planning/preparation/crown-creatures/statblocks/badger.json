@@ -1,0 +1,146 @@
+{
+  "schema": "crown-creature-candidate/1",
+  "id": "srd_badger",
+  "name": "Badger",
+  "kind": "srd_statblock",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring intent only; not registered engine syntax. Mapping requirements do not assert the whole referenced engine slice is absent.",
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile all source clauses, mappings and source differences before later production-path verification. Keep native paths until replacements cover them."
+  },
+  "source": {
+    "authority": "SRD 5.2.1",
+    "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      345
+    ],
+    "text": "Badger\nTiny Beast, Unaligned\nAC 11 Initiative +0 (10)\nHP 5 (1d4 + 3)\nSpeed 20 ft., Burrow 5 ft.\nMOD SAVE MOD SAVE MOD SAVE\nStr 10 +0 +0 Dex 11 +0 +0 Con 16 +3 +3\nInt 2 −4 −4 WIS 12 +1 +1 Cha 5 −3 −3\nSkills Perception +3\nResistances Poison\nSenses Darkvision 30 ft.; Passive Perception 13\nLanguages None\nCR 0 (XP 10; PB +2)\nActions\nBite. Melee Attack Roll: +2, reach 5 ft. Hit: 1 Piercing\ndamage.",
+    "transcription": "Two-column extraction; line breaks retained. Whole selected page context is in source-pages.json. No stat correction inferred from donor data."
+  },
+  "statistics": {
+    "identity_line": "Tiny Beast, Unaligned",
+    "AC": "11 Initiative +0 (10)",
+    "HP": "5 (1d4 + 3)",
+    "Speed": "20 ft., Burrow 5 ft.",
+    "Skills": "Perception +3",
+    "Resistances": "Poison",
+    "Senses": "Darkvision 30 ft.; Passive Perception 13",
+    "Languages": "None",
+    "CR": "0 (XP 10; PB +2)",
+    "ability_scores": {
+      "STR": 10,
+      "DEX": 11,
+      "CON": 16,
+      "INT": 2,
+      "WIS": 12,
+      "CHA": 5
+    },
+    "saving_throw_modifiers": {
+      "STR": 0,
+      "DEX": 0,
+      "CON": 3,
+      "INT": -4,
+      "WIS": 1,
+      "CHA": -3
+    },
+    "initiative_modifier": 0,
+    "initiative_score_printed": 10,
+    "armor_class": 11,
+    "movement_feet": {
+      "walk": 20,
+      "burrow": 5
+    }
+  },
+  "authored_operations": [
+    {
+      "key": "b001",
+      "name": "Bite",
+      "source_section": "Actions",
+      "full_rule": "Bite. Melee Attack Roll: +2, reach 5 ft. Hit: 1 Piercing\ndamage.",
+      "budget": "action",
+      "steps": [
+        {
+          "intent": "Resolve declared roll or save, targets, range/reach, damage packets, multiattack choice, riders and exact action budget. A save-only action is not a weapon hit rider.",
+          "mapping_group": "attacks"
+        }
+      ],
+      "parameters_from_rule": {
+        "attack_bonus": [
+          2
+        ],
+        "save_dc": [],
+        "distances_feet": [
+          5
+        ],
+        "dice": []
+      },
+      "blockers": [
+        "map_attacks"
+      ],
+      "ending_and_identity": "Exact actor/action/target/source instance; use every qualifier and ending in full_rule, not only extracted parameters.",
+      "behavior_plan": {
+        "budget": "action",
+        "source_outcomes": {
+          "hit": "1 Piercing damage."
+        },
+        "resolution": "attack_roll",
+        "attack_kind": "melee",
+        "damage_and_riders": "1 Piercing damage.",
+        "permission": "ordinary familiar cannot attack; invocation exceptions must grant this exact attack or Attack action, not every Actions entry"
+      }
+    }
+  ],
+  "retained_definitions": [
+    {
+      "path": "data/core/monsters/imported_monsters.json",
+      "sha256": "f57bee1e93f185a89575bed3d8b2b610b53cfd3b7f2eb56448d1dd64a0126c5f",
+      "pointer": "/40",
+      "payload": {
+        "id": "badger",
+        "name": "Badger",
+        "hit_points": "1d4 + 1",
+        "armor_class": 10,
+        "speed": 4,
+        "ability_scores": {
+          "STR": 4,
+          "DEX": 11,
+          "CON": 12,
+          "INT": 2,
+          "WIS": 12,
+          "CHA": 5
+        },
+        "attacks": [
+          {
+            "name": "Claws",
+            "ability": "STR",
+            "damage": "1d6",
+            "range": 1,
+            "damage_type": "slashing"
+          }
+        ],
+        "ai_behavior": "aggressive"
+      },
+      "manifest_declarations": []
+    }
+  ],
+  "selection": {
+    "wild_shape_druid_levels_2_3": true,
+    "wild_shape_druid_levels_4_5": true,
+    "normal_familiar": true,
+    "pact_of_chain_special": false,
+    "animate_dead_output": false,
+    "held_swarm": false,
+    "encounter_comparison_only": false
+  },
+  "acquisition_links": [
+    "selection-links.json"
+  ],
+  "blockers": [
+    "map_statistics",
+    "map_attacks"
+  ],
+  "source_reconciliation": "Official body is authoritative for this SRD candidate. Retained donor payloads are comparison/reuse seeds, including legacy values and manifest winners; do not merge their statistics or traits by ID. Direct Crown encounters retain separate candidates.",
+  "equipment_links": []
+}

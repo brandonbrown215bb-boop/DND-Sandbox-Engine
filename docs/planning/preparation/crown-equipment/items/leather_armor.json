@@ -1,0 +1,112 @@
+{
+  "schema": "crown-equipment-candidate/1",
+  "id": "leather_armor",
+  "name": "Leather Armor",
+  "kind": "armor",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring intent only; not registered engine syntax.",
+  "rules": {
+    "authority": "SRD 5.2.1",
+    "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      92
+    ],
+    "section": "Leather Armor",
+    "text": "Only one suit and one Shield at a time. Without Light/Medium/Heavy armor training, worn armor gives Disadvantage on Strength/Dexterity D20 Tests and prevents spellcasting. A Shield gives its AC bonus only with training. A listed Strength requirement reduces Speed by 10 feet unless met; listed Stealth Disadvantage applies while worn.",
+    "source_context": "../source-pages.json"
+  },
+  "definition": {
+    "id": "leather_armor",
+    "name": "Leather Armor",
+    "category": "light",
+    "ac": 11,
+    "ac_kind": "base",
+    "dexterity_cap": null,
+    "strength_requirement": null,
+    "stealth_disadvantage": false,
+    "weight_lb": 10,
+    "cost_gp": 10,
+    "don": "1 minute",
+    "doff": "1 minute"
+  },
+  "authored_operations": [
+    "Only one suit and one Shield at a time. Without Light/Medium/Heavy armor training, worn armor gives Disadvantage on Strength/Dexterity D20 Tests and prevents spellcasting. A Shield gives its AC bonus only with training. A listed Strength requirement reduces Speed by 10 feet unless met; listed Stealth Disadvantage applies while worn."
+  ],
+  "retained_runtime_seeds": [
+    {
+      "path": "data/core/items/armor.json",
+      "array_index": 0,
+      "file_sha256": "a54147bee457f31cff9b7003814837328d43e617d3e24ab0195c876d13cd1c01",
+      "definition": {
+        "id": "leather_armor",
+        "weight": 10,
+        "name": "Leather Armor",
+        "description": "Light armor made from cured leather.",
+        "type": "armor",
+        "armor_type": "light",
+        "ac": 11,
+        "value": 10
+      }
+    },
+    {
+      "path": "data/core/items/imported_base_items.json",
+      "array_index": 27,
+      "file_sha256": "d450331c5dc1756fccc025c42e7f60bc6312a6829e59814e9864878a4abaae42",
+      "definition": {
+        "id": "leather_armor",
+        "name": "Leather Armor",
+        "description": "The breastplate and shoulder protectors of this armor are made of leather that has been stiffened by being boiled in oil. The rest of the armor is made of softer and more flexible materials.",
+        "type": "armor",
+        "armor_type": "light",
+        "ac": 11,
+        "stealth_disadvantage": false,
+        "value": 10
+      }
+    }
+  ],
+  "manifest_overrides": [
+    {
+      "type": "item",
+      "id": "leather_armor",
+      "winner": "res://data/core/items/armor.json#1",
+      "replaces": [
+        "res://data/core/items/imported_base_items.json#28"
+      ]
+    }
+  ],
+  "required_mapping": [
+    "armor"
+  ],
+  "consumers": [
+    {
+      "package_id": "bard",
+      "option": "A",
+      "quantity": 1,
+      "source": "docs/planning/preparation/crown-characters/classes/bard.json"
+    },
+    {
+      "package_id": "druid",
+      "option": "A",
+      "quantity": 1,
+      "source": "docs/planning/preparation/crown-characters/classes/druid.json"
+    },
+    {
+      "package_id": "rogue",
+      "option": "A",
+      "quantity": 1,
+      "source": "docs/planning/preparation/crown-characters/classes/rogue.json"
+    },
+    {
+      "package_id": "warlock",
+      "option": "A",
+      "quantity": 1,
+      "source": "docs/planning/preparation/crown-characters/classes/warlock.json"
+    }
+  ],
+  "unsupported_behavior": [
+    {
+      "group": "armor",
+      "requirement": "Map AC, training, Strength/Stealth penalties and real don/doff. Reuse delivered timing; broader penalty consumers and content still require reconciliation."
+    }
+  ]
+}

@@ -1,0 +1,233 @@
+{
+  "schema": "crown-character-candidate/1",
+  "id": "oath_of_devotion",
+  "name": "Oath of Devotion",
+  "kind": "subclass",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "scope": {
+    "total_character_level_maximum": 5
+  },
+  "operation_language": "authoring intent only; not registered engine syntax",
+  "runtime_support": "Retained definitions are reuse material, not proof of full rules. Every authored operation needs contract mapping and later production-path verification before promotion.",
+  "class_id": "paladin",
+  "class_level": 3,
+  "features": [
+    {
+      "id": "paladin_oath_of_devotion_spells",
+      "name": "Oath of Devotion Spells",
+      "class_level": 3,
+      "rules": {
+        "authority": "SRD 5.2.1",
+        "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+        "pages": [
+          56
+        ],
+        "text": "Level 3: Oath of Devotion Spells\nThe magic of your oath ensures you always have\ncertain spells ready; when you reach a Paladin level\nspecified in the Oath of Devotion Spells table, you\nthereafter always have the listed spells prepared. Oath of Devotion Spells\nPaladin Level Spells\n3 Protection from Evil and Good,\nShield of Faith\n5 Aid, Zone of Truth\n9 Beacon of Hope, Dispel Magic\n13 Freedom of Movement,\nGuardian of Faith\n17 Commune, Flame Strike"
+      },
+      "revised_reference_entries": [
+        "The magic of your oath ensures you always have certain spells ready; when you reach a Paladin level specified in the Oath of Devotion Spells table, you thereafter always have the listed spells prepared.",
+        {
+          "type": "table",
+          "caption": "Oath of Devotion Spells",
+          "colLabels": [
+            "Paladin Level",
+            "Spells"
+          ],
+          "colStyles": [
+            "col-2 text-center",
+            "col-10"
+          ],
+          "rows": [
+            [
+              "3rd",
+              "{@spell Protection from Evil And Good|XPHB}, {@spell Shield of Faith|XPHB}"
+            ],
+            [
+              "5th",
+              "{@spell Aid|XPHB}, {@spell Zone of Truth|XPHB}"
+            ],
+            [
+              "9th",
+              "{@spell Beacon of Hope|XPHB}, {@spell Dispel Magic|XPHB}"
+            ],
+            [
+              "13th",
+              "{@spell Freedom of Movement|XPHB}, {@spell Guardian of Faith|XPHB}"
+            ],
+            [
+              "17th",
+              "{@spell Commune|XPHB}, {@spell Flame Strike|XPHB}"
+            ]
+          ]
+        }
+      ],
+      "authored_operations": [
+        {
+          "trigger": "Class level3 and5",
+          "cost": "Normal spell costs except explicit grant elsewhere",
+          "effects": [
+            "Always prepare exact in-band table spells without counting class limit; grant as own-class spells"
+          ],
+          "ending_and_identity": "Exact subclass ownership",
+          "required_extension_groups": [
+            "casting",
+            "choices"
+          ]
+        }
+      ],
+      "unsupported_behavior": [
+        {
+          "groups": [
+            "casting",
+            "choices"
+          ],
+          "requirement": {
+            "trigger": "Class level3 and5",
+            "cost": "Normal spell costs except explicit grant elsewhere",
+            "effects": [
+              "Always prepare exact in-band table spells without counting class limit; grant as own-class spells"
+            ],
+            "ending": "Exact subclass ownership"
+          },
+          "mapping_boundary": "Map this complete sequence to shared contracts; retained native behavior and fragments do not certify it.",
+          "status": "unmapped_or_unverified_candidate"
+        }
+      ]
+    },
+    {
+      "id": "oath_of_devotion_sacred_weapon",
+      "name": "Sacred Weapon",
+      "class_level": 3,
+      "rules": {
+        "authority": "SRD 5.2.1",
+        "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+        "pages": [
+          56
+        ],
+        "text": "Level 3: Sacred Weapon\nWhen you take the Attack action, you can expend\none use of your Channel Divinity to imbue one\nMelee weapon that you are holding with positive\nenergy. For 10 minutes or until you use this feature\nagain, you add your Charisma modifier to attack\nrolls you make with that weapon (minimum bonus\nof +1), and each time you hit with it, you cause it to\ndeal its normal damage type or Radiant damage.\nThe weapon also emits Bright Light in a 20-foot\nradius and Dim Light 20 feet beyond that.\nYou can end this effect early (no action required).\nThis effect also ends if you aren’t carrying the\nweapon."
+      },
+      "revised_reference_entries": [
+        "When you take the {@action Attack|XPHB} action, you can expend one use of your Channel Divinity to imbue one Melee weapon that you are holding with positive energy. For 10 minutes or until you use this feature again, you add your Charisma modifier to attack rolls you make with that weapon (minimum bonus of +1), and each time you hit with it, you cause it to deal its normal damage type or Radiant damage.",
+        "The weapon also emits {@variantrule Bright Light|XPHB} in a 20-foot radius and {@variantrule Dim Light|XPHB} 20 feet beyond that.",
+        "You can end this effect early (no action required). This effect also ends if you aren't carrying the weapon."
+      ],
+      "authored_operations": [
+        {
+          "trigger": "Attack action: imbue one held Melee weapon",
+          "cost": "one Paladin Channel Divinity",
+          "effects": [
+            "For10 minutes or reuse: +CHA attack bonus min1",
+            "Choose weapon normal or Radiant damage each hit",
+            "Bright Light20 feet plus Dim20 feet",
+            "End if weapon no longer carried; can end no action"
+          ],
+          "ending_and_identity": "Exact source owns the grant/state; remove temporary effects at the declared ending; never replay acquisition on restore.",
+          "required_extension_groups": [
+            "resources",
+            "attacks",
+            "world"
+          ]
+        }
+      ],
+      "unsupported_behavior": [
+        {
+          "groups": [
+            "resources",
+            "attacks",
+            "world"
+          ],
+          "requirement": {
+            "trigger": "Attack action: imbue one held Melee weapon",
+            "cost": "one Paladin Channel Divinity",
+            "effects": [
+              "For10 minutes or reuse: +CHA attack bonus min1",
+              "Choose weapon normal or Radiant damage each hit",
+              "Bright Light20 feet plus Dim20 feet",
+              "End if weapon no longer carried; can end no action"
+            ],
+            "ending": "Exact source owns the grant/state; remove temporary effects at the declared ending; never replay acquisition on restore."
+          },
+          "mapping_boundary": "Map this complete sequence to shared contracts; retained native behavior and fragments do not certify it.",
+          "status": "unmapped_or_unverified_candidate"
+        }
+      ]
+    }
+  ],
+  "reused_from": [
+    "_staging/subclass-staging/staged/oath_of_devotion.json",
+    "reference/2024/classes/paladin.json"
+  ],
+  "retained_runtime_seed": {
+    "id": "oath_of_devotion",
+    "name": "Oath of Devotion",
+    "class_id": "paladin",
+    "rights": "srd_ok",
+    "rules_status": "2024-partial",
+    "features_by_level": {
+      "3": [
+        {
+          "id": "oath_of_devotion_spells_3",
+          "name": "Oath of Devotion Spells (Level 3)",
+          "description": "You always have Protection From Evil And Good, Shield Of Faith prepared.",
+          "type": "passive",
+          "effects": [
+            {
+              "type": "always_prepared_spells",
+              "spells": [
+                "protection_from_evil_and_good",
+                "shield_of_faith"
+              ]
+            }
+          ],
+          "rules_source": "dnd-2024-srd-5.2.1",
+          "rules_status": "2024-partial"
+        },
+        {
+          "id": "oath_of_devotion_sacred_weapon",
+          "name": "Sacred Weapon",
+          "description": "When you take the Attack action, you can expend one use of your Channel Divinity to imbue one Melee weapon that you are holding with positive energy. For 10 minutes or until you use this feature again, you add your… The weapon also emits Light in a 20-foot radius and Light 20 fe…",
+          "type": "active",
+          "effects": [],
+          "rules_source": "dnd-2024-srd-5.2.1",
+          "rules_status": "reference-only",
+          "enabled": false,
+          "action_cost": "action"
+        }
+      ],
+      "5": [
+        {
+          "id": "oath_of_devotion_spells_5",
+          "name": "Oath of Devotion Spells (Level 5)",
+          "description": "You always have Aid, Zone Of Truth prepared.",
+          "type": "passive",
+          "effects": [
+            {
+              "type": "always_prepared_spells",
+              "spells": [
+                "aid",
+                "zone_of_truth"
+              ]
+            }
+          ],
+          "rules_source": "dnd-2024-srd-5.2.1",
+          "rules_status": "2024-partial"
+        }
+      ]
+    }
+  },
+  "always_prepared_spells_by_class_level": {
+    "3": [
+      "protection_from_evil_and_good",
+      "shield_of_faith"
+    ],
+    "5": [
+      "aid",
+      "zone_of_truth"
+    ]
+  },
+  "source_revision": "2a19eb1d (existing working-tree definitions and recovered drafts read on 2026-11-08)",
+  "reused_input_hashes": {
+    "_staging/subclass-staging/staged/oath_of_devotion.json": "3b06f4f99814119c34e8756acba97948ed5491ac15637a23a7ff954e4dd2f087",
+    "reference/2024/classes/paladin.json": "1c3578448c400d63531ba994a43bbb52b76e6fa6bf72b471a26fdfa20042c753"
+  }
+}

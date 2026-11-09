@@ -1,0 +1,167 @@
+{
+  "schema": "crown-creature-candidate/1",
+  "id": "major_image",
+  "name": "Major Image",
+  "kind": "spell_force_or_image",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring intent only; not registered engine syntax. Mapping requirements do not assert the whole referenced engine slice is absent.",
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile all source clauses, mappings and source differences before later production-path verification. Keep native paths until replacements cover them."
+  },
+  "source_candidate": {
+    "path": "docs/planning/preparation/crown-spells/major_image.json",
+    "sha256": "25657e5788c88de10c10d7b9c76197349e75128d78dabcf0b4db3983471463af"
+  },
+  "source": {
+    "authority": "SRD 5.2.1",
+    "url": "https://media.dndbeyond.com/compendium-images/srd/5.2/SRD_CC_v5.2.1.pdf",
+    "sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      147
+    ],
+    "header": {
+      "Casting Time": "Action",
+      "Range": "120 feet",
+      "Components": "V, S, M (a bit of fleece)",
+      "Duration": "Concentration, up to 10 minutes"
+    },
+    "attribution": "System Reference Document 5.2.1, Wizards of the Coast LLC; CC BY 4.0."
+  },
+  "rules": [
+    {
+      "id": "r001",
+      "text": "You create the image of an object, a creature, or some other visible phenomenon that is no larger than a 20-foot Cube."
+    },
+    {
+      "id": "r002",
+      "text": "The image appears at a spot that you can see within range and lasts for the duration."
+    },
+    {
+      "id": "r003",
+      "text": "It seems real, including sounds, smells, and temperature appropriate to the thing depicted, but it can’t deal damage or cause conditions."
+    },
+    {
+      "id": "r004",
+      "text": "If you are within range of the illusion, you can take a Magic action to cause the image to move to any other spot within range."
+    },
+    {
+      "id": "r005",
+      "text": "As the image changes location, you can alter its appearance so that its movements appear natural for the image."
+    },
+    {
+      "id": "r006",
+      "text": "For example, if you create an image of a creature and move it, you can alter the image so that it appears to be walking."
+    },
+    {
+      "id": "r007",
+      "text": "Similarly, you can cause the illusion to make different sounds at different times, even making it carry on a conversation, for example."
+    },
+    {
+      "id": "r008",
+      "text": "Physical interaction with the image reveals it to be an illusion, for things can pass through it."
+    },
+    {
+      "id": "r009",
+      "text": "A creature that takes a Study action to examine the image can determine that it is an illusion with a successful Intelligence (Investigation) check against your spell save DC."
+    },
+    {
+      "id": "r010",
+      "text": "If a creature discerns the illusion for what it is, the creature can see through the image, and its other sensory qualities become faint to the creature."
+    },
+    {
+      "id": "r011",
+      "text": "Using a Higher-Level Spell Slot."
+    },
+    {
+      "id": "r012",
+      "text": "The spell lasts until dispelled, without requiring Concentration, if cast with a level 4+ spell slot."
+    }
+  ],
+  "authored_operations": [
+    {
+      "operation": "create_multisensory_illusion",
+      "parameters": {
+        "cube_feet_max": 20,
+        "placement": "seen_spot_in_range",
+        "senses": [
+          "sight",
+          "sound",
+          "smell",
+          "temperature"
+        ],
+        "damage": false,
+        "conditions": false,
+        "move_and_alter": {
+          "action": "magic_action",
+          "caster_within_range": true
+        },
+        "discovery": [
+          "physical_interaction",
+          "Study_INT_Investigation_vs_spell_DC"
+        ],
+        "disbeliever": "see_through_other_senses_faint",
+        "slot_4_plus": {
+          "until_dispelled": true,
+          "concentration": false
+        }
+      },
+      "status": "authoring_declaration_not_a_registered_opcode",
+      "required_source_rules": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006",
+        "r007",
+        "r008",
+        "r009",
+        "r010",
+        "r011",
+        "r012"
+      ]
+    }
+  ],
+  "required_extensions": [
+    {
+      "group": "illusions",
+      "requirement": "Represent exact appearance/senses/location, interactions and Study checks; retain observer-specific disbelief, permitted changes and real consequences.",
+      "spell_specific_intent": "Create seen image up to 20-foot cube with sensory details but no damage/conditions; Magic action move/alter appearance/sounds; physical/Study discovery is observer-specific; level-4+ slot makes duration until dispelled without Concentration.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006",
+        "r007",
+        "r008",
+        "r009",
+        "r010",
+        "r011",
+        "r012"
+      ],
+      "existing_owner_to_reuse": "src/combat/combat_perception.gd",
+      "slice_references": "S-187/S-188/S-189/S-195",
+      "disposition": "requires_mapping_or_host_completion",
+      "note": "This is an authored handoff requirement, not a fresh runtime failure or claim that the whole referenced slice is missing."
+    }
+  ],
+  "retained_runtime_draft": {
+    "origin": "proposed_operations",
+    "definition": null,
+    "fragments": {},
+    "coverage": "Unverified. Neither a full definition nor a fragment certifies all source rules or controls. Required extensions are not silently waived."
+  },
+  "selection_links": [
+    "selection-links.json"
+  ],
+  "blockers": [
+    "map_attacks",
+    "map_movement",
+    "map_senses"
+  ],
+  "representation": "Spell-owned force, area, light or image; no arbitrary Beast stat block, independent initiative, HP, loot or creature targeting unless the full source rule expressly supplies it."
+}

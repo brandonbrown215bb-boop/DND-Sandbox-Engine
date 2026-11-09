@@ -1,0 +1,70 @@
+{
+  "schema": "crown-equipment-candidate/1",
+  "id": "chain_shirt",
+  "name": "Chain Shirt",
+  "kind": "armor",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring intent only; not registered engine syntax.",
+  "rules": {
+    "authority": "SRD 5.2.1",
+    "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      92
+    ],
+    "section": "Chain Shirt",
+    "text": "Only one suit and one Shield at a time. Without Light/Medium/Heavy armor training, worn armor gives Disadvantage on Strength/Dexterity D20 Tests and prevents spellcasting. A Shield gives its AC bonus only with training. A listed Strength requirement reduces Speed by 10 feet unless met; listed Stealth Disadvantage applies while worn.",
+    "source_context": "../source-pages.json"
+  },
+  "definition": {
+    "id": "chain_shirt",
+    "name": "Chain Shirt",
+    "category": "medium",
+    "ac": 13,
+    "ac_kind": "base",
+    "dexterity_cap": 2,
+    "strength_requirement": null,
+    "stealth_disadvantage": false,
+    "weight_lb": 20,
+    "cost_gp": 50,
+    "don": "5 minutes",
+    "doff": "1 minute"
+  },
+  "authored_operations": [
+    "Only one suit and one Shield at a time. Without Light/Medium/Heavy armor training, worn armor gives Disadvantage on Strength/Dexterity D20 Tests and prevents spellcasting. A Shield gives its AC bonus only with training. A listed Strength requirement reduces Speed by 10 feet unless met; listed Stealth Disadvantage applies while worn."
+  ],
+  "retained_runtime_seeds": [
+    {
+      "path": "data/core/items/imported_base_items.json",
+      "array_index": 7,
+      "file_sha256": "d450331c5dc1756fccc025c42e7f60bc6312a6829e59814e9864878a4abaae42",
+      "definition": {
+        "id": "chain_shirt",
+        "name": "Chain Shirt",
+        "description": "Made of interlocking metal rings, a chain shirt is worn between layers of clothing or leather. This armor offers modest protection to the wearer's upper body and allows the sound of the rings rubbing against one another to be muffled by outer layers.",
+        "type": "armor",
+        "armor_type": "medium",
+        "ac": 13,
+        "stealth_disadvantage": false,
+        "value": 50
+      }
+    }
+  ],
+  "manifest_overrides": [],
+  "required_mapping": [
+    "armor"
+  ],
+  "consumers": [
+    {
+      "package_id": "cleric",
+      "option": "A",
+      "quantity": 1,
+      "source": "docs/planning/preparation/crown-characters/classes/cleric.json"
+    }
+  ],
+  "unsupported_behavior": [
+    {
+      "group": "armor",
+      "requirement": "Map AC, training, Strength/Stealth penalties and real don/doff. Reuse delivered timing; broader penalty consumers and content still require reconciliation."
+    }
+  ]
+}

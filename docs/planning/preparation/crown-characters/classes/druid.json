@@ -1,0 +1,1840 @@
+{
+  "schema": "crown-character-candidate/1",
+  "id": "druid",
+  "name": "Druid",
+  "kind": "class",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "scope": {
+    "total_character_level_maximum": 5
+  },
+  "operation_language": "authoring intent only; not registered engine syntax",
+  "runtime_support": "Retained definitions are reuse material, not proof of full rules. Every authored operation needs contract mapping and later production-path verification before promotion.",
+  "source": {
+    "authority": "SRD 5.2.1",
+    "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      41
+    ],
+    "text": "Druid\nCore Druid Traits\nPrimary Ability Wisdom\nHit Point Die D8 per Druid level\nSaving Throw\nProficiencies\nIntelligence and Wisdom\nSkill Proficiencies Choose 2: Animal Handling,\nArcana, Insight, Medicine, Nature, Perception, Religion, or\nSurvival\nWeapon Proficiencies Simple weapons\nTool Proficiencies Herbalism Kit\nArmor Training Light armor and Shields\nStarting Equipment Choose A or B: (A) Leather Armor, Shield, Sickle, Druidic Focus (Quarterstaff), Explorer’s\nPack, Herbalism Kit, and 9 GP;\nor (B) 50 GP\nDruid Features\nProficiency\nBonus\nWild\nShape Level Class Features\n1 +2 Spellcasting, Druidic,\nPrimal Order\n—\n2 +2 Wild Shape,\nWild Companion\n2\n3 +2 Druid Subclass 2\n4 +2 Ability Score Improvement 2\n5 +3 Wild Resurgence 2\n6 +3 Subclass feature 3\n7 +3 Elemental Fury 3\n8 +3 Ability Score Improvement 3\n9 +4 — 3\n10 +4 Subclass feature 3\n11 +4 — 3\n12 +4 Ability Score Improvement 3\n13 +5 — 3\n14 +5 Subclass feature 3\n15 +5 Improved Elemental Fury 3\n16 +5 Ability Score Improvement 3\n17 +6 — 4\n18 +6 Beast Spells 4\n19 +6 Epic Boon 4\n20 +6 Archdruid 4\nBecoming a Druid …\nAs a Level 1 Character\n• Gain all the traits in the Core Druid Traits table.\n• Gain the Druid’s level 1 features, which are listed\nin the Druid Features table.\nAs a Multiclass Character\n• Gain the following traits from the Core Druid\nTraits table: Hit Point Die and training with Light\narmor and Shields.\n• Gain the Druid’s level 1 features, which are listed\nin the Druid Features table. See the multiclassing\nrules in “Character Creation” to determine your\navailable spell slots.\nDruid Class Features\nAs a Druid, you gain the following class features\nwhen you reach the specified Druid levels. These\nfeatures are listed in the Druid Features table."
+  },
+  "reused_from": [
+    "data/core/classes/druid.json",
+    "reference/2024/classes/druid.json",
+    "docs/mechanics/druid-2024.md"
+  ],
+  "acquisition": {
+    "starting_traits": {
+      "armor": [
+        "light",
+        "shield"
+      ],
+      "weapons": [
+        "simple"
+      ],
+      "tools": [
+        "{@item Herbalism Kit|XPHB}"
+      ],
+      "toolProficiencies": [
+        {
+          "herbalism kit": true
+        }
+      ],
+      "skills": [
+        {
+          "choose": {
+            "from": [
+              "arcana",
+              "animal handling",
+              "insight",
+              "medicine",
+              "nature",
+              "perception",
+              "religion",
+              "survival"
+            ],
+            "count": 2
+          }
+        }
+      ]
+    },
+    "multiclass_donor": {
+      "proficienciesGained": {
+        "armor": [
+          "light",
+          "shield"
+        ]
+      }
+    },
+    "hit_die": {
+      "number": 1,
+      "faces": 8
+    },
+    "primary_ability": [
+      {
+        "wis": true
+      }
+    ],
+    "saving_throws": [
+      "int",
+      "wis"
+    ],
+    "grant_policy": "First total level: full Core Traits and level1 features. Later class entry: only source multiclass traits plus all class level1 features; no starting gear or saving throws. Explicit resolved grants in multiclass.json.",
+    "starting_equipment_donor": {
+      "additionalFromBackground": true,
+      "defaultData": [
+        {
+          "A": [
+            {
+              "item": "leather armor|xphb"
+            },
+            {
+              "item": "shield|xphb"
+            },
+            {
+              "item": "sickle|xphb"
+            },
+            {
+              "item": "druidic focus|xphb"
+            },
+            {
+              "item": "explorer's pack|xphb"
+            },
+            {
+              "item": "herbalism kit|xphb"
+            },
+            {
+              "value": 900
+            }
+          ],
+          "B": [
+            {
+              "value": 5000
+            }
+          ]
+        }
+      ],
+      "entries": [
+        "{@i Choose A or B:} (A) {@item Leather Armor|XPHB}, {@item Shield|XPHB}, {@item Sickle|XPHB}, {@item Druidic Focus|XPHB|Druidic Focus (Quarterstaff)}, {@item Explorer's Pack|XPHB}, {@item Herbalism kit|XPHB}, 9 GP; or (B) 50 GP"
+      ]
+    },
+    "starting_equipment": {
+      "A": {
+        "gp": 9,
+        "items": [
+          {
+            "source_item_key": "leather_armor",
+            "quantity": 1
+          },
+          {
+            "source_item_key": "shield",
+            "quantity": 1
+          },
+          {
+            "source_item_key": "sickle",
+            "quantity": 1
+          },
+          {
+            "source_item_key": "druidic_focus_quarterstaff",
+            "quantity": 1
+          },
+          {
+            "source_item_key": "explorers_pack",
+            "quantity": 1
+          },
+          {
+            "source_item_key": "herbalism_kit",
+            "quantity": 1
+          }
+        ]
+      },
+      "B": {
+        "gp": 50,
+        "items": []
+      }
+    },
+    "equipment_mapping_notes": [
+      "source_item_key is an authoring identity, not automatically a resolved loaded item. Later inventory reconciliation records missing/choice links.",
+      "Monk chosen_tool is the same single Artisan’s Tool OR Musical Instrument chosen for proficiency. Bard instrument is a separate equipment choice.",
+      "Holy Symbol form is a choice or unresolved generic mapping; no silent form substitution."
+    ],
+    "multiclass_grants": {
+      "all": [
+        "WIS"
+      ],
+      "armor": [
+        "light",
+        "shields"
+      ],
+      "score_minimum": 13,
+      "hit_die": "d8",
+      "features": "All own-class level1 features plus later features at own-class thresholds; subclass at class3, feat entitlement at class4. See class candidate.",
+      "starting_equipment": [],
+      "saving_throws": []
+    }
+  },
+  "level_hit_points": {
+    "first_total_level": "maximum class Hit Die + permanent CON modifier",
+    "later_levels": "roll class Hit Die OR use fixed average rounded up; add permanent CON modifier; minimum1 HP",
+    "fixed_average": 5,
+    "hit_dice": "Add one Hit Die of this class type; preserve separate types",
+    "project_policy": "Current bounded permanent progression uses fixed level_hit_points and existing level-up living-character heal; rolled advancement is unsupported there, not silently removed from source."
+  },
+  "features": [
+    {
+      "id": "druid_spellcasting",
+      "name": "Spellcasting",
+      "class_level": 1,
+      "rules": {
+        "authority": "SRD 5.2.1",
+        "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+        "pages": [
+          41,
+          42
+        ],
+        "text": "Level 1: Spellcasting\nYou have learned to cast spells through studying\nthe mystical forces of nature. See “Spells” for the\nrules on spellcasting. The information below details\nPrepared\nSpells\n——Spell Slots per Spell Level——\nCantrips 1 2 3 4 5 6 7 8 9\n2 4 2 — — — — — — — —\n2 5 3 — — — — — — — —\n2 6 4 2 — — — — — — —\n3 7 4 3 — — — — — — —\n3 9 4 3 2 — — — — — —\n3 10 4 3 3 — — — — — —\n3 11 4 3 3 1 — — — — —\n3 12 4 3 3 2 — — — — —\n3 14 4 3 3 3 1 — — — —\n4 15 4 3 3 3 2 — — — —\n4 16 4 3 3 3 2 1 — — —\n4 16 4 3 3 3 2 1 — — —\n4 17 4 3 3 3 2 1 1 — —\n4 17 4 3 3 3 2 1 1 — —\n4 18 4 3 3 3 2 1 1 1 —\n4 18 4 3 3 3 2 1 1 1 —\n4 19 4 3 3 3 2 1 1 1 1\n4 20 4 3 3 3 3 1 1 1 1\n4 21 4 3 3 3 3 2 1 1 1\n4 22 4 3 3 3 3 2 2 1 1\nhow you use those rules with Druid spells, which\nappear on the Druid spell list later in the class’s\ndescription.\nCantrips.\nYou know two cantrips of your choice\nfrom the Druid spell list.\nDruidcraft\nand\nProduce\nFlame\nare recommended.\nWhenever you gain a Druid level, you can replace\none of your cantrips with another cantrip of your\nchoice from the Druid spell list.\nWhen you reach Druid levels 4 and 10, you learn\nanother cantrip of your choice from the Druid spell\nlist, as shown in the Cantrips column of the Druid\nFeatures table.\nSpell Slots.\nThe Druid Features table shows how\nmany spell slots you have to cast your level 1+\nspells. You regain all expended slots when you finish a Long Rest.\nPrepared Spells of Level 1+.\nYou prepare the\nlist of level 1+ spells that are available for you to\ncast with this feature. To start, choose four level 1\nspells from the Druid spell list.\nAnimal Friendship\n,\nCure Wounds\n,\nFaerie Fire\n, and\nThunderwave\nare\nrecommended.\nThe number of spells on your list increases as you\ngain Druid levels, as shown in the Prepared Spells\ncolumn of the Druid Features table. Whenever that\nnumber increases, choose additional spells from the\nDruid spell list until the number of spells on your\nlist matches the number on the table. The chosen\nspells must be of a level for which you have spell\nslots. For example, if you’re a level 3 Druid, your list\nof prepared spells can include six spells of levels 1\nand 2 in any combination.\nIf another Druid feature gives you spells that\nyou always have prepared, those spells don’t count\nagainst the number of spells you can prepare with\nthis feature, but those spells otherwise count as\nDruid spells for you.\nChanging Your Prepared Spells.\nWhenever you\nfinish a Long Rest, you can change your list of prepared spells, replacing any of the spells with other\nDruid spells for which you have spell slots.\nSpellcasting Ability.\nWisdom is your spellcasting\nability for your Druid spells.\nSpellcasting Focus.\nYou can use a Druidic Focus\nas a Spellcasting Focus for your Druid spells."
+      },
+      "revised_reference_entries": [
+        "You have learned to cast spells through studying the mystical forces of nature. See {@book chapter 7|XPHB|7} for the rules on spellcasting. The information below details how you use those rules with Druid spells, which appear on the {@filter Druid spell list|spells|class=Druid} later in the class's description.",
+        {
+          "type": "entries",
+          "entries": [
+            {
+              "type": "entries",
+              "name": "Cantrips",
+              "entries": [
+                "You know two cantrips of your choice from the {@filter Druid spell list|spells|class=Druid}. {@spell Druidcraft|XPHB} and {@spell Produce Flame|XPHB} are recommended.",
+                "Whenever you gain a Druid level, you can replace one of your cantrips with another cantrip of your choice from the {@filter Druid spell list|spells|class=Druid}.",
+                "When you reach Druid levels 4 and 10, you learn another cantrip of your choice from the {@filter Druid spell list|spells|class=Druid}, as shown in the Cantrips column of the Druid Features table."
+              ]
+            },
+            {
+              "type": "entries",
+              "name": "Spell Slots",
+              "entries": [
+                "The Druid Features table shows how many spell slots you have to cast your level 1+ spells. You regain all expended slots when you finish a {@variantrule Long Rest|XPHB}."
+              ]
+            },
+            {
+              "type": "entries",
+              "name": "Prepared Spells of Level 1+",
+              "entries": [
+                "You prepare the list of level 1+ spells that are available for you to cast with this feature. To start, choose four level 1 spells from the {@filter Druid spell list|spells|class=Druid}. {@spell Animal Friendship|XPHB}, {@spell Cure Wounds|XPHB}, {@spell Faerie Fire|XPHB}, and {@spell Thunderwave|XPHB} are recommended.",
+                "The number of spells on your list increases as you gain Druid levels, as shown in the Prepared Spells column of the Druid Features table. Whenever that number increases, choose additional spells from the {@filter Druid spell list|spells|class=Druid} until the number of spells on your list matches the number on the table. The chosen spells must be of a level for which you have spell slots. For example, if you're a level 3 Druid, your list of prepared spells can include six spells of levels 1 and 2 in any combination.",
+                "If another Druid feature gives you spells that you always have prepared, those spells don't count against the number of spells you can prepare with this feature, but those spells otherwise count as Druid spells for you."
+              ]
+            },
+            {
+              "type": "entries",
+              "name": "Changing Your Prepared Spells",
+              "entries": [
+                "Whenever you finish a {@variantrule Long Rest|XPHB}, you can change your list of prepared spells, replacing any of the spells with other Druid spells for which you have spell slots."
+              ]
+            },
+            {
+              "type": "entries",
+              "name": "Spellcasting Ability",
+              "entries": [
+                "Wisdom is your spellcasting ability for your Druid spells."
+              ]
+            },
+            {
+              "type": "entries",
+              "name": "Spellcasting Focus",
+              "entries": [
+                "You can use a {@item Druidic Focus|XPHB} as a {@variantrule Spellcasting Focus|XPHB} for your Druid spells."
+              ]
+            }
+          ]
+        }
+      ],
+      "authored_operations": [
+        {
+          "trigger": "Acquire class; class-level advancement; legal preparation/replacement window",
+          "cost": "Actual action, slot, components and source permission for each cast",
+          "effects": [
+            "Use class casting package in this candidate; own-class preparation eligibility even with higher multiclass slots",
+            "Preserve source cantrip replacement and preparation rules, chosen ability, focus and always-prepared exclusions"
+          ],
+          "ending_and_identity": "Distinct class source, ordinary/Pact/free/created slots and cast identities; rests recover declared pools once",
+          "required_extension_groups": [
+            "casting",
+            "choices",
+            "resources"
+          ]
+        }
+      ],
+      "unsupported_behavior": [
+        {
+          "groups": [
+            "casting",
+            "choices",
+            "resources"
+          ],
+          "requirement": {
+            "trigger": "Acquire class; class-level advancement; legal preparation/replacement window",
+            "cost": "Actual action, slot, components and source permission for each cast",
+            "effects": [
+              "Use class casting package in this candidate; own-class preparation eligibility even with higher multiclass slots",
+              "Preserve source cantrip replacement and preparation rules, chosen ability, focus and always-prepared exclusions"
+            ],
+            "ending": "Distinct class source, ordinary/Pact/free/created slots and cast identities; rests recover declared pools once"
+          },
+          "mapping_boundary": "Map this complete sequence to shared contracts; retained native behavior and fragments do not certify it.",
+          "status": "unmapped_or_unverified_candidate"
+        }
+      ]
+    },
+    {
+      "id": "druid_druidic",
+      "name": "Druidic",
+      "class_level": 1,
+      "rules": {
+        "authority": "SRD 5.2.1",
+        "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+        "pages": [
+          42
+        ],
+        "text": "Level 1: Druidic\nYou know Druidic, the secret language of Druids.\nWhile learning this ancient tongue, you also unlocked the magic of communicating with animals;\nyou always have the\nSpeak with Animals\nspell\nprepared.\nYou can use Druidic to leave hidden messages. You\nand others who know Druidic automatically spot\nsuch a message. Others spot the message’s presence\nwith a successful DC 15 Intelligence (Investigation)\ncheck but can’t decipher it without magic."
+      },
+      "revised_reference_entries": [
+        "You know Druidic, the secret language of Druids. While learning this ancient tongue, you also unlocked the magic of communicating with animals; you always have the {@spell Speak with Animals|XPHB} spell prepared.",
+        "You can use Druidic to leave hidden messages. You and others who know Druidic automatically spot such a message. Others spot the message's presence with a successful {@dc 15} Intelligence ({@skill Investigation|XPHB}) check but can't decipher it without magic."
+      ],
+      "authored_operations": [
+        {
+          "trigger": "Acquire Druid 1; secret message recognition",
+          "cost": "none",
+          "effects": [
+            "Know Druidic",
+            "Always prepare Speak with Animals",
+            "Know hidden Druidic message automatically if language known; others notice by DC15 INT Investigation but need magic to decipher"
+          ],
+          "ending_and_identity": "Exact source owns the grant/state; remove temporary effects at the declared ending; never replay acquisition on restore.",
+          "required_extension_groups": [
+            "languages",
+            "casting",
+            "world"
+          ]
+        }
+      ],
+      "unsupported_behavior": [
+        {
+          "groups": [
+            "languages",
+            "casting",
+            "world"
+          ],
+          "requirement": {
+            "trigger": "Acquire Druid 1; secret message recognition",
+            "cost": "none",
+            "effects": [
+              "Know Druidic",
+              "Always prepare Speak with Animals",
+              "Know hidden Druidic message automatically if language known; others notice by DC15 INT Investigation but need magic to decipher"
+            ],
+            "ending": "Exact source owns the grant/state; remove temporary effects at the declared ending; never replay acquisition on restore."
+          },
+          "mapping_boundary": "Map this complete sequence to shared contracts; retained native behavior and fragments do not certify it.",
+          "status": "unmapped_or_unverified_candidate"
+        }
+      ]
+    },
+    {
+      "id": "druid_primal_order",
+      "name": "Primal Order",
+      "class_level": 1,
+      "rules": {
+        "authority": "SRD 5.2.1",
+        "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+        "pages": [
+          42
+        ],
+        "text": "Level 1: Primal Order\nYou have dedicated yourself to one of the following\nsacred roles of your choice.\nMagician.\nYou know one extra cantrip from the\nDruid spell list. In addition, your mystical connection to nature gives you a bonus to your Intelligence\n(Arcana or Nature) checks. The bonus equals your\nWisdom modifier (minimum bonus of +1).\nWarden.\nTrained for battle, you gain proficiency\nwith Martial weapons and training with Medium\narmor."
+      },
+      "revised_reference_entries": [
+        "You have dedicated yourself to one of the following sacred roles of your choice.",
+        {
+          "type": "entries",
+          "entries": [
+            {
+              "type": "options",
+              "count": 1,
+              "entries": [
+                {
+                  "type": "refClassFeature",
+                  "classFeature": "Magician|Druid|XPHB|1"
+                },
+                {
+                  "type": "refClassFeature",
+                  "classFeature": "Warden|Druid|XPHB|1"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "authored_operations": [
+        {
+          "trigger": "Choose at Druid 1",
+          "cost": "none",
+          "effects": [
+            "Warden: Martial weapons and Medium armor",
+            "Magician: extra Druid cantrip; INT Arcana/Nature checks +max(1,WIS)"
+          ],
+          "ending_and_identity": "Exact source owns the grant/state; remove temporary effects at the declared ending; never replay acquisition on restore.",
+          "required_extension_groups": [
+            "choices",
+            "rolls",
+            "casting"
+          ]
+        }
+      ],
+      "unsupported_behavior": [
+        {
+          "groups": [
+            "choices",
+            "rolls",
+            "casting"
+          ],
+          "requirement": {
+            "trigger": "Choose at Druid 1",
+            "cost": "none",
+            "effects": [
+              "Warden: Martial weapons and Medium armor",
+              "Magician: extra Druid cantrip; INT Arcana/Nature checks +max(1,WIS)"
+            ],
+            "ending": "Exact source owns the grant/state; remove temporary effects at the declared ending; never replay acquisition on restore."
+          },
+          "mapping_boundary": "Map this complete sequence to shared contracts; retained native behavior and fragments do not certify it.",
+          "status": "unmapped_or_unverified_candidate"
+        }
+      ]
+    },
+    {
+      "id": "druid_wild_shape",
+      "name": "Wild Shape",
+      "class_level": 2,
+      "rules": {
+        "authority": "SRD 5.2.1",
+        "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+        "pages": [
+          42,
+          43
+        ],
+        "text": "Level 2: Wild Shape\nThe power of nature allows you to assume the form\nof an animal. As a Bonus Action, you shape-shift into\na Beast form that you have learned for this feature\n(see “Known Forms” below). You stay in that form\nfor a number of hours equal to half your Druid level\nor until you use Wild Shape again, have the Incapacitated condition, or die. You can also leave the form\nearly as a Bonus Action.\nNumber of Uses.\nYou can use Wild Shape twice.\nYou regain one expended use when you finish a\nShort Rest, and you regain all expended uses when\nyou finish a Long Rest.\nYou gain additional uses when you reach certain\nDruid levels, as shown in the Wild Shape column of\nthe Druid Features table.\nKnown Forms.\nYou know four Beast forms for this\nfeature, chosen from among Beast stat blocks that\nhave a maximum Challenge Rating of 1/4 and that\nlack a Fly Speed (see “Animals” in “Monsters” for\nstat block options). The\nRat, Riding Horse, Spider\n,\nand\nWolf\nare recommended. Whenever you finish a\nLong Rest, you can replace one of your known forms\nwith another eligible form.\nWhen you reach certain Druid levels, your number\nof known forms and the maximum Challenge Rating\nfor those forms increases, as shown in the Beast\nShapes table. In addition, starting at level 8, you can\nadopt a form that has a Fly Speed.\nWhen choosing known forms, you may look in\nother sources for eligible Beasts if the Game Master\npermits you to do so. Beast Shapes\nDruid\nLevel\nKnown\nForms\nMax\nCR\nFly\nSpeed\n2 4 1/4 No\n4 6 1/2 No\n8 8 1 Yes\nRules While Shape-Shifted.\nWhile in a form, you\nretain your personality, memories, and ability to\nspeak, and the following rules apply:\nTemporary Hit Points.\nWhen you assume a Wild\nShape form, you gain a number of Temporary Hit\nPoints equal to your Druid level.\nGame Statistics.\nYour game statistics are replaced\nby the Beast’s stat block, but you retain your creature type; Hit Points; Hit Point Dice; Intelligence,\nWisdom, and Charisma scores; class features;\nlanguages; and feats. You also retain your skill\nand saving throw proficiencies and use your Proficiency Bonus for them, in addition to gaining the\nproficiencies of the creature. If a skill or saving\nthrow modifier in the Beast’s stat block is higher\nthan yours, use the one in the stat block.\nNo Spellcasting.\nYou can’t cast spells, but shapeshifting doesn’t break your Concentration or otherwise interfere with a spell you’ve already cast.\nObjects.\nYour ability to handle objects is determined by the form’s limbs rather than your own.\nIn addition, you choose whether your equipment\nfalls in your space, merges into your new form, or\nis worn by it. Worn equipment functions as normal, but the GM decides whether it’s practical for\nthe new form to wear a piece of equipment based\non the creature’s size and shape. Your equipment\ndoesn’t change size or shape to match the new\nform, and any equipment that the new form can’t\nwear must either fall to the ground or merge with\nthe form. Equipment that merges with the form\nhas no effect while you’re in that form."
+      },
+      "revised_reference_entries": [
+        "The power of nature allows you to assume the form of an animal. As a {@variantrule Bonus Action|XPHB}, you shape-shift into a Beast form that you have learned for this feature (see \"Known Forms\" below). You stay in that form for a number of hours equal to half your Druid level or until you use Wild Shape again, have the {@condition Incapacitated|XPHB} condition, or die. You can also leave the form early as a {@variantrule Bonus Action|XPHB}.",
+        {
+          "type": "entries",
+          "entries": [
+            {
+              "type": "entries",
+              "name": "Number of Uses",
+              "entries": [
+                "You can use Wild Shape twice. You regain one expended use when you finish a {@variantrule Short Rest|XPHB}, and you regain all expended uses when you finish a {@variantrule Long Rest|XPHB}.",
+                "You gain additional uses when you reach certain Druid levels, as shown in the Wild Shape column of the Druid Features table."
+              ]
+            },
+            {
+              "type": "entries",
+              "name": "Known Forms",
+              "entries": [
+                "You know four Beast forms for this feature, chosen from among Beast stat blocks that have a maximum {@variantrule Challenge Rating|XPHB} of 1/4 and that lack a {@variantrule Fly Speed|XPHB} (see appendix B for stat block options). The {@creature Rat|XMM}, {@creature Riding Horse|XMM}, {@creature Spider|XMM}, and {@creature Wolf|XMM} are recommended. Whenever you finish a {@variantrule Long Rest|XPHB}, you can replace one of your known forms with another eligible form.",
+                "When you reach certain Druid levels, your number of known forms and the maximum {@variantrule Challenge Rating|XPHB} for those forms increases, as shown in the Beast Shapes table. In addition, starting at level 8, you can adopt a form that has a {@variantrule Fly Speed|XPHB}.",
+                "When choosing known forms, you may look in the {@book Monster Manual|XMM} or elsewhere for eligible Beasts if the Dungeon Master permits you to do so."
+              ]
+            },
+            {
+              "type": "table",
+              "caption": "Beast Shapes",
+              "colLabels": [
+                "Druid Level",
+                "Known Forms",
+                "Max CR",
+                "Fly Speed"
+              ],
+              "colStyles": [
+                "col-3 text-center",
+                "col-3 text-center",
+                "col-3 text-center"
+              ],
+              "rows": [
+                [
+                  "2",
+                  "4",
+                  "{@filter 1/4|bestiary|challenge rating=[&0;&1/4]|type=beast|speed type=!fly|miscellaneous=!swarm}",
+                  "No"
+                ],
+                [
+                  "4",
+                  "6",
+                  "{@filter 1/2|bestiary|challenge rating=[&0;&1/2]|type=beast|speed type=!fly|miscellaneous=!swarm}",
+                  "No"
+                ],
+                [
+                  "8",
+                  "8",
+                  "{@filter 1|bestiary|challenge rating=[&0;&1]|type=beast|miscellaneous=!swarm}",
+                  "Yes"
+                ]
+              ]
+            },
+            {
+              "type": "entries",
+              "name": "Rules While Shape-Shifted",
+              "entries": [
+                "While in a form, you retain your personality, memories, and ability to speak, and the following rules apply:",
+                {
+                  "type": "list",
+                  "style": "list-hang-notitle",
+                  "items": [
+                    {
+                      "type": "item",
+                      "name": "Temporary Hit Points",
+                      "entries": [
+                        "When you assume a Wild Shape form, you gain a number of {@variantrule Temporary Hit Points|XPHB} equal to your Druid level."
+                      ]
+                    },
+                    {
+                      "type": "item",
+                      "name": "Game Statistics",
+                      "entries": [
+                        "Your game statistics are replaced by the Beast's stat block, but you retain your creature type; {@variantrule Hit Points|XPHB}; {@variantrule Hit Point Dice|XPHB}; Intelligence, Wisdom, and Charisma scores; class features; languages; and feats. You also retain your skill and saving throw proficiencies and use your {@variantrule Proficiency|XPHB|Proficiency Bonus} for them, in addition to gaining the proficiencies of the creature. If a skill or saving throw modifier in the Beast's stat block is higher than yours, use the one in the stat block."
+                      ]
+                    },
+                    {
+                      "type": "item",
+                      "name": "No Spellcasting",
+                      "entries": [
+                        "You can't cast spells, but shape-shifting doesn't break your {@status Concentration|XPHB} or otherwise interfere with a spell you've already cast."
+                      ]
+                    },
+                    {
+                      "type": "item",
+                      "name": "Objects",
+                      "entries": [
+                        "Your ability to handle objects is determined by the form's limbs rather than your own. In addition, you choose whether your equipment falls in your space, merges into your new form, or is worn by it. Worn equipment functions as normal, but the DM decides whether it's practical for the new form to wear a piece of equipment based on the creature's size and shape. Your equipment doesn't change size or shape to match the new form, and any equipment that the new form can't wear must either fall to the ground or merge with the form. Equipment that merges with the form has no effect while you're in that form."
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "authored_operations": [
+        {
+          "trigger": "Bonus Action transformation; known eligible Beast form",
+          "cost": "one Wild Shape; capacity 2; Short Rest +1; Long Rest all",
+          "effects": [
+            "Known forms 4 at class2, 6 at class4; replace one known form on Long Rest",
+            "Max CR1/4 at class2, CR1/2 at class4; no Fly Speed",
+            "Temporary HP = Druid level",
+            "Project form using source retention, equipment and casting rules"
+          ],
+          "ending_and_identity": "Duration half Druid level hours; Bonus Action revert; Incapacitated/death ends; source retains personality/memories/mental scores/HP/Hit Dice/languages/feats/class features and skill/save proficiency; no stacking source identities.",
+          "required_extension_groups": [
+            "forms",
+            "resources",
+            "choices"
+          ]
+        }
+      ],
+      "unsupported_behavior": [
+        {
+          "groups": [
+            "forms",
+            "resources",
+            "choices"
+          ],
+          "requirement": {
+            "trigger": "Bonus Action transformation; known eligible Beast form",
+            "cost": "one Wild Shape; capacity 2; Short Rest +1; Long Rest all",
+            "effects": [
+              "Known forms 4 at class2, 6 at class4; replace one known form on Long Rest",
+              "Max CR1/4 at class2, CR1/2 at class4; no Fly Speed",
+              "Temporary HP = Druid level",
+              "Project form using source retention, equipment and casting rules"
+            ],
+            "ending": "Duration half Druid level hours; Bonus Action revert; Incapacitated/death ends; source retains personality/memories/mental scores/HP/Hit Dice/languages/feats/class features and skill/save proficiency; no stacking source identities."
+          },
+          "mapping_boundary": "Map this complete sequence to shared contracts; retained native behavior and fragments do not certify it.",
+          "status": "unmapped_or_unverified_candidate"
+        }
+      ]
+    },
+    {
+      "id": "druid_wild_companion",
+      "name": "Wild Companion",
+      "class_level": 2,
+      "rules": {
+        "authority": "SRD 5.2.1",
+        "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+        "pages": [
+          43
+        ],
+        "text": "Level 2: Wild Companion\nYou can summon a nature spirit that assumes an\nanimal form to aid you. As a Magic action, you can\nexpend a spell slot or a use of Wild Shape to cast the\nFind Familiar\nspell without Material components.\nWhen you cast the spell in this way, the familiar is\nFey and disappears when you finish a Long Rest."
+      },
+      "revised_reference_entries": [
+        "You can summon a nature spirit that assumes an animal form to aid you. As a {@action Magic|XPHB} action, you can expend a spell slot or a use of Wild Shape to cast the {@spell Find Familiar|XPHB} spell without Material components.",
+        "When you cast the spell in this way, the familiar is Fey and disappears when you finish a {@variantrule Long Rest|XPHB}."
+      ],
+      "authored_operations": [
+        {
+          "trigger": "Magic action casting Find Familiar without Material components",
+          "cost": "one spell slot OR one Wild Shape use",
+          "effects": [
+            "Use Find Familiar with Fey type; preserve actual form/type/command/placement rules"
+          ],
+          "ending_and_identity": "Familiar disappears when owner finishes Long Rest.",
+          "required_extension_groups": [
+            "forms",
+            "casting",
+            "resources"
+          ]
+        }
+      ],
+      "unsupported_behavior": [
+        {
+          "groups": [
+            "forms",
+            "casting",
+            "resources"
+          ],
+          "requirement": {
+            "trigger": "Magic action casting Find Familiar without Material components",
+            "cost": "one spell slot OR one Wild Shape use",
+            "effects": [
+              "Use Find Familiar with Fey type; preserve actual form/type/command/placement rules"
+            ],
+            "ending": "Familiar disappears when owner finishes Long Rest."
+          },
+          "mapping_boundary": "Map this complete sequence to shared contracts; retained native behavior and fragments do not certify it.",
+          "status": "unmapped_or_unverified_candidate"
+        }
+      ]
+    },
+    {
+      "id": "druid_druid_subclass",
+      "name": "Druid Subclass",
+      "class_level": 3,
+      "rules": {
+        "authority": "SRD 5.2.1",
+        "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+        "pages": [
+          43
+        ],
+        "text": "Level 3: Druid Subclass\nYou gain a Druid subclass of your choice. The Circle\nof the Land subclass is detailed after this class’s description. A subclass is a specialization that grants\nyou features at certain Druid levels. For the rest of\nyour career, you gain each of your subclass’s features that are of your Druid level or lower."
+      },
+      "revised_reference_entries": [
+        "You gain a Druid subclass of your choice. A subclass is a specialization that grants you features at certain Druid levels. For the rest of your career, you gain each of your subclass's features that are of your Druid level or lower."
+      ],
+      "authored_operations": [
+        {
+          "trigger": "Class level3",
+          "cost": "one subclass choice",
+          "effects": [
+            "Grant selected SRD subclass in-band features at actual class thresholds; no level6+ grants"
+          ],
+          "ending_and_identity": "Permanent exact subclass ownership; acquisition once",
+          "required_extension_groups": [
+            "progression",
+            "choices"
+          ]
+        }
+      ],
+      "unsupported_behavior": [
+        {
+          "groups": [
+            "progression",
+            "choices"
+          ],
+          "requirement": {
+            "trigger": "Class level3",
+            "cost": "one subclass choice",
+            "effects": [
+              "Grant selected SRD subclass in-band features at actual class thresholds; no level6+ grants"
+            ],
+            "ending": "Permanent exact subclass ownership; acquisition once"
+          },
+          "mapping_boundary": "Map this complete sequence to shared contracts; retained native behavior and fragments do not certify it.",
+          "status": "unmapped_or_unverified_candidate"
+        }
+      ]
+    },
+    {
+      "id": "druid_ability_score_improvement",
+      "name": "Ability Score Improvement",
+      "class_level": 4,
+      "rules": {
+        "authority": "SRD 5.2.1",
+        "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+        "pages": [
+          43
+        ],
+        "text": "Level 4: Ability Score Improvement\nYou gain the Ability Score Improvement feat (see\n“Feats”) or another feat of your choice for which you\nqualify. You gain this feature again at Druid levels 8,\n12, and 16."
+      },
+      "revised_reference_entries": [
+        "You gain the {@feat Ability Score Improvement|XPHB} feat or another {@5etools feat|feats.html} of your choice for which you qualify. You gain this feature again at Druid levels 8, 12, and 16."
+      ],
+      "authored_operations": [
+        {
+          "trigger": "Class level 4 entitlement",
+          "cost": "one entitlement",
+          "effects": [
+            "Choose ASI or another qualifying feat; validate chosen feat category/prerequisites; source owns grant once"
+          ],
+          "ending_and_identity": "Exact source owns the grant/state; remove temporary effects at the declared ending; never replay acquisition on restore.",
+          "required_extension_groups": [
+            "choices",
+            "progression"
+          ]
+        }
+      ],
+      "unsupported_behavior": [
+        {
+          "groups": [
+            "choices",
+            "progression"
+          ],
+          "requirement": {
+            "trigger": "Class level 4 entitlement",
+            "cost": "one entitlement",
+            "effects": [
+              "Choose ASI or another qualifying feat; validate chosen feat category/prerequisites; source owns grant once"
+            ],
+            "ending": "Exact source owns the grant/state; remove temporary effects at the declared ending; never replay acquisition on restore."
+          },
+          "mapping_boundary": "Map this complete sequence to shared contracts; retained native behavior and fragments do not certify it.",
+          "status": "unmapped_or_unverified_candidate"
+        }
+      ]
+    },
+    {
+      "id": "druid_wild_resurgence",
+      "name": "Wild Resurgence",
+      "class_level": 5,
+      "rules": {
+        "authority": "SRD 5.2.1",
+        "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+        "pages": [
+          43
+        ],
+        "text": "Level 5: Wild Resurgence\nOnce on each of your turns, if you have no uses of\nWild Shape left, you can give yourself one use by expending a spell slot (no action required).\nIn addition, you can expend one use of Wild Shape\n(no action required) to give yourself a level 1 spell\nslot, but you can’t do so again until you finish a Long\nRest."
+      },
+      "revised_reference_entries": [
+        "Once on each of your turns, if you have no uses of Wild Shape left, you can give yourself one use by expending a spell slot (no action required).",
+        "In addition, you can expend one use of Wild Shape (no action required) to give yourself a level 1 spell slot, but you can't do so again until you finish a {@variantrule Long Rest|XPHB}."
+      ],
+      "authored_operations": [
+        {
+          "trigger": "Once on each own turn when no Wild Shape uses remain; no action",
+          "cost": "one spell slot restores one Wild Shape; alternatively one Wild Shape creates level1 slot",
+          "effects": [
+            "No-action restore of Wild Shape when empty, once per own turn",
+            "No-action create one level1 spell slot; that exchange available once per Long Rest"
+          ],
+          "ending_and_identity": "Exact source owns the grant/state; remove temporary effects at the declared ending; never replay acquisition on restore.",
+          "required_extension_groups": [
+            "resources",
+            "casting"
+          ]
+        }
+      ],
+      "unsupported_behavior": [
+        {
+          "groups": [
+            "resources",
+            "casting"
+          ],
+          "requirement": {
+            "trigger": "Once on each own turn when no Wild Shape uses remain; no action",
+            "cost": "one spell slot restores one Wild Shape; alternatively one Wild Shape creates level1 slot",
+            "effects": [
+              "No-action restore of Wild Shape when empty, once per own turn",
+              "No-action create one level1 spell slot; that exchange available once per Long Rest"
+            ],
+            "ending": "Exact source owns the grant/state; remove temporary effects at the declared ending; never replay acquisition on restore."
+          },
+          "mapping_boundary": "Map this complete sequence to shared contracts; retained native behavior and fragments do not certify it.",
+          "status": "unmapped_or_unverified_candidate"
+        }
+      ]
+    }
+  ],
+  "casting": {
+    "ability": "wis",
+    "prepared_counts_by_class_level": [
+      4,
+      5,
+      6,
+      7,
+      9
+    ],
+    "cantrips_by_class_level": [
+      2,
+      2,
+      2,
+      3,
+      3
+    ],
+    "ordinary_slots_by_class_level": [
+      [
+        2,
+        0,
+        0
+      ],
+      [
+        3,
+        0,
+        0
+      ],
+      [
+        4,
+        2,
+        0
+      ],
+      [
+        4,
+        3,
+        0
+      ],
+      [
+        4,
+        3,
+        2
+      ]
+    ],
+    "pact_slots_by_class_level": [],
+    "pact_slot_tuple": "[number of slots, slot level]",
+    "prepared_change": "any after Long Rest",
+    "cantrip_change": "one on own-class level gain",
+    "spell_list": "SRD own-class list at spell levels0–3; spell-candidates index retains exact authoritative lists",
+    "spellbook": null,
+    "spell_choices": {
+      "0": [
+        "druidcraft",
+        "elementalism",
+        "guidance",
+        "mending",
+        "message",
+        "poison_spray",
+        "produce_flame",
+        "resistance",
+        "shillelagh",
+        "spare_the_dying",
+        "starry_wisp"
+      ],
+      "1": [
+        "animal_friendship",
+        "charm_person",
+        "create_or_destroy_water",
+        "cure_wounds",
+        "detect_magic",
+        "detect_poison_and_disease",
+        "entangle",
+        "faerie_fire",
+        "fog_cloud",
+        "goodberry",
+        "healing_word",
+        "ice_knife",
+        "jump",
+        "longstrider",
+        "protection_from_evil_and_good",
+        "purify_food_and_drink",
+        "speak_with_animals",
+        "thunderwave"
+      ],
+      "2": [
+        "aid",
+        "animal_messenger",
+        "augury",
+        "barkskin",
+        "continual_flame",
+        "darkvision",
+        "enhance_ability",
+        "enlarge/reduce",
+        "find_traps",
+        "flame_blade",
+        "flaming_sphere",
+        "gust_of_wind",
+        "heat_metal",
+        "hold_person",
+        "lesser_restoration",
+        "locate_animals_or_plants",
+        "locate_object",
+        "moonbeam",
+        "pass_without_trace",
+        "protection_from_poison",
+        "spike_growth"
+      ],
+      "3": [
+        "call_lightning",
+        "conjure_animals",
+        "daylight",
+        "dispel_magic",
+        "meld_into_stone",
+        "plant_growth",
+        "protection_from_energy",
+        "revivify",
+        "sleet_storm",
+        "speak_with_plants",
+        "water_breathing",
+        "water_walk",
+        "wind_wall"
+      ]
+    },
+    "spell_choice_policy": "These are SRD list memberships through spell level3, not permission to prepare above own-class slot progression; always-prepared and feat/species permissions are additional source grants."
+  },
+  "retained_runtime_seed": {
+    "id": "druid",
+    "name": "Druid",
+    "description": "Druid class. Source: PHB.",
+    "hit_die": "d8",
+    "primary_ability": "WIS",
+    "subclass_level": 3,
+    "saving_throw_proficiencies": [
+      "INT",
+      "WIS"
+    ],
+    "armor_proficiencies": [
+      "light",
+      "shields"
+    ],
+    "weapon_proficiencies": [
+      "simple"
+    ],
+    "creation_proficiency_choices": true,
+    "tool_proficiency_grants": [
+      "herbalism_kit"
+    ],
+    "skill_choices": {
+      "pick": 2,
+      "from": [
+        "Arcana",
+        "Animal Handling",
+        "Insight",
+        "Medicine",
+        "Nature",
+        "Perception",
+        "Religion",
+        "Survival"
+      ]
+    },
+    "starting_equipment": [
+      "leather_armor",
+      "shield",
+      "druidic_focus_quarterstaff",
+      "sickle",
+      "explorers_pack",
+      "herbalism_kit"
+    ],
+    "spellcasting_focus_kinds": [
+      "druidic"
+    ],
+    "starting_gold": 9,
+    "starting_gold_alternative": 50,
+    "spell_list_ids": [
+      "aid",
+      "animal_friendship",
+      "animal_messenger",
+      "animal_shapes",
+      "antilife_shell",
+      "antipathy_sympathy",
+      "augury",
+      "awaken",
+      "barkskin",
+      "befuddlement",
+      "blight",
+      "call_lightning",
+      "charm_monster",
+      "charm_person",
+      "commune_with_nature",
+      "cone_of_cold",
+      "confusion",
+      "conjure_animals",
+      "conjure_elemental",
+      "conjure_fey",
+      "conjure_minor_elementals",
+      "conjure_woodland_beings",
+      "contagion",
+      "continual_flame",
+      "control_water",
+      "control_weather",
+      "create_or_destroy_water",
+      "cure_wounds",
+      "darkvision",
+      "daylight",
+      "detect_magic",
+      "detect_poison_and_disease",
+      "dispel_magic",
+      "divination",
+      "dominate_beast",
+      "druidcraft",
+      "earthquake",
+      "elementalism",
+      "enhance_ability",
+      "enlarge/reduce",
+      "entangle",
+      "faerie_fire",
+      "find_the_path",
+      "find_traps",
+      "fire_shield",
+      "fire_storm",
+      "flame_blade",
+      "flaming_sphere",
+      "flesh_to_stone",
+      "fog_cloud",
+      "foresight",
+      "freedom_of_movement",
+      "geas",
+      "giant_insect",
+      "goodberry",
+      "greater_restoration",
+      "guidance",
+      "gust_of_wind",
+      "hallucinatory_terrain",
+      "heal",
+      "healing_word",
+      "heat_metal",
+      "heroes_feast",
+      "hold_person",
+      "ice_knife",
+      "ice_storm",
+      "incendiary_cloud",
+      "insect_plague",
+      "jump",
+      "lesser_restoration",
+      "locate_animals_or_plants",
+      "locate_creature",
+      "locate_object",
+      "longstrider",
+      "mass_cure_wounds",
+      "meld_into_stone",
+      "mending",
+      "message",
+      "mirage_arcane",
+      "moonbeam",
+      "move_earth",
+      "pass_without_trace",
+      "planar_binding",
+      "plane_shift",
+      "plant_growth",
+      "poison_spray",
+      "polymorph",
+      "produce_flame",
+      "protection_from_energy",
+      "protection_from_evil_and_good",
+      "protection_from_poison",
+      "purify_food_and_drink",
+      "regenerate",
+      "reincarnate",
+      "resistance",
+      "reverse_gravity",
+      "revivify",
+      "scrying",
+      "shapechange",
+      "shillelagh",
+      "sleet_storm",
+      "spare_the_dying",
+      "speak_with_animals",
+      "speak_with_plants",
+      "spike_growth",
+      "starry_wisp",
+      "stone_shape",
+      "stoneskin",
+      "storm_of_vengeance",
+      "sunbeam",
+      "sunburst",
+      "symbol",
+      "thorn_whip",
+      "thunderwave",
+      "transport_via_plants",
+      "tree_stride",
+      "true_resurrection",
+      "tsunami",
+      "wall_of_fire",
+      "wall_of_stone",
+      "wall_of_thorns",
+      "water_breathing",
+      "water_walk",
+      "wind_walk",
+      "wind_wall"
+    ],
+    "wild_shape_forms": [
+      {
+        "id": "rat",
+        "name": "Rat",
+        "size": "tiny",
+        "challenge_rating": 0,
+        "fly_speed": 0,
+        "armor_class": 10,
+        "speed_feet": 20,
+        "ability_scores": {
+          "STR": 2,
+          "DEX": 11,
+          "CON": 9,
+          "INT": 2,
+          "WIS": 10,
+          "CHA": 4
+        },
+        "skills": {
+          "Perception": 2
+        },
+        "attacks": [
+          {
+            "name": "Bite",
+            "ability": "STR",
+            "attack_bonus": 2,
+            "damage": "1",
+            "fixed_damage": true,
+            "damage_type": "piercing",
+            "range_feet": 5
+          }
+        ]
+      },
+      {
+        "id": "riding_horse",
+        "name": "Riding Horse",
+        "size": "large",
+        "challenge_rating": 0.25,
+        "fly_speed": 0,
+        "armor_class": 11,
+        "speed_feet": 60,
+        "ability_scores": {
+          "STR": 16,
+          "DEX": 13,
+          "CON": 12,
+          "INT": 2,
+          "WIS": 11,
+          "CHA": 7
+        },
+        "skills": {},
+        "attacks": [
+          {
+            "name": "Hooves",
+            "ability": "STR",
+            "attack_bonus": 5,
+            "damage": "1d8",
+            "damage_type": "bludgeoning",
+            "range_feet": 5
+          }
+        ]
+      },
+      {
+        "id": "spider",
+        "name": "Spider",
+        "size": "tiny",
+        "challenge_rating": 0,
+        "fly_speed": 0,
+        "armor_class": 12,
+        "speed_feet": 20,
+        "ability_scores": {
+          "STR": 2,
+          "DEX": 14,
+          "CON": 8,
+          "INT": 1,
+          "WIS": 10,
+          "CHA": 2
+        },
+        "skills": {
+          "Stealth": 4
+        },
+        "traits": [
+          "spider_climb",
+          "web_walker"
+        ],
+        "attacks": [
+          {
+            "name": "Bite",
+            "ability": "DEX",
+            "attack_bonus": 4,
+            "damage": "1",
+            "fixed_damage": true,
+            "damage_type": "piercing",
+            "bonus_damage": "1d4",
+            "bonus_damage_type": "poison",
+            "range_feet": 5
+          }
+        ]
+      },
+      {
+        "id": "wolf",
+        "name": "Wolf",
+        "size": "medium",
+        "challenge_rating": 0.25,
+        "fly_speed": 0,
+        "armor_class": 12,
+        "speed_feet": 40,
+        "ability_scores": {
+          "STR": 14,
+          "DEX": 15,
+          "CON": 12,
+          "INT": 3,
+          "WIS": 12,
+          "CHA": 6
+        },
+        "skills": {
+          "Perception": 5,
+          "Stealth": 4
+        },
+        "traits": [
+          "pack_tactics"
+        ],
+        "attacks": [
+          {
+            "name": "Bite",
+            "ability": "STR",
+            "attack_bonus": 4,
+            "damage": "1d6",
+            "damage_type": "piercing",
+            "knock_prone_size": "medium",
+            "range_feet": 5
+          }
+        ]
+      },
+      {
+        "id": "boar",
+        "name": "Boar",
+        "size": "medium",
+        "challenge_rating": 0.25,
+        "fly_speed": 0,
+        "armor_class": 11,
+        "speed_feet": 40,
+        "ability_scores": {
+          "STR": 13,
+          "DEX": 11,
+          "CON": 14,
+          "INT": 2,
+          "WIS": 9,
+          "CHA": 5
+        },
+        "skills": {},
+        "traits": [
+          "bloodied_fury"
+        ],
+        "attacks": [
+          {
+            "name": "Gore",
+            "ability": "STR",
+            "attack_bonus": 3,
+            "damage": "1d6+1",
+            "fixed_damage": true,
+            "damage_type": "piercing",
+            "range_feet": 5
+          }
+        ]
+      },
+      {
+        "id": "giant_badger",
+        "name": "Giant Badger",
+        "size": "medium",
+        "challenge_rating": 0.25,
+        "fly_speed": 0,
+        "armor_class": 13,
+        "speed_feet": 30,
+        "ability_scores": {
+          "STR": 13,
+          "DEX": 10,
+          "CON": 17,
+          "INT": 2,
+          "WIS": 12,
+          "CHA": 5
+        },
+        "skills": {
+          "Perception": 3
+        },
+        "attacks": [
+          {
+            "name": "Bite",
+            "ability": "STR",
+            "attack_bonus": 3,
+            "damage": "2d4+1",
+            "fixed_damage": true,
+            "damage_type": "piercing",
+            "range_feet": 5
+          }
+        ]
+      },
+      {
+        "id": "panther",
+        "name": "Panther",
+        "size": "medium",
+        "challenge_rating": 0.25,
+        "fly_speed": 0,
+        "armor_class": 13,
+        "speed_feet": 50,
+        "ability_scores": {
+          "STR": 14,
+          "DEX": 16,
+          "CON": 10,
+          "INT": 3,
+          "WIS": 14,
+          "CHA": 7
+        },
+        "skills": {
+          "Perception": 4,
+          "Stealth": 7
+        },
+        "attacks": [
+          {
+            "name": "Rend",
+            "ability": "DEX",
+            "attack_bonus": 5,
+            "damage": "1d6+3",
+            "fixed_damage": true,
+            "damage_type": "slashing",
+            "range_feet": 5
+          }
+        ]
+      },
+      {
+        "id": "giant_wolf_spider",
+        "name": "Giant Wolf Spider",
+        "size": "medium",
+        "challenge_rating": 0.25,
+        "fly_speed": 0,
+        "armor_class": 13,
+        "speed_feet": 40,
+        "climb_speed_feet": 40,
+        "ability_scores": {
+          "STR": 12,
+          "DEX": 16,
+          "CON": 13,
+          "INT": 3,
+          "WIS": 12,
+          "CHA": 4
+        },
+        "skills": {
+          "Perception": 3,
+          "Stealth": 7
+        },
+        "traits": [
+          "spider_climb"
+        ],
+        "attacks": [
+          {
+            "name": "Bite",
+            "ability": "DEX",
+            "attack_bonus": 5,
+            "damage": "1d4+3",
+            "fixed_damage": true,
+            "damage_type": "piercing",
+            "bonus_damage": "2d4",
+            "bonus_damage_type": "poison",
+            "range_feet": 5
+          }
+        ]
+      },
+      {
+        "id": "giant_venomous_snake",
+        "name": "Giant Venomous Snake",
+        "size": "medium",
+        "challenge_rating": 0.25,
+        "fly_speed": 0,
+        "armor_class": 14,
+        "speed_feet": 40,
+        "swim_speed_feet": 40,
+        "ability_scores": {
+          "STR": 10,
+          "DEX": 18,
+          "CON": 13,
+          "INT": 2,
+          "WIS": 10,
+          "CHA": 3
+        },
+        "skills": {
+          "Perception": 2
+        },
+        "attacks": [
+          {
+            "name": "Bite",
+            "ability": "DEX",
+            "attack_bonus": 6,
+            "damage": "1d4+4",
+            "fixed_damage": true,
+            "damage_type": "piercing",
+            "bonus_damage": "1d8",
+            "bonus_damage_type": "poison",
+            "range_feet": 10
+          }
+        ]
+      },
+      {
+        "id": "giant_goat",
+        "name": "Giant Goat",
+        "size": "large",
+        "challenge_rating": 0.5,
+        "fly_speed": 0,
+        "armor_class": 11,
+        "speed_feet": 40,
+        "climb_speed_feet": 30,
+        "ability_scores": {
+          "STR": 17,
+          "DEX": 13,
+          "CON": 12,
+          "INT": 3,
+          "WIS": 12,
+          "CHA": 6
+        },
+        "skills": {
+          "Perception": 3
+        },
+        "attacks": [
+          {
+            "name": "Ram",
+            "ability": "STR",
+            "attack_bonus": 5,
+            "damage": "1d6+3",
+            "fixed_damage": true,
+            "damage_type": "bludgeoning",
+            "range_feet": 5
+          }
+        ]
+      },
+      {
+        "id": "brown_bear",
+        "name": "Brown Bear",
+        "size": "large",
+        "challenge_rating": 1,
+        "fly_speed": 0,
+        "armor_class": 11,
+        "speed_feet": 40,
+        "climb_speed_feet": 30,
+        "ability_scores": {
+          "STR": 17,
+          "DEX": 12,
+          "CON": 15,
+          "INT": 2,
+          "WIS": 13,
+          "CHA": 7
+        },
+        "skills": {
+          "Perception": 3
+        },
+        "attacks": [
+          {
+            "name": "Bite",
+            "ability": "STR",
+            "attack_bonus": 5,
+            "damage": "1d8+3",
+            "fixed_damage": true,
+            "damage_type": "piercing",
+            "range_feet": 5
+          },
+          {
+            "name": "Claw",
+            "ability": "STR",
+            "attack_bonus": 5,
+            "damage": "1d4+3",
+            "fixed_damage": true,
+            "damage_type": "slashing",
+            "knock_prone_size": "large",
+            "range_feet": 5
+          }
+        ]
+      },
+      {
+        "id": "giant_spider",
+        "name": "Giant Spider",
+        "size": "large",
+        "challenge_rating": 1,
+        "fly_speed": 0,
+        "armor_class": 14,
+        "speed_feet": 30,
+        "climb_speed_feet": 30,
+        "ability_scores": {
+          "STR": 14,
+          "DEX": 16,
+          "CON": 12,
+          "INT": 2,
+          "WIS": 11,
+          "CHA": 4
+        },
+        "skills": {
+          "Perception": 4,
+          "Stealth": 7
+        },
+        "traits": [
+          "spider_climb",
+          "web_walker"
+        ],
+        "attacks": [
+          {
+            "name": "Bite",
+            "ability": "DEX",
+            "attack_bonus": 5,
+            "damage": "1d8+3",
+            "fixed_damage": true,
+            "damage_type": "piercing",
+            "bonus_damage": "2d6",
+            "bonus_damage_type": "poison",
+            "range_feet": 5
+          }
+        ]
+      },
+      {
+        "id": "eagle",
+        "name": "Eagle",
+        "size": "small",
+        "challenge_rating": 0,
+        "fly_speed": 60,
+        "armor_class": 12,
+        "speed_feet": 10,
+        "ability_scores": {
+          "STR": 6,
+          "DEX": 15,
+          "CON": 12,
+          "INT": 2,
+          "WIS": 14,
+          "CHA": 7
+        },
+        "skills": {
+          "Perception": 6
+        },
+        "attacks": [
+          {
+            "name": "Talons",
+            "ability": "DEX",
+            "attack_bonus": 4,
+            "damage": "1d4+2",
+            "fixed_damage": true,
+            "damage_type": "slashing",
+            "range_feet": 5
+          }
+        ]
+      }
+    ],
+    "features_by_level": {
+      "1": [
+        {
+          "id": "druid_druidic",
+          "name": "Druidic",
+          "enabled": false,
+          "description": "You know the secret language Druidic. You can speak it and leave hidden messages that other Druids automatically notice; others can notice a message with a DC 15 Intelligence (Investigation) check but cannot decipher it without magic. Language grants are not currently represented in character data.",
+          "type": "passive",
+          "effects": []
+        },
+        {
+          "id": "druid_spellcasting",
+          "name": "Spellcasting",
+          "description": "You prepare Druid spells using Wisdom. Your nature-based spellcasting uses the shared spell list, capacity, selection, and spell slot systems.",
+          "type": "passive",
+          "effects": [
+            {
+              "type": "spellcasting",
+              "ability": "WIS",
+              "spell_lists": [
+                "druid"
+              ],
+              "default_cantrips": [
+                "druidcraft",
+                "produce_flame"
+              ],
+              "default_prepared_spells": [
+                "animal_friendship",
+                "cure_wounds",
+                "entangle",
+                "goodberry"
+              ],
+              "capacity_by_level": {
+                "1": {
+                  "cantrips": 2,
+                  "prepared_spells": 4
+                },
+                "2": {
+                  "cantrips": 2,
+                  "prepared_spells": 5
+                },
+                "3": {
+                  "cantrips": 2,
+                  "prepared_spells": 6
+                },
+                "4": {
+                  "cantrips": 3,
+                  "prepared_spells": 7
+                },
+                "5": {
+                  "cantrips": 3,
+                  "prepared_spells": 9
+                },
+                "6": {
+                  "cantrips": 3,
+                  "prepared_spells": 10
+                },
+                "7": {
+                  "cantrips": 3,
+                  "prepared_spells": 11
+                },
+                "8": {
+                  "cantrips": 3,
+                  "prepared_spells": 12
+                },
+                "9": {
+                  "cantrips": 3,
+                  "prepared_spells": 14
+                },
+                "10": {
+                  "cantrips": 4,
+                  "prepared_spells": 15
+                },
+                "11": {
+                  "cantrips": 4,
+                  "prepared_spells": 16
+                },
+                "12": {
+                  "cantrips": 4,
+                  "prepared_spells": 16
+                },
+                "13": {
+                  "cantrips": 4,
+                  "prepared_spells": 17
+                },
+                "14": {
+                  "cantrips": 4,
+                  "prepared_spells": 17
+                },
+                "15": {
+                  "cantrips": 4,
+                  "prepared_spells": 18
+                },
+                "16": {
+                  "cantrips": 4,
+                  "prepared_spells": 18
+                },
+                "17": {
+                  "cantrips": 4,
+                  "prepared_spells": 19
+                },
+                "18": {
+                  "cantrips": 4,
+                  "prepared_spells": 20
+                },
+                "19": {
+                  "cantrips": 4,
+                  "prepared_spells": 21
+                },
+                "20": {
+                  "cantrips": 4,
+                  "prepared_spells": 22
+                }
+              }
+            }
+          ]
+        },
+        {
+          "id": "druid_primal_order",
+          "name": "Primal Order",
+          "description": "Choose Magician or Warden. Magician grants one additional Druid cantrip and adds at least +1 or your Wisdom modifier to Arcana and Nature checks. Warden grants Martial weapon proficiency and Medium Armor training.",
+          "type": "passive",
+          "effects": [
+            {
+              "type": "feature_choice",
+              "options": [
+                {
+                  "id": "magician",
+                  "name": "Magician",
+                  "effects": [
+                    {
+                      "type": "spellcasting_capacity_bonus",
+                      "kind": "cantrips",
+                      "amount": 1
+                    },
+                    {
+                      "type": "ability_check_bonus",
+                      "skills": [
+                        "Arcana",
+                        "Nature"
+                      ],
+                      "ability": "WIS",
+                      "minimum_bonus": 1
+                    }
+                  ]
+                },
+                {
+                  "id": "warden",
+                  "name": "Warden",
+                  "effects": [
+                    {
+                      "type": "proficiency_grant",
+                      "weapon_proficiencies": [
+                        "martial"
+                      ],
+                      "armor_proficiencies": [
+                        "medium"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "2": [
+        {
+          "id": "druid_wild_shape_uses",
+          "name": "Wild Shape uses",
+          "type": "resource",
+          "uses": 2,
+          "uses_by_level": {
+            "6": 3,
+            "17": 4
+          },
+          "uses_per": "long_rest",
+          "short_rest_recovery": 1
+        },
+        {
+          "id": "druid_wild_shape",
+          "name": "Wild Shape",
+          "resolver": "druid_rules",
+          "description": "As a Bonus Action, assume one of your learned Beast forms. You gain temporary Hit Points equal to your Druid level. The form lasts for half your Druid level in hours, until you use Wild Shape again, become Incapacitated, die, or leave as a Bonus Action.",
+          "type": "active",
+          "resource_id": "druid_wild_shape_uses",
+          "action_cost": "bonus_action",
+          "effects": []
+        },
+        {
+          "id": "druid_wild_companion",
+          "name": "Wild Companion",
+          "resolver": "druid_rules",
+          "description": "As a Magic action, expend a spell slot or a use of Wild Shape to summon a Fey familiar. Choose a Cat, Owl, Rat, or Spider. It acts on its own initiative, can move, Dodge, or Help, and disappears after your next Long Rest.",
+          "type": "active",
+          "resource_id": "druid_wild_shape_uses",
+          "action_cost": "magic_action",
+          "effects": []
+        },
+        {
+          "id": "druid_druid_circle",
+          "name": "Druid Subclass",
+          "enabled": false,
+          "description": "Choose a Druid subclass at level 3. Subclass mechanics are separate from this base-class progression.",
+          "type": "passive",
+          "effects": []
+        }
+      ],
+      "3": [],
+      "4": [
+        {
+          "id": "druid_ability_score_improvement",
+          "name": "Ability Score Improvement",
+          "description": "Increase one ability score by 2 or two scores by 1, to a maximum of 20, or choose another eligible feat.",
+          "type": "passive",
+          "effects": [
+            {
+              "type": "asi"
+            }
+          ],
+          "rules_status": "2024-supported",
+          "rules_source": "dnd-2024-srd-5.2.1"
+        }
+      ],
+      "5": [
+        {
+          "id": "druid_wild_resurgence",
+          "name": "Wild Resurgence",
+          "resolver": "druid_rules",
+          "description": "Once on each of your turns when no Wild Shape uses remain, expend a spell slot to regain one use. Alternatively, expend a Wild Shape use to regain a level 1 spell slot; once per Long Rest.",
+          "type": "active",
+          "uses": 1,
+          "uses_per": "turn",
+          "action_cost": "free",
+          "effects": []
+        }
+      ]
+    },
+    "spell_slots_by_character_level": {
+      "1": [
+        2
+      ],
+      "2": [
+        3
+      ],
+      "3": [
+        4,
+        2
+      ],
+      "4": [
+        4,
+        3
+      ],
+      "5": [
+        4,
+        3,
+        2
+      ]
+    }
+  },
+  "required_extensions": [
+    "progression",
+    "choices",
+    "casting"
+  ],
+  "equipment_resolution": [
+    {
+      "option": "A",
+      "source_item_key": "leather_armor",
+      "quantity": 1,
+      "runtime_item_id": "leather_armor",
+      "status": "source_definition_exists_not_gameplay_verified",
+      "requirement": "Preserve quantity, exact source item facts and complete pack contents"
+    },
+    {
+      "option": "A",
+      "source_item_key": "shield",
+      "quantity": 1,
+      "runtime_item_id": "shield",
+      "status": "source_definition_exists_not_gameplay_verified",
+      "requirement": "Preserve quantity, exact source item facts and complete pack contents"
+    },
+    {
+      "option": "A",
+      "source_item_key": "sickle",
+      "quantity": 1,
+      "runtime_item_id": "sickle",
+      "status": "source_definition_exists_not_gameplay_verified",
+      "requirement": "Preserve quantity, exact source item facts and complete pack contents"
+    },
+    {
+      "option": "A",
+      "source_item_key": "druidic_focus_quarterstaff",
+      "quantity": 1,
+      "runtime_item_id": "druidic_focus_quarterstaff",
+      "status": "source_definition_exists_not_gameplay_verified",
+      "requirement": "Preserve quantity, exact source item facts and complete pack contents"
+    },
+    {
+      "option": "A",
+      "source_item_key": "explorers_pack",
+      "quantity": 1,
+      "runtime_item_id": "explorers_pack",
+      "status": "source_definition_exists_not_gameplay_verified",
+      "requirement": "Preserve quantity, exact source item facts and complete pack contents"
+    },
+    {
+      "option": "A",
+      "source_item_key": "herbalism_kit",
+      "quantity": 1,
+      "runtime_item_id": "herbalism_kit",
+      "status": "source_definition_exists_not_gameplay_verified",
+      "requirement": "Preserve quantity, exact source item facts and complete pack contents"
+    }
+  ],
+  "unsupported_behavior": [
+    {
+      "groups": [
+        "progression",
+        "items"
+      ],
+      "requirement": "Complete starting/multiclass acquisition, choices and equipment quantities/GP; candidate equipment_resolution retains every unresolved item or choice. No opt-in or native-path replacement is authorized by this candidate."
+    }
+  ],
+  "source_revision": "2a19eb1d (existing working-tree definitions and recovered drafts read on 2026-11-08)",
+  "reused_input_hashes": {
+    "data/core/classes/druid.json": "9f4729b0bddd1c8ccb5b791237cd50438f3b506e4a21e7800dce544a3d6d3ecc",
+    "reference/2024/classes/druid.json": "18c6dac35c48cbd91d3268b5d28a8204517678bb25a66eac4e1c89a88521fd99",
+    "docs/mechanics/druid-2024.md": "66c24ab31b93f13a68f64751a632a98d7a64e24e6d41544787574a8f408dc209"
+  }
+}

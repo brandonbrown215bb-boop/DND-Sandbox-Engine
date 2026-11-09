@@ -1,0 +1,164 @@
+{
+  "format": "crown-spell-candidate/1",
+  "id": "dissonant_whispers",
+  "name": "Dissonant Whispers",
+  "level": 1,
+  "status": "written_unverified_not_loaded",
+  "source": {
+    "authority": "SRD 5.2.1",
+    "url": "https://media.dndbeyond.com/compendium-images/srd/5.2/SRD_CC_v5.2.1.pdf",
+    "sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      124
+    ],
+    "header": {
+      "Casting Time": "Action",
+      "Range": "60 feet",
+      "Components": "V",
+      "Duration": "Instantaneous"
+    },
+    "attribution": "System Reference Document 5.2.1, Wizards of the Coast LLC; CC BY 4.0."
+  },
+  "casting": {
+    "casting_time": "Action",
+    "kind": "action",
+    "seconds": null,
+    "ritual_available": false,
+    "range": {
+      "source": "60 feet",
+      "kind": "distance",
+      "feet": 60
+    },
+    "components": [
+      "V"
+    ],
+    "material": null,
+    "duration": "Instantaneous",
+    "concentration": false,
+    "spell_lists": [
+      "bard"
+    ]
+  },
+  "authored_intent": "One creature WIS save; Psychic half damage; failed save immediately spends available target Reaction to move safely as far away as possible; no obviously dangerous ground.",
+  "rules": [
+    {
+      "id": "r001",
+      "text": "One creature of your choice that you can see within range hears a discordant melody in its mind."
+    },
+    {
+      "id": "r002",
+      "text": "The target makes a Wisdom saving throw."
+    },
+    {
+      "id": "r003",
+      "text": "On a failed save, it takes 3d6 Psychic damage and must immediately use its Reaction, if available, to move as far away from you as it can, using the safest route."
+    },
+    {
+      "id": "r004",
+      "text": "On a successful save, the target takes half as much damage only."
+    },
+    {
+      "id": "r005",
+      "text": "Using a Higher-Level Spell Slot."
+    },
+    {
+      "id": "r006",
+      "text": "The damage increases by 1d6 for each spell slot level above 1."
+    }
+  ],
+  "authored_operations": [
+    {
+      "operation": "save_damage_and_reaction_move",
+      "parameters": {
+        "target": "seen_creature",
+        "save": "WIS",
+        "damage": "3d6",
+        "type": "psychic",
+        "half_on_success": true,
+        "failure_movement": {
+          "budget": "target_reaction_if_available",
+          "distance": "maximum",
+          "direction": "away_from_caster",
+          "route": "safest"
+        },
+        "upcast_per_slot": "1d6"
+      },
+      "status": "authoring_declaration_not_a_registered_opcode",
+      "required_source_rules": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006"
+      ]
+    }
+  ],
+  "runtime_draft": {
+    "origin": "new_shared_draft",
+    "definition": {
+      "id": "dissonant_whispers",
+      "name": "Dissonant Whispers",
+      "execution": "shared",
+      "level": 1,
+      "school": "enchantment",
+      "classes": [
+        "bard"
+      ],
+      "components": [
+        "V"
+      ],
+      "duration": "Instantaneous",
+      "concentration": false,
+      "rules_source": "SRD 5.2.1",
+      "rules_status": "authoring-draft-unverified",
+      "range": 12,
+      "casting_time": "action",
+      "description": "One creature of your choice that you can see within range hears a discordant melody in its mind. The target makes a Wisdom saving throw. On a failed save, it takes 3d6 Psychic damage and must immediately use its Reaction, if available, to move as far away from you as it can, using the safest route. On a successful save, the target takes half as much damage only. Using a Higher-Level Spell Slot. The damage increases by 1d6 for each spell slot level above 1.",
+      "target": "single",
+      "damage": "3d6",
+      "damage_type": "psychic",
+      "requires_target_sight": true,
+      "upcast": {
+        "starting_level": 1,
+        "damage_per_level": "1d6"
+      },
+      "save": "WIS",
+      "half_on_save": true
+    },
+    "fragments": {},
+    "coverage": "Unverified. Neither a full definition nor a fragment certifies all source rules or controls. Required extensions are not silently waived."
+  },
+  "required_extensions": [
+    {
+      "group": "compelled_actions",
+      "requirement": "Execute the target-owned commanded/reaction action and legal route with the correct OA policy, budgets, source conditions and stopping rules.",
+      "spell_specific_intent": "One creature WIS save; Psychic half damage; failed save immediately spends available target Reaction to move safely as far away as possible; no obviously dangerous ground.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006"
+      ],
+      "existing_owner_to_reuse": "src/combat/combat_child_actions.gd",
+      "slice_references": "S-183/S-241/S-269",
+      "disposition": "requires_mapping_or_host_completion",
+      "note": "This is an authored handoff requirement, not a fresh runtime failure or claim that the whole referenced slice is missing."
+    }
+  ],
+  "audit": {
+    "source": "docs/audits/spells.md",
+    "batch": "088-3",
+    "production_definition_at_authoring": "res://data/core/spells/imported_spells.json#57",
+    "baseline_execution": "native",
+    "source_revision": "2a19eb1d",
+    "existing_conversion_label": "queued"
+  },
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile every source rule and required extension, then implement and verify through production paths before any deliberate promotion. Keep native behavior until covered."
+  }
+}

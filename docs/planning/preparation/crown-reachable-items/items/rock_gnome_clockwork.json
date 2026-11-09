@@ -1,0 +1,117 @@
+{
+  "schema": "crown-reachable-item-candidate/1",
+  "id": "rock_gnome_clockwork",
+  "name": "Rock Gnome clockwork device",
+  "kind": "created_item",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring intent only; not registered engine syntax.",
+  "rules": {
+    "authority": "SRD 5.2.1",
+    "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      85
+    ],
+    "text": "Gnome\nCreature Type: Humanoid\nSize: Small (about 3–4 feet tall)\nSpeed: 30 feet\nAs a Gnome, you have these special traits.\nDarkvision.\nYou have Darkvision with a range of\n60 feet.\nGnomish Cunning.\nYou have Advantage on Intelligence, Wisdom, and Charisma saving throws.\nGnomish Lineage.\nYou are part of a lineage that\ngrants you supernatural abilities. Choose one of the\nfollowing options; whichever one you choose, Intelligence, Wisdom, or Charisma is your spellcasting\nability for the spells you cast with this trait (choose\nthe ability when you select the lineage):\nForest Gnome.\nYou know the\nMinor Illusion\ncantrip.\nYou also always have the\nSpeak with Animals\nspell\nprepared. You can cast it without a spell slot a\nnumber of times equal to your Proficiency Bonus,\nand you regain all expended uses when you finish\na Long Rest. You can also use any spell slots you\nhave to cast the spell.\nRock Gnome.\nYou know the\nMending\nand\nPrestidigitation\ncantrips. In addition, you can spend 10\nminutes casting\nPrestidigitation\nto create a Tiny\nclockwork device (AC 5, 1 HP), such as a toy, fire\nstarter, or music box. When you create the device,\nyou determine its function by choosing one effect\nfrom\nPrestidigitation\n; the device produces that\nElven Lineages\nLineage Level 1\nDrow The range of your Darkvision increases to 120\nYou also know the Dancing Lights cantrip.\nHigh Elf You know the Prestidigitation cantrip. Wheneve\na Long Rest, you can replace that cantrip with\ncantrip from the Wizard spell list.\nWood Elf Your Speed increases to 35 feet. You also kno\nDruidcraft cantrip.\neffect whenever you or another creature takes a\nBonus Action to activate it with a touch. If the chosen effect has options within it, you choose one of\nthose options for the device when you create it.\nFor example, if you choose the spell’s ignite-extinguish effect, you determine whether the device\nignites or extinguishes fire; the device doesn’t do\nboth. You can have three such devices in existence\nat a time, and each falls apart 8 hours after its\ncreation or when you dismantle it with a touch as\na Utilize action.",
+    "source_context": "../source-pages.json"
+  },
+  "definition": {
+    "id": "rock_gnome_clockwork",
+    "name": "Rock Gnome clockwork device",
+    "size": "tiny",
+    "ac": 5,
+    "hp": 1,
+    "maximum_devices": 3,
+    "expiry_hours": 8
+  },
+  "authored_operations": [
+    "Spend 10 minutes casting Prestidigitation to create one device. Choose one Prestidigitation effect and, if applicable, one option when created; no toggle between both ignite and extinguish.",
+    "Any touching creature can activate it with a Bonus Action. It falls apart after 8 hours or owner touch-dismantling as Utilize. Retain per-copy choices and three-device limit."
+  ],
+  "retained_runtime_seeds": [],
+  "manifest_overrides": [],
+  "required_mapping": [
+    "character_creations"
+  ],
+  "rules_owner": {
+    "path": "docs/planning/preparation/crown-characters/species/gnome.json",
+    "sha256": "e55968dbba303117dc685f36c1226030da30233b1c3f684dc45f4ab697575407"
+  },
+  "retained_character_operations": [
+    {
+      "name": "Base species and creation grants",
+      "trigger": "Creation confirmation",
+      "cost": "One species; listed size and language choices",
+      "effects": [
+        "Humanoid creature type",
+        "Choose listed size; use declared Speed in feet; no fixed species ASIs",
+        "Know Common and choose two Standard Languages",
+        "Darkvision 60 feet; lineage override applies; execute observer-specific sight rather than an overworld vision bonus"
+      ],
+      "required_extension_groups": [
+        "progression",
+        "choices",
+        "languages",
+        "movement",
+        "world"
+      ],
+      "ending_and_identity": "Save exact selected species/size/languages; grant once; preserve legacy records separately."
+    },
+    {
+      "name": "Gnomish Cunning",
+      "trigger": "INT/WIS/CHA saving throw",
+      "cost": "none",
+      "effects": [
+        "Advantage on all such saves, not only magical effects"
+      ],
+      "required_extension_groups": [
+        "rolls"
+      ],
+      "ending_and_identity": "Exact species/selected trait source; respect source ending; permanent grants once at actual character level."
+    },
+    {
+      "name": "Forest Gnome",
+      "trigger": "Selected forest lineage",
+      "cost": "Speak with Animals free PB casts per Long Rest; may also use slots",
+      "effects": [
+        "Know Minor Illusion; always prepare Speak with Animals; selected ability for both"
+      ],
+      "required_extension_groups": [
+        "casting",
+        "choices"
+      ],
+      "ending_and_identity": "Exact species/selected trait source; respect source ending; permanent grants once at actual character level."
+    },
+    {
+      "name": "Rock Gnome",
+      "trigger": "Selected rock lineage;10-minute Prestidigitation cast",
+      "cost": "10 minutes; max3 devices at a time",
+      "effects": [
+        "Know Mending and Prestidigitation; create Tiny clockwork AC5 HP1 with one selected Prestidigitation effect/option fixed at creation; anyone touching may activate as Bonus Action; device falls apart after8 hours or touch Utilize dismantling"
+      ],
+      "required_extension_groups": [
+        "items",
+        "world",
+        "casting"
+      ],
+      "ending_and_identity": "Exact species/selected trait source; respect source ending; permanent grants once at actual character level."
+    }
+  ],
+  "consumers": [
+    {
+      "channel": "character_created_output",
+      "path": "docs/planning/preparation/crown-characters/species/gnome.json",
+      "sha256": "e55968dbba303117dc685f36c1226030da30233b1c3f684dc45f4ab697575407",
+      "json_pointer": "/rules"
+    }
+  ],
+  "unsupported_behavior": [
+    {
+      "group": "character_creations",
+      "requirement": "Reuse the complete authoring owner for Pact of Blade, Rock Gnome or Tinker task. Persist actual object choices, actor/source, activation budget and independent timers/endings; no feature-ID dispatch or newly invented object powers."
+    },
+    {
+      "group": "definition",
+      "requirement": "No exact current loaded-source seed at this identity. This candidate needs deliberate contract mapping/promotion; it is not an installed item."
+    }
+  ]
+}

@@ -1,0 +1,43 @@
+{
+  "schema": "crown-world-candidate/1",
+  "id": "enter_dungeon_3",
+  "name": "The party enters the Tower of the Lich",
+  "kind": "milestones",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring declarations only; not registered engine opcodes.",
+  "required_extensions": [
+    "objectives_rewards",
+    "rest_time"
+  ],
+  "authored_operations": [
+    {
+      "operation": "apply_milestone_once",
+      "trigger": "enter_dungeon_3",
+      "effects": [
+        {
+          "type": "level_up"
+        }
+      ],
+      "claim": "completed_milestones",
+      "recipient": "all active party characters, including recruited companions",
+      "requirement": "Preserve actual trigger and class/character level choices and four stable seats; restoring/revisiting cannot grant another level."
+    }
+  ],
+  "blockers": [
+    "Shared legal 2024 level-up choices and inactive companion catch-up need their existing character/party owners; do not invent extra milestone grants."
+  ],
+  "retained_input": {
+    "path": "data/core/campaigns/the_lost_crown.json",
+    "sha256": "3352b2d22be36e68591bfdf4ec73b8201f2bec6c69a3a60b0c8beb7d5074db44",
+    "pointer": "/milestones/3",
+    "payload": {
+      "trigger": "enter_dungeon_3",
+      "effects": [
+        {
+          "type": "level_up"
+        }
+      ],
+      "description": "The party enters the Tower of the Lich"
+    }
+  }
+}

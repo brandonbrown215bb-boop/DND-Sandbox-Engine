@@ -257,7 +257,7 @@ func weapon(state: CombatState, record: Dictionary) -> Dictionary:
 func attack_targets(state: CombatState, record: Dictionary, profile: Dictionary) -> Array:
 	LocalRoomCombat.bind_grid(state.hex_grid)
 	var coords := []
-	if profile.is_empty(): return coords
+	if profile.is_empty() or not AmmunitionRules.attack_error(record.actor, profile).is_empty(): return coords
 	var actor: Character = record.actor
 	var origin: Vector2i = owner_entity(state, actor).hex_position
 	var reach := CombatAction.weapon_range_hexes(profile)

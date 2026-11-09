@@ -1,0 +1,40 @@
+{
+  "schema": "crown-world-candidate/1",
+  "id": "access_movement",
+  "name": "Access Movement",
+  "kind": "procedures",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring declarations only; not registered engine opcodes.",
+  "required_extensions": [
+    "access_movement"
+  ],
+  "authored_operations": [
+    {
+      "operation": "resolve_access_movement",
+      "requirement": "Use represented legal footprints, ceilings, wall heights, terrain, planes, anchoring, containment capacity, passengers/cargo and actual traveled routes. Retain source-specific movement, flight loss, squeeze/gas/stone access, safe return and blocked expulsion without overlap or telefrag. Door/container contents and unauthorized crossing remain exact identities."
+    }
+  ],
+  "blockers": [
+    "Existing room placement, containment and vessel hosts are bounded; broad travel/waterborne/plane routes and every spell-specific access rule still need consumers. Fairy ring prose does not define a second map or implement return to origin."
+  ],
+  "slices": "S-121/S-122/S-167/S-170/S-171/S-172/S-179/S-180/S-181/S-239",
+  "source_context_pages": [
+    11,
+    12,
+    182,
+    189,
+    192
+  ],
+  "source_context": "../source-pages.json",
+  "current_owner_pins": [
+    {
+      "path": "src/dungeon/local_room_rules.gd",
+      "sha256": "cbe65b9c14cc2261555f0cc29e65f669d288967b757f7999f70f9062bf81cd8e"
+    },
+    {
+      "path": "src/dungeon/local_room_created.gd",
+      "sha256": "ea1a213284db338fa0a6f127345cdeb7e55248ba3356a1cf64787010ab3037d8"
+    }
+  ],
+  "reuse_boundary": "Existing accepted pieces remain accepted at their documented limits; these requirements do not mark the entire slices missing."
+}

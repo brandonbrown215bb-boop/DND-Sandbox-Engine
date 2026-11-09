@@ -1,0 +1,52 @@
+{
+  "schema": "crown-equipment-candidate/1",
+  "id": "candle",
+  "name": "Candle",
+  "kind": "gear",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring intent only; not registered engine syntax.",
+  "rules": {
+    "authority": "SRD 5.2.1",
+    "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      95,
+      96
+    ],
+    "section": "Candle",
+    "text": "A lit Candle burns 1 hour with Bright Light 5 feet and Dim Light an additional 5 feet.",
+    "source_context": "../source-pages.json"
+  },
+  "definition": {
+    "id": "candle",
+    "name": "Candle",
+    "weight_lb": null,
+    "cost_gp": 0.01,
+    "duration_seconds": 3600,
+    "bright_feet": 5,
+    "additional_dim_feet": 5
+  },
+  "authored_operations": [
+    "A lit Candle burns 1 hour with Bright Light 5 feet and Dim Light an additional 5 feet."
+  ],
+  "retained_runtime_seeds": [],
+  "manifest_overrides": [],
+  "required_mapping": [
+    "light_fuel"
+  ],
+  "consumers": [
+    {
+      "pack_id": "burglars_pack",
+      "quantity": 10
+    }
+  ],
+  "unsupported_behavior": [
+    {
+      "group": "light_fuel",
+      "requirement": "Map Bonus Action ignition/hood controls, cumulative fuel, extinguish/rekindle, cone/radius light and Torch attack through actual room/combat hosts. Retained light_source fields are incomplete rules."
+    },
+    {
+      "group": "definition",
+      "requirement": "No exact current item seed at this candidate identity. This authored record is not a loaded definition; map or promote deliberately later."
+    }
+  ]
+}

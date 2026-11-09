@@ -1,0 +1,137 @@
+{
+  "format": "crown-spell-candidate/1",
+  "id": "acid_splash",
+  "name": "Acid Splash",
+  "level": 0,
+  "status": "written_unverified_not_loaded",
+  "source": {
+    "authority": "SRD 5.2.1",
+    "url": "https://media.dndbeyond.com/compendium-images/srd/5.2/SRD_CC_v5.2.1.pdf",
+    "sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      107
+    ],
+    "header": {
+      "Casting Time": "Action",
+      "Range": "60 feet",
+      "Components": "V, S",
+      "Duration": "Instantaneous"
+    },
+    "attribution": "System Reference Document 5.2.1, Wizards of the Coast LLC; CC BY 4.0."
+  },
+  "casting": {
+    "casting_time": "Action",
+    "kind": "action",
+    "seconds": null,
+    "ritual_available": false,
+    "range": {
+      "source": "60 feet",
+      "kind": "distance",
+      "feet": 60
+    },
+    "components": [
+      "V",
+      "S"
+    ],
+    "material": null,
+    "duration": "Instantaneous",
+    "concentration": false,
+    "spell_lists": [
+      "sorcerer",
+      "wizard"
+    ]
+  },
+  "authored_intent": "Point-origin 5-foot sphere; each creature makes DEX save for Acid dice; no damage on success; character-level cantrip scaling.",
+  "rules": [
+    {
+      "id": "r001",
+      "text": "You create an acidic bubble at a point within range, where it explodes in a 5-foot-radius Sphere."
+    },
+    {
+      "id": "r002",
+      "text": "Each creature in that Sphere must succeed on a Dexterity saving throw or take 1d6 Acid damage."
+    },
+    {
+      "id": "r003",
+      "text": "Cantrip Upgrade."
+    },
+    {
+      "id": "r004",
+      "text": "The damage increases by 1d6 when you reach levels 5 (2d6), 11 (3d6), and 17 (4d6)."
+    }
+  ],
+  "authored_operations": [
+    {
+      "operation": "shared_definition_reference",
+      "parameters": {
+        "definition": "runtime_draft.definition"
+      },
+      "status": "shared_definition_reference_unverified",
+      "required_source_rules": [
+        "r001",
+        "r002",
+        "r003",
+        "r004"
+      ]
+    }
+  ],
+  "runtime_draft": {
+    "origin": "existing_shared_definition",
+    "definition": {
+      "area_radius": 1.0,
+      "attack_type": "none",
+      "casting_time": "action",
+      "classes": [
+        "sorcerer",
+        "wizard"
+      ],
+      "components": [
+        "V",
+        "S"
+      ],
+      "concentration": false,
+      "damage": "1d6",
+      "damage_type": "acid",
+      "description": "You create an acidic bubble at a point within range, where it explodes in a 5-foot-radius Sphere. Each creature in that Sphere must succeed on a Dexterity saving throw or take 1d6 Acid damage. Cantrip Upgrade. The damage increases by 1d6 when you reach levels 5 (2d6), 11 (3d6), and 17 (4d6).",
+      "duration": "Instantaneous",
+      "effects": [
+        {
+          "radius": 1.0,
+          "shape": "sphere",
+          "type": "area_selection"
+        }
+      ],
+      "execution": "shared",
+      "id": "acid_splash",
+      "level": 0,
+      "name": "Acid Splash",
+      "range": 12,
+      "save": "DEX",
+      "scaling": {
+        "11": "3d6",
+        "17": "4d6",
+        "5": "2d6"
+      },
+      "school": "evocation",
+      "target": "area",
+      "rules_source": "SRD 5.2.1",
+      "rules_status": "authoring-draft-unverified"
+    },
+    "fragments": {},
+    "coverage": "Unverified. Neither a full definition nor a fragment certifies all source rules or controls. Required extensions are not silently waived."
+  },
+  "required_extensions": [],
+  "audit": {
+    "source": "docs/audits/spells.md",
+    "batch": "088-1",
+    "production_definition_at_authoring": "res://data/core/spells/imported_spells.json#1",
+    "baseline_execution": "shared",
+    "source_revision": "2a19eb1d",
+    "existing_conversion_label": "already_shared_baseline"
+  },
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile every source rule and required extension, then implement and verify through production paths before any deliberate promotion. Keep native behavior until covered."
+  }
+}

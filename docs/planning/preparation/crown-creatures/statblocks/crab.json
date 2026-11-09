@@ -1,0 +1,177 @@
+{
+  "schema": "crown-creature-candidate/1",
+  "id": "srd_crab",
+  "name": "Crab",
+  "kind": "srd_statblock",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring intent only; not registered engine syntax. Mapping requirements do not assert the whole referenced engine slice is absent.",
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile all source clauses, mappings and source differences before later production-path verification. Keep native paths until replacements cover them."
+  },
+  "source": {
+    "authority": "SRD 5.2.1",
+    "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      347
+    ],
+    "text": "Crab\nTiny Beast, Unaligned\nAC 11 Initiative +0 (10)\nHP 3 (1d4 + 1)\nSpeed 20 ft., Swim 20 ft.\nMOD SAVE MOD SAVE MOD SAVE\nStr 6 −2 −2 Dex 11 +0 +0 Con 12 +1 +1\nInt 1 −5 −5 WIS 8 −1 −1 Cha 2 −4 −4\nSkills Stealth +2\nSenses Blindsight 30 ft.; Passive Perception 9\nLanguages None\nCR 0 (XP 10; PB +2)\nTraits\nAmphibious. The crab can breathe air and water.\nActions\nClaw. Melee Attack Roll: +2, reach 5 ft. Hit: 1 Blud-\ngeoning damage.",
+    "transcription": "Two-column extraction; line breaks retained. Whole selected page context is in source-pages.json. No stat correction inferred from donor data."
+  },
+  "statistics": {
+    "identity_line": "Tiny Beast, Unaligned",
+    "AC": "11 Initiative +0 (10)",
+    "HP": "3 (1d4 + 1)",
+    "Speed": "20 ft., Swim 20 ft.",
+    "Skills": "Stealth +2",
+    "Senses": "Blindsight 30 ft.; Passive Perception 9",
+    "Languages": "None",
+    "CR": "0 (XP 10; PB +2)",
+    "ability_scores": {
+      "STR": 6,
+      "DEX": 11,
+      "CON": 12,
+      "INT": 1,
+      "WIS": 8,
+      "CHA": 2
+    },
+    "saving_throw_modifiers": {
+      "STR": -2,
+      "DEX": 0,
+      "CON": 1,
+      "INT": -5,
+      "WIS": -1,
+      "CHA": -4
+    },
+    "initiative_modifier": 0,
+    "initiative_score_printed": 10,
+    "armor_class": 11,
+    "movement_feet": {
+      "walk": 20,
+      "swim": 20
+    }
+  },
+  "authored_operations": [
+    {
+      "key": "b001",
+      "name": "Amphibious",
+      "source_section": "Traits",
+      "full_rule": "Amphibious. The crab can breathe air and water.",
+      "budget": "passive_or_declared_trigger",
+      "steps": [
+        {
+          "intent": "Represent actual size/space, climb/swim/fly and breathing, jumps, straight-line charge history, opportunity exceptions, web surfaces and legal release.",
+          "mapping_group": "movement"
+        }
+      ],
+      "parameters_from_rule": {
+        "attack_bonus": [],
+        "save_dc": [],
+        "distances_feet": [],
+        "dice": []
+      },
+      "blockers": [
+        "map_movement"
+      ],
+      "ending_and_identity": "Exact actor/action/target/source instance; use every qualifier and ending in full_rule, not only extracted parameters.",
+      "behavior_plan": {
+        "budget": "passive_or_declared_trigger",
+        "source_outcomes": {},
+        "breathing_media": [
+          "air",
+          "water"
+        ]
+      }
+    },
+    {
+      "key": "b002",
+      "name": "Claw",
+      "source_section": "Actions",
+      "full_rule": "Claw. Melee Attack Roll: +2, reach 5 ft. Hit: 1 Bludgeoning damage.",
+      "budget": "action",
+      "steps": [
+        {
+          "intent": "Resolve declared roll or save, targets, range/reach, damage packets, multiattack choice, riders and exact action budget. A save-only action is not a weapon hit rider.",
+          "mapping_group": "attacks"
+        }
+      ],
+      "parameters_from_rule": {
+        "attack_bonus": [
+          2
+        ],
+        "save_dc": [],
+        "distances_feet": [
+          5
+        ],
+        "dice": []
+      },
+      "blockers": [
+        "map_attacks"
+      ],
+      "ending_and_identity": "Exact actor/action/target/source instance; use every qualifier and ending in full_rule, not only extracted parameters.",
+      "behavior_plan": {
+        "budget": "action",
+        "source_outcomes": {
+          "hit": "1 Bludgeoning damage."
+        },
+        "resolution": "attack_roll",
+        "attack_kind": "melee",
+        "damage_and_riders": "1 Bludgeoning damage.",
+        "permission": "ordinary familiar cannot attack; invocation exceptions must grant this exact attack or Attack action, not every Actions entry"
+      }
+    }
+  ],
+  "retained_definitions": [
+    {
+      "path": "data/core/monsters/imported_monsters.json",
+      "sha256": "f57bee1e93f185a89575bed3d8b2b610b53cfd3b7f2eb56448d1dd64a0126c5f",
+      "pointer": "/90",
+      "payload": {
+        "id": "crab",
+        "name": "Crab",
+        "hit_points": "1d4",
+        "armor_class": 11,
+        "speed": 4,
+        "ability_scores": {
+          "STR": 2,
+          "DEX": 11,
+          "CON": 10,
+          "INT": 1,
+          "WIS": 8,
+          "CHA": 2
+        },
+        "attacks": [
+          {
+            "name": "Claws",
+            "ability": "STR",
+            "damage": "1d6",
+            "range": 1,
+            "damage_type": "slashing"
+          }
+        ],
+        "ai_behavior": "aggressive"
+      },
+      "manifest_declarations": []
+    }
+  ],
+  "selection": {
+    "wild_shape_druid_levels_2_3": true,
+    "wild_shape_druid_levels_4_5": true,
+    "normal_familiar": true,
+    "pact_of_chain_special": false,
+    "animate_dead_output": false,
+    "held_swarm": false,
+    "encounter_comparison_only": false
+  },
+  "acquisition_links": [
+    "selection-links.json"
+  ],
+  "blockers": [
+    "map_statistics",
+    "map_attacks",
+    "map_movement"
+  ],
+  "source_reconciliation": "Official body is authoritative for this SRD candidate. Retained donor payloads are comparison/reuse seeds, including legacy values and manifest winners; do not merge their statistics or traits by ID. Direct Crown encounters retain separate candidates.",
+  "equipment_links": []
+}

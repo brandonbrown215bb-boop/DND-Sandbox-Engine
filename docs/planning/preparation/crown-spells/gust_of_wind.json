@@ -1,0 +1,186 @@
+{
+  "format": "crown-spell-candidate/1",
+  "id": "gust_of_wind",
+  "name": "Gust of Wind",
+  "level": 2,
+  "status": "written_unverified_not_loaded",
+  "source": {
+    "authority": "SRD 5.2.1",
+    "url": "https://media.dndbeyond.com/compendium-images/srd/5.2/SRD_CC_v5.2.1.pdf",
+    "sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      138
+    ],
+    "header": {
+      "Casting Time": "Action",
+      "Range": "Self",
+      "Components": "V, S, M (a legume seed)",
+      "Duration": "Concentration, up to 1 minute"
+    },
+    "attribution": "System Reference Document 5.2.1, Wizards of the Coast LLC; CC BY 4.0."
+  },
+  "casting": {
+    "casting_time": "Action",
+    "kind": "action",
+    "seconds": null,
+    "ritual_available": false,
+    "range": {
+      "source": "Self",
+      "kind": "self",
+      "feet": 0
+    },
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "a legume seed",
+    "duration": "Concentration, up to 1 minute",
+    "concentration": true,
+    "spell_lists": [
+      "druid",
+      "ranger",
+      "sorcerer",
+      "wizard"
+    ]
+  },
+  "authored_intent": "Self 60-foot by 10-foot line; appearance and end-turn STR save or 15-foot push along line; double movement cost toward caster; disperse gas/vapor, extinguish exposed flames and 50-percent chance for protected flames; later Bonus Action redirects.",
+  "rules": [
+    {
+      "id": "r001",
+      "text": "A Line of strong wind 60 feet long and 10 feet wide blasts from you in a direction you choose for the duration."
+    },
+    {
+      "id": "r002",
+      "text": "Each creature in the Line must succeed on a Strength saving throw or be pushed 15 feet away from you in a direction following the Line."
+    },
+    {
+      "id": "r003",
+      "text": "A creature that ends its turn in the Line must make the same save."
+    },
+    {
+      "id": "r004",
+      "text": "Any creature in the Line must spend 2 feet of movement for every 1 foot it moves when moving closer to you."
+    },
+    {
+      "id": "r005",
+      "text": "The gust disperses gas or vapor, and it extinguishes candles and similar unprotected flames in the area."
+    },
+    {
+      "id": "r006",
+      "text": "It causes protected flames, such as those of lanterns, to dance wildly and has a 50 percent chance to extinguish them."
+    },
+    {
+      "id": "r007",
+      "text": "As a Bonus Action on your later turns, you can change the direction in which the Line blasts from you."
+    }
+  ],
+  "authored_operations": [
+    {
+      "operation": "create_directional_wind",
+      "parameters": {
+        "line": {
+          "length_feet": 60,
+          "width_feet": 10
+        },
+        "save": {
+          "ability": "STR",
+          "events": [
+            "appearance",
+            "target_turn_end"
+          ],
+          "failure_push_feet": 15,
+          "push_direction": "along_line_away"
+        },
+        "movement_toward_caster_cost_multiplier": 2,
+        "disperse": [
+          "gas",
+          "vapor"
+        ],
+        "flames": {
+          "unprotected": "extinguish",
+          "protected_extinguish_chance": 0.5
+        },
+        "redirect_action": "bonus_action"
+      },
+      "status": "authoring_declaration_not_a_registered_opcode",
+      "required_source_rules": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006",
+        "r007"
+      ]
+    }
+  ],
+  "runtime_draft": {
+    "origin": "fragments_only",
+    "definition": null,
+    "fragments": {
+      "appearance_or_end_turn_save": {
+        "save": "STR",
+        "effects": [
+          {
+            "type": "push",
+            "distance": 3,
+            "on_failed_save": true
+          }
+        ]
+      }
+    },
+    "coverage": "Unverified. Neither a full definition nor a fragment certifies all source rules or controls. Required extensions are not silently waived."
+  },
+  "required_extensions": [
+    {
+      "group": "zones",
+      "requirement": "Mount source-defined recurring and moving area effects with independent appearance/entry/movement/start/end triggers, exclusions and once-per-turn receipts; area_selection is geometry only.",
+      "spell_specific_intent": "Self 60-foot by 10-foot line; appearance and end-turn STR save or 15-foot push along line; double movement cost toward caster; disperse gas/vapor, extinguish exposed flames and 50-percent chance for protected flames; later Bonus Action redirects.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006",
+        "r007"
+      ],
+      "existing_owner_to_reuse": "src/spells/combat_spell_zones.gd",
+      "slice_references": "S-080/S-087/S-184/S-190",
+      "disposition": "requires_mapping_or_host_completion",
+      "note": "This is an authored handoff requirement, not a fresh runtime failure or claim that the whole referenced slice is missing."
+    },
+    {
+      "group": "forced_movement",
+      "requirement": "Route each source-owned forced displacement through actual legal map space and hazards with declared OA policy and no voluntary movement charge.",
+      "spell_specific_intent": "Self 60-foot by 10-foot line; appearance and end-turn STR save or 15-foot push along line; double movement cost toward caster; disperse gas/vapor, extinguish exposed flames and 50-percent chance for protected flames; later Bonus Action redirects.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006",
+        "r007"
+      ],
+      "existing_owner_to_reuse": "src/combat/combat_action.gd",
+      "slice_references": "S-179/S-241",
+      "disposition": "requires_mapping_or_host_completion",
+      "note": "This is an authored handoff requirement, not a fresh runtime failure or claim that the whole referenced slice is missing."
+    }
+  ],
+  "audit": {
+    "source": "docs/audits/spells.md",
+    "batch": "088-5",
+    "production_definition_at_authoring": "res://data/core/spells/imported_spells.json#90",
+    "baseline_execution": "native",
+    "source_revision": "2a19eb1d",
+    "existing_conversion_label": "queued"
+  },
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile every source rule and required extension, then implement and verify through production paths before any deliberate promotion. Keep native behavior until covered."
+  }
+}

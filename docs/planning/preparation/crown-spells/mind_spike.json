@@ -1,0 +1,169 @@
+{
+  "format": "crown-spell-candidate/1",
+  "id": "mind_spike",
+  "name": "Mind Spike",
+  "level": 2,
+  "status": "written_unverified_not_loaded",
+  "source": {
+    "authority": "SRD 5.2.1",
+    "url": "https://media.dndbeyond.com/compendium-images/srd/5.2/SRD_CC_v5.2.1.pdf",
+    "sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      149
+    ],
+    "header": {
+      "Casting Time": "Action",
+      "Range": "120 feet",
+      "Components": "S",
+      "Duration": "Concentration, up to 1 hour"
+    },
+    "attribution": "System Reference Document 5.2.1, Wizards of the Coast LLC; CC BY 4.0."
+  },
+  "casting": {
+    "casting_time": "Action",
+    "kind": "action",
+    "seconds": null,
+    "ritual_available": false,
+    "range": {
+      "source": "120 feet",
+      "kind": "distance",
+      "feet": 120
+    },
+    "components": [
+      "S"
+    ],
+    "material": null,
+    "duration": "Concentration, up to 1 hour",
+    "concentration": true,
+    "spell_lists": [
+      "sorcerer",
+      "warlock",
+      "wizard"
+    ]
+  },
+  "authored_intent": "Seen creature WIS-half Psychic; failed save creates same-plane exact-location disclosure, prevents hiding and Invisible benefit against caster only; Concentration and upcast damage.",
+  "rules": [
+    {
+      "id": "r001",
+      "text": "You drive a spike of psionic energy into the mind of one creature you can see within range."
+    },
+    {
+      "id": "r002",
+      "text": "The target makes a Wisdom saving throw, taking 3d8 Psychic damage on a failed save or half as much damage on a successful one."
+    },
+    {
+      "id": "r003",
+      "text": "On a failed save, you also always know the target’s location until the spell ends, but only while the two of you are on the same plane of existence."
+    },
+    {
+      "id": "r004",
+      "text": "While you have this knowledge, the target can’t become hidden from you, and if it has the Invisible condition, it gains no benefit from that condition against you."
+    },
+    {
+      "id": "r005",
+      "text": "Using a Higher-Level Spell Slot."
+    },
+    {
+      "id": "r006",
+      "text": "The damage increases by 1d8 for each spell slot level above 2."
+    }
+  ],
+  "authored_operations": [
+    {
+      "operation": "save_damage_and_locate",
+      "parameters": {
+        "target": "seen_creature",
+        "save": "WIS",
+        "damage": "3d8",
+        "type": "psychic",
+        "half_on_success": true,
+        "failed_save_benefit": {
+          "same_plane_only": true,
+          "exact_location": true,
+          "cannot_hide_from_caster": true,
+          "invisible_no_benefit_against_caster": true
+        },
+        "upcast_per_slot": "1d8"
+      },
+      "status": "authoring_declaration_not_a_registered_opcode",
+      "required_source_rules": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006"
+      ]
+    }
+  ],
+  "runtime_draft": {
+    "origin": "new_shared_draft",
+    "definition": {
+      "id": "mind_spike",
+      "name": "Mind Spike",
+      "execution": "shared",
+      "level": 2,
+      "school": "divination",
+      "classes": [
+        "sorcerer",
+        "warlock",
+        "wizard"
+      ],
+      "components": [
+        "S"
+      ],
+      "duration": "Concentration, up to 1 hour",
+      "concentration": true,
+      "rules_source": "SRD 5.2.1",
+      "rules_status": "authoring-draft-unverified",
+      "range": 24,
+      "casting_time": "action",
+      "duration_seconds": 3600,
+      "description": "You drive a spike of psionic energy into the mind of one creature you can see within range. The target makes a Wisdom saving throw, taking 3d8 Psychic damage on a failed save or half as much damage on a successful one. On a failed save, you also always know the target’s location until the spell ends, but only while the two of you are on the same plane of existence. While you have this knowledge, the target can’t become hidden from you, and if it has the Invisible condition, it gains no benefit from that condition against you. Using a Higher-Level Spell Slot. The damage increases by 1d8 for each spell slot level above 2.",
+      "target": "single",
+      "damage": "3d8",
+      "damage_type": "psychic",
+      "requires_target_sight": true,
+      "upcast": {
+        "starting_level": 2,
+        "damage_per_level": "1d8"
+      },
+      "save": "WIS",
+      "half_on_save": true
+    },
+    "fragments": {},
+    "coverage": "Unverified. Neither a full definition nor a fragment certifies all source rules or controls. Required extensions are not silently waived."
+  },
+  "required_extensions": [
+    {
+      "group": "detection",
+      "requirement": "Read actual eligible facts with source-defined range, material barriers, actions and disclosure; preserve unknown facts and observer-specific knowledge.",
+      "spell_specific_intent": "Seen creature WIS-half Psychic; failed save creates same-plane exact-location disclosure, prevents hiding and Invisible benefit against caster only; Concentration and upcast damage.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006"
+      ],
+      "existing_owner_to_reuse": "src/combat/study_rules.gd",
+      "slice_references": "S-190/S-191/S-194/S-195/S-219",
+      "disposition": "requires_mapping_or_host_completion",
+      "note": "This is an authored handoff requirement, not a fresh runtime failure or claim that the whole referenced slice is missing."
+    }
+  ],
+  "audit": {
+    "source": "docs/audits/spells.md",
+    "batch": "088-2",
+    "production_definition_at_authoring": "res://data/core/spells/srd_additional_spells.json#101",
+    "baseline_execution": "native",
+    "source_revision": "2a19eb1d",
+    "existing_conversion_label": "queued"
+  },
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile every source rule and required extension, then implement and verify through production paths before any deliberate promotion. Keep native behavior until covered."
+  }
+}

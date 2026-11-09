@@ -1,0 +1,67 @@
+{
+  "schema": "crown-reachable-item-candidate/1",
+  "id": "mushroom_powder_25gp",
+  "name": "Mushroom Powder (25+ GP)",
+  "kind": "legacy_spell_component",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring intent only; not registered engine syntax.",
+  "rules": {
+    "authority": "SRD 5.2.1",
+    "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      171
+    ],
+    "text": "True Seeing requires this component worth 25+ GP; consumed on casting. This level-6 spell stays outside Crown casting scope although the item is sold.",
+    "source_context": "../source-pages.json"
+  },
+  "definition": {
+    "id": "mushroom_powder_25gp",
+    "name": "Mushroom Powder (25+ GP)",
+    "minimum_worth_gp": 25,
+    "consumed": true,
+    "weight_lb": null,
+    "spell_level": 6
+  },
+  "authored_operations": [
+    "True Seeing requires this component worth 25+ GP; consumed on casting. This level-6 spell stays outside Crown casting scope although the item is sold."
+  ],
+  "retained_runtime_seeds": [
+    {
+      "path": "data/core/items/srd_gear.json",
+      "array_index": 47,
+      "file_sha256": "ed873f9a0967f5bb6e20241428e4f53b92c011fa547321af69798ece822b57d4",
+      "definition": {
+        "id": "mushroom_powder_25gp",
+        "name": "Mushroom Powder (25+ GP)",
+        "description": "Consumed Material component for True Seeing.",
+        "type": "spell_component",
+        "value": 25
+      }
+    }
+  ],
+  "manifest_overrides": [],
+  "required_mapping": [
+    "legacy_components"
+  ],
+  "consumers": [
+    {
+      "channel": "historical_shop_inventory",
+      "path": "docs/planning/crown-content-scope.md",
+      "sha256": "3bcb9799865f1779aa7da1c1b041a6ac938c33491dfd502641593bf767a8528e",
+      "details": "Pinned 64-ID Windows export inventory; retained below, not rerun here."
+    },
+    {
+      "channel": "source_shop_candidate",
+      "path": "data/core/items/srd_gear.json",
+      "sha256": "ed873f9a0967f5bb6e20241428e4f53b92c011fa547321af69798ece822b57d4",
+      "json_pointer": "/47",
+      "details": "Positive shop type/value and, for consumables, declared supported effect names. This is a source selection lead, not a loaded availability certification; manifest wins remain authoritative."
+    }
+  ],
+  "unsupported_behavior": [
+    {
+      "group": "legacy_components",
+      "requirement": "These sold components belong to level-6 spells outside Crown casting permissions. Preserve item exposure without granting the spell or importing its entire higher-level execution."
+    }
+  ]
+}

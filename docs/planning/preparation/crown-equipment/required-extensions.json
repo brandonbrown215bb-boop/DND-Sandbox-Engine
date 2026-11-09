@@ -1,0 +1,277 @@
+{
+  "schema": "crown-equipment-extension-map/1",
+  "warning": "Mapping requirements, not claims every owner is absent. No runtime edits or gameplay verification.",
+  "groups": [
+    {
+      "id": "ordinary_items",
+      "slices": "S-047/S-049/S-237",
+      "requirement": "Exact source-owned acquisition quantities, sheets and ordinary room interactions; unknown weight stays unknown, not zero.",
+      "members": [
+        "bell",
+        "travelers_clothes",
+        "parchment",
+        "mirror",
+        "robe",
+        "ink_pen"
+      ]
+    },
+    {
+      "id": "weapons",
+      "slices": "S-127/S-250/S-255",
+      "requirement": "Map complete weapon properties, masteries, hand/ability eligibility and actual attacks through shared owners. Reuse verified range/Heavy work; no item-ID dispatch or support claim from seed fields.",
+      "members": [
+        "dagger",
+        "handaxe",
+        "javelin",
+        "mace",
+        "quarterstaff",
+        "sickle",
+        "spear",
+        "shortbow",
+        "flail",
+        "greataxe",
+        "greatsword",
+        "longsword",
+        "scimitar",
+        "shortsword",
+        "longbow",
+        "arcane_focus_quarterstaff",
+        "druidic_focus_quarterstaff"
+      ]
+    },
+    {
+      "id": "armor",
+      "slices": "S-251/S-252",
+      "requirement": "Map AC, training, Strength/Stealth penalties and real don/doff. Reuse delivered timing; broader penalty consumers and content still require reconciliation.",
+      "members": [
+        "leather_armor",
+        "studded_leather_armor",
+        "chain_shirt",
+        "chain_mail",
+        "shield"
+      ]
+    },
+    {
+      "id": "ammunition",
+      "slices": "S-196/S-197/S-249",
+      "requirement": "Separate Arrow pieces from purchase lots and Quiver; refuse empty attacks, spend/recover exact counts once, preserve counters at checkpoints.",
+      "members": [
+        "shortbow",
+        "longbow",
+        "quiver",
+        "arrows"
+      ]
+    },
+    {
+      "id": "packs",
+      "slices": "S-047/S-049/S-196",
+      "requirement": "Resolve six complete pack lists and exact once-only expansion. Existing three pack seeds are partial reuse. Shell versus contents and actual storage must not duplicate gear or pretend bundle contents fit the Backpack.",
+      "members": [
+        "explorers_pack",
+        "entertainers_pack",
+        "priests_pack",
+        "dungeoneers_pack",
+        "burglars_pack",
+        "scholars_pack"
+      ]
+    },
+    {
+      "id": "containers",
+      "slices": "S-196/S-197",
+      "requirement": "Map actual capacity, contents and transfer units; retain unknown empty weights and full-versus-empty weight facts. Reuse bounded container owners rather than declaring all capacity absent.",
+      "members": [
+        "backpack",
+        "pouch",
+        "waterskin",
+        "ink"
+      ]
+    },
+    {
+      "id": "environment",
+      "slices": "S-200/S-201",
+      "requirement": "Map extreme-cold protection and actual food/water consumption to environmental procedures; prose or nourish effects do not establish full source behavior.",
+      "members": [
+        "bedroll",
+        "blanket",
+        "rations"
+      ]
+    },
+    {
+      "id": "hazards",
+      "slices": "S-184/S-258",
+      "requirement": "Map placement, level-ground eligibility, first-entry-per-turn save, exact damage/condition duration and ten-minute recoverable contents. Reuse spatial trigger owner.",
+      "members": [
+        "ball_bearings",
+        "caltrops"
+      ]
+    },
+    {
+      "id": "context_benefits",
+      "slices": "S-036/S-237/S-238",
+      "requirement": "Map exact-copy consulted Book topic/accuracy and eligible skills, costume impersonation and crowbar leverage. Existing purpose-aware/context modifier hooks are reuse points, not generic support certification.",
+      "members": [
+        "costume",
+        "crowbar",
+        "book",
+        "book_prayers",
+        "book_history",
+        "book_occult_lore"
+      ]
+    },
+    {
+      "id": "bindings",
+      "slices": "S-168/S-169/S-237",
+      "requirement": "Rope needs legal unwilling targets, knots, bound-leg restraint, exact escape/burst checks and object/source cleanup.",
+      "members": [
+        "rope"
+      ]
+    },
+    {
+      "id": "light_fuel",
+      "slices": "S-197/S-237/S-239",
+      "requirement": "Map Bonus Action ignition/hood controls, cumulative fuel, extinguish/rekindle, cone/radius light and Torch attack through actual room/combat hosts. Retained light_source fields are incomplete rules.",
+      "members": [
+        "candle",
+        "tinderbox",
+        "torch",
+        "lamp",
+        "lantern_bullseye",
+        "lantern_hooded"
+      ]
+    },
+    {
+      "id": "oil",
+      "slices": "S-197/S-256/S-258",
+      "requirement": "Keep three distinct uses: attack replacement dousing, placed burning ground with once-per-turn damage, and six cumulative hours of fuel. Map durations and same-turn ordering without guessing unknown target facts.",
+      "members": [
+        "oil_flask"
+      ]
+    },
+    {
+      "id": "healing",
+      "slices": "S-064/S-237",
+      "requirement": "Healer’s Kit spends one of ten uses to stabilize only an eligible Unconscious zero-HP creature. Retain partial seed; map uses and actual targets, no free reset on equip/reload.",
+      "members": [
+        "healers_kit"
+      ]
+    },
+    {
+      "id": "attack_items",
+      "slices": "S-146/S-256",
+      "requirement": "Holy Water replaces one Attack-action attack and consumes one flask; keep remaining attacks, sight/range, Dexterity DC and Fiend/Undead gate. Seed effect arrays do not certify support.",
+      "members": [
+        "holy_water"
+      ]
+    },
+    {
+      "id": "tools",
+      "slices": "S-237/S-238",
+      "requirement": "Map exact variant proficiency, declared tool ability/DC, PB plus applicable skill Advantage and actual Utilize task outcomes. Do not use a generic +PB check as every tool action.",
+      "members": [
+        "alchemists_supplies",
+        "brewers_supplies",
+        "calligraphers_supplies",
+        "carpenters_tools",
+        "cartographers_tools",
+        "cobblers_tools",
+        "cooks_utensils",
+        "glassblowers_tools",
+        "jewelers_tools",
+        "leatherworkers_tools",
+        "masons_tools",
+        "painters_supplies",
+        "potters_tools",
+        "smiths_tools",
+        "tinkers_tools",
+        "weavers_tools",
+        "woodcarvers_tools",
+        "herbalism_kit",
+        "thieves_tools",
+        "bagpipes",
+        "drum",
+        "dulcimer",
+        "flute",
+        "horn",
+        "lute",
+        "lyre",
+        "pan_flute",
+        "shawm",
+        "viol",
+        "dice_set",
+        "dragonchess_set",
+        "playing_card_set",
+        "three_dragon_ante_set"
+      ]
+    },
+    {
+      "id": "crafting",
+      "slices": "S-198/S-199",
+      "requirement": "Craft source lists are preserved, not executable recipes or item grants. Reconcile the official crafting procedures and result definitions later; absent result definitions remain dependencies, not reasons to expand this package pass.",
+      "members": [
+        "alchemists_supplies",
+        "brewers_supplies",
+        "calligraphers_supplies",
+        "carpenters_tools",
+        "cartographers_tools",
+        "cobblers_tools",
+        "cooks_utensils",
+        "glassblowers_tools",
+        "jewelers_tools",
+        "leatherworkers_tools",
+        "masons_tools",
+        "painters_supplies",
+        "potters_tools",
+        "smiths_tools",
+        "tinkers_tools",
+        "weavers_tools",
+        "woodcarvers_tools",
+        "herbalism_kit"
+      ]
+    },
+    {
+      "id": "focuses",
+      "slices": "S-046/S-049/S-123",
+      "requirement": "Map class-owned focus permission, free hands, Material costs/consumption and Holy Symbol held/worn/borne forms. Staff is one exact copy with both Quarterstaff and focus roles; existing tool-only staff seeds do not provide the weapon role.",
+      "members": [
+        "bagpipes",
+        "drum",
+        "dulcimer",
+        "flute",
+        "horn",
+        "lute",
+        "lyre",
+        "pan_flute",
+        "shawm",
+        "viol",
+        "arcane_crystal",
+        "arcane_orb",
+        "arcane_focus_quarterstaff",
+        "druidic_focus_quarterstaff",
+        "sprig_of_mistletoe",
+        "amulet",
+        "emblem",
+        "reliquary",
+        "holy_symbol"
+      ]
+    },
+    {
+      "id": "choices",
+      "slices": "S-047/S-050/S-231",
+      "requirement": "Resolve form/tool choices and grant exactly once. Monk/Soldier copy matches chosen proficiency; Bard instrument choice remains independent. Generic Holy Symbol seed must not silently force Amulet.",
+      "members": [
+        "holy_symbol",
+        "chosen_musical_instrument",
+        "chosen_tool",
+        "chosen_gaming_set"
+      ]
+    },
+    {
+      "id": "spellbooks",
+      "slices": "S-046/S-048/S-049",
+      "requirement": "Reuse full Wizard candidate Spellcasting and spellbook procedures; preserve owner, actual recorded spells, page/weight facts, focus role, loss/replacement and copying. Ordinary Book is not a Spellbook.",
+      "members": [
+        "spellbook"
+      ]
+    }
+  ]
+}

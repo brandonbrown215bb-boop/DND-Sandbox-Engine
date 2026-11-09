@@ -1,0 +1,228 @@
+{
+  "format": "crown-spell-candidate/1",
+  "id": "animate_dead",
+  "name": "Animate Dead",
+  "level": 3,
+  "status": "written_unverified_not_loaded",
+  "source": {
+    "authority": "SRD 5.2.1",
+    "url": "https://media.dndbeyond.com/compendium-images/srd/5.2/SRD_CC_v5.2.1.pdf",
+    "sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      108
+    ],
+    "header": {
+      "Casting Time": "1 minute",
+      "Range": "10 feet",
+      "Components": "V, S, M (a drop of blood, a piece of flesh, and a pinch of bone dust)",
+      "Duration": "Instantaneous"
+    },
+    "attribution": "System Reference Document 5.2.1, Wizards of the Coast LLC; CC BY 4.0."
+  },
+  "casting": {
+    "casting_time": "1 minute",
+    "kind": "timed",
+    "seconds": 60,
+    "ritual_available": false,
+    "range": {
+      "source": "10 feet",
+      "kind": "distance",
+      "feet": 10
+    },
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "a drop of blood, a piece of flesh, and a pinch of bone dust",
+    "duration": "Instantaneous",
+    "concentration": false,
+    "spell_lists": [
+      "cleric",
+      "wizard"
+    ]
+  },
+  "authored_intent": "One eligible Small/Medium Humanoid corpse or bone pile; create appropriate Skeleton/Zombie; Bonus Action mental commands within 60 feet, standing orders and self-defense; exact 24-hour control/reassertion and higher-slot creation/renewal counts.",
+  "rules": [
+    {
+      "id": "r001",
+      "text": "Choose a pile of bones or a corpse of a Medium or Small Humanoid within range."
+    },
+    {
+      "id": "r002",
+      "text": "The target becomes an Undead creature: a Skeleton if you chose bones or a Zombie if you chose a corpse (see “Monsters” for the stat blocks)."
+    },
+    {
+      "id": "r003",
+      "text": "On each of your turns, you can take a Bonus Action to mentally command any creature you made with this spell if the creature is within 60 feet of you (if you control multiple creatures, you can command any of them at the same time, issuing the same command to each one)."
+    },
+    {
+      "id": "r004",
+      "text": "You decide what action the creature will take and where it will move on its next turn, or you can issue a general command, such as to guard a chamber or corridor."
+    },
+    {
+      "id": "r005",
+      "text": "If you issue no commands, the creature takes the Dodge action and moves only to avoid harm."
+    },
+    {
+      "id": "r006",
+      "text": "Once given an order, the creature continues to follow it until its task is complete."
+    },
+    {
+      "id": "r007",
+      "text": "The creature is under your control for 24 hours, after which it stops obeying any command you’ve given it."
+    },
+    {
+      "id": "r008",
+      "text": "To maintain control of the creature for another 24 hours, you must cast this spell on the creature again before the current 24-hour period ends."
+    },
+    {
+      "id": "r009",
+      "text": "This use of the spell reasserts your control over up to four creatures you have animated with this spell rather than animating a new creature."
+    },
+    {
+      "id": "r010",
+      "text": "Using a Higher-Level Spell Slot."
+    },
+    {
+      "id": "r011",
+      "text": "You animate or reassert control over two additional Undead creatures for each spell slot level above 3."
+    },
+    {
+      "id": "r012",
+      "text": "Each of the creatures must come from a different corpse or pile of bones."
+    }
+  ],
+  "authored_operations": [
+    {
+      "operation": "create_or_renew_actors",
+      "parameters": {
+        "materials": {
+          "bones": "skeleton",
+          "small_or_medium_humanoid_corpse": "zombie"
+        },
+        "base_create": 1,
+        "base_renew": 4,
+        "upcast_additional_per_slot": 2,
+        "unique_remains_per_actor": true,
+        "control_hours": 24,
+        "renew_before_expiry": true,
+        "command": {
+          "action": "bonus_action",
+          "range_feet": 60,
+          "same_order_to_group": true,
+          "standing_orders": true
+        },
+        "default": {
+          "action": "dodge",
+          "movement": "avoid_harm_only"
+        }
+      },
+      "status": "authoring_declaration_not_a_registered_opcode",
+      "required_source_rules": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006",
+        "r007",
+        "r008",
+        "r009",
+        "r010",
+        "r011",
+        "r012"
+      ]
+    }
+  ],
+  "runtime_draft": {
+    "origin": "proposed_operations",
+    "definition": null,
+    "fragments": {},
+    "coverage": "Unverified. Neither a full definition nor a fragment certifies all source rules or controls. Required extensions are not silently waived."
+  },
+  "required_extensions": [
+    {
+      "group": "created_actors",
+      "requirement": "Supply the complete eligible statblocks/templates and exact placement, command, turn, type, resource, inventory and ending policies; retain all source-specific subclauses.",
+      "spell_specific_intent": "One eligible Small/Medium Humanoid corpse or bone pile; create appropriate Skeleton/Zombie; Bonus Action mental commands within 60 feet, standing orders and self-defense; exact 24-hour control/reassertion and higher-slot creation/renewal counts.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006",
+        "r007",
+        "r008",
+        "r009",
+        "r010",
+        "r011",
+        "r012"
+      ],
+      "existing_owner_to_reuse": "src/characters/created_actor_rules.gd",
+      "slice_references": "S-154/S-155/S-156/S-157/S-158/S-164",
+      "disposition": "requires_mapping_or_host_completion",
+      "note": "This is an authored handoff requirement, not a fresh runtime failure or claim that the whole referenced slice is missing."
+    },
+    {
+      "group": "long_cast",
+      "requirement": "Preserve the source casting duration, participants, ritual extension, interruption and once-only payment; do not replace a timed cast with an Action.",
+      "spell_specific_intent": "One eligible Small/Medium Humanoid corpse or bone pile; create appropriate Skeleton/Zombie; Bonus Action mental commands within 60 feet, standing orders and self-defense; exact 24-hour control/reassertion and higher-slot creation/renewal counts.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006",
+        "r007",
+        "r008",
+        "r009",
+        "r010",
+        "r011",
+        "r012"
+      ],
+      "existing_owner_to_reuse": "src/spells/cast_interruption_rules.gd",
+      "slice_references": "S-066/S-067/S-134",
+      "disposition": "requires_mapping_or_host_completion",
+      "note": "This is an authored handoff requirement, not a fresh runtime failure or claim that the whole referenced slice is missing."
+    },
+    {
+      "group": "long_lifetimes",
+      "requirement": "Carry the declared source and recipient state through actual campaign time, ending and allowed checkpoints; preserve exact damage/recurrence policies.",
+      "spell_specific_intent": "One eligible Small/Medium Humanoid corpse or bone pile; create appropriate Skeleton/Zombie; Bonus Action mental commands within 60 feet, standing orders and self-defense; exact 24-hour control/reassertion and higher-slot creation/renewal counts.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006",
+        "r007",
+        "r008",
+        "r009",
+        "r010",
+        "r011",
+        "r012"
+      ],
+      "existing_owner_to_reuse": "src/spells/spell_effects.gd",
+      "slice_references": "S-070/S-141",
+      "disposition": "requires_mapping_or_host_completion",
+      "note": "This is an authored handoff requirement, not a fresh runtime failure or claim that the whole referenced slice is missing."
+    }
+  ],
+  "audit": {
+    "source": "docs/audits/spells.md",
+    "batch": "088-8",
+    "production_definition_at_authoring": "res://data/core/spells/imported_spells.json#7",
+    "baseline_execution": "native",
+    "source_revision": "2a19eb1d",
+    "existing_conversion_label": "queued"
+  },
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile every source rule and required extension, then implement and verify through production paths before any deliberate promotion. Keep native behavior until covered."
+  }
+}

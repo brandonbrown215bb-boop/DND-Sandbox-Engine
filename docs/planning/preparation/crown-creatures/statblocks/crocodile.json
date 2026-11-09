@@ -1,0 +1,191 @@
+{
+  "schema": "crown-creature-candidate/1",
+  "id": "srd_crocodile",
+  "name": "Crocodile",
+  "kind": "srd_statblock",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring intent only; not registered engine syntax. Mapping requirements do not assert the whole referenced engine slice is absent.",
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile all source clauses, mappings and source differences before later production-path verification. Keep native paths until replacements cover them."
+  },
+  "source": {
+    "authority": "SRD 5.2.1",
+    "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      347
+    ],
+    "text": "Crocodile\nLarge Beast, Unaligned\nAC 12 Initiative +0 (10)\nHP 13 (2d10 + 2)\nSpeed 20 ft., Swim 30 ft.\nMOD SAVE MOD SAVE MOD SAVE\nStr 15 +2 +2 Dex 10 +0 +0 Con 13 +1 +3\nInt 2 −4 −4 WIS 10 +0 +0 Cha 5 −3 −3\nSkills Stealth +2\nSenses Passive Perception 10\nLanguages None\nCR 1/2 (XP 100; PB +2)\nTraits\nHold Breath. The crocodile can hold its breath\nfor 1 hour.\nActions\nBite. Melee Attack Roll: +4, reach 5 ft. Hit: 6 (1d8\n+ 2) Piercing damage. If the target is a Medium or\nsmaller creature, it has the Grappled condition (escape\nDC 12). While Grappled, the target has the Restrained\ncondition.",
+    "transcription": "Two-column extraction; line breaks retained. Whole selected page context is in source-pages.json. No stat correction inferred from donor data."
+  },
+  "statistics": {
+    "identity_line": "Large Beast, Unaligned",
+    "AC": "12 Initiative +0 (10)",
+    "HP": "13 (2d10 + 2)",
+    "Speed": "20 ft., Swim 30 ft.",
+    "Skills": "Stealth +2",
+    "Senses": "Passive Perception 10",
+    "Languages": "None",
+    "CR": "1/2 (XP 100; PB +2)",
+    "ability_scores": {
+      "STR": 15,
+      "DEX": 10,
+      "CON": 13,
+      "INT": 2,
+      "WIS": 10,
+      "CHA": 5
+    },
+    "saving_throw_modifiers": {
+      "STR": 2,
+      "DEX": 0,
+      "CON": 3,
+      "INT": -4,
+      "WIS": 0,
+      "CHA": -3
+    },
+    "initiative_modifier": 0,
+    "initiative_score_printed": 10,
+    "armor_class": 12,
+    "movement_feet": {
+      "walk": 20,
+      "swim": 30
+    }
+  },
+  "authored_operations": [
+    {
+      "key": "b001",
+      "name": "Hold Breath",
+      "source_section": "Traits",
+      "full_rule": "Hold Breath. The crocodile can hold its breath\nfor 1 hour.",
+      "budget": "passive_or_declared_trigger",
+      "steps": [
+        {
+          "intent": "Represent actual size/space, climb/swim/fly and breathing, jumps, straight-line charge history, opportunity exceptions, web surfaces and legal release.",
+          "mapping_group": "movement"
+        }
+      ],
+      "parameters_from_rule": {
+        "attack_bonus": [],
+        "save_dc": [],
+        "distances_feet": [],
+        "dice": []
+      },
+      "blockers": [
+        "map_movement"
+      ],
+      "ending_and_identity": "Exact actor/action/target/source instance; use every qualifier and ending in full_rule, not only extracted parameters.",
+      "behavior_plan": {
+        "budget": "passive_or_declared_trigger",
+        "source_outcomes": {},
+        "breath_hold_seconds": 3600
+      }
+    },
+    {
+      "key": "b002",
+      "name": "Bite",
+      "source_section": "Actions",
+      "full_rule": "Bite. Melee Attack Roll: +4, reach 5 ft. Hit: 6 (1d8\n+ 2) Piercing damage. If the target is a Medium or\nsmaller creature, it has the Grappled condition (escape\nDC 12). While Grappled, the target has the Restrained\ncondition.",
+      "budget": "action",
+      "steps": [
+        {
+          "intent": "Resolve declared roll or save, targets, range/reach, damage packets, multiattack choice, riders and exact action budget. A save-only action is not a weapon hit rider.",
+          "mapping_group": "attacks"
+        },
+        {
+          "intent": "Preserve immunity, source identity, thresholds, repeat saves, explicit ending events and target-relative deadlines.",
+          "mapping_group": "conditions"
+        },
+        {
+          "intent": "Charge exact source-owned action/reaction/use once; preserve recharge dice, daily and Long Rest schedules as separately authored rules.",
+          "mapping_group": "resources"
+        }
+      ],
+      "parameters_from_rule": {
+        "attack_bonus": [
+          4
+        ],
+        "save_dc": [
+          12
+        ],
+        "distances_feet": [
+          5
+        ],
+        "dice": [
+          "1d8\n+ 2"
+        ]
+      },
+      "blockers": [
+        "map_attacks",
+        "map_conditions",
+        "map_resources"
+      ],
+      "ending_and_identity": "Exact actor/action/target/source instance; use every qualifier and ending in full_rule, not only extracted parameters.",
+      "behavior_plan": {
+        "budget": "action",
+        "source_outcomes": {
+          "hit": "6 (1d8 + 2) Piercing damage. If the target is a Medium or smaller creature, it has the Grappled condition (escape DC 12). While Grappled, the target has the Restrained condition."
+        },
+        "resolution": "attack_roll",
+        "attack_kind": "melee",
+        "damage_and_riders": "6 (1d8 + 2) Piercing damage. If the target is a Medium or smaller creature, it has the Grappled condition (escape DC 12). While Grappled, the target has the Restrained condition.",
+        "permission": "ordinary familiar cannot attack; invocation exceptions must grant this exact attack or Attack action, not every Actions entry",
+        "relation": "Create exact grapple/tether relation, printed target size and escapeDC; preserve each limb/capacity restriction and associated Restrained only while related"
+      }
+    }
+  ],
+  "retained_definitions": [
+    {
+      "path": "data/core/monsters/imported_monsters.json",
+      "sha256": "f57bee1e93f185a89575bed3d8b2b610b53cfd3b7f2eb56448d1dd64a0126c5f",
+      "pointer": "/92",
+      "payload": {
+        "id": "crocodile",
+        "name": "Crocodile",
+        "hit_points": "3d10 + 3",
+        "armor_class": 12,
+        "speed": 4,
+        "ability_scores": {
+          "STR": 15,
+          "DEX": 10,
+          "CON": 13,
+          "INT": 2,
+          "WIS": 10,
+          "CHA": 5
+        },
+        "attacks": [
+          {
+            "name": "Claws",
+            "ability": "STR",
+            "damage": "1d6",
+            "range": 1,
+            "damage_type": "slashing"
+          }
+        ],
+        "ai_behavior": "aggressive"
+      },
+      "manifest_declarations": []
+    }
+  ],
+  "selection": {
+    "wild_shape_druid_levels_2_3": false,
+    "wild_shape_druid_levels_4_5": true,
+    "normal_familiar": false,
+    "pact_of_chain_special": false,
+    "animate_dead_output": false,
+    "held_swarm": false,
+    "encounter_comparison_only": false
+  },
+  "acquisition_links": [
+    "selection-links.json"
+  ],
+  "blockers": [
+    "map_statistics",
+    "map_attacks",
+    "map_conditions",
+    "map_movement",
+    "map_resources"
+  ],
+  "source_reconciliation": "Official body is authoritative for this SRD candidate. Retained donor payloads are comparison/reuse seeds, including legacy values and manifest winners; do not merge their statistics or traits by ID. Direct Crown encounters retain separate candidates.",
+  "equipment_links": []
+}

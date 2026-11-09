@@ -1,0 +1,189 @@
+{
+  "format": "crown-spell-candidate/1",
+  "id": "fear",
+  "name": "Fear",
+  "level": 3,
+  "status": "written_unverified_not_loaded",
+  "source": {
+    "authority": "SRD 5.2.1",
+    "url": "https://media.dndbeyond.com/compendium-images/srd/5.2/SRD_CC_v5.2.1.pdf",
+    "sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      130
+    ],
+    "header": {
+      "Casting Time": "Action",
+      "Range": "Self",
+      "Components": "V, S, M (a white feather)",
+      "Duration": "Concentration, up to 1 minute"
+    },
+    "attribution": "System Reference Document 5.2.1, Wizards of the Coast LLC; CC BY 4.0."
+  },
+  "casting": {
+    "casting_time": "Action",
+    "kind": "action",
+    "seconds": null,
+    "ritual_available": false,
+    "range": {
+      "source": "Self",
+      "kind": "self",
+      "feet": 0
+    },
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "a white feather",
+    "duration": "Concentration, up to 1 minute",
+    "concentration": true,
+    "spell_lists": [
+      "bard",
+      "sorcerer",
+      "warlock",
+      "wizard"
+    ]
+  },
+  "authored_intent": "Self 30-foot cone WIS save; failed targets drop held items and become Frightened; Dash and safe escape each turn; save at end of turn only when no caster line of sight.",
+  "rules": [
+    {
+      "id": "r001",
+      "text": "Each creature in a 30-foot Cone must succeed on a Wisdom saving throw or drop whatever it is holding and have the Frightened condition for the duration."
+    },
+    {
+      "id": "r002",
+      "text": "A Frightened creature takes the Dash action and moves away from you by the safest route on each of its turns unless there is nowhere to move."
+    },
+    {
+      "id": "r003",
+      "text": "If the creature ends its turn in a space where it doesn’t have line of sight to you, the creature makes a Wisdom saving throw."
+    },
+    {
+      "id": "r004",
+      "text": "On a successful save, the spell ends on that creature."
+    }
+  ],
+  "authored_operations": [
+    {
+      "operation": "save_then_compel_flight",
+      "parameters": {
+        "cone_feet": 30,
+        "save": "WIS",
+        "failure": [
+          "drop_held_items",
+          "frightened"
+        ],
+        "on_target_turn": {
+          "action": "dash",
+          "movement": "safest_away_route",
+          "unless": "nowhere_to_move"
+        },
+        "repeat_save": {
+          "boundary": "target_turn_end",
+          "only_if": "no_line_of_sight_to_caster",
+          "ability": "WIS"
+        }
+      },
+      "status": "authoring_declaration_not_a_registered_opcode",
+      "required_source_rules": [
+        "r001",
+        "r002",
+        "r003",
+        "r004"
+      ]
+    }
+  ],
+  "runtime_draft": {
+    "origin": "new_shared_draft",
+    "definition": {
+      "id": "fear",
+      "name": "Fear",
+      "execution": "shared",
+      "level": 3,
+      "school": "illusion",
+      "classes": [
+        "bard",
+        "sorcerer",
+        "warlock",
+        "wizard"
+      ],
+      "components": [
+        "V",
+        "S",
+        "M"
+      ],
+      "duration": "Concentration, up to 1 minute",
+      "concentration": true,
+      "rules_source": "SRD 5.2.1",
+      "rules_status": "authoring-draft-unverified",
+      "range": 0,
+      "range_kind": "self",
+      "casting_time": "action",
+      "material": "a white feather",
+      "duration_seconds": 60,
+      "description": "Each creature in a 30-foot Cone must succeed on a Wisdom saving throw or drop whatever it is holding and have the Frightened condition for the duration. A Frightened creature takes the Dash action and moves away from you by the safest route on each of its turns unless there is nowhere to move. If the creature ends its turn in a space where it doesn’t have line of sight to you, the creature makes a Wisdom saving throw. On a successful save, the spell ends on that creature.",
+      "target": "area",
+      "save": "WIS",
+      "effects": [
+        {
+          "type": "area_selection",
+          "shape": "cone",
+          "size": 6
+        },
+        {
+          "type": "grant_condition",
+          "condition": "frightened",
+          "on_failed_save": true
+        }
+      ],
+      "cone_size": 6
+    },
+    "fragments": {},
+    "coverage": "Unverified. Neither a full definition nor a fragment certifies all source rules or controls. Required extensions are not silently waived."
+  },
+  "required_extensions": [
+    {
+      "group": "compelled_actions",
+      "requirement": "Execute the target-owned commanded/reaction action and legal route with the correct OA policy, budgets, source conditions and stopping rules.",
+      "spell_specific_intent": "Self 30-foot cone WIS save; failed targets drop held items and become Frightened; Dash and safe escape each turn; save at end of turn only when no caster line of sight.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003",
+        "r004"
+      ],
+      "existing_owner_to_reuse": "src/combat/combat_child_actions.gd",
+      "slice_references": "S-183/S-241/S-269",
+      "disposition": "requires_mapping_or_host_completion",
+      "note": "This is an authored handoff requirement, not a fresh runtime failure or claim that the whole referenced slice is missing."
+    },
+    {
+      "group": "objects",
+      "requirement": "Use exact represented item/object copies, eligibility facts and quantities; retain real manipulation, drop, damage, access and ending outcomes.",
+      "spell_specific_intent": "Self 30-foot cone WIS save; failed targets drop held items and become Frightened; Dash and safe escape each turn; save at end of turn only when no caster line of sight.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003",
+        "r004"
+      ],
+      "existing_owner_to_reuse": "src/dungeon/local_room_rules.gd",
+      "slice_references": "S-032/S-164/S-212/S-213",
+      "disposition": "requires_mapping_or_host_completion",
+      "note": "This is an authored handoff requirement, not a fresh runtime failure or claim that the whole referenced slice is missing."
+    }
+  ],
+  "audit": {
+    "source": "docs/audits/spells.md",
+    "batch": "088-3",
+    "production_definition_at_authoring": "res://data/core/spells/imported_spells.json#70",
+    "baseline_execution": "native",
+    "source_revision": "2a19eb1d",
+    "existing_conversion_label": "queued"
+  },
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile every source rule and required extension, then implement and verify through production paths before any deliberate promotion. Keep native behavior until covered."
+  }
+}

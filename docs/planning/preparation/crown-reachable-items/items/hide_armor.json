@@ -1,0 +1,75 @@
+{
+  "schema": "crown-reachable-item-candidate/1",
+  "id": "hide_armor",
+  "name": "Hide Armor",
+  "kind": "armor",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring intent only; not registered engine syntax.",
+  "rules": {
+    "authority": "SRD 5.2.1",
+    "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      92
+    ],
+    "text": "One suit of armor and one Shield at a time. Without armor training: Disadvantage on Strength/Dexterity D20 Tests and no spellcasting. A listed Strength requirement reduces Speed by 10 feet unless met; listed Stealth Disadvantage applies while worn.",
+    "source_context": "../source-pages.json"
+  },
+  "definition": {
+    "id": "hide_armor",
+    "name": "Hide Armor",
+    "category": "medium",
+    "base_ac": 12,
+    "dexterity_cap": 2,
+    "strength_requirement": null,
+    "stealth_disadvantage": false,
+    "weight_lb": 12,
+    "cost_gp": 10,
+    "don_minutes": 5,
+    "doff_minutes": 1
+  },
+  "authored_operations": [
+    "One suit of armor and one Shield at a time. Without armor training: Disadvantage on Strength/Dexterity D20 Tests and no spellcasting. A listed Strength requirement reduces Speed by 10 feet unless met; listed Stealth Disadvantage applies while worn."
+  ],
+  "retained_runtime_seeds": [
+    {
+      "path": "data/core/items/imported_base_items.json",
+      "array_index": 21,
+      "file_sha256": "d450331c5dc1756fccc025c42e7f60bc6312a6829e59814e9864878a4abaae42",
+      "definition": {
+        "id": "hide_armor",
+        "name": "Hide Armor",
+        "description": "This crude armor consists of thick furs and pelts. It is commonly worn by barbarian tribes, evil humanoids, and other folk who lack access to the tools and materials needed to create better armor.",
+        "type": "armor",
+        "armor_type": "medium",
+        "ac": 12,
+        "stealth_disadvantage": false,
+        "value": 10
+      }
+    }
+  ],
+  "manifest_overrides": [],
+  "required_mapping": [
+    "armor"
+  ],
+  "consumers": [
+    {
+      "channel": "historical_shop_inventory",
+      "path": "docs/planning/crown-content-scope.md",
+      "sha256": "3bcb9799865f1779aa7da1c1b041a6ac938c33491dfd502641593bf767a8528e",
+      "details": "Pinned 64-ID Windows export inventory; retained below, not rerun here."
+    },
+    {
+      "channel": "source_shop_candidate",
+      "path": "data/core/items/imported_base_items.json",
+      "sha256": "d450331c5dc1756fccc025c42e7f60bc6312a6829e59814e9864878a4abaae42",
+      "json_pointer": "/21",
+      "details": "Positive shop type/value and, for consumables, declared supported effect names. This is a source selection lead, not a loaded availability certification; manifest wins remain authoritative."
+    }
+  ],
+  "unsupported_behavior": [
+    {
+      "group": "armor",
+      "requirement": "Map base AC/Dex caps, training, Strength/Stealth consequences and real don/doff. Reuse accepted timing; seed presence does not establish complete behavior."
+    }
+  ]
+}

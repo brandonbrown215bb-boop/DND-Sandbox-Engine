@@ -1,0 +1,107 @@
+{
+  "schema": "crown-reachable-item-candidate/1",
+  "id": "clean_water",
+  "name": "Clean water",
+  "kind": "created_item",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring intent only; not registered engine syntax.",
+  "rules": {
+    "authority": "SRD 5.2.1",
+    "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      121
+    ],
+    "text": "You do one of the following: Create Water.\nYou create up to 10 gallons of clean water within range in an open container.\nAlternatively, the water falls as rain in a 30-foot Cube within range, extinguishing exposed flames there.\nDestroy Water.\nYou destroy up to 10 gallons of water in an open container within range.\nAlternatively, you destroy fog in a 30-foot Cube within range.\nUsing a Higher-Level Spell Slot.\nYou create or destroy 10 additional gallons of water, or the size of the Cube increases by 5 feet, for each spell slot level above 1.",
+    "source_context": "../source-pages.json"
+  },
+  "definition": {
+    "id": "clean_water",
+    "name": "Clean water",
+    "unit": "gallon",
+    "creation_base_maximum_gallons": 10,
+    "additional_gallons_per_slot_level": 10
+  },
+  "authored_operations": [
+    "Create up to 10 gallons in an open container within range; each slot level above 1 adds 10 gallons, or increases the alternative rain/fog Cube side by 5 feet.",
+    "Destroy mode removes actual water in an open container rather than granting a negative inventory object. Rain extinguishes exposed flames in the source Cube; fog removal/rain stay world effects. No created-water expiry is specified."
+  ],
+  "retained_runtime_seeds": [],
+  "manifest_overrides": [],
+  "required_mapping": [
+    "created_items"
+  ],
+  "rules_owner": {
+    "path": "docs/planning/preparation/crown-spells/create_or_destroy_water.json",
+    "sha256": "b817d98f908ba8b602c23e3579ce55e40395853ad1c6901706a9b2e4e30d3300"
+  },
+  "retained_spell_draft": {
+    "authored_operations": [
+      {
+        "operation": "choose_measured_water_effect",
+        "parameters": {
+          "choices": {
+            "create": {
+              "gallons": 10,
+              "open_container": true,
+              "alternative": {
+                "rain_cube_feet": 30,
+                "extinguish_exposed_flames": true
+              }
+            },
+            "destroy": {
+              "gallons": 10,
+              "open_container": true,
+              "alternative": {
+                "destroy_fog_cube_feet": 30
+              }
+            }
+          },
+          "upcast": {
+            "gallons_per_slot": 10,
+            "cube_edge_feet_per_slot": 5
+          }
+        },
+        "status": "authoring_declaration_not_a_registered_opcode",
+        "required_source_rules": [
+          "r001",
+          "r002",
+          "r003",
+          "r004",
+          "r005",
+          "r006",
+          "r007",
+          "r008"
+        ]
+      }
+    ]
+  },
+  "additional_rules_owner": {
+    "path": "docs/planning/preparation/crown-spells/create_food_and_water.json",
+    "sha256": "2a794ab324cf943603156453a5c0bd90387d30b523be43148facbb4cf65a2766",
+    "rule": "Creates 30 gallons of fresh clean water on ground or in containers within range. Its food spoils after 24 hours; source does not apply that expiry to water."
+  },
+  "consumers": [
+    {
+      "channel": "spell_created_output",
+      "path": "docs/planning/preparation/crown-spells/create_or_destroy_water.json",
+      "sha256": "b817d98f908ba8b602c23e3579ce55e40395853ad1c6901706a9b2e4e30d3300",
+      "json_pointer": "/rules"
+    },
+    {
+      "channel": "spell_created_output",
+      "path": "docs/planning/preparation/crown-spells/create_food_and_water.json",
+      "sha256": "2a794ab324cf943603156453a5c0bd90387d30b523be43148facbb4cf65a2766",
+      "json_pointer": "/rules"
+    }
+  ],
+  "unsupported_behavior": [
+    {
+      "group": "created_items",
+      "requirement": "Map actual created copies/batches, source owner, portions, location, lifetime and exact ending/consumption without replay. Never replace transient magical output with a permanent tradeable catalog item."
+    },
+    {
+      "group": "definition",
+      "requirement": "No exact current loaded-source seed at this identity. This candidate needs deliberate contract mapping/promotion; it is not an installed item."
+    }
+  ]
+}

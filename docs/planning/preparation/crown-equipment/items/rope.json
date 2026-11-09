@@ -1,0 +1,75 @@
+{
+  "schema": "crown-equipment-candidate/1",
+  "id": "rope",
+  "name": "Rope",
+  "kind": "gear",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring intent only; not registered engine syntax.",
+  "rules": {
+    "authority": "SRD 5.2.1",
+    "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      95,
+      100
+    ],
+    "section": "Rope",
+    "text": "Utilize: DC 10 Dexterity (Sleight of Hand) to tie a knot. Burst: DC 20 Strength (Athletics). An unwilling creature can be bound only if Grappled, Incapacitated or Restrained; bound legs cause Restrained until escape. Escape takes an action and DC 15 Dexterity (Acrobatics).",
+    "source_context": "../source-pages.json"
+  },
+  "definition": {
+    "id": "rope",
+    "name": "Rope",
+    "weight_lb": 5,
+    "cost_gp": 1
+  },
+  "authored_operations": [
+    "Utilize: DC 10 Dexterity (Sleight of Hand) to tie a knot. Burst: DC 20 Strength (Athletics). An unwilling creature can be bound only if Grappled, Incapacitated or Restrained; bound legs cause Restrained until escape. Escape takes an action and DC 15 Dexterity (Acrobatics)."
+  ],
+  "retained_runtime_seeds": [
+    {
+      "path": "data/core/items/consumables.json",
+      "array_index": 4,
+      "file_sha256": "045f413d89391312c1e3a175351f90427accde8f21b8d087abc1d6c5d9c3ec2d",
+      "definition": {
+        "id": "rope",
+        "weight": 5,
+        "name": "Rope (50 ft)",
+        "description": "Hempen rope. Useful for climbing and certain event skill checks.",
+        "type": "tool",
+        "effects": [
+          {
+            "type": "skill_bonus",
+            "skill": "Athletics",
+            "bonus": 2,
+            "context": "climbing"
+          }
+        ],
+        "value": 1
+      }
+    }
+  ],
+  "manifest_overrides": [],
+  "required_mapping": [
+    "bindings"
+  ],
+  "consumers": [
+    {
+      "pack_id": "explorers_pack",
+      "quantity": 1
+    },
+    {
+      "pack_id": "dungeoneers_pack",
+      "quantity": 1
+    },
+    {
+      "pack_id": "burglars_pack",
+      "quantity": 1
+    }
+  ],
+  "unsupported_behavior": [
+    {
+      "group": "bindings",
+      "requirement": "Rope needs legal unwilling targets, knots, bound-leg restraint, exact escape/burst checks and object/source cleanup."
+    }
+  ]
+}

@@ -1,0 +1,149 @@
+{
+  "format": "crown-spell-candidate/1",
+  "id": "warding_bond",
+  "name": "Warding Bond",
+  "level": 2,
+  "status": "written_unverified_not_loaded",
+  "source": {
+    "authority": "SRD 5.2.1",
+    "url": "https://media.dndbeyond.com/compendium-images/srd/5.2/SRD_CC_v5.2.1.pdf",
+    "sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      173
+    ],
+    "header": {
+      "Casting Time": "Action",
+      "Range": "Touch",
+      "Components": "V, S, M (a pair of platinum rings worth 50+ GP each, which you and the target must wear for the duration)",
+      "Duration": "1 hour"
+    },
+    "attribution": "System Reference Document 5.2.1, Wizards of the Coast LLC; CC BY 4.0."
+  },
+  "casting": {
+    "casting_time": "Action",
+    "kind": "action",
+    "seconds": null,
+    "ritual_available": false,
+    "range": {
+      "source": "Touch",
+      "kind": "touch",
+      "feet": 5
+    },
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "a pair of platinum rings worth 50+ GP each, which you and the target must wear for the duration",
+    "duration": "1 hour",
+    "concentration": false,
+    "spell_lists": [
+      "cleric",
+      "paladin"
+    ]
+  },
+  "authored_intent": "Touch willing creature; nonconsumed pair of 50-GP platinum rings worn throughout; +1 AC/saves and all-damage Resistance while within 60 feet; copy actual damage to caster, not split; caster 0 HP, range or recast ends.",
+  "rules": [
+    {
+      "id": "r001",
+      "text": "You touch another creature that is willing and create a mystic connection between you and the target until the spell ends."
+    },
+    {
+      "id": "r002",
+      "text": "While the target is within 60 feet of you, it gains a +1 bonus to AC and saving throws, and it has Resistance to all damage."
+    },
+    {
+      "id": "r003",
+      "text": "Also, each time it takes damage, you take the same amount of damage."
+    },
+    {
+      "id": "r004",
+      "text": "The spell ends if you drop to 0 Hit Points or if you and the target become separated by more than 60 feet."
+    },
+    {
+      "id": "r005",
+      "text": "It also ends if the spell is cast again on either of the connected creatures."
+    }
+  ],
+  "authored_operations": [
+    {
+      "operation": "grant_linked_protection",
+      "parameters": {
+        "target": "other_willing_touched_creature",
+        "while_within_feet": 60,
+        "benefits": {
+          "ac_bonus": 1,
+          "saving_throw_bonus": 1,
+          "damage_resistance": "all"
+        },
+        "after_target_takes_damage": "copy_same_damage_amount_to_caster_not_split",
+        "ends": [
+          "caster_zero_hp",
+          "separated_more_than_60_feet",
+          "spell_recast_on_either_actor"
+        ]
+      },
+      "status": "authoring_declaration_not_a_registered_opcode",
+      "required_source_rules": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005"
+      ]
+    }
+  ],
+  "runtime_draft": {
+    "origin": "proposed_operations",
+    "definition": null,
+    "fragments": {},
+    "coverage": "Unverified. Neither a full definition nor a fragment certifies all source rules or controls. Required extensions are not silently waived."
+  },
+  "required_extensions": [
+    {
+      "group": "damage_copy",
+      "requirement": "Copy the specified actual recipient damage to caster as a new bounded consequence; existing split/redirect policies are not a copy operation.",
+      "spell_specific_intent": "Touch willing creature; nonconsumed pair of 50-GP platinum rings worn throughout; +1 AC/saves and all-damage Resistance while within 60 feet; copy actual damage to caster, not split; caster 0 HP, range or recast ends.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005"
+      ],
+      "existing_owner_to_reuse": "src/combat/damage_link_rules.gd",
+      "slice_references": "S-111/S-112",
+      "disposition": "requires_mapping_or_host_completion",
+      "note": "This is an authored handoff requirement, not a fresh runtime failure or claim that the whole referenced slice is missing."
+    },
+    {
+      "group": "benefit_recipients",
+      "requirement": "Bind each chosen recipient, formula, recurring benefit and ending to the exact cast; self-only source carriers do not supply arbitrary recipients or every benefit kind.",
+      "spell_specific_intent": "Touch willing creature; nonconsumed pair of 50-GP platinum rings worn throughout; +1 AC/saves and all-damage Resistance while within 60 feet; copy actual damage to caster, not split; caster 0 HP, range or recast ends.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005"
+      ],
+      "existing_owner_to_reuse": "src/characters/source_benefit_rules.gd",
+      "slice_references": "S-080/S-084/S-085/S-086/S-141",
+      "disposition": "requires_mapping_or_host_completion",
+      "note": "This is an authored handoff requirement, not a fresh runtime failure or claim that the whole referenced slice is missing."
+    }
+  ],
+  "audit": {
+    "source": "docs/audits/spells.md",
+    "batch": "088-4",
+    "production_definition_at_authoring": "res://data/core/spells/imported_spells.json#191",
+    "baseline_execution": "native",
+    "source_revision": "2a19eb1d",
+    "existing_conversion_label": "queued"
+  },
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile every source rule and required extension, then implement and verify through production paths before any deliberate promotion. Keep native behavior until covered."
+  }
+}

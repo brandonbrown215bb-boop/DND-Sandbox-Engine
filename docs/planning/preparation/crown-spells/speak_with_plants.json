@@ -1,0 +1,152 @@
+{
+  "format": "crown-spell-candidate/1",
+  "id": "speak_with_plants",
+  "name": "Speak with Plants",
+  "level": 3,
+  "status": "written_unverified_not_loaded",
+  "source": {
+    "authority": "SRD 5.2.1",
+    "url": "https://media.dndbeyond.com/compendium-images/srd/5.2/SRD_CC_v5.2.1.pdf",
+    "sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      164
+    ],
+    "header": {
+      "Casting Time": "Action",
+      "Range": "Self",
+      "Components": "V, S",
+      "Duration": "10 minutes"
+    },
+    "attribution": "System Reference Document 5.2.1, Wizards of the Coast LLC; CC BY 4.0."
+  },
+  "casting": {
+    "casting_time": "Action",
+    "kind": "action",
+    "seconds": null,
+    "ritual_available": false,
+    "range": {
+      "source": "Self",
+      "kind": "self",
+      "feet": 0
+    },
+    "components": [
+      "V",
+      "S"
+    ],
+    "material": null,
+    "duration": "10 minutes",
+    "concentration": false,
+    "spell_lists": [
+      "bard",
+      "druid",
+      "ranger"
+    ]
+  },
+  "authored_intent": "Plants in immobile 30-foot Emanation gain limited awareness/animation; question past-day events and command simple tasks; change plant Difficult Terrain, no uprooting; Plant creatures communicate as if sharing a language.",
+  "rules": [
+    {
+      "id": "r001",
+      "text": "You imbue plants in an immobile 30-foot Emanation with limited sentience and animation, giving them the ability to communicate with you and follow your simple commands."
+    },
+    {
+      "id": "r002",
+      "text": "You can question plants about events in the spell’s area within the past day, gaining information about creatures that have passed, weather, and other circumstances."
+    },
+    {
+      "id": "r003",
+      "text": "You can also turn Difficult Terrain caused by plant growth (such as thickets and undergrowth) into ordinary terrain that lasts for the duration."
+    },
+    {
+      "id": "r004",
+      "text": "Or you can turn ordinary terrain where plants are present into Difficult Terrain that lasts for the duration."
+    },
+    {
+      "id": "r005",
+      "text": "The spell doesn’t enable plants to uproot themselves and move about, but they can move their branches, tendrils, and stalks for you."
+    },
+    {
+      "id": "r006",
+      "text": "If a Plant creature is in the area, you can communicate with it as if you shared a common language."
+    }
+  ],
+  "authored_operations": [
+    {
+      "operation": "communicate_and_animate_plants",
+      "parameters": {
+        "immobile_emanation_feet": 30,
+        "knowledge": "local_past_day",
+        "simple_commands": true,
+        "terrain_choices": [
+          "plant_difficult_to_normal",
+          "normal_with_plants_to_difficult"
+        ],
+        "no_uprooting": true,
+        "plant_creature_communication": "as_shared_language"
+      },
+      "status": "authoring_declaration_not_a_registered_opcode",
+      "required_source_rules": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006"
+      ]
+    }
+  ],
+  "runtime_draft": {
+    "origin": "proposed_operations",
+    "definition": null,
+    "fragments": {},
+    "coverage": "Unverified. Neither a full definition nor a fragment certifies all source rules or controls. Required extensions are not silently waived."
+  },
+  "required_extensions": [
+    {
+      "group": "communication",
+      "requirement": "Reuse represented language/hearing where applicable, then implement the spell-specific recipients, range, content, answers, secrecy and source lifetime.",
+      "spell_specific_intent": "Plants in immobile 30-foot Emanation gain limited awareness/animation; question past-day events and command simple tasks; change plant Difficult Terrain, no uprooting; Plant creatures communicate as if sharing a language.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006"
+      ],
+      "existing_owner_to_reuse": "src/combat/communication_rules.gd",
+      "slice_references": "S-194/S-218/S-219",
+      "disposition": "requires_mapping_or_host_completion",
+      "note": "This is an authored handoff requirement, not a fresh runtime failure or claim that the whole referenced slice is missing."
+    },
+    {
+      "group": "terrain",
+      "requirement": "Represent actual source-defined terrain movement cost, anchoring, camouflage, plant selection and discovery; preserve actor travel and once-only movement damage.",
+      "spell_specific_intent": "Plants in immobile 30-foot Emanation gain limited awareness/animation; question past-day events and command simple tasks; change plant Difficult Terrain, no uprooting; Plant creatures communicate as if sharing a language.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006"
+      ],
+      "existing_owner_to_reuse": "src/dungeon/local_room_rules.gd",
+      "slice_references": "S-179/S-227/S-228",
+      "disposition": "requires_mapping_or_host_completion",
+      "note": "This is an authored handoff requirement, not a fresh runtime failure or claim that the whole referenced slice is missing."
+    }
+  ],
+  "audit": {
+    "source": "docs/audits/spells.md",
+    "batch": "088-7",
+    "production_definition_at_authoring": "res://data/core/spells/imported_spells.json#173",
+    "baseline_execution": "native",
+    "source_revision": "2a19eb1d",
+    "existing_conversion_label": "queued"
+  },
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile every source rule and required extension, then implement and verify through production paths before any deliberate promotion. Keep native behavior until covered."
+  }
+}

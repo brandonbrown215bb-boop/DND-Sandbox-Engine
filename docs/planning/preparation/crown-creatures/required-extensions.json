@@ -1,0 +1,98 @@
+{
+  "schema": "crown-creature-required-mappings/1",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "groups": [
+    {
+      "id": "map_statistics",
+      "slice_references": "S-154/S-163/S-190/S-191",
+      "intent": "Preserve printed ability/save/skill/initiative, size/type, defenses, senses, languages, HP and feet; do not infer all saves from abilities or treat native cell speeds as feet.",
+      "disposition": "Map candidates onto existing contracts and finish only missing hosts later; no engine work or slice acceptance in this pass."
+    },
+    {
+      "id": "map_attacks",
+      "slice_references": "S-023/S-026/S-091/S-141/S-240",
+      "intent": "Resolve declared roll or save, targets, range/reach, damage packets, multiattack choice, riders and exact action budget. A save-only action is not a weapon hit rider.",
+      "disposition": "Map candidates onto existing contracts and finish only missing hosts later; no engine work or slice acceptance in this pass."
+    },
+    {
+      "id": "map_conditions",
+      "slice_references": "S-235/S-246/S-248",
+      "intent": "Preserve immunity, source identity, thresholds, repeat saves, explicit ending events and target-relative deadlines.",
+      "disposition": "Map candidates onto existing contracts and finish only missing hosts later; no engine work or slice acceptance in this pass."
+    },
+    {
+      "id": "map_movement",
+      "slice_references": "S-122/S-179/S-180/S-181/S-239/S-241",
+      "intent": "Represent actual size/space, climb/swim/fly and breathing, jumps, straight-line charge history, opportunity exceptions, web surfaces and legal release.",
+      "disposition": "Map candidates onto existing contracts and finish only missing hosts later; no engine work or slice acceptance in this pass."
+    },
+    {
+      "id": "map_senses",
+      "slice_references": "S-190/S-191/S-192/S-193/S-218",
+      "intent": "Use observer-relative senses, exact origin, real language/hearing/knowledge and distance. Do not grant global sight or invented NPC information.",
+      "disposition": "Map candidates onto existing contracts and finish only missing hosts later; no engine work or slice acceptance in this pass."
+    },
+    {
+      "id": "map_resources",
+      "slice_references": "S-084/S-085/S-134/S-135",
+      "intent": "Charge exact source-owned action/reaction/use once; preserve recharge dice, daily and Long Rest schedules as separately authored rules.",
+      "disposition": "Map candidates onto existing contracts and finish only missing hosts later; no engine work or slice acceptance in this pass."
+    },
+    {
+      "id": "map_forms",
+      "slice_references": "S-154/S-155/S-156/S-157/S-158/S-162/S-163/S-164",
+      "intent": "Resolve complete eligibility and chosen known forms, template parameters, command/turn policy and drop/merge/wear state; do not recreate or refill original actors on restore.",
+      "disposition": "Map candidates onto existing contracts and finish only missing hosts later; no engine work or slice acceptance in this pass."
+    },
+    {
+      "id": "map_aftermath",
+      "slice_references": "S-145/S-175/S-176/S-187/S-196",
+      "intent": "Retain death/max-HP/corpse identity, delayed creation/control and cancellation; no untracked zombie creation or automatic finale revival.",
+      "disposition": "Map candidates onto existing contracts and finish only missing hosts later; no engine work or slice acceptance in this pass."
+    },
+    {
+      "id": "map_items",
+      "slice_references": "S-049/S-150/S-161/S-164",
+      "intent": "Exact carried copies, corrosion penalties/destruction and Mending, temporary tack separation and dropped equipment; loot metadata is not a paid reward.",
+      "disposition": "Map candidates onto existing contracts and finish only missing hosts later; no engine work or slice acceptance in this pass."
+    },
+    {
+      "id": "map_party",
+      "slice_references": "S-231/S-232/S-233/S-234",
+      "intent": "Reuse campaign companion identity and stable slots; resolve actual 2024 origin/class/species/subclass/progression choices without silently inventing them.",
+      "disposition": "Map candidates onto existing contracts and finish only missing hosts later; no engine work or slice acceptance in this pass."
+    },
+    {
+      "id": "map_containment",
+      "slice_references": "S-170/S-171/S-172",
+      "intent": "Use exact container/victim occupancy, targeting and internal harm; legal corpse escape/disgorge with printed movement and conditions.",
+      "disposition": "Map candidates onto existing contracts and finish only missing hosts later; no engine work or slice acceptance in this pass."
+    },
+    {
+      "id": "map_casting",
+      "slice_references": "S-134/S-135/S-141",
+      "intent": "Use the linked spell with exact ability/components/target permission, Concentration, budgets and endings; not a permanent trait replacement.",
+      "disposition": "Map candidates onto existing contracts and finish only missing hosts later; no engine work or slice acceptance in this pass."
+    },
+    {
+      "id": "map_rolls",
+      "slice_references": "S-023/S-091/S-094/S-240",
+      "intent": "Apply conditional Advantage/Disadvantage or roll adjustment only to the qualifying exact check/save/attack and its declared window.",
+      "disposition": "Map candidates onto existing contracts and finish only missing hosts later; no engine work or slice acceptance in this pass."
+    }
+  ],
+  "additional_blockers": [
+    {
+      "id": "source_reconciliation",
+      "requirement": "Retain official versus Crown/donor differences explicitly; manifest precedence is not source correctness. No silent replacement."
+    },
+    {
+      "id": "custom_underspecified",
+      "requirement": "Resolve missing custom parameters without inventing official equivalence; see Goblin Chief and Lich King."
+    },
+    {
+      "id": "selection_swarm_adjudication",
+      "requirement": "Held swarm blocks are written but not counted among individual legal animal forms. Explicit source/selection adjudication required before any offering."
+    }
+  ]
+}

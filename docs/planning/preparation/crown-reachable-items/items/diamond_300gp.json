@@ -1,0 +1,79 @@
+{
+  "schema": "crown-reachable-item-candidate/1",
+  "id": "diamond_300gp",
+  "name": "Diamond (300+ GP)",
+  "kind": "spell_component",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring intent only; not registered engine syntax.",
+  "rules": {
+    "authority": "SRD 5.2.1",
+    "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      159
+    ],
+    "text": "Revivify requires: a diamond worth 300+ GP, which the spell consumes.",
+    "source_context": "../source-pages.json"
+  },
+  "definition": {
+    "id": "diamond_300gp",
+    "name": "Diamond (300+ GP)",
+    "minimum_worth_gp": 300,
+    "consumed": true,
+    "weight_lb": null
+  },
+  "authored_operations": [
+    "Validate the exact source form and minimum worth, not merely the shop price; track actual quantity and copy identity. Consumed components are paid once for the original casting, including ritual casts.",
+    "A reusable component remains owned after casting. Warding Bond requires two separate qualifying rings worn by caster/target for the duration; never interpret 50 GP as the whole pair. A Clairvoyance horn/eye matches the initial sense choice."
+  ],
+  "retained_runtime_seeds": [
+    {
+      "path": "data/core/items/recovery_components.json",
+      "array_index": 0,
+      "file_sha256": "7627b8744080116b2c5f8f2560d371bf0c50732fb8401264f4d863e39ac6dcd3",
+      "definition": {
+        "id": "diamond_300gp",
+        "name": "Diamond (300 GP)",
+        "description": "A diamond worth 300 GP, consumed by Revivify.",
+        "type": "spell_component",
+        "weight": 0.01,
+        "value": 300
+      }
+    }
+  ],
+  "manifest_overrides": [],
+  "required_mapping": [
+    "components"
+  ],
+  "reused_spell_source": {
+    "path": "docs/planning/preparation/crown-spells/revivify.json",
+    "sha256": "d5e1924da2df00c37f783e4d602a05f2967c32dafd8452b061eb34d58121472a",
+    "material": "a diamond worth 300+ GP, which the spell consumes"
+  },
+  "consumers": [
+    {
+      "channel": "historical_shop_inventory",
+      "path": "docs/planning/crown-content-scope.md",
+      "sha256": "3bcb9799865f1779aa7da1c1b041a6ac938c33491dfd502641593bf767a8528e",
+      "details": "Pinned 64-ID Windows export inventory; retained below, not rerun here."
+    },
+    {
+      "channel": "source_shop_candidate",
+      "path": "data/core/items/recovery_components.json",
+      "sha256": "7627b8744080116b2c5f8f2560d371bf0c50732fb8401264f4d863e39ac6dcd3",
+      "json_pointer": "/0",
+      "details": "Positive shop type/value and, for consumables, declared supported effect names. This is a source selection lead, not a loaded availability certification; manifest wins remain authoritative."
+    },
+    {
+      "channel": "spell_material",
+      "path": "docs/planning/preparation/crown-spells/revivify.json",
+      "sha256": "d5e1924da2df00c37f783e4d602a05f2967c32dafd8452b061eb34d58121472a",
+      "json_pointer": "/casting/material"
+    }
+  ],
+  "unsupported_behavior": [
+    {
+      "group": "components",
+      "requirement": "Map exact form, minimum worth and consumption per original cast, including rituals and paid/cancelled/Ready continuations. Do not equate shop price with component worth; consumed or priced components cannot be replaced with a generic focus/pouch."
+    }
+  ]
+}

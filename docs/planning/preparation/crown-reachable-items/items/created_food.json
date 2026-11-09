@@ -1,0 +1,84 @@
+{
+  "schema": "crown-reachable-item-candidate/1",
+  "id": "created_food",
+  "name": "Created food",
+  "kind": "created_item",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring intent only; not registered engine syntax.",
+  "rules": {
+    "authority": "SRD 5.2.1",
+    "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      120
+    ],
+    "text": "You create 45 pounds of food and 30 gallons of fresh water on the ground or in containers within range—both useful in fending off the hazards of malnutrition and dehydration.\nThe food is bland but nourishing and looks like a food of your choice, and the water is clean.\nThe food spoils after 24 hours if uneaten.",
+    "source_context": "../source-pages.json"
+  },
+  "definition": {
+    "id": "created_food",
+    "name": "Created food",
+    "quantity_lb": 45,
+    "spoil_after_hours": 24
+  },
+  "authored_operations": [
+    "Place 45 pounds on ground or in actual containers within spell range. Bland but nourishing; caster chooses appearance. Food spoils after 24 hours if uneaten.",
+    "Track actual edible portions and location; do not relabel as 45 days of Rations or infer a number of people not stated by this source."
+  ],
+  "retained_runtime_seeds": [],
+  "manifest_overrides": [],
+  "required_mapping": [
+    "created_items"
+  ],
+  "rules_owner": {
+    "path": "docs/planning/preparation/crown-spells/create_food_and_water.json",
+    "sha256": "2a794ab324cf943603156453a5c0bd90387d30b523be43148facbb4cf65a2766"
+  },
+  "retained_spell_draft": {
+    "authored_operations": [
+      {
+        "operation": "create_measured_resources",
+        "parameters": {
+          "food": {
+            "pounds": 45,
+            "nourishing": true,
+            "bland": true,
+            "appearance_choice": true,
+            "spoil_hours": 24
+          },
+          "water": {
+            "gallons": 30,
+            "fresh": true
+          },
+          "placement": [
+            "ground",
+            "containers"
+          ]
+        },
+        "status": "authoring_declaration_not_a_registered_opcode",
+        "required_source_rules": [
+          "r001",
+          "r002",
+          "r003"
+        ]
+      }
+    ]
+  },
+  "consumers": [
+    {
+      "channel": "spell_created_output",
+      "path": "docs/planning/preparation/crown-spells/create_food_and_water.json",
+      "sha256": "2a794ab324cf943603156453a5c0bd90387d30b523be43148facbb4cf65a2766",
+      "json_pointer": "/rules"
+    }
+  ],
+  "unsupported_behavior": [
+    {
+      "group": "created_items",
+      "requirement": "Map actual created copies/batches, source owner, portions, location, lifetime and exact ending/consumption without replay. Never replace transient magical output with a permanent tradeable catalog item."
+    },
+    {
+      "group": "definition",
+      "requirement": "No exact current loaded-source seed at this identity. This candidate needs deliberate contract mapping/promotion; it is not an installed item."
+    }
+  ]
+}

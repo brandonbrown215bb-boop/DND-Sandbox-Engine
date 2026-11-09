@@ -1,0 +1,96 @@
+{
+  "schema": "crown-world-candidate/1",
+  "id": "forest_events__fallen_traveler",
+  "name": "Fallen Traveler",
+  "kind": "events",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring declarations only; not registered engine opcodes.",
+  "required_extensions": [
+    "bodies_actors",
+    "discovery",
+    "objectives_rewards",
+    "rest_time"
+  ],
+  "authored_operations": [
+    {
+      "operation": "resolve_authored_check",
+      "seed_pointer": "/choices/0/check",
+      "check": {
+        "ability": "WIS",
+        "dc": 10
+      },
+      "requirement": "Keep ability, skill/context, DC and optional familiar Help exactly. Choose actor and actual context; settle one branch once; never silently convert an ability check into a saving throw."
+    },
+    {
+      "operation": "settle_ordered_branch",
+      "seed_pointer": "/choices/0/success/effects",
+      "effects": [
+        {
+          "type": "give_item",
+          "item_id": "gold_50"
+        }
+      ],
+      "condition": null,
+      "requirement": "Retain order, exact quantities/formulas, recipient, costs, branch descriptions and occurrence identity; no repeated payment when a child resumes."
+    },
+    {
+      "operation": "settle_ordered_branch",
+      "seed_pointer": "/choices/1/effects",
+      "effects": [
+        {
+          "type": "give_item",
+          "item_id": "gold_50"
+        }
+      ],
+      "condition": null,
+      "requirement": "Retain order, exact quantities/formulas, recipient, costs, branch descriptions and occurrence identity; no repeated payment when a child resumes."
+    }
+  ],
+  "blockers": [],
+  "retained_input": {
+    "path": "data/core/events/forest_events.json",
+    "sha256": "d4510f0da5ad26db2611a506fb58c79c35247610ac61ea39be48d30824feac09",
+    "pointer": "/events/6",
+    "payload": {
+      "id": "fallen_traveler",
+      "name": "Fallen Traveler",
+      "weight": 10,
+      "description": "You find a wounded traveler slumped against a tree, clutching a bloodied map.",
+      "type": "choice",
+      "choices": [
+        {
+          "text": "Heal and help them",
+          "check": {
+            "ability": "WIS",
+            "dc": 10
+          },
+          "success": {
+            "description": "The traveler recovers and thanks you profusely. 'Take this — it leads to treasure.' They hand you the map.",
+            "effects": [
+              {
+                "type": "give_item",
+                "item_id": "gold_50"
+              }
+            ]
+          },
+          "failure": {
+            "description": "Despite your best efforts, the traveler has already passed. You close their eyes."
+          }
+        },
+        {
+          "text": "Search their belongings",
+          "description": "A grim choice. You find some coins and a battered journal.",
+          "effects": [
+            {
+              "type": "give_item",
+              "item_id": "gold_50"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "authority": "Custom Crown campaign event, not an SRD trap/NPC/spell replacement",
+  "table_id": "forest_events",
+  "occurrence_policy": "Table may roll again; same in-flight occurrence must not reroll/reapply on reopen. Campaign-specific uniqueness beyond generated room claims is unresolved, not silently global once-per-event-ID."
+}

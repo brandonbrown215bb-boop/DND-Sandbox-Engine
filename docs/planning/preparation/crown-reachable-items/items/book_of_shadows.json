@@ -1,0 +1,69 @@
+{
+  "schema": "crown-reachable-item-candidate/1",
+  "id": "book_of_shadows",
+  "name": "Book of Shadows",
+  "kind": "created_item",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring intent only; not registered engine syntax.",
+  "rules": {
+    "authority": "SRD 5.2.1",
+    "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      74
+    ],
+    "text": "Pact of the Tome\nStitching together strands of shadow, you conjure\nforth a book in your hand at the end of a Short or\nLong Rest. This\nBook of Shadows\n(you determine its\nappearance) contains eldritch magic that only you\ncan access, granting you the benefits below. The\nbook disappears if you conjure another book with\nthis feature or if you die.\nCantrips and Rituals.\nWhen the book appears,\nchoose three cantrips, and choose two level 1 spells\nthat have the Ritual tag. The spells can be from any\nclass’s spell list, and they must be spells you don’t\nalready have prepared. While the book is on your\nperson, you have the chosen spells prepared, and\nthey function as Warlock spells for you.\nSpellcasting Focus.\nYou can use the book as a\nSpellcasting Focus.",
+    "source_context": "../source-pages.json"
+  },
+  "definition": {
+    "id": "book_of_shadows",
+    "name": "Book of Shadows",
+    "owner_only_eldritch_magic": true,
+    "expiry": "owner_death_or_replacement"
+  },
+  "authored_operations": [
+    "Conjure book in hand at end of Short or Long Rest. Choose three cantrips and two level-1 Ritual spells from any class lists, none already prepared.",
+    "While book is on person, selected spells are prepared as Warlock spells and book can be a focus. It disappears on owner death or another book conjured; remove only the exact source grants."
+  ],
+  "retained_runtime_seeds": [],
+  "manifest_overrides": [],
+  "required_mapping": [
+    "created_books"
+  ],
+  "rules_owner": {
+    "path": "docs/planning/preparation/crown-characters/invocations/pact_of_the_tome.json",
+    "sha256": "8baa3a52546fbe7e306be5124cc5fb64cf6b39f8108f38bd4bed93b7ea61e3d8"
+  },
+  "retained_character_operations": [
+    {
+      "trigger": "Conjure book in hand at end of Short or Long Rest",
+      "cost": "none",
+      "effects": [
+        "Choose3 cantrips and2 level1 Ritual spells from any class list, none already prepared; while book on person prepare these as Warlock spells; book is focus; Ritual tag does not prohibit slot casting"
+      ],
+      "ending_and_identity": "Book disappears on owner death or conjuring another; remove only its grants when not carried or ended.",
+      "required_extension_groups": [
+        "items",
+        "casting",
+        "choices"
+      ]
+    }
+  ],
+  "consumers": [
+    {
+      "channel": "character_created_output",
+      "path": "docs/planning/preparation/crown-characters/invocations/pact_of_the_tome.json",
+      "sha256": "8baa3a52546fbe7e306be5124cc5fb64cf6b39f8108f38bd4bed93b7ea61e3d8",
+      "json_pointer": "/rules"
+    }
+  ],
+  "unsupported_behavior": [
+    {
+      "group": "created_books",
+      "requirement": "Reuse the existing Pact of the Tome/Wizard rules; bind preparation/focus permission to the correct exact book and source. Book of Shadows is neither ordinary Book nor Wizard Spellbook."
+    },
+    {
+      "group": "definition",
+      "requirement": "No exact current loaded-source seed at this identity. This candidate needs deliberate contract mapping/promotion; it is not an installed item."
+    }
+  ]
+}

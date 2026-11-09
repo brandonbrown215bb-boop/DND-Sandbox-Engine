@@ -1,0 +1,176 @@
+{
+  "format": "crown-spell-candidate/1",
+  "id": "meld_into_stone",
+  "name": "Meld into Stone",
+  "level": 3,
+  "status": "written_unverified_not_loaded",
+  "source": {
+    "authority": "SRD 5.2.1",
+    "url": "https://media.dndbeyond.com/compendium-images/srd/5.2/SRD_CC_v5.2.1.pdf",
+    "sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      148
+    ],
+    "header": {
+      "Casting Time": "Action or Ritual",
+      "Range": "Touch",
+      "Components": "V, S",
+      "Duration": "8 hours"
+    },
+    "attribution": "System Reference Document 5.2.1, Wizards of the Coast LLC; CC BY 4.0."
+  },
+  "casting": {
+    "casting_time": "Action or Ritual",
+    "kind": "action",
+    "seconds": null,
+    "ritual_available": true,
+    "range": {
+      "source": "Touch",
+      "kind": "touch",
+      "feet": 5
+    },
+    "components": [
+      "V",
+      "S"
+    ],
+    "material": null,
+    "duration": "8 hours",
+    "concentration": false,
+    "spell_lists": [
+      "cleric",
+      "druid",
+      "ranger"
+    ]
+  },
+  "authored_intent": "Touch adequate stone volume; caster and carried gear merge; limited senses, permitted self-casting and movement-ending; damage/deformation/destruction forces source-defined expulsion, Prone and damage.",
+  "rules": [
+    {
+      "id": "r001",
+      "text": "You step into a stone object or surface large enough to fully contain your body, merging yourself and your equipment with the stone for the duration."
+    },
+    {
+      "id": "r002",
+      "text": "You must touch the stone to do so."
+    },
+    {
+      "id": "r003",
+      "text": "Nothing of your presence remains visible or otherwise detectable by nonmagical senses."
+    },
+    {
+      "id": "r004",
+      "text": "While merged with the stone, you can’t see what occurs outside it, and any Wisdom (Perception) checks you make to hear sounds outside it are made with Disadvantage."
+    },
+    {
+      "id": "r005",
+      "text": "You remain aware of the passage of time and can cast spells on yourself while merged in the stone."
+    },
+    {
+      "id": "r006",
+      "text": "You can use 5 feet of movement to leave the stone where you entered it, which ends the spell."
+    },
+    {
+      "id": "r007",
+      "text": "You otherwise can’t move."
+    },
+    {
+      "id": "r008",
+      "text": "Minor physical damage to the stone doesn’t harm you, but its partial destruction or a change in its shape (to the extent that you no longer fit within it) expels you and deals 6d6 Force damage to you."
+    },
+    {
+      "id": "r009",
+      "text": "The stone’s complete destruction (or transmutation into a different substance) expels you and deals 50 Force damage to you."
+    },
+    {
+      "id": "r010",
+      "text": "If expelled, you move into an unoccupied space closest to where you first entered and have the Prone condition."
+    }
+  ],
+  "authored_operations": [
+    {
+      "operation": "merge_with_stone",
+      "parameters": {
+        "requires": "touch_stone_volume_fitting_body",
+        "include_gear": true,
+        "nonmagical_detection": false,
+        "vision_outside": false,
+        "hearing_checks": "disadvantage",
+        "self_casting": true,
+        "leave": {
+          "movement_feet": 5,
+          "same_entrance": true,
+          "ends_spell": true
+        },
+        "otherwise_move": false,
+        "partial_destruction_or_deformation": {
+          "expel": true,
+          "damage": "6d6",
+          "type": "force"
+        },
+        "complete_destruction_or_transmutation": {
+          "expel": true,
+          "damage": 50,
+          "type": "force"
+        },
+        "expulsion": {
+          "nearest_unoccupied_to_entrance": true,
+          "prone": true
+        }
+      },
+      "status": "authoring_declaration_not_a_registered_opcode",
+      "required_source_rules": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006",
+        "r007",
+        "r008",
+        "r009",
+        "r010"
+      ]
+    }
+  ],
+  "runtime_draft": {
+    "origin": "proposed_operations",
+    "definition": null,
+    "fragments": {},
+    "coverage": "Unverified. Neither a full definition nor a fragment certifies all source rules or controls. Required extensions are not silently waived."
+  },
+  "required_extensions": [
+    {
+      "group": "forms",
+      "requirement": "Declare legal forms, retained/replaced abilities and senses, gear policy, costs, restrictions and actual reversion/expulsion without refilling resources.",
+      "spell_specific_intent": "Touch adequate stone volume; caster and carried gear merge; limited senses, permitted self-casting and movement-ending; damage/deformation/destruction forces source-defined expulsion, Prone and damage.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006",
+        "r007",
+        "r008",
+        "r009",
+        "r010"
+      ],
+      "existing_owner_to_reuse": "src/characters/actor_projection_rules.gd",
+      "slice_references": "S-162/S-163/S-164",
+      "disposition": "requires_mapping_or_host_completion",
+      "note": "This is an authored handoff requirement, not a fresh runtime failure or claim that the whole referenced slice is missing."
+    }
+  ],
+  "audit": {
+    "source": "docs/audits/spells.md",
+    "batch": "088-6",
+    "production_definition_at_authoring": "res://data/core/spells/imported_spells.json#125",
+    "baseline_execution": "native",
+    "source_revision": "2a19eb1d",
+    "existing_conversion_label": "queued"
+  },
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile every source rule and required extension, then implement and verify through production paths before any deliberate promotion. Keep native behavior until covered."
+  }
+}

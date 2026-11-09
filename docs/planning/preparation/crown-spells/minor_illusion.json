@@ -1,0 +1,186 @@
+{
+  "format": "crown-spell-candidate/1",
+  "id": "minor_illusion",
+  "name": "Minor Illusion",
+  "level": 0,
+  "status": "written_unverified_not_loaded",
+  "source": {
+    "authority": "SRD 5.2.1",
+    "url": "https://media.dndbeyond.com/compendium-images/srd/5.2/SRD_CC_v5.2.1.pdf",
+    "sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      149
+    ],
+    "header": {
+      "Casting Time": "Action",
+      "Range": "30 feet",
+      "Components": "S, M (a bit of fleece)",
+      "Duration": "1 minute"
+    },
+    "attribution": "System Reference Document 5.2.1, Wizards of the Coast LLC; CC BY 4.0."
+  },
+  "casting": {
+    "casting_time": "Action",
+    "kind": "action",
+    "seconds": null,
+    "ritual_available": false,
+    "range": {
+      "source": "30 feet",
+      "kind": "distance",
+      "feet": 30
+    },
+    "components": [
+      "S",
+      "M"
+    ],
+    "material": "a bit of fleece",
+    "duration": "1 minute",
+    "concentration": false,
+    "spell_lists": [
+      "bard",
+      "sorcerer",
+      "warlock",
+      "wizard"
+    ]
+  },
+  "authored_intent": "Choose sound or object image within 5-foot cube; preserve sound timing/volume and image sensory limits, physical/Study discovery and observer faintness; recasting ends previous source; no invented Bonus Action dismissal.",
+  "rules": [
+    {
+      "id": "r001",
+      "text": "You create a sound or an image of an object within range that lasts for the duration."
+    },
+    {
+      "id": "r002",
+      "text": "See the descriptions below for the effects of each."
+    },
+    {
+      "id": "r003",
+      "text": "The illusion ends if you cast this spell again."
+    },
+    {
+      "id": "r004",
+      "text": "If a creature takes a Study action to examine the sound or image, the creature can determine that it is an illusion with a successful Intelligence (Investigation) check against your spell save DC."
+    },
+    {
+      "id": "r005",
+      "text": "If a creature discerns the illusion for what it is, the illusion becomes faint to the creature."
+    },
+    {
+      "id": "r006",
+      "text": "Sound."
+    },
+    {
+      "id": "r007",
+      "text": "If you create a sound, its volume can range from a whisper to a scream."
+    },
+    {
+      "id": "r008",
+      "text": "It can be your voice, someone else’s voice, a lion’s roar, a beating of drums, or any other sound you choose."
+    },
+    {
+      "id": "r009",
+      "text": "The sound continues unabated throughout the duration, or you can make discrete sounds at different times before the spell ends."
+    },
+    {
+      "id": "r010",
+      "text": "Image."
+    },
+    {
+      "id": "r011",
+      "text": "If you create an image of an object—such as a chair, muddy footprints, or a small chest—it must be no larger than a 5-foot Cube."
+    },
+    {
+      "id": "r012",
+      "text": "The image can’t create sound, light, smell, or any other sensory effect."
+    },
+    {
+      "id": "r013",
+      "text": "Physical interaction with the image reveals it to be an illusion, since things can pass through it."
+    }
+  ],
+  "authored_operations": [
+    {
+      "operation": "choose_illusion",
+      "parameters": {
+        "choices": {
+          "sound": {
+            "volume": "whisper_to_scream",
+            "continuous_or_discrete": true
+          },
+          "object_image": {
+            "cube_feet_max": 5,
+            "no_other_senses": true
+          }
+        },
+        "study": {
+          "check": "INT_Investigation",
+          "dc": "caster_spell_dc"
+        },
+        "physical_image_interaction": "reveals",
+        "disbeliever": "faint",
+        "recast_ends_previous": true
+      },
+      "status": "authoring_declaration_not_a_registered_opcode",
+      "required_source_rules": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006",
+        "r007",
+        "r008",
+        "r009",
+        "r010",
+        "r011",
+        "r012",
+        "r013"
+      ]
+    }
+  ],
+  "runtime_draft": {
+    "origin": "proposed_operations",
+    "definition": null,
+    "fragments": {},
+    "coverage": "Unverified. Neither a full definition nor a fragment certifies all source rules or controls. Required extensions are not silently waived."
+  },
+  "required_extensions": [
+    {
+      "group": "illusions",
+      "requirement": "Represent exact appearance/senses/location, interactions and Study checks; retain observer-specific disbelief, permitted changes and real consequences.",
+      "spell_specific_intent": "Choose sound or object image within 5-foot cube; preserve sound timing/volume and image sensory limits, physical/Study discovery and observer faintness; recasting ends previous source; no invented Bonus Action dismissal.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006",
+        "r007",
+        "r008",
+        "r009",
+        "r010",
+        "r011",
+        "r012",
+        "r013"
+      ],
+      "existing_owner_to_reuse": "src/combat/combat_perception.gd",
+      "slice_references": "S-187/S-188/S-189/S-195",
+      "disposition": "requires_mapping_or_host_completion",
+      "note": "This is an authored handoff requirement, not a fresh runtime failure or claim that the whole referenced slice is missing."
+    }
+  ],
+  "audit": {
+    "source": "docs/audits/spells.md",
+    "batch": "088-7",
+    "production_definition_at_authoring": "res://data/core/spells/imported_spells.json#129",
+    "baseline_execution": "native",
+    "source_revision": "2a19eb1d",
+    "existing_conversion_label": "queued"
+  },
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile every source rule and required extension, then implement and verify through production paths before any deliberate promotion. Keep native behavior until covered."
+  }
+}

@@ -1,0 +1,172 @@
+{
+  "schema": "crown-character-candidate/1",
+  "id": "halfling",
+  "name": "Halfling",
+  "kind": "species",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "scope": {
+    "total_character_level_maximum": 5
+  },
+  "operation_language": "authoring intent only; not registered engine syntax",
+  "runtime_support": "Retained definitions are reuse material, not proof of full rules. Every authored operation needs contract mapping and later production-path verification before promotion.",
+  "rules": {
+    "authority": "SRD 5.2.1",
+    "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      86
+    ],
+    "text": "Halfling\nCreature Type: Humanoid\nSize: Small (about 2–3 feet tall)\nSpeed: 30 feet\nAs a Halfling, you have these special traits.\nBrave.\nYou have Advantage on saving throws you\nmake to avoid or end the Frightened condition.\nHalfling Nimbleness.\nYou can move through the\nspace of any creature that is a size larger than you,\nbut you can’t stop in the same space.\nLuck.\nWhen you roll a 1 on the d20 of a D20 Test,\nyou can reroll the die, and you must use the new\nroll.\nNaturally Stealthy.\nYou can take the Hide action\neven when you are obscured only by a creature that\nis at least one size larger than you."
+  },
+  "definition": {
+    "size": [
+      "Small"
+    ],
+    "speed_feet": 30,
+    "creature_type": "Humanoid",
+    "ability_score_increases": {},
+    "languages": {
+      "fixed": [
+        "Common"
+      ],
+      "choose": 2,
+      "from": [
+        "Common Sign Language",
+        "Draconic",
+        "Dwarvish",
+        "Elvish",
+        "Giant",
+        "Gnomish",
+        "Goblin",
+        "Halfling",
+        "Orc"
+      ],
+      "source": "creation p20; species supplies no fixed ancestral language"
+    }
+  },
+  "authored_operations": [
+    {
+      "name": "Base species and creation grants",
+      "trigger": "Creation confirmation",
+      "cost": "One species; listed size and language choices",
+      "effects": [
+        "Humanoid creature type",
+        "Choose listed size; use declared Speed in feet; no fixed species ASIs",
+        "Know Common and choose two Standard Languages"
+      ],
+      "required_extension_groups": [
+        "progression",
+        "choices",
+        "languages",
+        "movement",
+        "world"
+      ],
+      "ending_and_identity": "Save exact selected species/size/languages; grant once; preserve legacy records separately."
+    },
+    {
+      "name": "Brave",
+      "trigger": "Save to avoid/end Frightened",
+      "cost": "none",
+      "effects": [
+        "Advantage on save"
+      ],
+      "required_extension_groups": [
+        "rolls"
+      ],
+      "ending_and_identity": "Exact species/selected trait source; respect source ending; permanent grants once at actual character level."
+    },
+    {
+      "name": "Halfling Nimbleness",
+      "trigger": "Movement through another creature",
+      "cost": "ordinary movement",
+      "effects": [
+        "May move through space of creature at least one size larger; cannot stop there"
+      ],
+      "required_extension_groups": [
+        "movement"
+      ],
+      "ending_and_identity": "Exact species/selected trait source; respect source ending; permanent grants once at actual character level."
+    },
+    {
+      "name": "Luck",
+      "trigger": "Roll1 on d20 of D20 Test",
+      "cost": "none",
+      "effects": [
+        "May reroll that die; must use new result"
+      ],
+      "required_extension_groups": [
+        "rolls"
+      ],
+      "ending_and_identity": "Exact species/selected trait source; respect source ending; permanent grants once at actual character level."
+    },
+    {
+      "name": "Naturally Stealthy",
+      "trigger": "Hide action",
+      "cost": "normal Hide action",
+      "effects": [
+        "May Hide when obscured only by creature at least one size larger; retain other Hide requirements"
+      ],
+      "required_extension_groups": [
+        "world"
+      ],
+      "ending_and_identity": "Exact species/selected trait source; respect source ending; permanent grants once at actual character level."
+    }
+  ],
+  "reused_from": [
+    "data/core/races/halfling.json"
+  ],
+  "retained_runtime_seed": {
+    "id": "halfling",
+    "name": "Halfling",
+    "description": "Halfling race. Source: XPHB.",
+    "ability_bonuses": {},
+    "speed": 6,
+    "size": "small",
+    "languages": [
+      "Common"
+    ],
+    "proficiencies": [],
+    "traits": [
+      {
+        "id": "halfling_brave",
+        "name": "Brave",
+        "description": "You have Advantage on saving throws you make to avoid or end the Frightened condition.",
+        "effects": []
+      },
+      {
+        "id": "halfling_halfling_nimbleness",
+        "name": "Halfling Nimbleness",
+        "description": "You can move through the space of any creature that is a size larger than you, but you can't stop in the same space.",
+        "effects": []
+      },
+      {
+        "id": "halfling_luck",
+        "name": "Luck",
+        "description": "When you roll a 1 on the d20 of a D20 Test, you can reroll the die, and you must use the new roll.",
+        "effects": []
+      },
+      {
+        "id": "halfling_naturally_stealthy",
+        "name": "Naturally Stealthy",
+        "description": "You can take the {@action Hide} action even when you are obscured only by a creature that is at least one size larger than you.",
+        "effects": []
+      }
+    ],
+    "darkvision": false,
+    "darkvision_feet": 0
+  },
+  "unsupported_behavior": [
+    {
+      "groups": [
+        "movement",
+        "rolls",
+        "world"
+      ],
+      "requirement": "2024 choices, character-level grants and full named trait outcomes must map to shared hosts. Legacy seed is comparison material only: never inherit its fixed ASIs, old weapon grants or other unselected traits.",
+      "status": "mapping_and_host_verification_required"
+    }
+  ],
+  "source_revision": "2a19eb1d (existing working-tree definitions and recovered drafts read on 2026-11-08)",
+  "reused_input_hashes": {
+    "data/core/races/halfling.json": "3edbaf7bb12e69e3889d6343d076e101163f32a7a1e6a76196762c4ff32f8024"
+  }
+}

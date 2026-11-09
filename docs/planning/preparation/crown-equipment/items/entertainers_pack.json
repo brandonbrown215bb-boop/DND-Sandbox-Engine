@@ -1,0 +1,148 @@
+{
+  "schema": "crown-equipment-candidate/1",
+  "id": "entertainers_pack",
+  "name": "Entertainer's Pack",
+  "kind": "pack",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring intent only; not registered engine syntax.",
+  "rules": {
+    "authority": "SRD 5.2.1",
+    "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      95,
+      98
+    ],
+    "section": "Entertainer's Pack",
+    "text": "Entertainer's Pack contains: 1 × Backpack, 1 × Bedroll, 1 × Bell, 1 × Bullseye Lantern, 3 × Costume, 1 × Mirror, 8 × Oil, 9 × Rations, 1 × Tinderbox, 1 × Waterskin.",
+    "source_context": "../source-pages.json"
+  },
+  "definition": {
+    "id": "entertainers_pack",
+    "name": "Entertainer's Pack",
+    "weight_lb": 58.5,
+    "cost_gp": 40,
+    "contents": [
+      {
+        "candidate_id": "backpack",
+        "quantity": 1
+      },
+      {
+        "candidate_id": "bedroll",
+        "quantity": 1
+      },
+      {
+        "candidate_id": "bell",
+        "quantity": 1
+      },
+      {
+        "candidate_id": "lantern_bullseye",
+        "quantity": 1
+      },
+      {
+        "candidate_id": "costume",
+        "quantity": 3
+      },
+      {
+        "candidate_id": "mirror",
+        "quantity": 1
+      },
+      {
+        "candidate_id": "oil_flask",
+        "quantity": 8
+      },
+      {
+        "candidate_id": "rations",
+        "quantity": 9
+      },
+      {
+        "candidate_id": "tinderbox",
+        "quantity": 1
+      },
+      {
+        "candidate_id": "waterskin",
+        "quantity": 1
+      }
+    ]
+  },
+  "authored_operations": [
+    "Grant the listed quantities exactly once from the selected class package. Resolve actual item copies/units, including sheets, days and flasks. Do not grant a priced shell in addition to free duplicate contents.",
+    "Pack is a purchase/grant bundle, not a promise that everything fits inside its Backpack. Preserve source bundle weight separately from measured contents; do not force all contents into the 30-pound compartment or invent unknown weights.",
+    "A Scholar pack Book has no specified topic or accuracy. Retain unknown metadata; grant no topic bonus merely for possession."
+  ],
+  "retained_runtime_seeds": [
+    {
+      "path": "data/core/items/adventuring_packs.json",
+      "array_index": 1,
+      "file_sha256": "03f215b84039fed986556957e1b4f570aa85179576cb8ca31263e5ba1bee2d1c",
+      "definition": {
+        "id": "entertainers_pack",
+        "name": "Entertainer's Pack",
+        "type": "tool",
+        "description": "A backpack, bedroll, bell, bullseye lantern, three costumes, mirror, eight Oil flasks, nine days of Rations, tinderbox, and waterskin. Carried as one bundle.",
+        "pack_contents": [
+          {
+            "item_id": "backpack",
+            "quantity": 1
+          },
+          {
+            "item_id": "bedroll",
+            "quantity": 1
+          },
+          {
+            "item_id": "bell",
+            "quantity": 1
+          },
+          {
+            "item_id": "lantern_bullseye",
+            "quantity": 1
+          },
+          {
+            "item_id": "costume",
+            "quantity": 3
+          },
+          {
+            "item_id": "mirror",
+            "quantity": 1
+          },
+          {
+            "item_id": "oil_flask",
+            "quantity": 8
+          },
+          {
+            "item_id": "rations",
+            "quantity": 9
+          },
+          {
+            "item_id": "tinderbox",
+            "quantity": 1
+          },
+          {
+            "item_id": "waterskin",
+            "quantity": 1
+          }
+        ],
+        "value": 40,
+        "rules_source": "dnd-2024-srd-5.2.1",
+        "rules_status": "2024-gameplay-partial"
+      }
+    }
+  ],
+  "manifest_overrides": [],
+  "required_mapping": [
+    "packs"
+  ],
+  "consumers": [
+    {
+      "package_id": "bard",
+      "option": "A",
+      "quantity": 1,
+      "source": "docs/planning/preparation/crown-characters/classes/bard.json"
+    }
+  ],
+  "unsupported_behavior": [
+    {
+      "group": "packs",
+      "requirement": "Resolve six complete pack lists and exact once-only expansion. Existing three pack seeds are partial reuse. Shell versus contents and actual storage must not duplicate gear or pretend bundle contents fit the Backpack."
+    }
+  ]
+}

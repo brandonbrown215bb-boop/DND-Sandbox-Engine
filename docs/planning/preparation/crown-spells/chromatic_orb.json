@@ -1,0 +1,169 @@
+{
+  "format": "crown-spell-candidate/1",
+  "id": "chromatic_orb",
+  "name": "Chromatic Orb",
+  "level": 1,
+  "status": "written_unverified_not_loaded",
+  "source": {
+    "authority": "SRD 5.2.1",
+    "url": "https://media.dndbeyond.com/compendium-images/srd/5.2/SRD_CC_v5.2.1.pdf",
+    "sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      115
+    ],
+    "header": {
+      "Casting Time": "Action",
+      "Range": "90 feet",
+      "Components": "V, S, M (a diamond worth 50+ GP)",
+      "Duration": "Instantaneous"
+    },
+    "attribution": "System Reference Document 5.2.1, Wizards of the Coast LLC; CC BY 4.0."
+  },
+  "casting": {
+    "casting_time": "Action",
+    "kind": "action",
+    "seconds": null,
+    "ritual_available": false,
+    "range": {
+      "source": "90 feet",
+      "kind": "distance",
+      "feet": 90
+    },
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "a diamond worth 50+ GP",
+    "duration": "Instantaneous",
+    "concentration": false,
+    "spell_lists": [
+      "sorcerer",
+      "wizard"
+    ]
+  },
+  "authored_intent": "Choose damage type; ranged spell attack; duplicate damage-die face causes a leap at chosen legal new target within 30 feet; no repeat creature, fresh attack/damage and leap cap equal paid slot; nonconsumed 50-GP diamond.",
+  "rules": [
+    {
+      "id": "r001",
+      "text": "You hurl an orb of energy at a target within range."
+    },
+    {
+      "id": "r002",
+      "text": "Choose Acid, Cold, Fire, Lightning, Poison, or Thunder for the type of orb you create, and then make a ranged spell attack against the target."
+    },
+    {
+      "id": "r003",
+      "text": "On a hit, the target takes 3d8 damage of the chosen type."
+    },
+    {
+      "id": "r004",
+      "text": "If you roll the same number on two or more of the d8s, the orb leaps to a different target of your choice within 30 feet of the target."
+    },
+    {
+      "id": "r005",
+      "text": "Make an attack roll against the new target, and make a new damage roll."
+    },
+    {
+      "id": "r006",
+      "text": "The orb can’t leap again unless you cast the spell with a level 2+ spell slot."
+    },
+    {
+      "id": "r007",
+      "text": "Using a Higher-Level Spell Slot."
+    },
+    {
+      "id": "r008",
+      "text": "The damage increases by 1d8 for each spell slot level above 1."
+    },
+    {
+      "id": "r009",
+      "text": "The orb can leap a maximum number of times equal to the level of the slot expended, and a creature can be targeted only once by each casting of this spell."
+    }
+  ],
+  "authored_operations": [
+    {
+      "operation": "shared_definition_reference",
+      "parameters": {
+        "definition": "runtime_draft.definition"
+      },
+      "status": "shared_definition_reference_unverified",
+      "required_source_rules": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006",
+        "r007",
+        "r008",
+        "r009"
+      ]
+    }
+  ],
+  "runtime_draft": {
+    "origin": "existing_shared_definition",
+    "definition": {
+      "attack_type": "ranged_spell",
+      "casting_time": "action",
+      "classes": [
+        "sorcerer",
+        "wizard"
+      ],
+      "components": [
+        "V",
+        "S",
+        "M"
+      ],
+      "concentration": false,
+      "damage": "3d8",
+      "damage_type": "acid",
+      "damage_type_options": [
+        "acid",
+        "cold",
+        "fire",
+        "lightning",
+        "poison",
+        "thunder"
+      ],
+      "description": "You hurl an orb of energy at a target within range. Choose Acid, Cold, Fire, Lightning, Poison, or Thunder for the type of orb you create, and then make a ranged spell attack against the target. On a hit, the target takes 3d8 damage of the chosen type. If you roll the same number on two or more of the d8s, the orb leaps to a different target of your choice within 30 feet of the target. Make an attack roll against the new target, and make a new damage roll. The orb can’t leap again unless you cast the spell with a level 2+ spell slot. Using a Higher-Level Spell Slot. The damage increases by 1d8 for each spell slot level above 1. The orb can leap a maximum number of times equal to the level of the slot expended, and a creature can be targeted only once by each casting of this spell.",
+      "duration": "Instantaneous",
+      "execution": "shared",
+      "id": "chromatic_orb",
+      "leap_on_matching_dice": {
+        "max_leaps": "slot_level",
+        "range": 6.0
+      },
+      "level": 1,
+      "material": "a diamond worth 50+ GP",
+      "material_component_cost": 50.0,
+      "material_component_item_id": "diamond_50gp",
+      "name": "Chromatic Orb",
+      "range": 18,
+      "rules_source": "SRD 5.2.1",
+      "rules_status": "authoring-draft-unverified",
+      "school": "evocation",
+      "target": "single",
+      "upcast": {
+        "damage_per_level": "1d8",
+        "starting_level": 1.0
+      }
+    },
+    "fragments": {},
+    "coverage": "Unverified. Neither a full definition nor a fragment certifies all source rules or controls. Required extensions are not silently waived."
+  },
+  "required_extensions": [],
+  "audit": {
+    "source": "docs/audits/spells.md",
+    "batch": "088-2",
+    "production_definition_at_authoring": "res://data/core/spells/crown_sc_04_support_01.json#1",
+    "baseline_execution": "shared",
+    "source_revision": "2a19eb1d",
+    "existing_conversion_label": "converted"
+  },
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile every source rule and required extension, then implement and verify through production paths before any deliberate promotion. Keep native behavior until covered."
+  }
+}

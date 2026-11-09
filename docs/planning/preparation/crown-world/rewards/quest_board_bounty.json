@@ -1,0 +1,46 @@
+{
+  "schema": "crown-world-candidate/1",
+  "id": "quest_board_bounty",
+  "name": "Quest board goblin bounty",
+  "kind": "rewards",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring declarations only; not registered engine opcodes.",
+  "required_extensions": [
+    "objectives_rewards"
+  ],
+  "authored_operations": [
+    {
+      "operation": "defer_reward_until_victory",
+      "reward": {
+        "type": "give_item",
+        "item_id": "gold_100"
+      },
+      "requirement": "Carry this exact event occurrence/recipient through the authored goblin,goblin,goblin_chief combat. Pay only on victory and only once for this occurrence; defeat/unfinished combat cannot pay."
+    }
+  ],
+  "blockers": [
+    "No runtime consumer for choice.reward found. This plan is not an implementation, payment proof or a new globally once-only bounty policy."
+  ],
+  "retained_input": {
+    "path": "data/core/events/town_events.json",
+    "sha256": "cc2833d086c100b57a67f114d11888312e7074fdebe601d94151d17e9c310098",
+    "pointer": "/events/4/choices/0",
+    "payload": {
+      "text": "Accept the bounty: Clear the goblin camp (combat)",
+      "effects": [
+        {
+          "type": "start_combat",
+          "monsters": [
+            "goblin",
+            "goblin",
+            "goblin_chief"
+          ]
+        }
+      ],
+      "reward": {
+        "type": "give_item",
+        "item_id": "gold_100"
+      }
+    }
+  }
+}

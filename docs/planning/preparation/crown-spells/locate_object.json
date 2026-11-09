@@ -1,0 +1,140 @@
+{
+  "format": "crown-spell-candidate/1",
+  "id": "locate_object",
+  "name": "Locate Object",
+  "level": 2,
+  "status": "written_unverified_not_loaded",
+  "source": {
+    "authority": "SRD 5.2.1",
+    "url": "https://media.dndbeyond.com/compendium-images/srd/5.2/SRD_CC_v5.2.1.pdf",
+    "sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      145
+    ],
+    "header": {
+      "Casting Time": "Action",
+      "Range": "Self",
+      "Components": "V, S, M (a forked twig)",
+      "Duration": "Concentration, up to 10 minutes"
+    },
+    "attribution": "System Reference Document 5.2.1, Wizards of the Coast LLC; CC BY 4.0."
+  },
+  "casting": {
+    "casting_time": "Action",
+    "kind": "action",
+    "seconds": null,
+    "ritual_available": false,
+    "range": {
+      "source": "Self",
+      "kind": "self",
+      "feet": 0
+    },
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "a forked twig",
+    "duration": "Concentration, up to 10 minutes",
+    "concentration": true,
+    "spell_lists": [
+      "bard",
+      "cleric",
+      "druid",
+      "paladin",
+      "ranger",
+      "wizard"
+    ]
+  },
+  "authored_intent": "Describe/name familiar object; sense direction within 1000 feet while concentrating; exact-object prior sight within 30 feet or kind search; lead thickness blocks detection.",
+  "rules": [
+    {
+      "id": "r001",
+      "text": "Describe or name an object that is familiar to you."
+    },
+    {
+      "id": "r002",
+      "text": "You sense the direction to the object’s location if that object is within 1,000 feet of you."
+    },
+    {
+      "id": "r003",
+      "text": "If the object is in motion, you know the direction of its movement."
+    },
+    {
+      "id": "r004",
+      "text": "The spell can locate a specific object known to you if you have seen it up close—within 30 feet—at least once."
+    },
+    {
+      "id": "r005",
+      "text": "Alternatively, the spell can locate the nearest object of a particular kind, such as a certain kind of apparel, jewelry, furniture, tool, or weapon."
+    },
+    {
+      "id": "r006",
+      "text": "This spell can’t locate an object if any thickness of lead blocks a direct path between you and the object."
+    }
+  ],
+  "authored_operations": [
+    {
+      "operation": "locate_object",
+      "parameters": {
+        "range_feet": 1000,
+        "choices": {
+          "specific": "previously_seen_within_30_feet",
+          "kind": "nearest_of_named_kind"
+        },
+        "disclose": [
+          "direction",
+          "movement_direction_if_moving"
+        ],
+        "barrier": "any_thickness_lead_on_direct_path"
+      },
+      "status": "authoring_declaration_not_a_registered_opcode",
+      "required_source_rules": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006"
+      ]
+    }
+  ],
+  "runtime_draft": {
+    "origin": "proposed_operations",
+    "definition": null,
+    "fragments": {},
+    "coverage": "Unverified. Neither a full definition nor a fragment certifies all source rules or controls. Required extensions are not silently waived."
+  },
+  "required_extensions": [
+    {
+      "group": "detection",
+      "requirement": "Read actual eligible facts with source-defined range, material barriers, actions and disclosure; preserve unknown facts and observer-specific knowledge.",
+      "spell_specific_intent": "Describe/name familiar object; sense direction within 1000 feet while concentrating; exact-object prior sight within 30 feet or kind search; lead thickness blocks detection.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006"
+      ],
+      "existing_owner_to_reuse": "src/combat/study_rules.gd",
+      "slice_references": "S-190/S-191/S-194/S-195/S-219",
+      "disposition": "requires_mapping_or_host_completion",
+      "note": "This is an authored handoff requirement, not a fresh runtime failure or claim that the whole referenced slice is missing."
+    }
+  ],
+  "audit": {
+    "source": "docs/audits/spells.md",
+    "batch": "088-6",
+    "production_definition_at_authoring": "res://data/core/spells/imported_spells.json#115",
+    "baseline_execution": "native",
+    "source_revision": "2a19eb1d",
+    "existing_conversion_label": "queued"
+  },
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile every source rule and required extension, then implement and verify through production paths before any deliberate promotion. Keep native behavior until covered."
+  }
+}

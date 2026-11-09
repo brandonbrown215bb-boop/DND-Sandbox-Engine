@@ -1,0 +1,263 @@
+{
+  "format": "crown-spell-candidate/1",
+  "id": "bestow_curse",
+  "name": "Bestow Curse",
+  "level": 3,
+  "status": "written_unverified_not_loaded",
+  "source": {
+    "authority": "SRD 5.2.1",
+    "url": "https://media.dndbeyond.com/compendium-images/srd/5.2/SRD_CC_v5.2.1.pdf",
+    "sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      112,
+      113
+    ],
+    "header": {
+      "Casting Time": "Action",
+      "Range": "Touch",
+      "Components": "V, S",
+      "Duration": "Concentration, up to 1 minute"
+    },
+    "attribution": "System Reference Document 5.2.1, Wizards of the Coast LLC; CC BY 4.0."
+  },
+  "casting": {
+    "casting_time": "Action",
+    "kind": "action",
+    "seconds": null,
+    "ritual_available": false,
+    "range": {
+      "source": "Touch",
+      "kind": "touch",
+      "feet": 5
+    },
+    "components": [
+      "V",
+      "S"
+    ],
+    "material": null,
+    "duration": "Concentration, up to 1 minute",
+    "concentration": true,
+    "spell_lists": [
+      "bard",
+      "cleric",
+      "wizard"
+    ]
+  },
+  "authored_intent": "Touch WIS save; choose one of four exact curse modes; chosen-ability checks/saves, attacks against caster, turn-start WIS failure Dodge, or caster attack/spell Necrotic rider; paid-slot duration and Concentration tiers; Remove Curse ending.",
+  "rules": [
+    {
+      "id": "r001",
+      "text": "You touch a creature, which must succeed on a Wisdom saving throw or become cursed for the duration."
+    },
+    {
+      "id": "r002",
+      "text": "Until the curse ends, the target suffers one of the following effects of your choice: • Choose one ability."
+    },
+    {
+      "id": "r003",
+      "text": "The target has Disadvantage on ability checks and saving throws made with that ability. • The target has Disadvantage on attack rolls against you. • In combat, the target must succeed on a Wisdom saving throw at the start of each of its turns or be forced to take the Dodge action on that turn. • If you deal damage to the target with an attack roll or a spell, the target takes an extra 1d8 Necrotic damage."
+    },
+    {
+      "id": "r004",
+      "text": "Using a Higher-Level Spell Slot."
+    },
+    {
+      "id": "r005",
+      "text": "If you cast this spell using a level 4 spell slot, you can maintain Concentration on it for up to 10 minutes."
+    },
+    {
+      "id": "r006",
+      "text": "If you use a level 5+ spell slot, the spell doesn’t require Concentration, and the duration becomes 8 hours (level 5–6 slot) or 24 hours (level 7–8 slot)."
+    },
+    {
+      "id": "r007",
+      "text": "If you use a level 9 spell slot, the spell lasts until dispelled."
+    }
+  ],
+  "authored_operations": [
+    {
+      "operation": "choose_save_gated_curse",
+      "parameters": {
+        "save": "WIS",
+        "choices": {
+          "ability": {
+            "choose_ability": true,
+            "disadvantage": [
+              "chosen_ability_checks",
+              "chosen_ability_saves"
+            ]
+          },
+          "attacks_against_caster": {
+            "disadvantage": true
+          },
+          "forced_dodge": {
+            "save": "WIS",
+            "boundary": "target_turn_start",
+            "failure_action": "dodge"
+          },
+          "damage": {
+            "trigger": [
+              "caster_attack_roll_damage",
+              "caster_spell_damage"
+            ],
+            "extra_damage": "1d8",
+            "damage_type": "necrotic",
+            "same_occurrence": true
+          }
+        },
+        "duration_slots": {
+          "3": {
+            "seconds": 60,
+            "concentration": true
+          },
+          "4": {
+            "seconds": 600,
+            "concentration": true
+          },
+          "5-6": {
+            "seconds": 28800,
+            "concentration": false
+          },
+          "7-8": {
+            "seconds": 86400,
+            "concentration": false
+          },
+          "9": {
+            "until_dispelled": true,
+            "concentration": false
+          }
+        }
+      },
+      "status": "authoring_declaration_not_a_registered_opcode",
+      "required_source_rules": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006",
+        "r007"
+      ]
+    }
+  ],
+  "runtime_draft": {
+    "origin": "existing_shared_definition",
+    "definition": {
+      "attack_type": "none",
+      "casting_time": "action",
+      "classes": [
+        "bard",
+        "cleric",
+        "wizard"
+      ],
+      "components": [
+        "V",
+        "S"
+      ],
+      "concentration": true,
+      "description": "You touch a creature, which must succeed on a Wisdom saving throw or become cursed for the duration. Until the curse ends, the target suffers one of the following effects of your choice: • Choose one ability. The target has Disadvantage on ability checks and saving throws made with that ability. • The target has Disadvantage on attack rolls against you. • In combat, the target must succeed on a Wisdom saving throw at the start of each of its turns or be forced to take the Dodge action on that turn. • If you deal damage to the target with an attack roll or a spell, the target takes an extra 1d8 Necrotic damage. Using a Higher-Level Spell Slot. If you cast this spell using a level 4 spell slot, you can maintain Concentration on it for up to 10 minutes. If you use a level 5+ spell slot, the spell doesn’t require Concentration, and the duration becomes 8 hours (level 5–6 slot) or 24 hours (level 7–8 slot). If you use a level 9 spell slot, the spell lasts until dispelled.",
+      "duration": "Concentration, up to 1 minute",
+      "duration_by_slot": [
+        {
+          "concentration": true,
+          "duration_seconds": 600.0,
+          "min_slot": 4.0
+        },
+        {
+          "concentration": false,
+          "duration_seconds": 28800.0,
+          "min_slot": 5.0
+        },
+        {
+          "concentration": false,
+          "duration_seconds": 86400.0,
+          "min_slot": 7.0
+        },
+        {
+          "concentration": false,
+          "duration_seconds": -1.0,
+          "min_slot": 9.0
+        }
+      ],
+      "duration_seconds": 60,
+      "effects": [
+        {
+          "condition_options": [
+            "cursed_str",
+            "cursed_dex",
+            "cursed_con",
+            "cursed_int",
+            "cursed_wis",
+            "cursed_cha",
+            "cursed_attack_source",
+            "cursed_dodge",
+            "cursed_necrotic"
+          ],
+          "on_failed_save": true,
+          "type": "grant_condition"
+        }
+      ],
+      "execution": "shared",
+      "id": "bestow_curse",
+      "level": 3,
+      "name": "Bestow Curse",
+      "range": 1,
+      "rules_source": "SRD 5.2.1",
+      "rules_status": "authoring-draft-unverified",
+      "save": "WIS",
+      "school": "necromancy",
+      "target": "single",
+      "range_kind": "touch"
+    },
+    "fragments": {},
+    "coverage": "Unverified. Neither a full definition nor a fragment certifies all source rules or controls. Required extensions are not silently waived."
+  },
+  "required_extensions": [
+    {
+      "group": "curse_damage_routes",
+      "requirement": "Retain the repaired in-occurrence packet and paid-slot durations; cover still-missing direct/delayed/aftermath/class-feature spell and monster-caster routes and repeated-step occurrence identity.",
+      "spell_specific_intent": "Touch WIS save; choose one of four exact curse modes; chosen-ability checks/saves, attacks against caster, turn-start WIS failure Dodge, or caster attack/spell Necrotic rider; paid-slot duration and Concentration tiers; Remove Curse ending.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006",
+        "r007"
+      ],
+      "existing_owner_to_reuse": "src/combat/combat_action.gd",
+      "slice_references": "S-031/S-109/S-141",
+      "disposition": "requires_mapping_or_host_completion",
+      "note": "This is an authored handoff requirement, not a fresh runtime failure or claim that the whole referenced slice is missing."
+    },
+    {
+      "group": "retained_conversion_limit",
+      "requirement": "Remaining limits: the Curse packet rides weapon hits, SpellDamageRolls settlements and spell-zone ticks only; other direct spell settlements (room-spell effects, delayed/aftermath damage, class-feature spell damage) and monster casters add none; Divine Smite and Hunter's Mark add no second packet to a hit.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006",
+        "r007"
+      ],
+      "disposition": "recorded_partial_or_blocked_consumer",
+      "queue_status": "partial: support 10 repairs #105-106 (Windows flows and logic passed)"
+    }
+  ],
+  "audit": {
+    "source": "docs/audits/spells.md",
+    "batch": "088-3",
+    "production_definition_at_authoring": "res://data/core/spells/crown_sc_07.json#4",
+    "baseline_execution": "shared",
+    "source_revision": "2a19eb1d",
+    "existing_conversion_label": "partial: support 10 repairs #105-106 (Windows flows and logic passed)"
+  },
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile every source rule and required extension, then implement and verify through production paths before any deliberate promotion. Keep native behavior until covered."
+  }
+}

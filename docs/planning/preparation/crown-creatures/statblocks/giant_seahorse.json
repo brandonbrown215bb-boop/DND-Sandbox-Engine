@@ -1,0 +1,183 @@
+{
+  "schema": "crown-creature-candidate/1",
+  "id": "srd_giant_seahorse",
+  "name": "Giant Seahorse",
+  "kind": "srd_statblock",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring intent only; not registered engine syntax. Mapping requirements do not assert the whole referenced engine slice is absent.",
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile all source clauses, mappings and source differences before later production-path verification. Keep native paths until replacements cover them."
+  },
+  "source": {
+    "authority": "SRD 5.2.1",
+    "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      353
+    ],
+    "text": "Giant Seahorse\nLarge Beast, Unaligned\nAC 14 Initiative +1 (11)\nHP 16 (3d10)\nSpeed 5 ft., Swim 40 ft.\nMOD SAVE MOD SAVE MOD SAVE\nStr 15 +2 +2 Dex 12 +1 +1 Con 11 +0 +0\nInt 2 −4 −4 WIS 12 +1 +1 Cha 5 −3 −3\nSenses Passive Perception 11\nLanguages None\nCR 1/2 (XP 100; PB +2)\nTraits\nWater Breathing. The seahorse can breathe only\nunderwater.\nActions\nRam. Melee Attack Roll: +4, reach 5 ft. Hit: 9 (2d6\n+ 2) Bludgeoning damage, or 11 (2d8 + 2) Bludgeoning\ndamage if the seahorse moved 20+ feet straight toward\nthe target immediately before the hit.\nBonus Actions\nBubble Dash. While underwater, the seahorse moves\nup to half its Swim Speed without provoking Opportu-\nnity Attacks.",
+    "transcription": "Two-column extraction; line breaks retained. Whole selected page context is in source-pages.json. No stat correction inferred from donor data."
+  },
+  "statistics": {
+    "identity_line": "Large Beast, Unaligned",
+    "AC": "14 Initiative +1 (11)",
+    "HP": "16 (3d10)",
+    "Speed": "5 ft., Swim 40 ft.",
+    "Senses": "Passive Perception 11",
+    "Languages": "None",
+    "CR": "1/2 (XP 100; PB +2)",
+    "ability_scores": {
+      "STR": 15,
+      "DEX": 12,
+      "CON": 11,
+      "INT": 2,
+      "WIS": 12,
+      "CHA": 5
+    },
+    "saving_throw_modifiers": {
+      "STR": 2,
+      "DEX": 1,
+      "CON": 0,
+      "INT": -4,
+      "WIS": 1,
+      "CHA": -3
+    },
+    "initiative_modifier": 1,
+    "initiative_score_printed": 11,
+    "armor_class": 14,
+    "movement_feet": {
+      "walk": 5,
+      "swim": 40
+    }
+  },
+  "authored_operations": [
+    {
+      "key": "b001",
+      "name": "Water Breathing",
+      "source_section": "Traits",
+      "full_rule": "Water Breathing. The seahorse can breathe only\nunderwater.",
+      "budget": "passive_or_declared_trigger",
+      "steps": [
+        {
+          "intent": "Represent actual size/space, climb/swim/fly and breathing, jumps, straight-line charge history, opportunity exceptions, web surfaces and legal release.",
+          "mapping_group": "movement"
+        }
+      ],
+      "parameters_from_rule": {
+        "attack_bonus": [],
+        "save_dc": [],
+        "distances_feet": [],
+        "dice": []
+      },
+      "blockers": [
+        "map_movement"
+      ],
+      "ending_and_identity": "Exact actor/action/target/source instance; use every qualifier and ending in full_rule, not only extracted parameters.",
+      "behavior_plan": {
+        "budget": "passive_or_declared_trigger",
+        "source_outcomes": {},
+        "breathing_media": [
+          "water"
+        ],
+        "air_breathing": false
+      }
+    },
+    {
+      "key": "b002",
+      "name": "Ram",
+      "source_section": "Actions",
+      "full_rule": "Ram. Melee Attack Roll: +4, reach 5 ft. Hit: 9 (2d6\n+ 2) Bludgeoning damage, or 11 (2d8 + 2) Bludgeoning\ndamage if the seahorse moved 20+ feet straight toward\nthe target immediately before the hit.",
+      "budget": "action",
+      "steps": [
+        {
+          "intent": "Resolve declared roll or save, targets, range/reach, damage packets, multiattack choice, riders and exact action budget. A save-only action is not a weapon hit rider.",
+          "mapping_group": "attacks"
+        },
+        {
+          "intent": "Represent actual size/space, climb/swim/fly and breathing, jumps, straight-line charge history, opportunity exceptions, web surfaces and legal release.",
+          "mapping_group": "movement"
+        }
+      ],
+      "parameters_from_rule": {
+        "attack_bonus": [
+          4
+        ],
+        "save_dc": [],
+        "distances_feet": [
+          5
+        ],
+        "dice": [
+          "2d6\n+ 2",
+          "2d8 + 2"
+        ]
+      },
+      "blockers": [
+        "map_attacks",
+        "map_movement"
+      ],
+      "ending_and_identity": "Exact actor/action/target/source instance; use every qualifier and ending in full_rule, not only extracted parameters.",
+      "behavior_plan": {
+        "budget": "action",
+        "source_outcomes": {
+          "hit": "9 (2d6 + 2) Bludgeoning damage, or 11 (2d8 + 2) Bludgeoning damage if the seahorse moved 20+ feet straight toward the target immediately before the hit."
+        },
+        "resolution": "attack_roll",
+        "attack_kind": "melee",
+        "damage_and_riders": "9 (2d6 + 2) Bludgeoning damage, or 11 (2d8 + 2) Bludgeoning damage if the seahorse moved 20+ feet straight toward the target immediately before the hit.",
+        "permission": "ordinary familiar cannot attack; invocation exceptions must grant this exact attack or Attack action, not every Actions entry",
+        "charge_gate": "Actor moved20+ feet straight toward exact target immediately before hit; use printed target-size limit, extra damage and Prone rider"
+      }
+    },
+    {
+      "key": "b003",
+      "name": "Bubble Dash",
+      "source_section": "Bonus Actions",
+      "full_rule": "Bubble Dash. While underwater, the seahorse moves\nup to half its Swim Speed without provoking Opportunity Attacks.",
+      "budget": "bonus_action",
+      "steps": [
+        {
+          "intent": "Represent actual size/space, climb/swim/fly and breathing, jumps, straight-line charge history, opportunity exceptions, web surfaces and legal release.",
+          "mapping_group": "movement"
+        }
+      ],
+      "parameters_from_rule": {
+        "attack_bonus": [],
+        "save_dc": [],
+        "distances_feet": [],
+        "dice": []
+      },
+      "blockers": [
+        "map_movement"
+      ],
+      "ending_and_identity": "Exact actor/action/target/source instance; use every qualifier and ending in full_rule, not only extracted parameters.",
+      "behavior_plan": {
+        "budget": "bonus_action",
+        "source_outcomes": {},
+        "requires": "Underwater",
+        "move": "half Swim Speed",
+        "opportunity_attack": false
+      }
+    }
+  ],
+  "retained_definitions": [],
+  "selection": {
+    "wild_shape_druid_levels_2_3": false,
+    "wild_shape_druid_levels_4_5": true,
+    "normal_familiar": false,
+    "pact_of_chain_special": false,
+    "animate_dead_output": false,
+    "held_swarm": false,
+    "encounter_comparison_only": false
+  },
+  "acquisition_links": [
+    "selection-links.json"
+  ],
+  "blockers": [
+    "map_statistics",
+    "map_attacks",
+    "map_movement"
+  ],
+  "source_reconciliation": "Official body is authoritative for this SRD candidate. Retained donor payloads are comparison/reuse seeds, including legacy values and manifest winners; do not merge their statistics or traits by ID. Direct Crown encounters retain separate candidates.",
+  "equipment_links": []
+}

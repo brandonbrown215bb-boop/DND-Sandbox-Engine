@@ -1,0 +1,124 @@
+{
+  "format": "crown-spell-candidate/1",
+  "id": "message",
+  "name": "Message",
+  "level": 0,
+  "status": "written_unverified_not_loaded",
+  "source": {
+    "authority": "SRD 5.2.1",
+    "url": "https://media.dndbeyond.com/compendium-images/srd/5.2/SRD_CC_v5.2.1.pdf",
+    "sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      148,
+      149
+    ],
+    "header": {
+      "Casting Time": "Action",
+      "Range": "120 feet",
+      "Components": "S, M (a copper wire)",
+      "Duration": "1 round"
+    },
+    "attribution": "System Reference Document 5.2.1, Wizards of the Coast LLC; CC BY 4.0."
+  },
+  "casting": {
+    "casting_time": "Action",
+    "kind": "action",
+    "seconds": null,
+    "ritual_available": false,
+    "range": {
+      "source": "120 feet",
+      "kind": "distance",
+      "feet": 120
+    },
+    "components": [
+      "S",
+      "M"
+    ],
+    "material": "a copper wire",
+    "duration": "1 round",
+    "concentration": false,
+    "spell_lists": [
+      "bard",
+      "druid",
+      "sorcerer",
+      "wizard"
+    ]
+  },
+  "authored_intent": "Point toward creature; whispered message and whispered reply; 120 feet; solid barriers permit only familiar target with known location; magical silence and specified materials block; no unrelated listeners.",
+  "rules": [
+    {
+      "id": "r001",
+      "text": "You point toward a creature within range and whisper a message."
+    },
+    {
+      "id": "r002",
+      "text": "The target (and only the target) hears the message and can reply in a whisper that only you can hear."
+    },
+    {
+      "id": "r003",
+      "text": "You can cast this spell through solid objects if you are familiar with the target and know it is beyond the barrier."
+    },
+    {
+      "id": "r004",
+      "text": "Magical silence; 1 foot of stone, metal, or wood; or a thin sheet of lead blocks the spell."
+    }
+  ],
+  "authored_operations": [
+    {
+      "operation": "exchange_private_message",
+      "parameters": {
+        "target": "pointed_at_creature_in_range",
+        "private_whisper_reply": true,
+        "through_solid_object": "familiar_target_with_known_location",
+        "barriers": [
+          "magical_silence",
+          "one_foot_stone_metal_or_wood",
+          "thin_lead_sheet"
+        ]
+      },
+      "status": "authoring_declaration_not_a_registered_opcode",
+      "required_source_rules": [
+        "r001",
+        "r002",
+        "r003",
+        "r004"
+      ]
+    }
+  ],
+  "runtime_draft": {
+    "origin": "proposed_operations",
+    "definition": null,
+    "fragments": {},
+    "coverage": "Unverified. Neither a full definition nor a fragment certifies all source rules or controls. Required extensions are not silently waived."
+  },
+  "required_extensions": [
+    {
+      "group": "communication",
+      "requirement": "Reuse represented language/hearing where applicable, then implement the spell-specific recipients, range, content, answers, secrecy and source lifetime.",
+      "spell_specific_intent": "Point toward creature; whispered message and whispered reply; 120 feet; solid barriers permit only familiar target with known location; magical silence and specified materials block; no unrelated listeners.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003",
+        "r004"
+      ],
+      "existing_owner_to_reuse": "src/combat/communication_rules.gd",
+      "slice_references": "S-194/S-218/S-219",
+      "disposition": "requires_mapping_or_host_completion",
+      "note": "This is an authored handoff requirement, not a fresh runtime failure or claim that the whole referenced slice is missing."
+    }
+  ],
+  "audit": {
+    "source": "docs/audits/spells.md",
+    "batch": "088-8",
+    "production_definition_at_authoring": "res://data/core/spells/imported_spells.json#128",
+    "baseline_execution": "native",
+    "source_revision": "2a19eb1d",
+    "existing_conversion_label": "queued"
+  },
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile every source rule and required extension, then implement and verify through production paths before any deliberate promotion. Keep native behavior until covered."
+  }
+}

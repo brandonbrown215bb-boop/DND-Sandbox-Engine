@@ -1,0 +1,166 @@
+{
+  "schema": "crown-world-candidate/1",
+  "id": "forest_events__mysterious_shrine",
+  "name": "Mysterious Shrine",
+  "kind": "events",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring declarations only; not registered engine opcodes.",
+  "required_extensions": [
+    "discovery",
+    "hazards",
+    "objectives_rewards",
+    "rest_time"
+  ],
+  "authored_operations": [
+    {
+      "operation": "resolve_authored_check",
+      "seed_pointer": "/choices/0/check",
+      "check": {
+        "ability": "WIS",
+        "dc": 12
+      },
+      "requirement": "Keep ability, skill/context, DC and optional familiar Help exactly. Choose actor and actual context; settle one branch once; never silently convert an ability check into a saving throw."
+    },
+    {
+      "operation": "settle_ordered_branch",
+      "seed_pointer": "/choices/0/success/effects",
+      "effects": [
+        {
+          "type": "heal",
+          "value": "2d6"
+        },
+        {
+          "type": "grant_condition",
+          "condition": "blessed",
+          "duration": 5
+        }
+      ],
+      "condition": null,
+      "requirement": "Retain order, exact quantities/formulas, recipient, costs, branch descriptions and occurrence identity; no repeated payment when a child resumes."
+    },
+    {
+      "operation": "settle_ordered_branch",
+      "seed_pointer": "/choices/0/failure/effects",
+      "effects": [
+        {
+          "type": "damage",
+          "value": "1d6",
+          "damage_type": "necrotic"
+        }
+      ],
+      "condition": null,
+      "requirement": "Retain order, exact quantities/formulas, recipient, costs, branch descriptions and occurrence identity; no repeated payment when a child resumes."
+    },
+    {
+      "operation": "resolve_authored_check",
+      "seed_pointer": "/choices/1/check",
+      "check": {
+        "ability": "INT",
+        "dc": 14
+      },
+      "requirement": "Keep ability, skill/context, DC and optional familiar Help exactly. Choose actor and actual context; settle one branch once; never silently convert an ability check into a saving throw."
+    },
+    {
+      "operation": "settle_ordered_branch",
+      "seed_pointer": "/choices/1/success/effects",
+      "effects": [
+        {
+          "type": "give_item",
+          "item_id": "potion_healing"
+        },
+        {
+          "type": "give_item",
+          "item_id": "gold_50"
+        }
+      ],
+      "condition": null,
+      "requirement": "Retain order, exact quantities/formulas, recipient, costs, branch descriptions and occurrence identity; no repeated payment when a child resumes."
+    },
+    {
+      "operation": "settle_ordered_branch",
+      "seed_pointer": "/choices/2/effects",
+      "effects": [],
+      "condition": null,
+      "requirement": "Retain order, exact quantities/formulas, recipient, costs, branch descriptions and occurrence identity; no repeated payment when a child resumes."
+    }
+  ],
+  "blockers": [
+    "Retain numeric event duration/unit and custom condition IDs as authored. Generic marker support is not proof of defined mechanical benefit, cure scope or turn/clock conversion; map each declared condition to its actual rule."
+  ],
+  "retained_input": {
+    "path": "data/core/events/forest_events.json",
+    "sha256": "d4510f0da5ad26db2611a506fb58c79c35247610ac61ea39be48d30824feac09",
+    "pointer": "/events/2",
+    "payload": {
+      "id": "mysterious_shrine",
+      "name": "Mysterious Shrine",
+      "weight": 10,
+      "description": "You discover an ancient shrine covered in moss. Strange runes glow faintly in the dappled light. Do you dare approach?",
+      "type": "choice",
+      "choices": [
+        {
+          "text": "Pray at the shrine",
+          "check": {
+            "ability": "WIS",
+            "dc": 12
+          },
+          "success": {
+            "description": "The shrine pulses with warm light. You feel the blessing of a forgotten god wash over you.",
+            "effects": [
+              {
+                "type": "heal",
+                "value": "2d6"
+              },
+              {
+                "type": "grant_condition",
+                "condition": "blessed",
+                "duration": 5
+              }
+            ]
+          },
+          "failure": {
+            "description": "The runes flare angrily. Dark energy lashes out!",
+            "effects": [
+              {
+                "type": "damage",
+                "value": "1d6",
+                "damage_type": "necrotic"
+              }
+            ]
+          }
+        },
+        {
+          "text": "Investigate the runes",
+          "check": {
+            "ability": "INT",
+            "dc": 14
+          },
+          "success": {
+            "description": "You decipher the ancient text and discover a hidden compartment!",
+            "effects": [
+              {
+                "type": "give_item",
+                "item_id": "potion_healing"
+              },
+              {
+                "type": "give_item",
+                "item_id": "gold_50"
+              }
+            ]
+          },
+          "failure": {
+            "description": "The runes make no sense to you. You move on."
+          }
+        },
+        {
+          "text": "Leave it alone",
+          "description": "Wisdom is knowing when not to touch ancient magic.",
+          "effects": []
+        }
+      ]
+    }
+  },
+  "authority": "Custom Crown campaign event, not an SRD trap/NPC/spell replacement",
+  "table_id": "forest_events",
+  "occurrence_policy": "Table may roll again; same in-flight occurrence must not reroll/reapply on reopen. Campaign-specific uniqueness beyond generated room claims is unresolved, not silently global once-per-event-ID."
+}

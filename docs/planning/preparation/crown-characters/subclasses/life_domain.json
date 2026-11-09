@@ -1,0 +1,283 @@
+{
+  "schema": "crown-character-candidate/1",
+  "id": "life_domain",
+  "name": "Life Domain",
+  "kind": "subclass",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "scope": {
+    "total_character_level_maximum": 5
+  },
+  "operation_language": "authoring intent only; not registered engine syntax",
+  "runtime_support": "Retained definitions are reuse material, not proof of full rules. Every authored operation needs contract mapping and later production-path verification before promotion.",
+  "class_id": "cleric",
+  "class_level": 3,
+  "features": [
+    {
+      "id": "life_domain_disciple_of_life",
+      "name": "Disciple of Life",
+      "class_level": 3,
+      "rules": {
+        "authority": "SRD 5.2.1",
+        "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+        "pages": [
+          40
+        ],
+        "text": "Level 3: Disciple of Life\nWhen a spell you cast with a spell slot restores Hit\nPoints to a creature, that creature regains additional Hit Points on the turn you cast the spell. The\nadditional Hit Points equal 2 plus the spell slot’s\nlevel."
+      },
+      "revised_reference_entries": [
+        "When a spell you cast with a spell slot restores {@variantrule Hit Points|XPHB} to a creature, that creature regains additional {@variantrule Hit Points|XPHB} on the turn you cast the spell. The additional {@variantrule Hit Points|XPHB} equal 2 plus the spell slot's level."
+      ],
+      "authored_operations": [
+        {
+          "trigger": "Cast spell using spell slot that restores HP",
+          "cost": "none",
+          "effects": [
+            "On turn spell is cast each healed creature regains additional2+slot level HP; no later-turn repeat"
+          ],
+          "ending_and_identity": "Exact source owns the grant/state; remove temporary effects at the declared ending; never replay acquisition on restore.",
+          "required_extension_groups": [
+            "casting",
+            "rolls"
+          ]
+        }
+      ],
+      "unsupported_behavior": [
+        {
+          "groups": [
+            "casting",
+            "rolls"
+          ],
+          "requirement": {
+            "trigger": "Cast spell using spell slot that restores HP",
+            "cost": "none",
+            "effects": [
+              "On turn spell is cast each healed creature regains additional2+slot level HP; no later-turn repeat"
+            ],
+            "ending": "Exact source owns the grant/state; remove temporary effects at the declared ending; never replay acquisition on restore."
+          },
+          "mapping_boundary": "Map this complete sequence to shared contracts; retained native behavior and fragments do not certify it.",
+          "status": "unmapped_or_unverified_candidate"
+        }
+      ]
+    },
+    {
+      "id": "cleric_life_domain_spells",
+      "name": "Life Domain Spells",
+      "class_level": 3,
+      "rules": {
+        "authority": "SRD 5.2.1",
+        "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+        "pages": [
+          40
+        ],
+        "text": "Level 3: Life Domain Spells\nYour connection to this divine domain ensures you\nalways have certain spells ready. When you reach\na Cleric level specified in the Life Domain Spells\ntable, you thereafter always have the listed spells\nprepared. Life Domain Spells\nCleric\nLevel\nPrepared Spells\n3 Aid, Bless, Cure Wounds,\nLesser Restoration\n5 Mass Healing Word, Revivify\n7 Aura of Life, Death Ward\n9 Greater Restoration, Mass Cure Wounds"
+      },
+      "revised_reference_entries": [
+        "Your connection to this divine domain ensures you always have certain spells ready. When you reach a Cleric level specified in the Life Domain Spells table, you thereafter always have the listed spells prepared.",
+        {
+          "type": "table",
+          "caption": "Life Domain Spells",
+          "colLabels": [
+            "Cleric Level",
+            "Prepared Spells"
+          ],
+          "colStyles": [
+            "col-1 text-center",
+            "col-11"
+          ],
+          "rows": [
+            [
+              "3rd",
+              "{@spell Aid|XPHB}, {@spell Bless|XPHB}, {@spell Cure Wounds|XPHB}, {@spell Lesser Restoration|XPHB}"
+            ],
+            [
+              "5th",
+              "{@spell Mass Healing Word|XPHB}, {@spell Revivify|XPHB}"
+            ],
+            [
+              "7th",
+              "{@spell Aura of Life|XPHB}, {@spell Death Ward|XPHB}"
+            ],
+            [
+              "9th",
+              "{@spell Greater Restoration|XPHB}, {@spell Mass Cure Wounds|XPHB}"
+            ]
+          ]
+        }
+      ],
+      "authored_operations": [
+        {
+          "trigger": "Class level3 and5",
+          "cost": "Normal spell costs except explicit grant elsewhere",
+          "effects": [
+            "Always prepare exact in-band table spells without counting class limit; grant as own-class spells"
+          ],
+          "ending_and_identity": "Exact subclass ownership",
+          "required_extension_groups": [
+            "casting",
+            "choices"
+          ]
+        }
+      ],
+      "unsupported_behavior": [
+        {
+          "groups": [
+            "casting",
+            "choices"
+          ],
+          "requirement": {
+            "trigger": "Class level3 and5",
+            "cost": "Normal spell costs except explicit grant elsewhere",
+            "effects": [
+              "Always prepare exact in-band table spells without counting class limit; grant as own-class spells"
+            ],
+            "ending": "Exact subclass ownership"
+          },
+          "mapping_boundary": "Map this complete sequence to shared contracts; retained native behavior and fragments do not certify it.",
+          "status": "unmapped_or_unverified_candidate"
+        }
+      ]
+    },
+    {
+      "id": "life_domain_preserve_life",
+      "name": "Preserve Life",
+      "class_level": 3,
+      "rules": {
+        "authority": "SRD 5.2.1",
+        "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+        "pages": [
+          40
+        ],
+        "text": "Level 3: Preserve Life\nAs a Magic action, you present your Holy Symbol\nand expend a use of your Channel Divinity to evoke\nhealing energy that can restore a number of Hit\nPoints equal to five times your Cleric level. Choose\nBloodied creatures within 30 feet of yourself (which\ncan include you), and divide those Hit Points among\nthem. This feature can restore a creature to no\nmore than half its Hit Point maximum."
+      },
+      "revised_reference_entries": [
+        "As a {@action Magic|XPHB} action, you present your {@item Holy Symbol|XPHB} and expend a use of your Channel Divinity to evoke healing energy that can restore a number of {@variantrule Hit Points|XPHB} equal to five times your Cleric level. Choose {@status Bloodied|XPHB} creatures within 30 feet of yourself (which can include you), and divide those {@variantrule Hit Points|XPHB} among them. This feature can restore a creature to no more than half its {@variantrule Hit Points|XPHB|Hit Point} maximum."
+      ],
+      "authored_operations": [
+        {
+          "trigger": "Magic action present Holy Symbol",
+          "cost": "one Cleric Channel Divinity",
+          "effects": [
+            "Distribute pool5*Cleric level among Bloodied creatures within30 feet including self",
+            "Cannot heal any above half its HP maximum"
+          ],
+          "ending_and_identity": "Exact source owns the grant/state; remove temporary effects at the declared ending; never replay acquisition on restore.",
+          "required_extension_groups": [
+            "resources",
+            "allocation"
+          ]
+        }
+      ],
+      "unsupported_behavior": [
+        {
+          "groups": [
+            "resources",
+            "allocation"
+          ],
+          "requirement": {
+            "trigger": "Magic action present Holy Symbol",
+            "cost": "one Cleric Channel Divinity",
+            "effects": [
+              "Distribute pool5*Cleric level among Bloodied creatures within30 feet including self",
+              "Cannot heal any above half its HP maximum"
+            ],
+            "ending": "Exact source owns the grant/state; remove temporary effects at the declared ending; never replay acquisition on restore."
+          },
+          "mapping_boundary": "Map this complete sequence to shared contracts; retained native behavior and fragments do not certify it.",
+          "status": "unmapped_or_unverified_candidate"
+        }
+      ]
+    }
+  ],
+  "reused_from": [
+    "_staging/subclass-staging/staged/life_domain.json",
+    "reference/2024/classes/cleric.json"
+  ],
+  "retained_runtime_seed": {
+    "id": "life_domain",
+    "name": "Life Domain",
+    "class_id": "cleric",
+    "rights": "srd_ok",
+    "rules_status": "2024-partial",
+    "features_by_level": {
+      "3": [
+        {
+          "id": "life_domain_spells_3",
+          "name": "Life Domain Spells (Level 3)",
+          "description": "You always have Aid, Bless, Cure Wounds, Lesser Restoration prepared.",
+          "type": "passive",
+          "effects": [
+            {
+              "type": "always_prepared_spells",
+              "spells": [
+                "aid",
+                "bless",
+                "cure_wounds",
+                "lesser_restoration"
+              ]
+            }
+          ],
+          "rules_source": "dnd-2024-srd-5.2.1",
+          "rules_status": "2024-partial"
+        },
+        {
+          "id": "life_domain_disciple_of_life",
+          "name": "Disciple of Life",
+          "description": "When a spell you cast with a spell slot restores Hit Points to a creature, that creature regains additional Hit Points on the turn you cast the spell. The additional Hit Points equal 2 plus the spell slot's level.",
+          "type": "passive",
+          "effects": [],
+          "rules_source": "dnd-2024-srd-5.2.1",
+          "rules_status": "reference-only",
+          "enabled": false
+        },
+        {
+          "id": "life_domain_preserve_life",
+          "name": "Preserve Life",
+          "description": "As a Magic action, you present your Symbol and expend a use of your Channel Divinity to evoke healing energy that can restore a number of Hit Points equal to five times your Cleric level. Choose Bloodied creatures within…",
+          "type": "active",
+          "effects": [],
+          "rules_source": "dnd-2024-srd-5.2.1",
+          "rules_status": "reference-only",
+          "enabled": false,
+          "action_cost": "action"
+        }
+      ],
+      "5": [
+        {
+          "id": "life_domain_spells_5",
+          "name": "Life Domain Spells (Level 5)",
+          "description": "You always have Mass Healing Word, Revivify prepared.",
+          "type": "passive",
+          "effects": [
+            {
+              "type": "always_prepared_spells",
+              "spells": [
+                "mass_healing_word",
+                "revivify"
+              ]
+            }
+          ],
+          "rules_source": "dnd-2024-srd-5.2.1",
+          "rules_status": "2024-partial"
+        }
+      ]
+    }
+  },
+  "always_prepared_spells_by_class_level": {
+    "3": [
+      "aid",
+      "bless",
+      "cure_wounds",
+      "lesser_restoration"
+    ],
+    "5": [
+      "mass_healing_word",
+      "revivify"
+    ]
+  },
+  "source_revision": "2a19eb1d (existing working-tree definitions and recovered drafts read on 2026-11-08)",
+  "reused_input_hashes": {
+    "_staging/subclass-staging/staged/life_domain.json": "d39971ff5133112852949015bea21794935e76843a77cf8f39ce7b0a326b0786",
+    "reference/2024/classes/cleric.json": "8a038c2223661e1497739924ebe7c2dbb814e9b7eac248e9fe31e62b1d6cac9b"
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "schema": "crown-world-candidate/1",
+  "id": "generated_loot_room",
+  "name": "Generated loot room",
+  "kind": "generation",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring declarations only; not registered engine opcodes.",
+  "required_extensions": [
+    "objects",
+    "objectives_rewards"
+  ],
+  "authored_operations": [
+    {
+      "operation": "grant_room_loot_once",
+      "items": [
+        "gold_100"
+      ],
+      "optional_item": {
+        "id": "potion_healing",
+        "probability": 0.5
+      },
+      "recipient": "first active party character, fallback active player character",
+      "current_claim": "Room.is_cleared",
+      "requirement": "Restore existing rolls and clear state; do not reroll/regrant on revisit or allowed reload. Currency tokens resolve as gold, not backpack copies."
+    }
+  ],
+  "blockers": [
+    "Item add_item return/capacity handling needs actual settlement proof; room.is_cleared after an attempted grant is not proof that the recipient received it."
+  ]
+}

@@ -1,0 +1,70 @@
+{
+  "schema": "crown-world-candidate/1",
+  "id": "mountain_events__rockslide",
+  "name": "Rockslide!",
+  "kind": "events",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring declarations only; not registered engine opcodes.",
+  "required_extensions": [
+    "discovery",
+    "hazards",
+    "objectives_rewards"
+  ],
+  "authored_operations": [
+    {
+      "operation": "resolve_authored_check",
+      "seed_pointer": "/check",
+      "check": {
+        "ability": "DEX",
+        "dc": 13
+      },
+      "requirement": "Keep ability, skill/context, DC and optional familiar Help exactly. Choose actor and actual context; settle one branch once; never silently convert an ability check into a saving throw."
+    },
+    {
+      "operation": "settle_ordered_branch",
+      "seed_pointer": "/failure/effects",
+      "effects": [
+        {
+          "type": "damage",
+          "value": "2d6",
+          "damage_type": "bludgeoning"
+        }
+      ],
+      "condition": null,
+      "requirement": "Retain order, exact quantities/formulas, recipient, costs, branch descriptions and occurrence identity; no repeated payment when a child resumes."
+    }
+  ],
+  "blockers": [],
+  "retained_input": {
+    "path": "data/core/events/mountain_events.json",
+    "sha256": "28c24bea91c714a4c49e7c7b6358adf5dea15b8f06d69dca29ef79542f0a6fd3",
+    "pointer": "/events/0",
+    "payload": {
+      "id": "rockslide",
+      "name": "Rockslide!",
+      "weight": 20,
+      "description": "The ground trembles and rocks cascade down the mountainside!",
+      "type": "skill_check",
+      "check": {
+        "ability": "DEX",
+        "dc": 13
+      },
+      "success": {
+        "description": "You dive out of the way just in time. Dust settles around you."
+      },
+      "failure": {
+        "description": "Rocks slam into you before you can dodge!",
+        "effects": [
+          {
+            "type": "damage",
+            "value": "2d6",
+            "damage_type": "bludgeoning"
+          }
+        ]
+      }
+    }
+  },
+  "authority": "Custom Crown campaign event, not an SRD trap/NPC/spell replacement",
+  "table_id": "mountain_events",
+  "occurrence_policy": "Table may roll again; same in-flight occurrence must not reroll/reapply on reopen. Campaign-specific uniqueness beyond generated room claims is unresolved, not silently global once-per-event-ID."
+}

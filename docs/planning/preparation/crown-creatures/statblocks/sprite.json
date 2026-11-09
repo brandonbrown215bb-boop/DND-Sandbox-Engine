@@ -1,0 +1,363 @@
+{
+  "schema": "crown-creature-candidate/1",
+  "id": "srd_sprite",
+  "name": "Sprite",
+  "kind": "srd_statblock",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring intent only; not registered engine syntax. Mapping requirements do not assert the whole referenced engine slice is absent.",
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile all source clauses, mappings and source differences before later production-path verification. Keep native paths until replacements cover them."
+  },
+  "source": {
+    "authority": "SRD 5.2.1",
+    "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      329
+    ],
+    "text": "Sprite\nTiny Fey, Neutral Good\nAC 15 Initiative +4 (14)\nHP 10 (4d4)\nSpeed 10 ft., Fly 40 ft.\nMOD SAVE MOD SAVE MOD SAVE\nStr 3 −4 −4 Dex 18 +4 +4 Con 10 +0 +0\nInt 14 +2 +2 WIS 13 +1 +1 Cha 11 +0 +0\nSkills Perception +3, Stealth +8\nSenses Passive Perception 13\nLanguages Common, Elvish, Sylvan\nCR 1/4 (XP 50; PB +2)\nActions\nNeedle Sword. Melee Attack Roll: +6, reach 5 ft. Hit: 6\n(1d4 + 4) Piercing damage.\nEnchanting Bow. Ranged Attack Roll: +6, range\n40/160 ft. Hit: 1 Piercing damage, and the target has\nthe Charmed condition until the start of the sprite’s\nnext turn.\nHeart Sight. Charisma Saving Throw: DC 10, one crea-\nture within 5 feet the sprite can see (Celestials, Fiends,\nand Undead automatically fail the save). Failure: The\nsprite knows the target’s emotions and alignment.\nInvisibility. The sprite casts Invisibility on itself, requir-\ning no spell components and using Charisma as the\nspellcasting ability.",
+    "transcription": "Two-column extraction; line breaks retained. Whole selected page context is in source-pages.json. No stat correction inferred from donor data."
+  },
+  "statistics": {
+    "identity_line": "Tiny Fey, Neutral Good",
+    "AC": "15 Initiative +4 (14)",
+    "HP": "10 (4d4)",
+    "Speed": "10 ft., Fly 40 ft.",
+    "Skills": "Perception +3, Stealth +8",
+    "Senses": "Passive Perception 13",
+    "Languages": "Common, Elvish, Sylvan",
+    "CR": "1/4 (XP 50; PB +2)",
+    "ability_scores": {
+      "STR": 3,
+      "DEX": 18,
+      "CON": 10,
+      "INT": 14,
+      "WIS": 13,
+      "CHA": 11
+    },
+    "saving_throw_modifiers": {
+      "STR": -4,
+      "DEX": 4,
+      "CON": 0,
+      "INT": 2,
+      "WIS": 1,
+      "CHA": 0
+    },
+    "initiative_modifier": 4,
+    "initiative_score_printed": 14,
+    "armor_class": 15,
+    "movement_feet": {
+      "walk": 10,
+      "fly": 40
+    }
+  },
+  "authored_operations": [
+    {
+      "key": "b001",
+      "name": "Needle Sword",
+      "source_section": "Actions",
+      "full_rule": "Needle Sword. Melee Attack Roll: +6, reach 5 ft. Hit: 6\n(1d4 + 4) Piercing damage.",
+      "budget": "action",
+      "steps": [
+        {
+          "intent": "Resolve declared roll or save, targets, range/reach, damage packets, multiattack choice, riders and exact action budget. A save-only action is not a weapon hit rider.",
+          "mapping_group": "attacks"
+        }
+      ],
+      "parameters_from_rule": {
+        "attack_bonus": [
+          6
+        ],
+        "save_dc": [],
+        "distances_feet": [
+          5
+        ],
+        "dice": [
+          "1d4 + 4"
+        ]
+      },
+      "blockers": [
+        "map_attacks"
+      ],
+      "ending_and_identity": "Exact actor/action/target/source instance; use every qualifier and ending in full_rule, not only extracted parameters.",
+      "behavior_plan": {
+        "budget": "action",
+        "source_outcomes": {
+          "hit": "6 (1d4 + 4) Piercing damage."
+        },
+        "resolution": "attack_roll",
+        "attack_kind": "melee",
+        "damage_and_riders": "6 (1d4 + 4) Piercing damage.",
+        "permission": "ordinary familiar cannot attack; invocation exceptions must grant this exact attack or Attack action, not every Actions entry"
+      }
+    },
+    {
+      "key": "b002",
+      "name": "Enchanting Bow",
+      "source_section": "Actions",
+      "full_rule": "Enchanting Bow. Ranged Attack Roll: +6, range\n40/160 ft. Hit: 1 Piercing damage, and the target has\nthe Charmed condition until the start of the sprite’s\nnext turn.",
+      "budget": "action",
+      "steps": [
+        {
+          "intent": "Resolve declared roll or save, targets, range/reach, damage packets, multiattack choice, riders and exact action budget. A save-only action is not a weapon hit rider.",
+          "mapping_group": "attacks"
+        },
+        {
+          "intent": "Preserve immunity, source identity, thresholds, repeat saves, explicit ending events and target-relative deadlines.",
+          "mapping_group": "conditions"
+        }
+      ],
+      "parameters_from_rule": {
+        "attack_bonus": [
+          6
+        ],
+        "save_dc": [],
+        "distances_feet": [
+          160
+        ],
+        "dice": []
+      },
+      "blockers": [
+        "map_attacks",
+        "map_conditions"
+      ],
+      "ending_and_identity": "Exact actor/action/target/source instance; use every qualifier and ending in full_rule, not only extracted parameters.",
+      "behavior_plan": {
+        "budget": "action",
+        "source_outcomes": {
+          "hit": "1 Piercing damage, and the target has the Charmed condition until the start of the sprite’s next turn."
+        },
+        "resolution": "attack_roll",
+        "attack_kind": "ranged",
+        "damage_and_riders": "1 Piercing damage, and the target has the Charmed condition until the start of the sprite’s next turn.",
+        "permission": "ordinary familiar cannot attack; invocation exceptions must grant this exact attack or Attack action, not every Actions entry"
+      }
+    },
+    {
+      "key": "b003",
+      "name": "Heart Sight",
+      "source_section": "Actions",
+      "full_rule": "Heart Sight. Charisma Saving Throw: DC 10, one creature within 5 feet the sprite can see (Celestials, Fiends,\nand Undead automatically fail the save). Failure: The\nsprite knows the target’s emotions and alignment.",
+      "budget": "action",
+      "steps": [
+        {
+          "intent": "Resolve declared roll or save, targets, range/reach, damage packets, multiattack choice, riders and exact action budget. A save-only action is not a weapon hit rider.",
+          "mapping_group": "attacks"
+        },
+        {
+          "intent": "Use observer-relative senses, exact origin, real language/hearing/knowledge and distance. Do not grant global sight or invented NPC information.",
+          "mapping_group": "senses"
+        }
+      ],
+      "parameters_from_rule": {
+        "attack_bonus": [],
+        "save_dc": [
+          10
+        ],
+        "distances_feet": [
+          5
+        ],
+        "dice": []
+      },
+      "blockers": [
+        "map_attacks",
+        "map_senses"
+      ],
+      "ending_and_identity": "Exact actor/action/target/source instance; use every qualifier and ending in full_rule, not only extracted parameters.",
+      "behavior_plan": {
+        "budget": "action",
+        "source_outcomes": {
+          "failure": "The sprite knows the target’s emotions and alignment."
+        },
+        "target": "Seen creature within5 feet",
+        "save": {
+          "ability": "CHA",
+          "dc": 10,
+          "automatic_failure_types": [
+            "Celestial",
+            "Fiend",
+            "Undead"
+          ]
+        },
+        "failure": "Learn actual emotions/alignment; represented information required",
+        "resolution": "save_only_action; no preliminary attack roll"
+      }
+    },
+    {
+      "key": "b004",
+      "name": "Invisibility",
+      "source_section": "Actions",
+      "full_rule": "Invisibility. The sprite casts Invisibility on itself, requiring no spell components and using Charisma as the\nspellcasting ability.",
+      "budget": "action",
+      "steps": [
+        {
+          "intent": "Use the linked spell with exact ability/components/target permission, Concentration, budgets and endings; not a permanent trait replacement.",
+          "mapping_group": "casting"
+        }
+      ],
+      "parameters_from_rule": {
+        "attack_bonus": [],
+        "save_dc": [],
+        "distances_feet": [],
+        "dice": []
+      },
+      "blockers": [
+        "map_casting"
+      ],
+      "ending_and_identity": "Exact actor/action/target/source instance; use every qualifier and ending in full_rule, not only extracted parameters.",
+      "behavior_plan": {
+        "budget": "action",
+        "source_outcomes": {},
+        "cast": "invisibility",
+        "target": "self",
+        "components": [],
+        "spellcasting_ability": "CHA",
+        "policy": "Use linked spell duration/Concentration/endings; not permanent passive Invisible"
+      }
+    }
+  ],
+  "retained_definitions": [
+    {
+      "path": "data/core/monsters/imported_monsters.json",
+      "sha256": "f57bee1e93f185a89575bed3d8b2b610b53cfd3b7f2eb56448d1dd64a0126c5f",
+      "pointer": "/368",
+      "payload": {
+        "id": "sprite",
+        "name": "Sprite",
+        "hit_points": "1d4",
+        "armor_class": 15,
+        "speed": 2,
+        "ability_scores": {
+          "STR": 3,
+          "DEX": 18,
+          "CON": 10,
+          "INT": 14,
+          "WIS": 13,
+          "CHA": 11
+        },
+        "attacks": [
+          {
+            "name": "Claws",
+            "ability": "STR",
+            "damage": "1d6",
+            "range": 1,
+            "damage_type": "slashing"
+          }
+        ],
+        "ai_behavior": "aggressive"
+      },
+      "manifest_declarations": [
+        {
+          "type": "monster",
+          "id": "sprite",
+          "winner": "res://data/core/monsters/srd_monsters.json#230",
+          "replaces": [
+            "res://data/core/monsters/imported_monsters.json#369"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "data/core/monsters/srd_monsters.json",
+      "sha256": "83786ed8bafc802e37b7794c04ba8901e3e10b35d288f301c92f01bbed50cd73",
+      "pointer": "/229",
+      "payload": {
+        "id": "sprite",
+        "name": "Sprite",
+        "description": "A tiny fey with a charming bow and heart-reading sight.",
+        "size": "tiny",
+        "challenge_rating": 0.25,
+        "hit_points": "4d4",
+        "armor_class": 15,
+        "speed": 2,
+        "ability_scores": {
+          "STR": 3,
+          "DEX": 18,
+          "CON": 10,
+          "INT": 14,
+          "WIS": 13,
+          "CHA": 11
+        },
+        "attacks": [
+          {
+            "name": "Needle Sword",
+            "ability": "DEX",
+            "damage": "1d4 + 4",
+            "damage_type": "piercing",
+            "range": 1
+          },
+          {
+            "name": "Enchanting Bow",
+            "ability": "DEX",
+            "damage": "1",
+            "damage_type": "piercing",
+            "range": 16,
+            "extra_effects": [
+              {
+                "type": "charm_until_start_of_sprite_next_turn"
+              }
+            ]
+          }
+        ],
+        "ai_behavior": "defensive",
+        "special_abilities": [
+          {
+            "id": "fly",
+            "name": "Fly",
+            "description": "Fly speed 8 hexes (40 ft)."
+          },
+          {
+            "id": "heart_sight",
+            "name": "Heart Sight",
+            "description": "CHA DC 10 to learn emotions and alignment (celestials/fiends/undead auto-fail)."
+          },
+          {
+            "id": "invisibility",
+            "name": "Invisibility",
+            "description": "At will: cast Invisibility on itself."
+          }
+        ],
+        "loot_table": [],
+        "xp": 50
+      },
+      "manifest_declarations": [
+        {
+          "type": "monster",
+          "id": "sprite",
+          "winner": "res://data/core/monsters/srd_monsters.json#230",
+          "replaces": [
+            "res://data/core/monsters/imported_monsters.json#369"
+          ]
+        }
+      ]
+    }
+  ],
+  "selection": {
+    "wild_shape_druid_levels_2_3": false,
+    "wild_shape_druid_levels_4_5": false,
+    "normal_familiar": false,
+    "pact_of_chain_special": true,
+    "animate_dead_output": false,
+    "held_swarm": false,
+    "encounter_comparison_only": false
+  },
+  "acquisition_links": [
+    "selection-links.json"
+  ],
+  "blockers": [
+    "map_statistics",
+    "map_attacks",
+    "map_casting",
+    "map_conditions",
+    "map_senses"
+  ],
+  "source_reconciliation": "Official body is authoritative for this SRD candidate. Retained donor payloads are comparison/reuse seeds, including legacy values and manifest winners; do not merge their statistics or traits by ID. Direct Crown encounters retain separate candidates.",
+  "spell_candidates": [
+    {
+      "path": "docs/planning/preparation/crown-spells/invisibility.json",
+      "sha256": "15362a5d2d1082a215e7612bcda681b0f3e76a79803b92876441188ee3d8af26"
+    }
+  ],
+  "equipment_links": []
+}

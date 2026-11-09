@@ -1,0 +1,54 @@
+{
+  "schema": "crown-character-candidate/1",
+  "id": "master_of_myriad_forms",
+  "name": "Master of Myriad Forms",
+  "kind": "invocation",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "scope": {
+    "total_character_level_maximum": 5
+  },
+  "operation_language": "authoring intent only; not registered engine syntax",
+  "runtime_support": "Retained definitions are reuse material, not proof of full rules. Every authored operation needs contract mapping and later production-path verification before promotion.",
+  "minimum_warlock_level": 5,
+  "rules": {
+    "authority": "SRD 5.2.1",
+    "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      73
+    ],
+    "text": "Master of Myriad Forms\nPrerequisite: Level 5+ Warlock\nYou can cast\nAlter Self\nwithout expending a spell\nslot."
+  },
+  "prerequisites": {
+    "warlock_level": 5,
+    "invocations": [],
+    "cantrip_parameter": null
+  },
+  "repeatable": false,
+  "authored_operations": [
+    {
+      "trigger": "Warlock5 cast Alter Self",
+      "cost": "No spell slot; normal components/time/Concentration",
+      "effects": [
+        "Grant at-will permission; actual option/form/breathing/attack hosts"
+      ],
+      "ending_and_identity": "Exact invocation source owns permission; normal spell endings still apply; remove only its grants when replaced.",
+      "required_extension_groups": [
+        "casting",
+        "forms"
+      ]
+    }
+  ],
+  "retained_runtime_fragment": null,
+  "unsupported_behavior": [
+    {
+      "groups": [
+        "casting",
+        "forms"
+      ],
+      "requirement": "Grant at-will permission; actual option/form/breathing/attack hosts",
+      "status": "mapping_and_production_host_verification_required"
+    }
+  ],
+  "source_revision": "2a19eb1d (existing working-tree definitions and recovered drafts read on 2026-11-08)",
+  "reused_input_hashes": {}
+}

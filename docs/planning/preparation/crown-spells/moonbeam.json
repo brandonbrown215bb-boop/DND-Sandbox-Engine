@@ -1,0 +1,226 @@
+{
+  "format": "crown-spell-candidate/1",
+  "id": "moonbeam",
+  "name": "Moonbeam",
+  "level": 2,
+  "status": "written_unverified_not_loaded",
+  "source": {
+    "authority": "SRD 5.2.1",
+    "url": "https://media.dndbeyond.com/compendium-images/srd/5.2/SRD_CC_v5.2.1.pdf",
+    "sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      150,
+      151
+    ],
+    "header": {
+      "Casting Time": "Action",
+      "Range": "120 feet",
+      "Components": "V, S, M (a moonseed leaf)",
+      "Duration": "Concentration, up to 1 minute"
+    },
+    "attribution": "System Reference Document 5.2.1, Wizards of the Coast LLC; CC BY 4.0."
+  },
+  "casting": {
+    "casting_time": "Action",
+    "kind": "action",
+    "seconds": null,
+    "ritual_available": false,
+    "range": {
+      "source": "120 feet",
+      "kind": "distance",
+      "feet": 120
+    },
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "a moonseed leaf",
+    "duration": "Concentration, up to 1 minute",
+    "concentration": true,
+    "spell_lists": [
+      "druid"
+    ]
+  },
+  "authored_intent": "5-foot-radius/40-foot-tall Dim Light cylinder; appearance, area-movement entry, creature entry/end-turn CON-half Radiant once per turn; failed-save shape-shifted creature reverts and cannot change until leaving, with no invented save Disadvantage; later Magic action moves beam 60 feet.",
+  "rules": [
+    {
+      "id": "r001",
+      "text": "A silvery beam of pale light shines down in a 5-foot-radius, 40-foot-high Cylinder centered on a point within range."
+    },
+    {
+      "id": "r002",
+      "text": "Until the spell ends, Dim Light fills the Cylinder, and you can take a Magic action on later turns to move the Cylinder up to 60 feet."
+    },
+    {
+      "id": "r003",
+      "text": "When the Cylinder appears, each creature in it makes a Constitution saving throw."
+    },
+    {
+      "id": "r004",
+      "text": "On a failed save, a creature takes 2d10 Radiant damage, and if the creature is shape-shifted (as a result of the Polymorph spell, for example), it reverts to its true form and can’t shape-shift until it leaves the Cylinder."
+    },
+    {
+      "id": "r005",
+      "text": "On a successful save, a creature takes half as much damage only."
+    },
+    {
+      "id": "r006",
+      "text": "A creature also makes this save when the spell’s area moves into its space and when it enters the spell’s area or ends its turn there."
+    },
+    {
+      "id": "r007",
+      "text": "A creature makes this save only once per turn."
+    },
+    {
+      "id": "r008",
+      "text": "Using a Higher-Level Spell Slot."
+    },
+    {
+      "id": "r009",
+      "text": "The damage increases by 1d10 for each spell slot level above 2."
+    }
+  ],
+  "authored_operations": [
+    {
+      "operation": "create_movable_damage_volume",
+      "parameters": {
+        "cylinder": {
+          "radius_feet": 5,
+          "height_feet": 40,
+          "dim_light": true
+        },
+        "move": {
+          "later_turn_action": "magic_action",
+          "feet": 60
+        },
+        "trigger": [
+          "appearance",
+          "area_moves_into_creature",
+          "creature_enters",
+          "creature_turn_end"
+        ],
+        "maximum_saves_per_target_per_turn": 1,
+        "save": "CON",
+        "damage": "2d10",
+        "type": "radiant",
+        "half_on_success": true,
+        "failed_save_shapeshifter": "revert_and_no_shapeshift_until_leaving",
+        "upcast_per_slot": "1d10"
+      },
+      "status": "authoring_declaration_not_a_registered_opcode",
+      "required_source_rules": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006",
+        "r007",
+        "r008",
+        "r009"
+      ]
+    }
+  ],
+  "runtime_draft": {
+    "origin": "new_shared_draft",
+    "definition": {
+      "id": "moonbeam",
+      "name": "Moonbeam",
+      "execution": "shared",
+      "level": 2,
+      "school": "evocation",
+      "classes": [
+        "druid"
+      ],
+      "components": [
+        "V",
+        "S",
+        "M"
+      ],
+      "duration": "Concentration, up to 1 minute",
+      "concentration": true,
+      "rules_source": "SRD 5.2.1",
+      "rules_status": "authoring-draft-unverified",
+      "range": 24,
+      "casting_time": "action",
+      "material": "a moonseed leaf",
+      "duration_seconds": 60,
+      "description": "A silvery beam of pale light shines down in a 5-foot-radius, 40-foot-high Cylinder centered on a point within range. Until the spell ends, Dim Light fills the Cylinder, and you can take a Magic action on later turns to move the Cylinder up to 60 feet. When the Cylinder appears, each creature in it makes a Constitution saving throw. On a failed save, a creature takes 2d10 Radiant damage, and if the creature is shape-shifted (as a result of the Polymorph spell, for example), it reverts to its true form and can’t shape-shift until it leaves the Cylinder. On a successful save, a creature takes half as much damage only. A creature also makes this save when the spell’s area moves into its space and when it enters the spell’s area or ends its turn there. A creature makes this save only once per turn. Using a Higher-Level Spell Slot. The damage increases by 1d10 for each spell slot level above 2.",
+      "target": "area",
+      "damage": "2d10",
+      "damage_type": "radiant",
+      "effects": [
+        {
+          "type": "area_selection",
+          "shape": "sphere",
+          "radius": 1
+        }
+      ],
+      "area_radius": 1,
+      "upcast": {
+        "starting_level": 2,
+        "damage_per_level": "1d10"
+      },
+      "save": "CON",
+      "half_on_save": true
+    },
+    "fragments": {},
+    "coverage": "Unverified. Neither a full definition nor a fragment certifies all source rules or controls. Required extensions are not silently waived."
+  },
+  "required_extensions": [
+    {
+      "group": "zones",
+      "requirement": "Mount source-defined recurring and moving area effects with independent appearance/entry/movement/start/end triggers, exclusions and once-per-turn receipts; area_selection is geometry only.",
+      "spell_specific_intent": "5-foot-radius/40-foot-tall Dim Light cylinder; appearance, area-movement entry, creature entry/end-turn CON-half Radiant once per turn; failed-save shape-shifted creature reverts and cannot change until leaving, with no invented save Disadvantage; later Magic action moves beam 60 feet.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006",
+        "r007",
+        "r008",
+        "r009"
+      ],
+      "existing_owner_to_reuse": "src/spells/combat_spell_zones.gd",
+      "slice_references": "S-080/S-087/S-184/S-190",
+      "disposition": "requires_mapping_or_host_completion",
+      "note": "This is an authored handoff requirement, not a fresh runtime failure or claim that the whole referenced slice is missing."
+    },
+    {
+      "group": "forms",
+      "requirement": "Declare legal forms, retained/replaced abilities and senses, gear policy, costs, restrictions and actual reversion/expulsion without refilling resources.",
+      "spell_specific_intent": "5-foot-radius/40-foot-tall Dim Light cylinder; appearance, area-movement entry, creature entry/end-turn CON-half Radiant once per turn; failed-save shape-shifted creature reverts and cannot change until leaving, with no invented save Disadvantage; later Magic action moves beam 60 feet.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006",
+        "r007",
+        "r008",
+        "r009"
+      ],
+      "existing_owner_to_reuse": "src/characters/actor_projection_rules.gd",
+      "slice_references": "S-162/S-163/S-164",
+      "disposition": "requires_mapping_or_host_completion",
+      "note": "This is an authored handoff requirement, not a fresh runtime failure or claim that the whole referenced slice is missing."
+    }
+  ],
+  "audit": {
+    "source": "docs/audits/spells.md",
+    "batch": "088-5",
+    "production_definition_at_authoring": "res://data/core/spells/imported_spells.json#132",
+    "baseline_execution": "native",
+    "source_revision": "2a19eb1d",
+    "existing_conversion_label": "queued"
+  },
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile every source rule and required extension, then implement and verify through production paths before any deliberate promotion. Keep native behavior until covered."
+  }
+}

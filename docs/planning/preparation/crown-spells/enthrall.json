@@ -1,0 +1,130 @@
+{
+  "format": "crown-spell-candidate/1",
+  "id": "enthrall",
+  "name": "Enthrall",
+  "level": 2,
+  "status": "written_unverified_not_loaded",
+  "source": {
+    "authority": "SRD 5.2.1",
+    "url": "https://media.dndbeyond.com/compendium-images/srd/5.2/SRD_CC_v5.2.1.pdf",
+    "sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      128
+    ],
+    "header": {
+      "Casting Time": "Action",
+      "Range": "60 feet",
+      "Components": "V, S",
+      "Duration": "Concentration, up to 1 minute"
+    },
+    "attribution": "System Reference Document 5.2.1, Wizards of the Coast LLC; CC BY 4.0."
+  },
+  "casting": {
+    "casting_time": "Action",
+    "kind": "action",
+    "seconds": null,
+    "ritual_available": false,
+    "range": {
+      "source": "60 feet",
+      "kind": "distance",
+      "feet": 60
+    },
+    "components": [
+      "V",
+      "S"
+    ],
+    "material": null,
+    "duration": "Concentration, up to 1 minute",
+    "concentration": true,
+    "spell_lists": [
+      "bard",
+      "warlock"
+    ]
+  },
+  "authored_intent": "Chosen seen creatures make WIS saves; fighting caster/allies automatically succeeds; source-bound minus 10 to Perception and Passive Perception for Concentration duration.",
+  "rules": [
+    {
+      "id": "r001",
+      "text": "You weave a distracting string of words, causing creatures of your choice that you can see within range to make a Wisdom saving throw."
+    },
+    {
+      "id": "r002",
+      "text": "Any creature you or your companions are fighting automatically succeeds on this save."
+    },
+    {
+      "id": "r003",
+      "text": "On a failed save, a target has a −10 penalty to Wisdom (Perception) checks and Passive Perception until the spell ends."
+    }
+  ],
+  "authored_operations": [
+    {
+      "operation": "shared_definition_reference",
+      "parameters": {
+        "definition": "runtime_draft.definition"
+      },
+      "status": "shared_definition_reference_unverified",
+      "required_source_rules": [
+        "r001",
+        "r002",
+        "r003"
+      ]
+    }
+  ],
+  "runtime_draft": {
+    "origin": "existing_shared_definition",
+    "definition": {
+      "attack_type": "none",
+      "base_targets": 100.0,
+      "casting_time": "action",
+      "classes": [
+        "bard",
+        "warlock"
+      ],
+      "components": [
+        "V",
+        "S"
+      ],
+      "concentration": true,
+      "description": "You weave a distracting string of words, causing creatures of your choice that you can see within range to make a Wisdom saving throw. Any creature you or your companions are fighting automatically succeeds on this save. On a failed save, a target has a −10 penalty to Wisdom (Perception) checks and Passive Perception until the spell ends.",
+      "duration": "Concentration, up to 1 minute",
+      "duration_seconds": 60,
+      "effects": [
+        {
+          "condition": "enthralled",
+          "on_failed_save": true,
+          "type": "grant_condition"
+        }
+      ],
+      "execution": "shared",
+      "id": "enthrall",
+      "level": 2,
+      "name": "Enthrall",
+      "range": 12,
+      "requires_target_sight": true,
+      "rules_source": "SRD 5.2.1",
+      "rules_status": "authoring-draft-unverified",
+      "save": "WIS",
+      "save_auto_success_traits": [
+        "fighting_caster_side"
+      ],
+      "school": "enchantment",
+      "target": "multi"
+    },
+    "fragments": {},
+    "coverage": "Unverified. Neither a full definition nor a fragment certifies all source rules or controls. Required extensions are not silently waived."
+  },
+  "required_extensions": [],
+  "audit": {
+    "source": "docs/audits/spells.md",
+    "batch": "088-3",
+    "production_definition_at_authoring": "res://data/core/spells/crown_sc_07.json#2",
+    "baseline_execution": "shared",
+    "source_revision": "2a19eb1d",
+    "existing_conversion_label": "converted"
+  },
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile every source rule and required extension, then implement and verify through production paths before any deliberate promotion. Keep native behavior until covered."
+  }
+}

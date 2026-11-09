@@ -1,0 +1,74 @@
+{
+  "schema": "crown-character-candidate/1",
+  "id": "repelling_blast",
+  "name": "Repelling Blast",
+  "kind": "invocation",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "scope": {
+    "total_character_level_maximum": 5
+  },
+  "operation_language": "authoring intent only; not registered engine syntax",
+  "runtime_support": "Retained definitions are reuse material, not proof of full rules. Every authored operation needs contract mapping and later production-path verification before promotion.",
+  "minimum_warlock_level": 2,
+  "rules": {
+    "authority": "SRD 5.2.1",
+    "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      74
+    ],
+    "text": "Repelling Blast\nPrerequisite: Level 2+ Warlock, a Warlock Cantrip\nThat Deals Damage via an Attack Roll\nChoose one of your known Warlock cantrips that\nrequires an attack roll. When you hit a Large or\nsmaller creature with that cantrip, you can push the\ncreature up to 10 feet straight away from you.\nRepeatable.\nYou can gain this invocation more\nthan once. Each time you do so, choose a different\neligible cantrip."
+  },
+  "prerequisites": {
+    "warlock_level": 2,
+    "invocations": [],
+    "cantrip_parameter": "Known Warlock cantrip, using exact damage/range/attack prerequisites in rules",
+    "spell_selector": {
+      "spell_level": 0,
+      "class_permission": "known as Warlock spell",
+      "deals_damage": true,
+      "minimum_range_feet": null,
+      "requires_attack_roll": true,
+      "policy": "Filter actual known Warlock cantrips by source semantics; do not infer damage/attack from an abbreviated imported field."
+    }
+  },
+  "repeatable": true,
+  "authored_operations": [
+    {
+      "trigger": "Warlock2 chosen Warlock cantrip dealing damage via attack roll hits Large or smaller",
+      "cost": "none",
+      "effects": [
+        "Push up to10 feet straight away; repeat only for distinct eligible cantrip; no save"
+      ],
+      "ending_and_identity": "Exact invocation source owns permission; normal spell endings still apply; remove only its grants when replaced.",
+      "required_extension_groups": [
+        "casting",
+        "movement"
+      ]
+    }
+  ],
+  "retained_runtime_fragment": {
+    "id": "repelling_blast",
+    "name": "Repelling Blast",
+    "minimum_level": 2,
+    "choose_damage_cantrip": true,
+    "requires_attack_roll": true,
+    "repeatable": true,
+    "effects": [
+      {
+        "type": "repelling_blast"
+      }
+    ]
+  },
+  "unsupported_behavior": [
+    {
+      "groups": [
+        "casting",
+        "movement"
+      ],
+      "requirement": "Push up to10 feet straight away; repeat only for distinct eligible cantrip; no save",
+      "status": "mapping_and_production_host_verification_required"
+    }
+  ],
+  "source_revision": "2a19eb1d (existing working-tree definitions and recovered drafts read on 2026-11-08)",
+  "reused_input_hashes": {}
+}

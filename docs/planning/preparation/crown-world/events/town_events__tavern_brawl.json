@@ -1,0 +1,157 @@
+{
+  "schema": "crown-world-candidate/1",
+  "id": "town_events__tavern_brawl",
+  "name": "Tavern Brawl",
+  "kind": "events",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring declarations only; not registered engine opcodes.",
+  "required_extensions": [
+    "discovery",
+    "hazards",
+    "knowledge_social",
+    "objectives_rewards",
+    "rest_time"
+  ],
+  "authored_operations": [
+    {
+      "operation": "resolve_authored_check",
+      "seed_pointer": "/choices/0/check",
+      "check": {
+        "ability": "STR",
+        "dc": 11
+      },
+      "requirement": "Keep ability, skill/context, DC and optional familiar Help exactly. Choose actor and actual context; settle one branch once; never silently convert an ability check into a saving throw."
+    },
+    {
+      "operation": "settle_ordered_branch",
+      "seed_pointer": "/choices/0/success/effects",
+      "effects": [
+        {
+          "type": "heal",
+          "value": "1d6"
+        },
+        {
+          "type": "give_item",
+          "item_id": "gold_50"
+        }
+      ],
+      "condition": null,
+      "requirement": "Retain order, exact quantities/formulas, recipient, costs, branch descriptions and occurrence identity; no repeated payment when a child resumes."
+    },
+    {
+      "operation": "settle_ordered_branch",
+      "seed_pointer": "/choices/0/failure/effects",
+      "effects": [
+        {
+          "type": "damage",
+          "value": "1d4",
+          "damage_type": "bludgeoning"
+        }
+      ],
+      "condition": null,
+      "requirement": "Retain order, exact quantities/formulas, recipient, costs, branch descriptions and occurrence identity; no repeated payment when a child resumes."
+    },
+    {
+      "operation": "resolve_authored_check",
+      "seed_pointer": "/choices/1/check",
+      "check": {
+        "ability": "CHA",
+        "dc": 12
+      },
+      "requirement": "Keep ability, skill/context, DC and optional familiar Help exactly. Choose actor and actual context; settle one branch once; never silently convert an ability check into a saving throw."
+    },
+    {
+      "operation": "settle_ordered_branch",
+      "seed_pointer": "/choices/1/success/effects",
+      "effects": [
+        {
+          "type": "reveal_map",
+          "radius": 2
+        }
+      ],
+      "condition": null,
+      "requirement": "Retain order, exact quantities/formulas, recipient, costs, branch descriptions and occurrence identity; no repeated payment when a child resumes."
+    },
+    {
+      "operation": "settle_ordered_branch",
+      "seed_pointer": "/choices/2/effects",
+      "effects": [],
+      "condition": null,
+      "requirement": "Retain order, exact quantities/formulas, recipient, costs, branch descriptions and occurrence identity; no repeated payment when a child resumes."
+    }
+  ],
+  "blockers": [
+    "EventResolver returns reveal_map, but EventDialog does not expose a reveal-map result for the overworld callback; no actual fog reveal established."
+  ],
+  "retained_input": {
+    "path": "data/core/events/town_events.json",
+    "sha256": "cc2833d086c100b57a67f114d11888312e7074fdebe601d94151d17e9c310098",
+    "pointer": "/events/0",
+    "payload": {
+      "id": "tavern_brawl",
+      "name": "Tavern Brawl",
+      "weight": 15,
+      "description": "You enter a tavern for a drink. A surly dwarf takes offense at your presence and throws a mug at your head!",
+      "type": "choice",
+      "choices": [
+        {
+          "text": "Fight back!",
+          "check": {
+            "ability": "STR",
+            "dc": 11
+          },
+          "success": {
+            "description": "You knock the dwarf flat. The tavern cheers! Free drinks for the rest of the night.",
+            "effects": [
+              {
+                "type": "heal",
+                "value": "1d6"
+              },
+              {
+                "type": "give_item",
+                "item_id": "gold_50"
+              }
+            ]
+          },
+          "failure": {
+            "description": "The dwarf is surprisingly strong. You end up face-first on the floor.",
+            "effects": [
+              {
+                "type": "damage",
+                "value": "1d4",
+                "damage_type": "bludgeoning"
+              }
+            ]
+          }
+        },
+        {
+          "text": "Talk them down",
+          "check": {
+            "ability": "CHA",
+            "dc": 12
+          },
+          "success": {
+            "description": "You buy the dwarf a drink and end up hearing an interesting rumor about a nearby dungeon.",
+            "effects": [
+              {
+                "type": "reveal_map",
+                "radius": 2
+              }
+            ]
+          },
+          "failure": {
+            "description": "Your words only make the dwarf angrier. You leave quickly."
+          }
+        },
+        {
+          "text": "Duck and leave",
+          "effects": [],
+          "description": "You dodge the mug and slip out. Not worth the trouble."
+        }
+      ]
+    }
+  },
+  "authority": "Custom Crown campaign event, not an SRD trap/NPC/spell replacement",
+  "table_id": "town_events",
+  "occurrence_policy": "Table may roll again; same in-flight occurrence must not reroll/reapply on reopen. Campaign-specific uniqueness beyond generated room claims is unresolved, not silently global once-per-event-ID."
+}

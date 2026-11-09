@@ -1,0 +1,129 @@
+{
+  "format": "crown-spell-candidate/1",
+  "id": "false_life",
+  "name": "False Life",
+  "level": 1,
+  "status": "written_unverified_not_loaded",
+  "source": {
+    "authority": "SRD 5.2.1",
+    "url": "https://media.dndbeyond.com/compendium-images/srd/5.2/SRD_CC_v5.2.1.pdf",
+    "sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      129
+    ],
+    "header": {
+      "Casting Time": "Action",
+      "Range": "Self",
+      "Components": "V, S, M (a drop of alcohol)",
+      "Duration": "Instantaneous"
+    },
+    "attribution": "System Reference Document 5.2.1, Wizards of the Coast LLC; CC BY 4.0."
+  },
+  "casting": {
+    "casting_time": "Action",
+    "kind": "action",
+    "seconds": null,
+    "ritual_available": false,
+    "range": {
+      "source": "Self",
+      "kind": "self",
+      "feet": 0
+    },
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "a drop of alcohol",
+    "duration": "Instantaneous",
+    "concentration": false,
+    "spell_lists": [
+      "sorcerer",
+      "wizard"
+    ]
+  },
+  "authored_intent": "Magic action self; 2d4+4 Temporary HP; higher slots add 5; apply normal replacement choice rather than adding Temp HP together.",
+  "rules": [
+    {
+      "id": "r001",
+      "text": "You gain 2d4 + 4 Temporary Hit Points."
+    },
+    {
+      "id": "r002",
+      "text": "Using a Higher-Level Spell Slot."
+    },
+    {
+      "id": "r003",
+      "text": "You gain 5 additional Temporary Hit Points for each spell slot level above 1."
+    }
+  ],
+  "authored_operations": [
+    {
+      "operation": "shared_definition_reference",
+      "parameters": {
+        "definition": "runtime_draft.definition"
+      },
+      "status": "shared_definition_reference_unverified",
+      "required_source_rules": [
+        "r001",
+        "r002",
+        "r003"
+      ]
+    }
+  ],
+  "runtime_draft": {
+    "origin": "new_shared_draft",
+    "definition": {
+      "id": "false_life",
+      "name": "False Life",
+      "execution": "shared",
+      "level": 1,
+      "school": "necromancy",
+      "classes": [
+        "sorcerer",
+        "wizard"
+      ],
+      "components": [
+        "V",
+        "S",
+        "M"
+      ],
+      "duration": "Instantaneous",
+      "concentration": false,
+      "rules_source": "SRD 5.2.1",
+      "rules_status": "authoring-draft-unverified",
+      "range": 0,
+      "range_kind": "self",
+      "casting_time": "action",
+      "material": "a drop of alcohol",
+      "description": "You gain 2d4 + 4 Temporary Hit Points. Using a Higher-Level Spell Slot. You gain 5 additional Temporary Hit Points for each spell slot level above 1.",
+      "target": "self",
+      "effects": [
+        {
+          "type": "temporary_hp",
+          "value": "2d4+4"
+        }
+      ],
+      "upcast": {
+        "starting_level": 1,
+        "temporary_hp_per_level": 5
+      }
+    },
+    "fragments": {},
+    "coverage": "Unverified. Neither a full definition nor a fragment certifies all source rules or controls. Required extensions are not silently waived."
+  },
+  "required_extensions": [],
+  "audit": {
+    "source": "docs/audits/spells.md",
+    "batch": "088-4",
+    "production_definition_at_authoring": "res://data/core/spells/imported_spells.json#69",
+    "baseline_execution": "native",
+    "source_revision": "2a19eb1d",
+    "existing_conversion_label": "queued"
+  },
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile every source rule and required extension, then implement and verify through production paths before any deliberate promotion. Keep native behavior until covered."
+  }
+}

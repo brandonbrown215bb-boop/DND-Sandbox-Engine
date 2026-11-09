@@ -1,0 +1,376 @@
+{
+  "schema": "crown-creature-candidate/1",
+  "id": "srd_imp",
+  "name": "Imp",
+  "kind": "srd_statblock",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring intent only; not registered engine syntax. Mapping requirements do not assert the whole referenced engine slice is absent.",
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile all source clauses, mappings and source differences before later production-path verification. Keep native paths until replacements cover them."
+  },
+  "source": {
+    "authority": "SRD 5.2.1",
+    "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      300,
+      301
+    ],
+    "text": "Imp\nTiny Fiend (Devil), Lawful Evil\nAC 13 Initiative +3 (13)\nHP 21 (6d4 + 6)\nSpeed 20 ft., Fly 40 ft.\nMOD SAVE MOD SAVE MOD SAVE\nStr 6 −2 −2 Dex 17 +3 +3 Con 13 +1 +1\nInt 11 +0 +0 WIS 12 +1 +1 Cha 14 +2 +2\nSkills Deception +4, Insight +3, Stealth +5\nResistances Cold\nImmunities Fire, Poison; Poisoned\nSenses Darkvision 120 ft. (unimpeded by magical\nDarkness); Passive Perception 11\nLanguages Common, Infernal\nCR 1 (XP 200; PB +2)\nTraits\nMagic Resistance. The imp has Advantage on saving\nthrows against spells and other magical effects.\nActions\nSting. Melee Attack Roll: +5, reach 5 ft. Hit: 6 (1d6 + 3)\nPiercing damage plus 7 (2d6) Poison damage.\nInvisibility. The imp casts Invisibility on itself, requiring\nno spell components and using Charisma as the spell-\ncasting ability.\nShape-Shift. The imp shape-shifts to resemble a rat\n(Speed 20 ft.), a raven (20 ft., Fly 60 ft.), or a spider\n(20 ft., Climb 20 ft.), or it returns to its true form. Its\ngame statistics are the same in each form, except for\nits Speed. Any equipment it is wearing or carrying isn’t\ntransformed.",
+    "transcription": "Two-column extraction; line breaks retained. Whole selected page context is in source-pages.json. No stat correction inferred from donor data."
+  },
+  "statistics": {
+    "identity_line": "Tiny Fiend (Devil), Lawful Evil",
+    "AC": "13 Initiative +3 (13)",
+    "HP": "21 (6d4 + 6)",
+    "Speed": "20 ft., Fly 40 ft.",
+    "Skills": "Deception +4, Insight +3, Stealth +5",
+    "Resistances": "Cold",
+    "Immunities": "Fire, Poison; Poisoned",
+    "Senses": "Darkvision 120 ft. (unimpeded by magical\nDarkness); Passive Perception 11",
+    "Languages": "Common, Infernal",
+    "CR": "1 (XP 200; PB +2)",
+    "ability_scores": {
+      "STR": 6,
+      "DEX": 17,
+      "CON": 13,
+      "INT": 11,
+      "WIS": 12,
+      "CHA": 14
+    },
+    "saving_throw_modifiers": {
+      "STR": -2,
+      "DEX": 3,
+      "CON": 1,
+      "INT": 0,
+      "WIS": 1,
+      "CHA": 2
+    },
+    "initiative_modifier": 3,
+    "initiative_score_printed": 13,
+    "armor_class": 13,
+    "movement_feet": {
+      "walk": 20,
+      "fly": 40
+    }
+  },
+  "authored_operations": [
+    {
+      "key": "b001",
+      "name": "Magic Resistance",
+      "source_section": "Traits",
+      "full_rule": "Magic Resistance. The imp has Advantage on saving\nthrows against spells and other magical effects.",
+      "budget": "passive_or_declared_trigger",
+      "steps": [
+        {
+          "intent": "Apply conditional Advantage/Disadvantage or roll adjustment only to the qualifying exact check/save/attack and its declared window.",
+          "mapping_group": "rolls"
+        }
+      ],
+      "parameters_from_rule": {
+        "attack_bonus": [],
+        "save_dc": [],
+        "distances_feet": [],
+        "dice": []
+      },
+      "blockers": [
+        "map_rolls"
+      ],
+      "ending_and_identity": "Exact actor/action/target/source instance; use every qualifier and ending in full_rule, not only extracted parameters.",
+      "behavior_plan": {
+        "budget": "passive_or_declared_trigger",
+        "source_outcomes": {},
+        "trigger": "Saving throw against spell or other magical effect",
+        "roll_adjustment": "advantage"
+      }
+    },
+    {
+      "key": "b002",
+      "name": "Sting",
+      "source_section": "Actions",
+      "full_rule": "Sting. Melee Attack Roll: +5, reach 5 ft. Hit: 6 (1d6 + 3)\nPiercing damage plus 7 (2d6) Poison damage.",
+      "budget": "action",
+      "steps": [
+        {
+          "intent": "Resolve declared roll or save, targets, range/reach, damage packets, multiattack choice, riders and exact action budget. A save-only action is not a weapon hit rider.",
+          "mapping_group": "attacks"
+        }
+      ],
+      "parameters_from_rule": {
+        "attack_bonus": [
+          5
+        ],
+        "save_dc": [],
+        "distances_feet": [
+          5
+        ],
+        "dice": [
+          "1d6 + 3",
+          "2d6"
+        ]
+      },
+      "blockers": [
+        "map_attacks"
+      ],
+      "ending_and_identity": "Exact actor/action/target/source instance; use every qualifier and ending in full_rule, not only extracted parameters.",
+      "behavior_plan": {
+        "budget": "action",
+        "source_outcomes": {
+          "hit": "6 (1d6 + 3) Piercing damage plus 7 (2d6) Poison damage."
+        },
+        "resolution": "attack_roll",
+        "attack_kind": "melee",
+        "damage_and_riders": "6 (1d6 + 3) Piercing damage plus 7 (2d6) Poison damage.",
+        "permission": "ordinary familiar cannot attack; invocation exceptions must grant this exact attack or Attack action, not every Actions entry"
+      }
+    },
+    {
+      "key": "b003",
+      "name": "Invisibility",
+      "source_section": "Actions",
+      "full_rule": "Invisibility. The imp casts Invisibility on itself, requiring\nno spell components and using Charisma as the spellcasting ability.",
+      "budget": "action",
+      "steps": [
+        {
+          "intent": "Use the linked spell with exact ability/components/target permission, Concentration, budgets and endings; not a permanent trait replacement.",
+          "mapping_group": "casting"
+        }
+      ],
+      "parameters_from_rule": {
+        "attack_bonus": [],
+        "save_dc": [],
+        "distances_feet": [],
+        "dice": []
+      },
+      "blockers": [
+        "map_casting"
+      ],
+      "ending_and_identity": "Exact actor/action/target/source instance; use every qualifier and ending in full_rule, not only extracted parameters.",
+      "behavior_plan": {
+        "budget": "action",
+        "source_outcomes": {},
+        "cast": "invisibility",
+        "target": "self",
+        "components": [],
+        "spellcasting_ability": "CHA",
+        "policy": "Use linked spell duration/Concentration/endings; not permanent passive Invisible"
+      }
+    },
+    {
+      "key": "b004",
+      "name": "Shape-Shift",
+      "source_section": "Actions",
+      "full_rule": "Shape-Shift. The imp shape-shifts to resemble a rat\n(Speed 20 ft.), a raven (20 ft., Fly 60 ft.), or a spider\n(20 ft., Climb 20 ft.), or it returns to its true form. Its\ngame statistics are the same in each form, except for\nits Speed. Any equipment it is wearing or carrying isn’t\ntransformed.",
+      "budget": "action",
+      "steps": [
+        {
+          "intent": "Resolve complete eligibility and chosen known forms, template parameters, command/turn policy and drop/merge/wear state; do not recreate or refill original actors on restore.",
+          "mapping_group": "forms"
+        },
+        {
+          "intent": "Exact carried copies, corrosion penalties/destruction and Mending, temporary tack separation and dropped equipment; loot metadata is not a paid reward.",
+          "mapping_group": "items"
+        },
+        {
+          "intent": "Represent actual size/space, climb/swim/fly and breathing, jumps, straight-line charge history, opportunity exceptions, web surfaces and legal release.",
+          "mapping_group": "movement"
+        }
+      ],
+      "parameters_from_rule": {
+        "attack_bonus": [],
+        "save_dc": [],
+        "distances_feet": [
+          20,
+          20,
+          60,
+          20,
+          20
+        ],
+        "dice": []
+      },
+      "blockers": [
+        "map_forms",
+        "map_items",
+        "map_movement"
+      ],
+      "ending_and_identity": "Exact actor/action/target/source instance; use every qualifier and ending in full_rule, not only extracted parameters.",
+      "behavior_plan": {
+        "budget": "action",
+        "source_outcomes": {},
+        "resolution": "resemblance_only",
+        "retained": "All current statblock facts except listed Speeds; exact equipment unchanged",
+        "forms": {
+          "rat": {
+            "walk": 20
+          },
+          "raven": {
+            "walk": 20,
+            "fly": 60
+          },
+          "spider": {
+            "walk": 20,
+            "climb": 20
+          }
+        },
+        "true_form": "Restore this exact actor template movement; no full animal-stat substitution"
+      }
+    }
+  ],
+  "retained_definitions": [
+    {
+      "path": "data/core/monsters/imported_monsters.json",
+      "sha256": "f57bee1e93f185a89575bed3d8b2b610b53cfd3b7f2eb56448d1dd64a0126c5f",
+      "pointer": "/234",
+      "payload": {
+        "id": "imp",
+        "name": "Imp",
+        "hit_points": "3d4 + 3",
+        "armor_class": 13,
+        "speed": 4,
+        "ability_scores": {
+          "STR": 6,
+          "DEX": 17,
+          "CON": 13,
+          "INT": 11,
+          "WIS": 12,
+          "CHA": 14
+        },
+        "attacks": [
+          {
+            "name": "Claws",
+            "ability": "STR",
+            "damage": "1d6",
+            "range": 1,
+            "damage_type": "slashing"
+          }
+        ],
+        "ai_behavior": "aggressive"
+      },
+      "manifest_declarations": [
+        {
+          "type": "monster",
+          "id": "imp",
+          "winner": "res://data/core/monsters/srd_monsters.json#88",
+          "replaces": [
+            "res://data/core/monsters/imported_monsters.json#235"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "data/core/monsters/srd_monsters.json",
+      "sha256": "83786ed8bafc802e37b7794c04ba8901e3e10b35d288f301c92f01bbed50cd73",
+      "pointer": "/87",
+      "payload": {
+        "id": "imp",
+        "name": "Imp",
+        "description": "A tiny devil familiar that stings with poison and turns invisible.",
+        "size": "tiny",
+        "challenge_rating": 1,
+        "hit_points": "6d4 + 6",
+        "armor_class": 13,
+        "speed": 4,
+        "ability_scores": {
+          "STR": 6,
+          "DEX": 17,
+          "CON": 13,
+          "INT": 11,
+          "WIS": 12,
+          "CHA": 14
+        },
+        "damage_resistances": [
+          "cold"
+        ],
+        "damage_immunities": [
+          "fire",
+          "poison"
+        ],
+        "condition_immunities": [
+          "poisoned"
+        ],
+        "attacks": [
+          {
+            "name": "Sting",
+            "ability": "DEX",
+            "damage": "1d6 + 3",
+            "damage_type": "piercing",
+            "range": 1,
+            "extra_effects": [
+              {
+                "type": "bonus_damage",
+                "damage": "2d6",
+                "damage_type": "poison"
+              }
+            ]
+          }
+        ],
+        "ai_behavior": "aggressive",
+        "special_abilities": [
+          {
+            "id": "fly",
+            "name": "Fly",
+            "description": "Fly speed 8 hexes (40 ft)."
+          },
+          {
+            "id": "magic_resistance",
+            "name": "Magic Resistance",
+            "description": "Advantage on saves against spells and magical effects."
+          },
+          {
+            "id": "shape_shift",
+            "name": "Shape-Shift",
+            "description": "Can become a rat, raven, or spider (speeds change), or return to true form."
+          },
+          {
+            "id": "invisibility",
+            "name": "Invisibility",
+            "description": "At will: cast Invisibility on itself."
+          }
+        ],
+        "loot_table": [],
+        "xp": 200
+      },
+      "manifest_declarations": [
+        {
+          "type": "monster",
+          "id": "imp",
+          "winner": "res://data/core/monsters/srd_monsters.json#88",
+          "replaces": [
+            "res://data/core/monsters/imported_monsters.json#235"
+          ]
+        }
+      ]
+    }
+  ],
+  "selection": {
+    "wild_shape_druid_levels_2_3": false,
+    "wild_shape_druid_levels_4_5": false,
+    "normal_familiar": false,
+    "pact_of_chain_special": true,
+    "animate_dead_output": false,
+    "held_swarm": false,
+    "encounter_comparison_only": false
+  },
+  "acquisition_links": [
+    "selection-links.json"
+  ],
+  "blockers": [
+    "map_statistics",
+    "map_attacks",
+    "map_casting",
+    "map_forms",
+    "map_items",
+    "map_movement",
+    "map_rolls"
+  ],
+  "source_reconciliation": "Official body is authoritative for this SRD candidate. Retained donor payloads are comparison/reuse seeds, including legacy values and manifest winners; do not merge their statistics or traits by ID. Direct Crown encounters retain separate candidates.",
+  "form_dependency": "Resemblance forms change only the explicitly listed Speeds; retain this creature statistics and exact equipment. No Rat/Raven/Spider/Bat/Centipede/Toad stat block substitution or additional form acquisition.",
+  "spell_candidates": [
+    {
+      "path": "docs/planning/preparation/crown-spells/invisibility.json",
+      "sha256": "15362a5d2d1082a215e7612bcda681b0f3e76a79803b92876441188ee3d8af26"
+    }
+  ],
+  "equipment_links": []
+}

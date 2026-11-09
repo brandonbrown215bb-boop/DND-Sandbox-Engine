@@ -1,0 +1,52 @@
+{
+  "schema": "crown-reachable-item-candidate/1",
+  "id": "crossbow_bolt_case",
+  "name": "Crossbow Bolt Case",
+  "kind": "gear",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring intent only; not registered engine syntax.",
+  "rules": {
+    "authority": "SRD 5.2.1",
+    "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      95,
+      96
+    ],
+    "text": "Holds up to 20 Bolts. Storage is bought separately from ammunition.",
+    "source_context": "../source-pages.json"
+  },
+  "definition": {
+    "id": "crossbow_bolt_case",
+    "name": "Crossbow Bolt Case",
+    "weight_lb": 1,
+    "cost_gp": 1,
+    "capacity_bolts": 20
+  },
+  "authored_operations": [
+    "Holds up to 20 Bolts. Storage is bought separately from ammunition."
+  ],
+  "retained_runtime_seeds": [],
+  "manifest_overrides": [],
+  "required_mapping": [
+    "ammunition"
+  ],
+  "consumers": [
+    {
+      "channel": "ammunition_storage_dependency",
+      "candidate_ids": [
+        "bolts"
+      ],
+      "source": "SRD 5.2.1 p.96; separate storage, not a free grant"
+    }
+  ],
+  "unsupported_behavior": [
+    {
+      "group": "ammunition",
+      "requirement": "Separate piece counts, purchase lots and storage. Exact weapon type, free-hand loading, one-piece spending, one-minute floor-half recovery and Loading limits must work through attacks and checkpoints."
+    },
+    {
+      "group": "definition",
+      "requirement": "No exact current loaded-source seed at this identity. This candidate needs deliberate contract mapping/promotion; it is not an installed item."
+    }
+  ]
+}

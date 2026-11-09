@@ -1,0 +1,597 @@
+{
+  "schema": "crown-equipment-index/1",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "scope": "The twelve Crown class starting alternatives and four backgrounds, recursive six-pack contents, all legal Monk tool/Bard instrument/Soldier gaming choices, named focuses and background Book variants. Merchant/loot/components/creature/world catalog outside this pass.",
+  "candidates": [
+    {
+      "id": "dagger",
+      "kind": "weapon",
+      "path": "items/dagger.json"
+    },
+    {
+      "id": "handaxe",
+      "kind": "weapon",
+      "path": "items/handaxe.json"
+    },
+    {
+      "id": "javelin",
+      "kind": "weapon",
+      "path": "items/javelin.json"
+    },
+    {
+      "id": "mace",
+      "kind": "weapon",
+      "path": "items/mace.json"
+    },
+    {
+      "id": "quarterstaff",
+      "kind": "weapon",
+      "path": "items/quarterstaff.json"
+    },
+    {
+      "id": "sickle",
+      "kind": "weapon",
+      "path": "items/sickle.json"
+    },
+    {
+      "id": "spear",
+      "kind": "weapon",
+      "path": "items/spear.json"
+    },
+    {
+      "id": "shortbow",
+      "kind": "weapon",
+      "path": "items/shortbow.json"
+    },
+    {
+      "id": "flail",
+      "kind": "weapon",
+      "path": "items/flail.json"
+    },
+    {
+      "id": "greataxe",
+      "kind": "weapon",
+      "path": "items/greataxe.json"
+    },
+    {
+      "id": "greatsword",
+      "kind": "weapon",
+      "path": "items/greatsword.json"
+    },
+    {
+      "id": "longsword",
+      "kind": "weapon",
+      "path": "items/longsword.json"
+    },
+    {
+      "id": "scimitar",
+      "kind": "weapon",
+      "path": "items/scimitar.json"
+    },
+    {
+      "id": "shortsword",
+      "kind": "weapon",
+      "path": "items/shortsword.json"
+    },
+    {
+      "id": "longbow",
+      "kind": "weapon",
+      "path": "items/longbow.json"
+    },
+    {
+      "id": "leather_armor",
+      "kind": "armor",
+      "path": "items/leather_armor.json"
+    },
+    {
+      "id": "studded_leather_armor",
+      "kind": "armor",
+      "path": "items/studded_leather_armor.json"
+    },
+    {
+      "id": "chain_shirt",
+      "kind": "armor",
+      "path": "items/chain_shirt.json"
+    },
+    {
+      "id": "chain_mail",
+      "kind": "armor",
+      "path": "items/chain_mail.json"
+    },
+    {
+      "id": "shield",
+      "kind": "armor",
+      "path": "items/shield.json"
+    },
+    {
+      "id": "backpack",
+      "kind": "gear",
+      "path": "items/backpack.json"
+    },
+    {
+      "id": "bedroll",
+      "kind": "gear",
+      "path": "items/bedroll.json"
+    },
+    {
+      "id": "blanket",
+      "kind": "gear",
+      "path": "items/blanket.json"
+    },
+    {
+      "id": "bell",
+      "kind": "gear",
+      "path": "items/bell.json"
+    },
+    {
+      "id": "ball_bearings",
+      "kind": "gear",
+      "path": "items/ball_bearings.json"
+    },
+    {
+      "id": "caltrops",
+      "kind": "gear",
+      "path": "items/caltrops.json"
+    },
+    {
+      "id": "candle",
+      "kind": "gear",
+      "path": "items/candle.json"
+    },
+    {
+      "id": "costume",
+      "kind": "gear",
+      "path": "items/costume.json"
+    },
+    {
+      "id": "crowbar",
+      "kind": "gear",
+      "path": "items/crowbar.json"
+    },
+    {
+      "id": "travelers_clothes",
+      "kind": "gear",
+      "path": "items/travelers_clothes.json"
+    },
+    {
+      "id": "book",
+      "kind": "gear",
+      "path": "items/book.json"
+    },
+    {
+      "id": "parchment",
+      "kind": "gear",
+      "path": "items/parchment.json"
+    },
+    {
+      "id": "pouch",
+      "kind": "gear",
+      "path": "items/pouch.json"
+    },
+    {
+      "id": "quiver",
+      "kind": "gear",
+      "path": "items/quiver.json"
+    },
+    {
+      "id": "mirror",
+      "kind": "gear",
+      "path": "items/mirror.json"
+    },
+    {
+      "id": "rations",
+      "kind": "gear",
+      "path": "items/rations.json"
+    },
+    {
+      "id": "robe",
+      "kind": "gear",
+      "path": "items/robe.json"
+    },
+    {
+      "id": "rope",
+      "kind": "gear",
+      "path": "items/rope.json"
+    },
+    {
+      "id": "tinderbox",
+      "kind": "gear",
+      "path": "items/tinderbox.json"
+    },
+    {
+      "id": "torch",
+      "kind": "gear",
+      "path": "items/torch.json"
+    },
+    {
+      "id": "waterskin",
+      "kind": "gear",
+      "path": "items/waterskin.json"
+    },
+    {
+      "id": "ink",
+      "kind": "gear",
+      "path": "items/ink.json"
+    },
+    {
+      "id": "ink_pen",
+      "kind": "gear",
+      "path": "items/ink_pen.json"
+    },
+    {
+      "id": "lamp",
+      "kind": "gear",
+      "path": "items/lamp.json"
+    },
+    {
+      "id": "lantern_bullseye",
+      "kind": "gear",
+      "path": "items/lantern_bullseye.json"
+    },
+    {
+      "id": "lantern_hooded",
+      "kind": "gear",
+      "path": "items/lantern_hooded.json"
+    },
+    {
+      "id": "healers_kit",
+      "kind": "gear",
+      "path": "items/healers_kit.json"
+    },
+    {
+      "id": "holy_water",
+      "kind": "gear",
+      "path": "items/holy_water.json"
+    },
+    {
+      "id": "oil_flask",
+      "kind": "gear",
+      "path": "items/oil_flask.json"
+    },
+    {
+      "id": "arrows",
+      "kind": "ammunition",
+      "path": "items/arrows.json"
+    },
+    {
+      "id": "explorers_pack",
+      "kind": "pack",
+      "path": "items/explorers_pack.json"
+    },
+    {
+      "id": "entertainers_pack",
+      "kind": "pack",
+      "path": "items/entertainers_pack.json"
+    },
+    {
+      "id": "priests_pack",
+      "kind": "pack",
+      "path": "items/priests_pack.json"
+    },
+    {
+      "id": "dungeoneers_pack",
+      "kind": "pack",
+      "path": "items/dungeoneers_pack.json"
+    },
+    {
+      "id": "burglars_pack",
+      "kind": "pack",
+      "path": "items/burglars_pack.json"
+    },
+    {
+      "id": "scholars_pack",
+      "kind": "pack",
+      "path": "items/scholars_pack.json"
+    },
+    {
+      "id": "alchemists_supplies",
+      "kind": "tool",
+      "path": "items/alchemists_supplies.json"
+    },
+    {
+      "id": "brewers_supplies",
+      "kind": "tool",
+      "path": "items/brewers_supplies.json"
+    },
+    {
+      "id": "calligraphers_supplies",
+      "kind": "tool",
+      "path": "items/calligraphers_supplies.json"
+    },
+    {
+      "id": "carpenters_tools",
+      "kind": "tool",
+      "path": "items/carpenters_tools.json"
+    },
+    {
+      "id": "cartographers_tools",
+      "kind": "tool",
+      "path": "items/cartographers_tools.json"
+    },
+    {
+      "id": "cobblers_tools",
+      "kind": "tool",
+      "path": "items/cobblers_tools.json"
+    },
+    {
+      "id": "cooks_utensils",
+      "kind": "tool",
+      "path": "items/cooks_utensils.json"
+    },
+    {
+      "id": "glassblowers_tools",
+      "kind": "tool",
+      "path": "items/glassblowers_tools.json"
+    },
+    {
+      "id": "jewelers_tools",
+      "kind": "tool",
+      "path": "items/jewelers_tools.json"
+    },
+    {
+      "id": "leatherworkers_tools",
+      "kind": "tool",
+      "path": "items/leatherworkers_tools.json"
+    },
+    {
+      "id": "masons_tools",
+      "kind": "tool",
+      "path": "items/masons_tools.json"
+    },
+    {
+      "id": "painters_supplies",
+      "kind": "tool",
+      "path": "items/painters_supplies.json"
+    },
+    {
+      "id": "potters_tools",
+      "kind": "tool",
+      "path": "items/potters_tools.json"
+    },
+    {
+      "id": "smiths_tools",
+      "kind": "tool",
+      "path": "items/smiths_tools.json"
+    },
+    {
+      "id": "tinkers_tools",
+      "kind": "tool",
+      "path": "items/tinkers_tools.json"
+    },
+    {
+      "id": "weavers_tools",
+      "kind": "tool",
+      "path": "items/weavers_tools.json"
+    },
+    {
+      "id": "woodcarvers_tools",
+      "kind": "tool",
+      "path": "items/woodcarvers_tools.json"
+    },
+    {
+      "id": "herbalism_kit",
+      "kind": "tool",
+      "path": "items/herbalism_kit.json"
+    },
+    {
+      "id": "thieves_tools",
+      "kind": "tool",
+      "path": "items/thieves_tools.json"
+    },
+    {
+      "id": "bagpipes",
+      "kind": "musical_instrument",
+      "path": "items/bagpipes.json"
+    },
+    {
+      "id": "drum",
+      "kind": "musical_instrument",
+      "path": "items/drum.json"
+    },
+    {
+      "id": "dulcimer",
+      "kind": "musical_instrument",
+      "path": "items/dulcimer.json"
+    },
+    {
+      "id": "flute",
+      "kind": "musical_instrument",
+      "path": "items/flute.json"
+    },
+    {
+      "id": "horn",
+      "kind": "musical_instrument",
+      "path": "items/horn.json"
+    },
+    {
+      "id": "lute",
+      "kind": "musical_instrument",
+      "path": "items/lute.json"
+    },
+    {
+      "id": "lyre",
+      "kind": "musical_instrument",
+      "path": "items/lyre.json"
+    },
+    {
+      "id": "pan_flute",
+      "kind": "musical_instrument",
+      "path": "items/pan_flute.json"
+    },
+    {
+      "id": "shawm",
+      "kind": "musical_instrument",
+      "path": "items/shawm.json"
+    },
+    {
+      "id": "viol",
+      "kind": "musical_instrument",
+      "path": "items/viol.json"
+    },
+    {
+      "id": "dice_set",
+      "kind": "gaming_set",
+      "path": "items/dice_set.json"
+    },
+    {
+      "id": "dragonchess_set",
+      "kind": "gaming_set",
+      "path": "items/dragonchess_set.json"
+    },
+    {
+      "id": "playing_card_set",
+      "kind": "gaming_set",
+      "path": "items/playing_card_set.json"
+    },
+    {
+      "id": "three_dragon_ante_set",
+      "kind": "gaming_set",
+      "path": "items/three_dragon_ante_set.json"
+    },
+    {
+      "id": "arcane_crystal",
+      "kind": "focus",
+      "path": "items/arcane_crystal.json"
+    },
+    {
+      "id": "arcane_orb",
+      "kind": "focus",
+      "path": "items/arcane_orb.json"
+    },
+    {
+      "id": "arcane_focus_quarterstaff",
+      "kind": "focus",
+      "path": "items/arcane_focus_quarterstaff.json"
+    },
+    {
+      "id": "druidic_focus_quarterstaff",
+      "kind": "focus",
+      "path": "items/druidic_focus_quarterstaff.json"
+    },
+    {
+      "id": "sprig_of_mistletoe",
+      "kind": "focus",
+      "path": "items/sprig_of_mistletoe.json"
+    },
+    {
+      "id": "amulet",
+      "kind": "focus",
+      "path": "items/amulet.json"
+    },
+    {
+      "id": "emblem",
+      "kind": "focus",
+      "path": "items/emblem.json"
+    },
+    {
+      "id": "reliquary",
+      "kind": "focus",
+      "path": "items/reliquary.json"
+    },
+    {
+      "id": "holy_symbol",
+      "kind": "equipment_choice",
+      "path": "items/holy_symbol.json"
+    },
+    {
+      "id": "book_prayers",
+      "kind": "book_variant",
+      "path": "items/book_prayers.json"
+    },
+    {
+      "id": "book_history",
+      "kind": "book_variant",
+      "path": "items/book_history.json"
+    },
+    {
+      "id": "book_occult_lore",
+      "kind": "book_variant",
+      "path": "items/book_occult_lore.json"
+    },
+    {
+      "id": "spellbook",
+      "kind": "spellbook",
+      "path": "items/spellbook.json"
+    },
+    {
+      "id": "chosen_musical_instrument",
+      "kind": "equipment_choice",
+      "path": "items/chosen_musical_instrument.json"
+    },
+    {
+      "id": "chosen_tool",
+      "kind": "equipment_choice",
+      "path": "items/chosen_tool.json"
+    },
+    {
+      "id": "chosen_gaming_set",
+      "kind": "equipment_choice",
+      "path": "items/chosen_gaming_set.json"
+    }
+  ],
+  "package_count": 16,
+  "candidate_count": 105,
+  "pack_count": 6,
+  "choice_sets": {
+    "chosen_musical_instrument": {
+      "choose": 1,
+      "candidate_ids": [
+        "bagpipes",
+        "drum",
+        "dulcimer",
+        "flute",
+        "horn",
+        "lute",
+        "lyre",
+        "pan_flute",
+        "shawm",
+        "viol"
+      ],
+      "link_policy": "Bard chooses one Musical Instrument of choice; source does not require it to be one of the three proficiency choices."
+    },
+    "chosen_tool": {
+      "choose": 1,
+      "candidate_ids": [
+        "alchemists_supplies",
+        "brewers_supplies",
+        "calligraphers_supplies",
+        "carpenters_tools",
+        "cartographers_tools",
+        "cobblers_tools",
+        "cooks_utensils",
+        "glassblowers_tools",
+        "jewelers_tools",
+        "leatherworkers_tools",
+        "masons_tools",
+        "painters_supplies",
+        "potters_tools",
+        "smiths_tools",
+        "tinkers_tools",
+        "weavers_tools",
+        "woodcarvers_tools",
+        "bagpipes",
+        "drum",
+        "dulcimer",
+        "flute",
+        "horn",
+        "lute",
+        "lyre",
+        "pan_flute",
+        "shawm",
+        "viol"
+      ],
+      "link_policy": "Monk: grant the same Artisan tool or Musical Instrument chosen for its tool proficiency. No price cap appears in the source."
+    },
+    "chosen_gaming_set": {
+      "choose": 1,
+      "candidate_ids": [
+        "dice_set",
+        "dragonchess_set",
+        "playing_card_set",
+        "three_dragon_ante_set"
+      ],
+      "link_policy": "Soldier: grant the same Gaming Set chosen for tool proficiency."
+    }
+  },
+  "source_pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87"
+}

@@ -1,0 +1,54 @@
+{
+  "schema": "crown-character-candidate/1",
+  "id": "gift_of_the_depths",
+  "name": "Gift of the Depths",
+  "kind": "invocation",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "scope": {
+    "total_character_level_maximum": 5
+  },
+  "operation_language": "authoring intent only; not registered engine syntax",
+  "runtime_support": "Retained definitions are reuse material, not proof of full rules. Every authored operation needs contract mapping and later production-path verification before promotion.",
+  "minimum_warlock_level": 5,
+  "rules": {
+    "authority": "SRD 5.2.1",
+    "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      73
+    ],
+    "text": "Gift of the Depths\nPrerequisite: Level 5+ Warlock\nYou can breathe underwater, and you gain a Swim\nSpeed equal to your Speed.\nYou can also cast\nWater Breathing\nonce without\nexpending a spell slot. You regain the ability to cast\nit in this way again when you finish a Long Rest."
+  },
+  "prerequisites": {
+    "warlock_level": 5,
+    "invocations": [],
+    "cantrip_parameter": null
+  },
+  "repeatable": false,
+  "authored_operations": [
+    {
+      "trigger": "Warlock5; permanent movement/breathing and Water Breathing cast",
+      "cost": "One free Water Breathing per Long Rest",
+      "effects": [
+        "Breathe underwater; Swim Speed=Speed; full Water Breathing payload and normal casting time/components"
+      ],
+      "ending_and_identity": "Exact invocation source owns permission; normal spell endings still apply; remove only its grants when replaced.",
+      "required_extension_groups": [
+        "casting",
+        "movement"
+      ]
+    }
+  ],
+  "retained_runtime_fragment": null,
+  "unsupported_behavior": [
+    {
+      "groups": [
+        "casting",
+        "movement"
+      ],
+      "requirement": "Breathe underwater; Swim Speed=Speed; full Water Breathing payload and normal casting time/components",
+      "status": "mapping_and_production_host_verification_required"
+    }
+  ],
+  "source_revision": "2a19eb1d (existing working-tree definitions and recovered drafts read on 2026-11-08)",
+  "reused_input_hashes": {}
+}

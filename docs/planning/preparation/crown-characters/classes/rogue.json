@@ -1,0 +1,1072 @@
+{
+  "schema": "crown-character-candidate/1",
+  "id": "rogue",
+  "name": "Rogue",
+  "kind": "class",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "scope": {
+    "total_character_level_maximum": 5
+  },
+  "operation_language": "authoring intent only; not registered engine syntax",
+  "runtime_support": "Retained definitions are reuse material, not proof of full rules. Every authored operation needs contract mapping and later production-path verification before promotion.",
+  "source": {
+    "authority": "SRD 5.2.1",
+    "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      61
+    ],
+    "text": "Rogue\nCore Rogue Traits\nPrimary Ability Dexterity\nHit Point Die D8 per Rogue level\nSaving Throw\nProficiencies\nDexterity and Intelligence\nSkill Proficiencies Choose 4: Acrobatics, Athletics, Deception, Insight,\nIntimidation, Investigation,\nPerception, Persuasion, Sleight\nof Hand, or Stealth\nWeapon Proficiencies Simple weapons and Martial\nweapons that have the Finesse\nor Light property\nTool Proficiencies Thieves’ Tools\nArmor Training Light armor\nStarting Equipment Choose A or B: (A) Leather Armor, 2 Daggers, Short sword,\nShortbow, 20 Arrows, Quiver,\nThieves’ Tools, Burglar’s Pack,\nand 8 GP; or (B) 100 GP\nBecoming a Rogue …\nAs a Level 1 Character\n• Gain all the traits in the Core Rogue Traits table.\n• Gain the Rogue’s level 1 features, which are listed\nin the Rogue Features table.\nAs a Multiclass Character\n• Gain the following traits from the Core Rogue\nTraits table: Hit Point Die, proficiency in one skill\nof your choice from the Rogue’s skill list, proficiency with Thieves’ Tools, and training with\nLight armor.\n• Gain the Rogue’s level 1 features, which are listed\nin the Rogue Features table.\nRogue Class Features\nAs a Rogue, you gain the following class features\nwhen you reach the specified Rogue levels. These\nfeatures are listed in the Rogue Features table."
+  },
+  "reused_from": [
+    "data/core/classes/rogue.json",
+    "reference/2024/classes/rogue.json",
+    "docs/mechanics/rogue-2024.md"
+  ],
+  "acquisition": {
+    "starting_traits": {
+      "armor": [
+        "light"
+      ],
+      "weapons": [
+        "simple",
+        "Martial weapons that have the {@filter Finesse or Light|items|type=martial weapon|property=finesse;light} property"
+      ],
+      "weaponProficiencies": [
+        {
+          "simple": true,
+          "all": {
+            "fromFilter": "type=martial weapon|property=light;finesse"
+          }
+        }
+      ],
+      "tools": [
+        "{@item Thieves' Tools|XPHB}"
+      ],
+      "toolProficiencies": [
+        {
+          "thieves' tools": true
+        }
+      ],
+      "skills": [
+        {
+          "choose": {
+            "from": [
+              "acrobatics",
+              "athletics",
+              "deception",
+              "insight",
+              "intimidation",
+              "investigation",
+              "perception",
+              "persuasion",
+              "sleight of hand",
+              "stealth"
+            ],
+            "count": 4
+          }
+        }
+      ]
+    },
+    "multiclass_donor": {
+      "proficienciesGained": {
+        "armor": [
+          "light"
+        ],
+        "tools": [
+          "{@item Thieves' Tools|XPHB}"
+        ],
+        "toolProficiencies": [
+          {
+            "thieves' tools": true
+          }
+        ],
+        "skills": [
+          {
+            "choose": {
+              "from": [
+                "acrobatics",
+                "athletics",
+                "deception",
+                "insight",
+                "intimidation",
+                "investigation",
+                "perception",
+                "persuasion",
+                "sleight of hand",
+                "stealth"
+              ],
+              "count": 1
+            }
+          }
+        ]
+      }
+    },
+    "hit_die": {
+      "number": 1,
+      "faces": 8
+    },
+    "primary_ability": [
+      {
+        "dex": true
+      }
+    ],
+    "saving_throws": [
+      "dex",
+      "int"
+    ],
+    "grant_policy": "First total level: full Core Traits and level1 features. Later class entry: only source multiclass traits plus all class level1 features; no starting gear or saving throws. Explicit resolved grants in multiclass.json.",
+    "starting_equipment_donor": {
+      "additionalFromBackground": true,
+      "defaultData": [
+        {
+          "A": [
+            {
+              "item": "leather armor|xphb"
+            },
+            {
+              "item": "dagger|xphb",
+              "quantity": 2
+            },
+            {
+              "item": "shortsword|xphb"
+            },
+            {
+              "item": "shortbow|xphb"
+            },
+            {
+              "item": "arrows (20)|xphb"
+            },
+            {
+              "item": "quiver|xphb"
+            },
+            {
+              "item": "thieves' tools|xphb"
+            },
+            {
+              "item": "burglar's pack|xphb"
+            },
+            {
+              "value": 800
+            }
+          ],
+          "B": [
+            {
+              "value": 10000
+            }
+          ]
+        }
+      ],
+      "entries": [
+        "{@i Choose A or B:} (A) {@item Leather Armor|XPHB}, 2 {@item Dagger|XPHB|Daggers}, {@item Shortsword|XPHB}, {@item Shortbow|XPHB}, {@item Arrows (20)|XPHB|20 Arrows}, {@item Quiver|XPHB}, {@item Thieves' Tools|XPHB}, {@item Burglar's Pack|XPHB}, and 8 GP; or (B) 100 GP"
+      ]
+    },
+    "starting_equipment": {
+      "A": {
+        "gp": 8,
+        "items": [
+          {
+            "source_item_key": "leather_armor",
+            "quantity": 1
+          },
+          {
+            "source_item_key": "dagger",
+            "quantity": 2
+          },
+          {
+            "source_item_key": "shortsword",
+            "quantity": 1
+          },
+          {
+            "source_item_key": "shortbow",
+            "quantity": 1
+          },
+          {
+            "source_item_key": "arrows",
+            "quantity": 20
+          },
+          {
+            "source_item_key": "quiver",
+            "quantity": 1
+          },
+          {
+            "source_item_key": "thieves_tools",
+            "quantity": 1
+          },
+          {
+            "source_item_key": "burglars_pack",
+            "quantity": 1
+          }
+        ]
+      },
+      "B": {
+        "gp": 100,
+        "items": []
+      }
+    },
+    "equipment_mapping_notes": [
+      "source_item_key is an authoring identity, not automatically a resolved loaded item. Later inventory reconciliation records missing/choice links.",
+      "Monk chosen_tool is the same single Artisan’s Tool OR Musical Instrument chosen for proficiency. Bard instrument is a separate equipment choice.",
+      "Holy Symbol form is a choice or unresolved generic mapping; no silent form substitution."
+    ],
+    "weapon_proficiency_filter": {
+      "simple": true,
+      "martial_property_any": [
+        "Finesse",
+        "Light"
+      ],
+      "note": "Starting proficiency includes Martial ranged weapons with these properties too; Monk weapons for Martial Arts are separately limited to Melee."
+    },
+    "multiclass_grants": {
+      "all": [
+        "DEX"
+      ],
+      "armor": [
+        "light"
+      ],
+      "tools": [
+        "thieves_tools"
+      ],
+      "skill_choice": {
+        "pick": 1,
+        "from": "Rogue skill list"
+      },
+      "score_minimum": 13,
+      "hit_die": "d8",
+      "features": "All own-class level1 features plus later features at own-class thresholds; subclass at class3, feat entitlement at class4. See class candidate.",
+      "starting_equipment": [],
+      "saving_throws": []
+    }
+  },
+  "weapon_mastery": {
+    "counts_by_class_level": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "eligible_weapons": "weapon kinds with which owner has proficiency",
+    "replacement": "chosen kinds after Long Rest"
+  },
+  "level_hit_points": {
+    "first_total_level": "maximum class Hit Die + permanent CON modifier",
+    "later_levels": "roll class Hit Die OR use fixed average rounded up; add permanent CON modifier; minimum1 HP",
+    "fixed_average": 5,
+    "hit_dice": "Add one Hit Die of this class type; preserve separate types",
+    "project_policy": "Current bounded permanent progression uses fixed level_hit_points and existing level-up living-character heal; rolled advancement is unsupported there, not silently removed from source."
+  },
+  "features": [
+    {
+      "id": "rogue_expertise",
+      "name": "Expertise",
+      "class_level": 1,
+      "rules": {
+        "authority": "SRD 5.2.1",
+        "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+        "pages": [
+          61
+        ],
+        "text": "Level 1: Expertise\nYou gain Expertise in two of your skill proficiencies\nof your choice. Sleight of Hand and Stealth are recommended if you have proficiency in them.\nAt Rogue level 6, you gain Expertise in two more\nof your skill proficiencies of your choice."
+      },
+      "revised_reference_entries": [
+        "You gain {@variantrule Expertise|XPHB} in two of your skill proficiencies of your choice. {@skill Sleight of Hand|XPHB} and {@skill Stealth|XPHB} are recommended if you have proficiency in them.",
+        "At Rogue level 6, you gain {@variantrule Expertise|XPHB} in two more of your skill proficiencies of your choice."
+      ],
+      "authored_operations": [
+        {
+          "trigger": "Acquire listed number of already proficient skills",
+          "cost": "none",
+          "effects": [
+            "Bard level 2 chooses 2; Rogue level 1 chooses 2",
+            "Double proficiency for chosen skills; no duplicate multiplier"
+          ],
+          "ending_and_identity": "Exact source owns the grant/state; remove temporary effects at the declared ending; never replay acquisition on restore.",
+          "required_extension_groups": [
+            "choices",
+            "progression"
+          ]
+        }
+      ],
+      "unsupported_behavior": [
+        {
+          "groups": [
+            "choices",
+            "progression"
+          ],
+          "requirement": {
+            "trigger": "Acquire listed number of already proficient skills",
+            "cost": "none",
+            "effects": [
+              "Bard level 2 chooses 2; Rogue level 1 chooses 2",
+              "Double proficiency for chosen skills; no duplicate multiplier"
+            ],
+            "ending": "Exact source owns the grant/state; remove temporary effects at the declared ending; never replay acquisition on restore."
+          },
+          "mapping_boundary": "Map this complete sequence to shared contracts; retained native behavior and fragments do not certify it.",
+          "status": "unmapped_or_unverified_candidate"
+        }
+      ]
+    },
+    {
+      "id": "rogue_sneak_attack",
+      "name": "Sneak Attack",
+      "class_level": 1,
+      "rules": {
+        "authority": "SRD 5.2.1",
+        "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+        "pages": [
+          61,
+          62
+        ],
+        "text": "Level 1: Sneak Attack\nYou know how to strike subtly and exploit a foe’s\ndistraction. Once per turn, you can deal an extra\n1d6 damage to one creature you hit with an attack\nroll if you have Advantage on the roll and the attack\nuses a Finesse or a Ranged weapon. The extra damage’s type is the same as the weapon’s type.\nYou don’t need Advantage on the attack roll if at\nleast one of your allies is within 5 feet of the target,\nthe ally doesn’t have the Incapacitated condition,\nand you don’t have Disadvantage on the attack roll.\nThe extra damage increases as you gain Rogue\nlevels, as shown in the Sneak Attack column of the\nRogue Features table."
+      },
+      "revised_reference_entries": [
+        "You know how to strike subtly and exploit a foe's distraction. Once per turn, you can deal an extra {@damage 1d6} damage to one creature you hit with an attack roll if you have {@variantrule Advantage|XPHB} on the roll and the attack uses a Finesse or a Ranged weapon. The extra damage's type is the same as the weapon's type.",
+        "You don't need {@variantrule Advantage|XPHB} on the attack roll if at least one of your allies is within 5 feet of the target, the ally doesn't have the {@condition Incapacitated|XPHB} condition, and you don't have {@variantrule Disadvantage|XPHB} on the attack roll.",
+        "The extra damage increases as you gain Rogue levels, as shown in the Sneak Attack column of the Rogue Features table."
+      ],
+      "authored_operations": [
+        {
+          "trigger": "Once per turn, hit using Finesse or Ranged weapon",
+          "cost": "none",
+          "effects": [
+            "Add1d6 at Rogue1–2,2d6 at3–4,3d6 at5",
+            "Need Advantage OR one of owner’s allies within5 feet of target, ally not Incapacitated, and no Disadvantage",
+            "Damage same type as weapon; exact turn receipt"
+          ],
+          "ending_and_identity": "Exact source owns the grant/state; remove temporary effects at the declared ending; never replay acquisition on restore.",
+          "required_extension_groups": [
+            "attacks",
+            "rolls"
+          ]
+        }
+      ],
+      "unsupported_behavior": [
+        {
+          "groups": [
+            "attacks",
+            "rolls"
+          ],
+          "requirement": {
+            "trigger": "Once per turn, hit using Finesse or Ranged weapon",
+            "cost": "none",
+            "effects": [
+              "Add1d6 at Rogue1–2,2d6 at3–4,3d6 at5",
+              "Need Advantage OR one of owner’s allies within5 feet of target, ally not Incapacitated, and no Disadvantage",
+              "Damage same type as weapon; exact turn receipt"
+            ],
+            "ending": "Exact source owns the grant/state; remove temporary effects at the declared ending; never replay acquisition on restore."
+          },
+          "mapping_boundary": "Map this complete sequence to shared contracts; retained native behavior and fragments do not certify it.",
+          "status": "unmapped_or_unverified_candidate"
+        }
+      ]
+    },
+    {
+      "id": "rogue_thieves_cant",
+      "name": "Thieves’ Cant",
+      "class_level": 1,
+      "rules": {
+        "authority": "SRD 5.2.1",
+        "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+        "pages": [
+          62
+        ],
+        "text": "Level 1: Thieves’ Cant\nYou picked up various languages in the communities where you plied your roguish talents. You\nknow Thieves’ Cant and one other language of your\nchoice, which you choose from the language tables\nin “Character Creation.”"
+      },
+      "revised_reference_entries": [
+        "You picked up various languages in the communities where you plied your roguish talents. You know Thieves' Cant and one other language of your choice, which you choose from the language tables in {@book chapter 2|XPHB|2|Choose Languages}."
+      ],
+      "authored_operations": [
+        {
+          "trigger": "Acquire Rogue1",
+          "cost": "none",
+          "effects": [
+            "Know Thieves Cant and one other chosen language from Character Creation tables"
+          ],
+          "ending_and_identity": "Exact source owns the grant/state; remove temporary effects at the declared ending; never replay acquisition on restore.",
+          "required_extension_groups": [
+            "languages",
+            "choices"
+          ]
+        }
+      ],
+      "unsupported_behavior": [
+        {
+          "groups": [
+            "languages",
+            "choices"
+          ],
+          "requirement": {
+            "trigger": "Acquire Rogue1",
+            "cost": "none",
+            "effects": [
+              "Know Thieves Cant and one other chosen language from Character Creation tables"
+            ],
+            "ending": "Exact source owns the grant/state; remove temporary effects at the declared ending; never replay acquisition on restore."
+          },
+          "mapping_boundary": "Map this complete sequence to shared contracts; retained native behavior and fragments do not certify it.",
+          "status": "unmapped_or_unverified_candidate"
+        }
+      ]
+    },
+    {
+      "id": "rogue_weapon_mastery",
+      "name": "Weapon Mastery",
+      "class_level": 1,
+      "rules": {
+        "authority": "SRD 5.2.1",
+        "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+        "pages": [
+          62
+        ],
+        "text": "Level 1: Weapon Mastery\nYour training with weapons allows you to use the\nmastery properties of two kinds of weapons of your\nchoice with which you have proficiency, such as\nDaggers and Shortbows.\nRogue Features\nLevel\nProficiency\nBonus Class Features\n1 +2 Expertise, Sneak Attack, Thieves’ Ca\n2 +2 Cunning Action\n3 +2 Rogue Subclass, Steady Aim\n4 +2 Ability Score Improvement\n5 +3 Cunning Strike, Uncanny Dodge\n6 +3 Expertise\n7 +3 Evasion, Reliable Talent\n8 +3 Ability Score Improvement\n9 +4 Subclass feature\n10 +4 Ability Score Improvement\n11 +4 Improved Cunning Strike\n12 +4 Ability Score Improvement\n13 +5 Subclass feature\n14 +5 Devious Strikes\n15 +5 Slippery Mind\n16 +5 Ability Score Improvement\n17 +6 Subclass feature\n18 +6 Elusive\n19 +6 Epic Boon\n20 +6 Stroke of Luck\nWhenever you finish a Long Rest, you can change\nthe kinds of weapons you chose. For example, you\ncould switch to using the mastery properties of\nScimitars and Shortswords."
+      },
+      "revised_reference_entries": [
+        "Your training with weapons allows you to use the {@variantrule weapon mastery properties|XPHB|mastery properties} of two kinds of {@filter weapons|items|type=simple weapon;martial weapon} of your choice with which you have proficiency, such as {@item Dagger|XPHB|Daggers} and {@item Shortbow|XPHB|Shortbows}.",
+        "Whenever you finish a {@variantrule Long Rest|XPHB}, you can change the kinds of weapons you chose. For example, you could switch to using the {@variantrule weapon mastery properties|XPHB|mastery properties} of {@item Scimitar|XPHB|Scimitars} and {@item Shortsword|XPHB|Shortswords}."
+      ],
+      "authored_operations": [
+        {
+          "trigger": "Acquire/replace selected weapon kinds",
+          "cost": "none",
+          "effects": [
+            "Grant only legal class-listed weapon masteries; counts and replacement window from source; exact mastery property executes on its qualifying attack"
+          ],
+          "ending_and_identity": "Exact source owns the grant/state; remove temporary effects at the declared ending; never replay acquisition on restore.",
+          "required_extension_groups": [
+            "choices",
+            "attacks"
+          ]
+        }
+      ],
+      "unsupported_behavior": [
+        {
+          "groups": [
+            "choices",
+            "attacks"
+          ],
+          "requirement": {
+            "trigger": "Acquire/replace selected weapon kinds",
+            "cost": "none",
+            "effects": [
+              "Grant only legal class-listed weapon masteries; counts and replacement window from source; exact mastery property executes on its qualifying attack"
+            ],
+            "ending": "Exact source owns the grant/state; remove temporary effects at the declared ending; never replay acquisition on restore."
+          },
+          "mapping_boundary": "Map this complete sequence to shared contracts; retained native behavior and fragments do not certify it.",
+          "status": "unmapped_or_unverified_candidate"
+        }
+      ]
+    },
+    {
+      "id": "rogue_cunning_action",
+      "name": "Cunning Action",
+      "class_level": 2,
+      "rules": {
+        "authority": "SRD 5.2.1",
+        "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+        "pages": [
+          62
+        ],
+        "text": "Level 2: Cunning Action\nYour quick thinking and agility allow you to move\nand act quickly. On your turn, you can take one of\nthe following actions as a Bonus Action: Dash, Disengage, or Hide."
+      },
+      "revised_reference_entries": [
+        "Your quick thinking and agility allow you to move and act quickly. On your turn, you can take one of the following actions as a {@variantrule Bonus Action|XPHB}: {@action Dash|XPHB}, {@action Disengage|XPHB}, or {@action Hide|XPHB}."
+      ],
+      "authored_operations": [
+        {
+          "trigger": "Own turn",
+          "cost": "Bonus Action",
+          "effects": [
+            "Dash, Disengage or Hide using actual selected action outcomes"
+          ],
+          "ending_and_identity": "Exact source owns the grant/state; remove temporary effects at the declared ending; never replay acquisition on restore.",
+          "required_extension_groups": [
+            "actions",
+            "movement",
+            "world"
+          ]
+        }
+      ],
+      "unsupported_behavior": [
+        {
+          "groups": [
+            "actions",
+            "movement",
+            "world"
+          ],
+          "requirement": {
+            "trigger": "Own turn",
+            "cost": "Bonus Action",
+            "effects": [
+              "Dash, Disengage or Hide using actual selected action outcomes"
+            ],
+            "ending": "Exact source owns the grant/state; remove temporary effects at the declared ending; never replay acquisition on restore."
+          },
+          "mapping_boundary": "Map this complete sequence to shared contracts; retained native behavior and fragments do not certify it.",
+          "status": "unmapped_or_unverified_candidate"
+        }
+      ]
+    },
+    {
+      "id": "rogue_rogue_subclass",
+      "name": "Rogue Subclass",
+      "class_level": 3,
+      "rules": {
+        "authority": "SRD 5.2.1",
+        "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+        "pages": [
+          62
+        ],
+        "text": "Level 3: Rogue Subclass\nYou gain a Rogue subclass of your choice. The Thief\nsubclass is detailed after this class’s description. A\nsubclass is a specialization that grants you features\nat certain Rogue levels. For the rest of your career,\nyou gain each of your subclass’s features that are of\nyour Rogue level or lower."
+      },
+      "revised_reference_entries": [
+        "You gain a Rogue subclass of your choice. A subclass is a specialization that grants you features at certain Rogue levels. For the rest of your career, you gain each of your subclass's features that are of your Rogue level or lower."
+      ],
+      "authored_operations": [
+        {
+          "trigger": "Class level3",
+          "cost": "one subclass choice",
+          "effects": [
+            "Grant selected SRD subclass in-band features at actual class thresholds; no level6+ grants"
+          ],
+          "ending_and_identity": "Permanent exact subclass ownership; acquisition once",
+          "required_extension_groups": [
+            "progression",
+            "choices"
+          ]
+        }
+      ],
+      "unsupported_behavior": [
+        {
+          "groups": [
+            "progression",
+            "choices"
+          ],
+          "requirement": {
+            "trigger": "Class level3",
+            "cost": "one subclass choice",
+            "effects": [
+              "Grant selected SRD subclass in-band features at actual class thresholds; no level6+ grants"
+            ],
+            "ending": "Permanent exact subclass ownership; acquisition once"
+          },
+          "mapping_boundary": "Map this complete sequence to shared contracts; retained native behavior and fragments do not certify it.",
+          "status": "unmapped_or_unverified_candidate"
+        }
+      ]
+    },
+    {
+      "id": "rogue_steady_aim",
+      "name": "Steady Aim",
+      "class_level": 3,
+      "rules": {
+        "authority": "SRD 5.2.1",
+        "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+        "pages": [
+          62
+        ],
+        "text": "Level 3: Steady Aim\nAs a Bonus Action, you give yourself Advantage on\nyour next attack roll on the current turn. You can\nuse this feature only if you haven’t moved during\nthis turn, and after you use it, your Speed is 0 until\nthe end of the current turn.\nSneak Attack\nant, Weapon Mastery 1d6\n1d6\n2d6\n2d6\n3d6\n3d6\n4d6\n4d6\n5d6\n5d6\n6d6\n6d6\n7d6\n7d6\n8d6\n8d6\n9d6\n9d6\n10d6\n10d6"
+      },
+      "revised_reference_entries": [
+        "As a {@variantrule Bonus Action|XPHB}, you give yourself {@variantrule Advantage|XPHB} on your next attack roll on the current turn. You can use this feature only if you haven't moved during this turn, and after you use it, your {@variantrule Speed|XPHB} is 0 until the end of the current turn."
+      ],
+      "authored_operations": [
+        {
+          "trigger": "Own turn; no movement used this turn",
+          "cost": "Bonus Action",
+          "effects": [
+            "Advantage on next attack roll this turn",
+            "Speed becomes0 for remainder of turn"
+          ],
+          "ending_and_identity": "Exact source owns the grant/state; remove temporary effects at the declared ending; never replay acquisition on restore.",
+          "required_extension_groups": [
+            "rolls",
+            "movement"
+          ]
+        }
+      ],
+      "unsupported_behavior": [
+        {
+          "groups": [
+            "rolls",
+            "movement"
+          ],
+          "requirement": {
+            "trigger": "Own turn; no movement used this turn",
+            "cost": "Bonus Action",
+            "effects": [
+              "Advantage on next attack roll this turn",
+              "Speed becomes0 for remainder of turn"
+            ],
+            "ending": "Exact source owns the grant/state; remove temporary effects at the declared ending; never replay acquisition on restore."
+          },
+          "mapping_boundary": "Map this complete sequence to shared contracts; retained native behavior and fragments do not certify it.",
+          "status": "unmapped_or_unverified_candidate"
+        }
+      ]
+    },
+    {
+      "id": "rogue_ability_score_improvement",
+      "name": "Ability Score Improvement",
+      "class_level": 4,
+      "rules": {
+        "authority": "SRD 5.2.1",
+        "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+        "pages": [
+          63
+        ],
+        "text": "Level 4: Ability Score Improvement\nYou gain the Ability Score Improvement feat (see\n“Feats”) or another feat of your choice for which you\nqualify. You gain this feature again at Rogue levels\n8, 10, 12, and 16."
+      },
+      "revised_reference_entries": [
+        "You gain the {@feat Ability Score Improvement|XPHB} feat or another {@5etools feat|feats.html} of your choice for which you qualify. You gain this feature again at Rogue levels 8, 10, 12, and 16."
+      ],
+      "authored_operations": [
+        {
+          "trigger": "Class level 4 entitlement",
+          "cost": "one entitlement",
+          "effects": [
+            "Choose ASI or another qualifying feat; validate chosen feat category/prerequisites; source owns grant once"
+          ],
+          "ending_and_identity": "Exact source owns the grant/state; remove temporary effects at the declared ending; never replay acquisition on restore.",
+          "required_extension_groups": [
+            "choices",
+            "progression"
+          ]
+        }
+      ],
+      "unsupported_behavior": [
+        {
+          "groups": [
+            "choices",
+            "progression"
+          ],
+          "requirement": {
+            "trigger": "Class level 4 entitlement",
+            "cost": "one entitlement",
+            "effects": [
+              "Choose ASI or another qualifying feat; validate chosen feat category/prerequisites; source owns grant once"
+            ],
+            "ending": "Exact source owns the grant/state; remove temporary effects at the declared ending; never replay acquisition on restore."
+          },
+          "mapping_boundary": "Map this complete sequence to shared contracts; retained native behavior and fragments do not certify it.",
+          "status": "unmapped_or_unverified_candidate"
+        }
+      ]
+    },
+    {
+      "id": "rogue_cunning_strike",
+      "name": "Cunning Strike",
+      "class_level": 5,
+      "rules": {
+        "authority": "SRD 5.2.1",
+        "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+        "pages": [
+          63
+        ],
+        "text": "Level 5: Cunning Strike\nYou’ve developed cunning ways to use your Sneak\nAttack. When you deal Sneak Attack damage, you\ncan add one of the following Cunning Strike effects.\nEach effect has a die cost, which is the number of\nSneak Attack damage dice you must forgo to add the\neffect. You remove the die before rolling, and the\neffect occurs immediately after the attack’s damage\nis dealt. For example, if you add the Poison effect,\nremove 1d6 from the Sneak Attack’s damage before\nrolling.\nIf a Cunning Strike effect requires a saving throw,\nthe DC equals 8 plus your Dexterity modifier and\nProficiency Bonus.\nPoison (Cost: 1d6).\nYou add a toxin to your strike,\nforcing the target to make a Constitution saving\nthrow. On a failed save, the target has the Poisoned\ncondition for 1 minute. At the end of each of its\nturns, the Poisoned target repeats the save, ending\nthe effect on itself on a success.\nTo use this effect, you must have a Poisoner’s Kit\non your person.\nTrip (Cost: 1d6).\nIf the target is Large or smaller,\nit must succeed on a Dexterity saving throw or have\nthe Prone condition.\nWithdraw (Cost: 1d6).\nImmediately after the\nattack, you move up to half your Speed without provoking Opportunity Attacks."
+      },
+      "revised_reference_entries": [
+        "You've developed cunning ways to use your Sneak Attack. When you deal Sneak Attack damage, you can add one of the following Cunning Strike effects. Each effect has a die cost, which is the number of Sneak Attack damage dice you must forgo to add the effect. You remove the die before rolling, and the effect occurs immediately after the attack's damage is dealt. For example, if you add the Poison effect, remove {@dice 1d6} from the Sneak Attack's damage before rolling.",
+        "If a Cunning Strike effect requires a saving throw, the DC equals 8 plus your Dexterity modifier and {@variantrule Proficiency|XPHB|Proficiency Bonus}.",
+        {
+          "type": "entries",
+          "entries": [
+            {
+              "type": "refClassFeature",
+              "classFeature": "Poison (Cost: 1d6)|Rogue|XPHB|5|XPHB"
+            },
+            {
+              "type": "refClassFeature",
+              "classFeature": "Trip (Cost: 1d6)|Rogue|XPHB|5|XPHB"
+            },
+            {
+              "type": "refClassFeature",
+              "classFeature": "Withdraw (Cost: 1d6)|Rogue|XPHB|5|XPHB"
+            }
+          ]
+        }
+      ],
+      "authored_operations": [
+        {
+          "trigger": "On Sneak Attack damage at Rogue5; before rolling",
+          "cost": "Forgo1d6 Sneak Attack for one option",
+          "effects": [
+            "Poison: own Poisoners Kit on person; CON save vs8+DEX+PB; Poisoned1 minute; repeat end-turn CON saves",
+            "Trip: Large or smaller target DEX save or Prone",
+            "Withdraw: immediately after attack move half Speed without Opportunity Attacks"
+          ],
+          "ending_and_identity": "Only one option per Sneak Attack in Crown; die removed before roll; exact recipient and once-per-turn Sneak Attack.",
+          "required_extension_groups": [
+            "attacks",
+            "rolls",
+            "conditions",
+            "movement"
+          ]
+        }
+      ],
+      "unsupported_behavior": [
+        {
+          "groups": [
+            "attacks",
+            "rolls",
+            "conditions",
+            "movement"
+          ],
+          "requirement": {
+            "trigger": "On Sneak Attack damage at Rogue5; before rolling",
+            "cost": "Forgo1d6 Sneak Attack for one option",
+            "effects": [
+              "Poison: own Poisoners Kit on person; CON save vs8+DEX+PB; Poisoned1 minute; repeat end-turn CON saves",
+              "Trip: Large or smaller target DEX save or Prone",
+              "Withdraw: immediately after attack move half Speed without Opportunity Attacks"
+            ],
+            "ending": "Only one option per Sneak Attack in Crown; die removed before roll; exact recipient and once-per-turn Sneak Attack."
+          },
+          "mapping_boundary": "Map this complete sequence to shared contracts; retained native behavior and fragments do not certify it.",
+          "status": "unmapped_or_unverified_candidate"
+        }
+      ]
+    },
+    {
+      "id": "rogue_uncanny_dodge",
+      "name": "Uncanny Dodge",
+      "class_level": 5,
+      "rules": {
+        "authority": "SRD 5.2.1",
+        "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+        "pages": [
+          63
+        ],
+        "text": "Level 5: Uncanny Dodge\nWhen an attacker that you can see hits you with an\nattack roll, you can take a Reaction to halve the attack’s damage against you (round down)."
+      },
+      "revised_reference_entries": [
+        "When an attacker that you can see hits you with an attack roll, you can take a {@variantrule Reaction|XPHB} to halve the attack's damage against you (round down)."
+      ],
+      "authored_operations": [
+        {
+          "trigger": "Attacker you can see hits you with attack roll",
+          "cost": "Reaction",
+          "effects": [
+            "Halve attack damage against self"
+          ],
+          "ending_and_identity": "Exact source owns the grant/state; remove temporary effects at the declared ending; never replay acquisition on restore.",
+          "required_extension_groups": [
+            "reactions",
+            "rolls"
+          ]
+        }
+      ],
+      "unsupported_behavior": [
+        {
+          "groups": [
+            "reactions",
+            "rolls"
+          ],
+          "requirement": {
+            "trigger": "Attacker you can see hits you with attack roll",
+            "cost": "Reaction",
+            "effects": [
+              "Halve attack damage against self"
+            ],
+            "ending": "Exact source owns the grant/state; remove temporary effects at the declared ending; never replay acquisition on restore."
+          },
+          "mapping_boundary": "Map this complete sequence to shared contracts; retained native behavior and fragments do not certify it.",
+          "status": "unmapped_or_unverified_candidate"
+        }
+      ]
+    }
+  ],
+  "retained_runtime_seed": {
+    "id": "rogue",
+    "name": "Rogue",
+    "description": "Rogue class. 2024 SRD 5.2.1 progression; some tactical class features are recorded as unavailable.",
+    "hit_die": "d8",
+    "primary_ability": "DEX",
+    "saving_throw_proficiencies": [
+      "DEX",
+      "INT"
+    ],
+    "armor_proficiencies": [
+      "light"
+    ],
+    "weapon_proficiencies": [
+      "simple",
+      "martial"
+    ],
+    "creation_proficiency_choices": true,
+    "tool_proficiency_grants": [
+      "thieves_tools"
+    ],
+    "skill_choices": {
+      "pick": 4,
+      "from": [
+        "Acrobatics",
+        "Athletics",
+        "Deception",
+        "Insight",
+        "Intimidation",
+        "Investigation",
+        "Perception",
+        "Persuasion",
+        "Sleight of Hand",
+        "Stealth"
+      ]
+    },
+    "starting_equipment": [
+      "leather_armor",
+      "rapier",
+      "shortbow",
+      "dagger",
+      "thieves_tools"
+    ],
+    "spell_slots_by_character_level": {},
+    "features_by_level": {
+      "1": [
+        {
+          "id": "rogue_expertise",
+          "name": "Expertise",
+          "type": "passive",
+          "description": "Choose two proficient skills for Expertise through the shared saved choice path.",
+          "effects": [
+            {
+              "type": "skill_expertise_choice",
+              "count": 2
+            }
+          ],
+          "rules_source": "dnd-2024-srd-5.2.1",
+          "rules_status": "2024-supported"
+        },
+        {
+          "id": "rogue_sneak_attack",
+          "name": "Sneak Attack",
+          "type": "passive",
+          "description": "Once per turn, add the level-scaled Sneak Attack dice to an eligible finesse or ranged weapon hit when you have Advantage or an ally is near the target.",
+          "effects": [
+            {
+              "type": "sneak_attack",
+              "dice": "1d6",
+              "dice_by_level": {
+                "1": "1d6",
+                "3": "2d6",
+                "5": "3d6",
+                "7": "4d6",
+                "9": "5d6",
+                "11": "6d6",
+                "13": "7d6",
+                "15": "8d6",
+                "17": "9d6",
+                "19": "10d6"
+              }
+            }
+          ],
+          "rules_source": "dnd-2024-srd-5.2.1",
+          "rules_status": "2024-partial"
+        },
+        {
+          "id": "rogue_thieves_cant",
+          "name": "Thieves' Cant",
+          "type": "passive",
+          "description": "Thieves' Cant and the additional language choice are not represented by the game.",
+          "effects": [],
+          "enabled": false,
+          "rules_source": "dnd-2024-srd-5.2.1",
+          "rules_status": "reference-only"
+        },
+        {
+          "id": "rogue_weapon_mastery",
+          "name": "Weapon Mastery",
+          "type": "passive",
+          "description": "Choose two proficient weapon types using the shared saved Weapon Mastery path.",
+          "effects": [
+            {
+              "type": "weapon_mastery",
+              "capacity_by_level": {
+                "1": 2
+              }
+            }
+          ],
+          "rules_source": "dnd-2024-srd-5.2.1",
+          "rules_status": "2024-supported"
+        }
+      ],
+      "2": [
+        {
+          "id": "rogue_cunning_action",
+          "name": "Cunning Action",
+          "type": "active",
+          "description": "Use the shared Bonus Action path to Dash, Disengage, or Hide.",
+          "effects": [],
+          "action_cost": "bonus_action",
+          "uses": 1,
+          "uses_per": "turn",
+          "rules_source": "dnd-2024-srd-5.2.1",
+          "rules_status": "2024-supported"
+        }
+      ],
+      "3": [
+        {
+          "id": "rogue_subclass",
+          "name": "Rogue Subclass",
+          "type": "passive",
+          "description": "Choose a Rogue subclass. Subclass features are stored in separate records; no Rogue subclass records currently ship.",
+          "effects": [],
+          "enabled": false,
+          "rules_source": "dnd-2024-srd-5.2.1",
+          "rules_status": "reference-only"
+        },
+        {
+          "id": "rogue_steady_aim",
+          "name": "Steady Aim",
+          "type": "active",
+          "description": "As a Bonus Action, gain Advantage on the next attack this turn, provided you have not moved; your Speed becomes 0 until the turn ends.",
+          "effects": [
+            {
+              "type": "rogue_steady_aim"
+            }
+          ],
+          "action_cost": "bonus_action",
+          "uses": 1,
+          "uses_per": "turn",
+          "enabled": true,
+          "rules_source": "dnd-2024-srd-5.2.1",
+          "rules_status": "2024-supported"
+        }
+      ],
+      "4": [
+        {
+          "id": "rogue_ability_improvement_4",
+          "name": "Ability Score Improvement",
+          "type": "passive",
+          "effects": [
+            {
+              "type": "asi"
+            }
+          ],
+          "rules_source": "dnd-2024-srd-5.2.1",
+          "rules_status": "2024-supported"
+        }
+      ],
+      "5": [
+        {
+          "id": "rogue_uncanny_dodge",
+          "name": "Uncanny Dodge",
+          "type": "active",
+          "description": "Use your Reaction to halve damage from an attack that hits you.",
+          "effects": [
+            {
+              "type": "reaction",
+              "reaction": "uncanny_dodge"
+            }
+          ],
+          "action_cost": "reaction",
+          "uses": 1,
+          "uses_per": "combat",
+          "rules_source": "dnd-2024-srd-5.2.1",
+          "rules_status": "2024-supported"
+        },
+        {
+          "id": "rogue_cunning_strike",
+          "name": "Cunning Strike",
+          "type": "passive",
+          "description": "When you deal Sneak Attack damage, trade Sneak Attack dice for Poison, Trip, Withdraw, or (at level 14) Daze, Knock Out, and Obscure. You can apply up to two distinct effects.",
+          "effects": [
+            {
+              "type": "cunning_strike"
+            }
+          ],
+          "enabled": true,
+          "rules_source": "dnd-2024-srd-5.2.1",
+          "rules_status": "2024-partial"
+        }
+      ]
+    },
+    "subclass_level": 3
+  },
+  "required_extensions": [
+    "progression",
+    "choices"
+  ],
+  "equipment_resolution": [
+    {
+      "option": "A",
+      "source_item_key": "leather_armor",
+      "quantity": 1,
+      "runtime_item_id": "leather_armor",
+      "status": "source_definition_exists_not_gameplay_verified",
+      "requirement": "Preserve quantity, exact source item facts and complete pack contents"
+    },
+    {
+      "option": "A",
+      "source_item_key": "dagger",
+      "quantity": 2,
+      "runtime_item_id": "dagger",
+      "status": "source_definition_exists_not_gameplay_verified",
+      "requirement": "Preserve quantity, exact source item facts and complete pack contents"
+    },
+    {
+      "option": "A",
+      "source_item_key": "shortsword",
+      "quantity": 1,
+      "runtime_item_id": "shortsword",
+      "status": "source_definition_exists_not_gameplay_verified",
+      "requirement": "Preserve quantity, exact source item facts and complete pack contents"
+    },
+    {
+      "option": "A",
+      "source_item_key": "shortbow",
+      "quantity": 1,
+      "runtime_item_id": "shortbow",
+      "status": "source_definition_exists_not_gameplay_verified",
+      "requirement": "Preserve quantity, exact source item facts and complete pack contents"
+    },
+    {
+      "option": "A",
+      "source_item_key": "arrows",
+      "quantity": 20,
+      "runtime_item_id": null,
+      "status": "choice_or_missing_definition",
+      "requirement": "Preserve quantity, exact source item facts and complete pack contents"
+    },
+    {
+      "option": "A",
+      "source_item_key": "quiver",
+      "quantity": 1,
+      "runtime_item_id": null,
+      "status": "choice_or_missing_definition",
+      "requirement": "Preserve quantity, exact source item facts and complete pack contents"
+    },
+    {
+      "option": "A",
+      "source_item_key": "thieves_tools",
+      "quantity": 1,
+      "runtime_item_id": "thieves_tools",
+      "status": "source_definition_exists_not_gameplay_verified",
+      "requirement": "Preserve quantity, exact source item facts and complete pack contents"
+    },
+    {
+      "option": "A",
+      "source_item_key": "burglars_pack",
+      "quantity": 1,
+      "runtime_item_id": null,
+      "status": "choice_or_missing_definition",
+      "requirement": "Preserve quantity, exact source item facts and complete pack contents"
+    }
+  ],
+  "unsupported_behavior": [
+    {
+      "groups": [
+        "progression",
+        "items"
+      ],
+      "requirement": "Complete starting/multiclass acquisition, choices and equipment quantities/GP; candidate equipment_resolution retains every unresolved item or choice. No opt-in or native-path replacement is authorized by this candidate."
+    }
+  ],
+  "source_revision": "2a19eb1d (existing working-tree definitions and recovered drafts read on 2026-11-08)",
+  "reused_input_hashes": {
+    "data/core/classes/rogue.json": "c272d35beebef5449232bcef4e5eaf0743ffa9dee2288b95050c6c6c1f9fcda7",
+    "reference/2024/classes/rogue.json": "26348edf679976dff0d9f7d801a5e2127148eb99fb713e6c1468d9546022f51f",
+    "docs/mechanics/rogue-2024.md": "a093a3409e5cff7192c734ecdcb2e05c95417f65d8e0ecee681add39b817226e"
+  }
+}

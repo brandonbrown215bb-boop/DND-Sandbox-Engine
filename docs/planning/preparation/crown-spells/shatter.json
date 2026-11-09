@@ -1,0 +1,156 @@
+{
+  "format": "crown-spell-candidate/1",
+  "id": "shatter",
+  "name": "Shatter",
+  "level": 2,
+  "status": "written_unverified_not_loaded",
+  "source": {
+    "authority": "SRD 5.2.1",
+    "url": "https://media.dndbeyond.com/compendium-images/srd/5.2/SRD_CC_v5.2.1.pdf",
+    "sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      161
+    ],
+    "header": {
+      "Casting Time": "Action",
+      "Range": "60 feet",
+      "Components": "V, S, M (a chip of mica)",
+      "Duration": "Instantaneous"
+    },
+    "attribution": "System Reference Document 5.2.1, Wizards of the Coast LLC; CC BY 4.0."
+  },
+  "casting": {
+    "casting_time": "Action",
+    "kind": "action",
+    "seconds": null,
+    "ritual_available": false,
+    "range": {
+      "source": "60 feet",
+      "kind": "distance",
+      "feet": 60
+    },
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "a chip of mica",
+    "duration": "Instantaneous",
+    "concentration": false,
+    "spell_lists": [
+      "bard",
+      "sorcerer",
+      "wizard"
+    ]
+  },
+  "authored_intent": "Point-origin 10-foot sphere; CON-half Thunder, Constructs save at Disadvantage; eligible nonmagical unattended objects in sphere take full damage without save, including creature-collocated objects.",
+  "rules": [
+    {
+      "id": "r001",
+      "text": "A loud noise erupts from a point of your choice within range."
+    },
+    {
+      "id": "r002",
+      "text": "Each creature in a 10-foot-radius Sphere centered there makes a Constitution saving throw, taking 3d8 Thunder damage on a failed save or half as much damage on a successful one."
+    },
+    {
+      "id": "r003",
+      "text": "A Construct has Disadvantage on the save."
+    },
+    {
+      "id": "r004",
+      "text": "A nonmagical object that isn’t being worn or carried also takes the damage if it’s in the spell’s area."
+    },
+    {
+      "id": "r005",
+      "text": "Using a Higher-Level Spell Slot."
+    },
+    {
+      "id": "r006",
+      "text": "The damage increases by 1d8 for each spell slot level above 2."
+    }
+  ],
+  "authored_operations": [
+    {
+      "operation": "shared_definition_reference",
+      "parameters": {
+        "definition": "runtime_draft.definition"
+      },
+      "status": "shared_definition_reference_unverified",
+      "required_source_rules": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006"
+      ]
+    }
+  ],
+  "runtime_draft": {
+    "origin": "existing_shared_definition",
+    "definition": {
+      "area_radius": 2.0,
+      "attack_type": "none",
+      "casting_time": "action",
+      "classes": [
+        "bard",
+        "sorcerer",
+        "wizard"
+      ],
+      "components": [
+        "V",
+        "S",
+        "M"
+      ],
+      "concentration": false,
+      "damage": "3d8",
+      "damage_type": "thunder",
+      "description": "A loud noise erupts from a point of your choice within range. Each creature in a 10-foot-radius Sphere centered there makes a Constitution saving throw, taking 3d8 Thunder damage on a failed save or half as much damage on a successful one. A Construct has Disadvantage on the save. A nonmagical object that isn’t being worn or carried also takes the damage if it’s in the spell’s area. Using a Higher-Level Spell Slot. The damage increases by 1d8 for each spell slot level above 2.",
+      "duration": "Instantaneous",
+      "effects": [
+        {
+          "radius": 2.0,
+          "shape": "sphere",
+          "type": "area_selection"
+        }
+      ],
+      "execution": "shared",
+      "half_on_save": true,
+      "id": "shatter",
+      "level": 2,
+      "material": "a chip of mica",
+      "name": "Shatter",
+      "range": 12,
+      "rules_source": "SRD 5.2.1",
+      "rules_status": "authoring-draft-unverified",
+      "save": "CON",
+      "save_disadvantage_creature_types": [
+        "construct"
+      ],
+      "school": "evocation",
+      "target": "area",
+      "targets_objects": true,
+      "upcast": {
+        "damage_per_level": "1d8",
+        "starting_level": 2.0
+      }
+    },
+    "fragments": {},
+    "coverage": "Unverified. Neither a full definition nor a fragment certifies all source rules or controls. Required extensions are not silently waived."
+  },
+  "required_extensions": [],
+  "audit": {
+    "source": "docs/audits/spells.md",
+    "batch": "088-2",
+    "production_definition_at_authoring": "res://data/core/spells/crown_sc_03_support_06.json#1",
+    "baseline_execution": "shared",
+    "source_revision": "2a19eb1d",
+    "existing_conversion_label": "converted"
+  },
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile every source rule and required extension, then implement and verify through production paths before any deliberate promotion. Keep native behavior until covered."
+  }
+}

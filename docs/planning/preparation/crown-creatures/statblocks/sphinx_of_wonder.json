@@ -1,0 +1,255 @@
+{
+  "schema": "crown-creature-candidate/1",
+  "id": "srd_sphinx_of_wonder",
+  "name": "Sphinx of Wonder",
+  "kind": "srd_statblock",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring intent only; not registered engine syntax. Mapping requirements do not assert the whole referenced engine slice is absent.",
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile all source clauses, mappings and source differences before later production-path verification. Keep native paths until replacements cover them."
+  },
+  "source": {
+    "authority": "SRD 5.2.1",
+    "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      327
+    ],
+    "text": "Sphinx of Wonder\nTiny Celestial, Lawful Good\nAC 13 Initiative +3 (13)\nHP 24 (7d4 + 7)\nSpeed 20 ft., Fly 40 ft.\nMOD SAVE MOD SAVE MOD SAVE\nStr 6 −2 −2 Dex 17 +3 +3 Con 13 +1 +1\nInt 15 +2 +2 WIS 12 +1 +1 Cha 11 +0 +0\nSkills Arcana +4, Religion +4, Stealth +5\nResistances Necrotic, Psychic, Radiant\nSenses Darkvision 60 ft.; Passive Perception 11\nLanguages Celestial, Common\nCR 1 (XP 200; PB +2)\nTraits\nMagic Resistance. The sphinx has Advantage on saving\nthrows against spells and other magical effects.\nActions\nRend. Melee Attack Roll: +5, reach 5 ft. Hit: 5 (1d4 + 3)\nSlashing damage plus 7 (2d6) Radiant damage.\nReactions\nBurst of Ingenuity (2/Day). Trigger: The sphinx or an-\nother creature within 30 feet makes an ability check or\na saving throw. Response: The sphinx adds 2 to the roll.",
+    "transcription": "Two-column extraction; line breaks retained. Whole selected page context is in source-pages.json. No stat correction inferred from donor data."
+  },
+  "statistics": {
+    "identity_line": "Tiny Celestial, Lawful Good",
+    "AC": "13 Initiative +3 (13)",
+    "HP": "24 (7d4 + 7)",
+    "Speed": "20 ft., Fly 40 ft.",
+    "Skills": "Arcana +4, Religion +4, Stealth +5",
+    "Resistances": "Necrotic, Psychic, Radiant",
+    "Senses": "Darkvision 60 ft.; Passive Perception 11",
+    "Languages": "Celestial, Common",
+    "CR": "1 (XP 200; PB +2)",
+    "ability_scores": {
+      "STR": 6,
+      "DEX": 17,
+      "CON": 13,
+      "INT": 15,
+      "WIS": 12,
+      "CHA": 11
+    },
+    "saving_throw_modifiers": {
+      "STR": -2,
+      "DEX": 3,
+      "CON": 1,
+      "INT": 2,
+      "WIS": 1,
+      "CHA": 0
+    },
+    "initiative_modifier": 3,
+    "initiative_score_printed": 13,
+    "armor_class": 13,
+    "movement_feet": {
+      "walk": 20,
+      "fly": 40
+    }
+  },
+  "authored_operations": [
+    {
+      "key": "b001",
+      "name": "Magic Resistance",
+      "source_section": "Traits",
+      "full_rule": "Magic Resistance. The sphinx has Advantage on saving\nthrows against spells and other magical effects.",
+      "budget": "passive_or_declared_trigger",
+      "steps": [
+        {
+          "intent": "Apply conditional Advantage/Disadvantage or roll adjustment only to the qualifying exact check/save/attack and its declared window.",
+          "mapping_group": "rolls"
+        }
+      ],
+      "parameters_from_rule": {
+        "attack_bonus": [],
+        "save_dc": [],
+        "distances_feet": [],
+        "dice": []
+      },
+      "blockers": [
+        "map_rolls"
+      ],
+      "ending_and_identity": "Exact actor/action/target/source instance; use every qualifier and ending in full_rule, not only extracted parameters.",
+      "behavior_plan": {
+        "budget": "passive_or_declared_trigger",
+        "source_outcomes": {},
+        "trigger": "Saving throw against spell or other magical effect",
+        "roll_adjustment": "advantage"
+      }
+    },
+    {
+      "key": "b002",
+      "name": "Rend",
+      "source_section": "Actions",
+      "full_rule": "Rend. Melee Attack Roll: +5, reach 5 ft. Hit: 5 (1d4 + 3)\nSlashing damage plus 7 (2d6) Radiant damage.",
+      "budget": "action",
+      "steps": [
+        {
+          "intent": "Resolve declared roll or save, targets, range/reach, damage packets, multiattack choice, riders and exact action budget. A save-only action is not a weapon hit rider.",
+          "mapping_group": "attacks"
+        }
+      ],
+      "parameters_from_rule": {
+        "attack_bonus": [
+          5
+        ],
+        "save_dc": [],
+        "distances_feet": [
+          5
+        ],
+        "dice": [
+          "1d4 + 3",
+          "2d6"
+        ]
+      },
+      "blockers": [
+        "map_attacks"
+      ],
+      "ending_and_identity": "Exact actor/action/target/source instance; use every qualifier and ending in full_rule, not only extracted parameters.",
+      "behavior_plan": {
+        "budget": "action",
+        "source_outcomes": {
+          "hit": "5 (1d4 + 3) Slashing damage plus 7 (2d6) Radiant damage."
+        },
+        "resolution": "attack_roll",
+        "attack_kind": "melee",
+        "damage_and_riders": "5 (1d4 + 3) Slashing damage plus 7 (2d6) Radiant damage.",
+        "permission": "ordinary familiar cannot attack; invocation exceptions must grant this exact attack or Attack action, not every Actions entry"
+      }
+    },
+    {
+      "key": "b003",
+      "name": "Burst of Ingenuity (2/Day)",
+      "source_section": "Reactions",
+      "full_rule": "Burst of Ingenuity (2/Day). Trigger: The sphinx or another creature within 30 feet makes an ability check or\na saving throw. Response: The sphinx adds 2 to the roll.",
+      "budget": "reaction",
+      "steps": [
+        {
+          "intent": "Charge exact source-owned action/reaction/use once; preserve recharge dice, daily and Long Rest schedules as separately authored rules.",
+          "mapping_group": "resources"
+        },
+        {
+          "intent": "Apply conditional Advantage/Disadvantage or roll adjustment only to the qualifying exact check/save/attack and its declared window.",
+          "mapping_group": "rolls"
+        }
+      ],
+      "parameters_from_rule": {
+        "attack_bonus": [],
+        "save_dc": [],
+        "distances_feet": [
+          30
+        ],
+        "dice": []
+      },
+      "blockers": [
+        "map_resources",
+        "map_rolls"
+      ],
+      "ending_and_identity": "Exact actor/action/target/source instance; use every qualifier and ending in full_rule, not only extracted parameters.",
+      "behavior_plan": {
+        "budget": "reaction",
+        "source_outcomes": {
+          "trigger": "The sphinx or another creature within 30 feet makes an ability check or a saving throw.",
+          "response": "The sphinx adds 2 to the roll."
+        },
+        "uses": 2,
+        "recovery": "daily; map actual daily boundary, not Long Rest by assumption",
+        "trigger": "Self or other creature within30 feet makes ability check or save",
+        "effect": "Add2 to exact roll; not attack rolls"
+      }
+    }
+  ],
+  "retained_definitions": [
+    {
+      "path": "data/core/monsters/srd_monsters.json",
+      "sha256": "83786ed8bafc802e37b7794c04ba8901e3e10b35d288f301c92f01bbed50cd73",
+      "pointer": "/221",
+      "payload": {
+        "id": "sphinx_of_wonder",
+        "name": "Sphinx of Wonder",
+        "description": "A tiny celestial sphinx sparkling with radiant claws.",
+        "size": "tiny",
+        "challenge_rating": 1,
+        "hit_points": "7d4 + 7",
+        "armor_class": 13,
+        "speed": 4,
+        "ability_scores": {
+          "STR": 6,
+          "DEX": 17,
+          "CON": 13,
+          "INT": 15,
+          "WIS": 12,
+          "CHA": 11
+        },
+        "damage_resistances": [
+          "necrotic",
+          "psychic",
+          "radiant"
+        ],
+        "attacks": [
+          {
+            "name": "Rend",
+            "ability": "DEX",
+            "damage": "1d4 + 3",
+            "damage_type": "slashing",
+            "range": 1,
+            "extra_effects": [
+              {
+                "type": "bonus_damage",
+                "damage": "2d6",
+                "damage_type": "radiant"
+              }
+            ]
+          }
+        ],
+        "ai_behavior": "defensive",
+        "special_abilities": [
+          {
+            "id": "fly",
+            "name": "Fly",
+            "description": "Fly speed 8 hexes (40 ft)."
+          },
+          {
+            "id": "magic_resistance",
+            "name": "Magic Resistance",
+            "description": "Advantage on saving throws against spells and magical effects."
+          }
+        ],
+        "loot_table": [
+          {
+            "item_id": "gold_50",
+            "chance": 0.3
+          }
+        ],
+        "xp": 200
+      },
+      "manifest_declarations": []
+    }
+  ],
+  "selection": {
+    "wild_shape_druid_levels_2_3": false,
+    "wild_shape_druid_levels_4_5": false,
+    "normal_familiar": false,
+    "pact_of_chain_special": true,
+    "animate_dead_output": false,
+    "held_swarm": false,
+    "encounter_comparison_only": false
+  },
+  "acquisition_links": [
+    "selection-links.json"
+  ],
+  "blockers": [
+    "map_statistics",
+    "map_attacks",
+    "map_resources",
+    "map_rolls"
+  ],
+  "source_reconciliation": "Official body is authoritative for this SRD candidate. Retained donor payloads are comparison/reuse seeds, including legacy values and manifest winners; do not merge their statistics or traits by ID. Direct Crown encounters retain separate candidates.",
+  "equipment_links": []
+}

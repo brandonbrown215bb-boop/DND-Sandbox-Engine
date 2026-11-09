@@ -1,0 +1,65 @@
+{
+  "schema": "crown-character-candidate/1",
+  "id": "pact_of_the_blade",
+  "name": "Pact of the Blade",
+  "kind": "invocation",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "scope": {
+    "total_character_level_maximum": 5
+  },
+  "operation_language": "authoring intent only; not registered engine syntax",
+  "runtime_support": "Retained definitions are reuse material, not proof of full rules. Every authored operation needs contract mapping and later production-path verification before promotion.",
+  "minimum_warlock_level": 1,
+  "rules": {
+    "authority": "SRD 5.2.1",
+    "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      74
+    ],
+    "text": "Pact of the Blade\nAs a Bonus Action, you can conjure a pact weapon\nin your hand—a Simple or Martial Melee weapon of\nyour choice with which you bond—or create a bond\nwith a magic weapon you touch; you can’t bond with\na magic weapon if someone else is attuned to it or\nanother Warlock is bonded with it. Until the bond\nends, you have proficiency with the weapon, and\nyou can use it as a Spellcasting Focus.\nWhenever you attack with the bonded weapon,\nyou can use your Charisma modifier for the attack\nand damage rolls instead of using Strength or\nDexterity; and you can cause the weapon to deal\nNecrotic, Psychic, or Radiant damage or its normal\ndamage type.\nYour bond with the weapon ends if you use this\nfeature’s Bonus Action again, if the weapon is more\nthan 5 feet away from you for 1 minute or more, or\nif you die. A conjured weapon disappears when the\nbond ends."
+  },
+  "prerequisites": {
+    "warlock_level": 1,
+    "invocations": [],
+    "cantrip_parameter": null
+  },
+  "repeatable": false,
+  "authored_operations": [
+    {
+      "trigger": "Bonus Action conjure Simple/Martial Melee weapon in hand OR bond touched magic weapon",
+      "cost": "Bonus Action; magic item must not be attuned to someone else or bonded to another Warlock",
+      "effects": [
+        "Proficiency with bonded weapon; spellcasting focus; optional CHA attacks/damage; choose normal/Necrotic/Psychic/Radiant each attack; one bond"
+      ],
+      "ending_and_identity": "End on another use of this Bonus Action, death, or weapon more than5 feet away for at least1 minute. Conjured weapon disappears at bond end; real magic weapon persists.",
+      "required_extension_groups": [
+        "items",
+        "attacks",
+        "source_lifetimes"
+      ]
+    }
+  ],
+  "retained_runtime_fragment": {
+    "id": "pact_of_the_blade",
+    "name": "Pact of the Blade",
+    "minimum_level": 1,
+    "effects": [
+      {
+        "type": "pact_weapon"
+      }
+    ]
+  },
+  "unsupported_behavior": [
+    {
+      "groups": [
+        "items",
+        "attacks",
+        "source_lifetimes"
+      ],
+      "requirement": "Proficiency with bonded weapon; spellcasting focus; optional CHA attacks/damage; choose normal/Necrotic/Psychic/Radiant each attack; one bond",
+      "status": "mapping_and_production_host_verification_required"
+    }
+  ],
+  "source_revision": "2a19eb1d (existing working-tree definitions and recovered drafts read on 2026-11-08)",
+  "reused_input_hashes": {}
+}

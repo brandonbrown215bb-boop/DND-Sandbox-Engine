@@ -1,0 +1,58 @@
+{
+  "schema": "crown-world-candidate/1",
+  "id": "locks_traps",
+  "name": "Locks Traps",
+  "kind": "procedures",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring declarations only; not registered engine opcodes.",
+  "required_extensions": [
+    "locks_traps"
+  ],
+  "authored_operations": [
+    {
+      "operation": "resolve_locks_traps",
+      "requirement": "Own each actual lock and trap: closed/open, ordinary locked/barred/jammed, exact matching key/tool copy, key authorization, check and break routes. Separate trap discovery, trigger, disarm, consequence and reset/inert state. Arcane Lock authorizations/password and Knock one-lock selection/suppression/noise must preserve their full existing spell rules."
+    },
+    {
+      "operation": "reuse_exact_tool_rules",
+      "requirement": "Thieves’ Tools use Dexterity to pick a lock or disarm a trap at source DC15. Matching tool proficiency adds PB; applicable skill proficiency alongside tool proficiency gives Advantage. Preserve authored campaign DCs and check kinds separately: Trapped Chest INT13 is a custom event, not this Utilize task. Crowbar Advantage applies only to Strength checks where leverage actually applies."
+    }
+  ],
+  "blockers": [
+    "Crown trapped_chest is a custom INT13 event that combines discovery/disarm and has branch-specific rewards. It is not the SRD Poisoned Needle or Poisoned Darts example. No trap geometry, detection/disarm split, reset rule or event-duration conversion is authored in that seed; hold those decisions. Do not replace the custom outcomes with an SRD example or infer key destruction/consumption."
+  ],
+  "slices": "S-212/S-213/S-229/S-230",
+  "source_context_pages": [
+    199,
+    200,
+    201
+  ],
+  "source_context": "../source-pages.json",
+  "current_owner_pins": [
+    {
+      "path": "src/dungeon/local_room_rules.gd",
+      "sha256": "cbe65b9c14cc2261555f0cc29e65f669d288967b757f7999f70f9062bf81cd8e"
+    },
+    {
+      "path": "src/combat/combat_object_rules.gd",
+      "sha256": "dca0308ef00f8c72af9a98476a2da638a3d2e71f9ecfbc3a43f25a4dd534b30f"
+    },
+    {
+      "path": "src/events/event_resolver.gd",
+      "sha256": "b114b09342b9b1ec15f59e4a125c475e45d28fc4b0a76dda23caa34935c759da"
+    }
+  ],
+  "reuse_boundary": "Existing accepted pieces remain accepted at their documented limits; these requirements do not mark the entire slices missing.",
+  "reused_equipment_rules": [
+    {
+      "path": "docs/planning/preparation/crown-equipment/items/thieves_tools.json",
+      "sha256": "6db6207ef9b3c3c93b33e342e905a2c0ea97bc8a9d77c4ce4820b056c23ea97b",
+      "full_rules_pointer": "/rules"
+    },
+    {
+      "path": "docs/planning/preparation/crown-equipment/items/crowbar.json",
+      "sha256": "61635dee67028a95b3b0e50a7f55788c2a07c6e8d0863afa3675cb492ab5c357",
+      "full_rules_pointer": "/rules"
+    }
+  ]
+}

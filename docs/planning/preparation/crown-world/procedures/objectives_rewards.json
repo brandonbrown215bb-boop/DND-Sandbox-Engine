@@ -1,0 +1,42 @@
+{
+  "schema": "crown-world-candidate/1",
+  "id": "objectives_rewards",
+  "name": "Objectives Rewards",
+  "kind": "procedures",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring declarations only; not registered engine opcodes.",
+  "required_extensions": [
+    "objectives_rewards"
+  ],
+  "authored_operations": [
+    {
+      "operation": "resolve_objectives_rewards",
+      "requirement": "Track campaign conjunction of three actual Crown fragments and defeated lich_king, four once-only milestone triggers, dungeon clear and generated room claims. Bind reward settlement to the actual occurrence, victory, recipient and allowed checkpoint. Distinguish a repeatable random table roll from reopening the same event occurrence; never mint a second object/currency grant on resume."
+    }
+  ],
+  "blockers": [
+    "Monster loot metadata does not prove payment. Quest-board reward metadata has no EventDialog consumer; no post-combat bounty settlement found. claim_reward exists but its call sites outside its declaration are harness checks, not actual payouts. Dungeon clear uses cleared_dungeons and a separate payout route. Inventory-full/lost grant, child-event continuation and normal creation-to-finale proof remain unverified."
+  ],
+  "slices": "S-048/S-216/S-217/S-218/S-219",
+  "source_context_pages": [],
+  "source_context": "../source-pages.json",
+  "current_owner_pins": [
+    {
+      "path": "src/autoload/game_manager.gd",
+      "sha256": "800f520c33496c30f2c2e40524adc17e3568fa8c9faa91f44ecfc95d914244e9"
+    },
+    {
+      "path": "src/autoload/save_manager.gd",
+      "sha256": "6e36030eb0901f857d4c0ddc4bcebc0ad78a89a6343a81b7536058eaf72158a0"
+    },
+    {
+      "path": "src/dungeon/dungeon_state.gd",
+      "sha256": "5f984d2ec72334d022e2ae9a07333d5037f26be207b070a9093621ef99b21428"
+    },
+    {
+      "path": "src/ui/event_dialog.gd",
+      "sha256": "1fde92db63e89b7a33cb91c33afa4860ce0f8d53a3de3ccf78d3195fe490ab5e"
+    }
+  ],
+  "reuse_boundary": "Existing accepted pieces remain accepted at their documented limits; these requirements do not mark the entire slices missing."
+}

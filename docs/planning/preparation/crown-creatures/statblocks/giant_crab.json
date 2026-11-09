@@ -1,0 +1,188 @@
+{
+  "schema": "crown-creature-candidate/1",
+  "id": "srd_giant_crab",
+  "name": "Giant Crab",
+  "kind": "srd_statblock",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring intent only; not registered engine syntax. Mapping requirements do not assert the whole referenced engine slice is absent.",
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile all source clauses, mappings and source differences before later production-path verification. Keep native paths until replacements cover them."
+  },
+  "source": {
+    "authority": "SRD 5.2.1",
+    "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      350
+    ],
+    "text": "Giant Crab\nMedium Beast, Unaligned\nAC 15 Initiative +1 (11)\nHP 13 (3d8)\nSpeed 30 ft., Swim 30 ft.\nMOD SAVE MOD SAVE MOD SAVE\nStr 13 +1 +1 Dex 13 +1 +1 Con 11 +0 +0\nInt 1 −5 −5 WIS 9 −1 −1 Cha 3 −4 −4\nSkills Stealth +3\nSenses Blindsight 30 ft.; Passive Perception 9\nLanguages None\nCR 1/8 (XP 25; PB +2)\nTraits\nAmphibious. The crab can breathe air and water.\nActions\nClaw. Melee Attack Roll: +3, reach 5 ft. Hit: 4 (1d6 + 1)\nBludgeoning damage. If the target is a Medium or\nsmaller creature, it has the Grappled condition (escape\nDC 11) from one of two claws.",
+    "transcription": "Two-column extraction; line breaks retained. Whole selected page context is in source-pages.json. No stat correction inferred from donor data."
+  },
+  "statistics": {
+    "identity_line": "Medium Beast, Unaligned",
+    "AC": "15 Initiative +1 (11)",
+    "HP": "13 (3d8)",
+    "Speed": "30 ft., Swim 30 ft.",
+    "Skills": "Stealth +3",
+    "Senses": "Blindsight 30 ft.; Passive Perception 9",
+    "Languages": "None",
+    "CR": "1/8 (XP 25; PB +2)",
+    "ability_scores": {
+      "STR": 13,
+      "DEX": 13,
+      "CON": 11,
+      "INT": 1,
+      "WIS": 9,
+      "CHA": 3
+    },
+    "saving_throw_modifiers": {
+      "STR": 1,
+      "DEX": 1,
+      "CON": 0,
+      "INT": -5,
+      "WIS": -1,
+      "CHA": -4
+    },
+    "initiative_modifier": 1,
+    "initiative_score_printed": 11,
+    "armor_class": 15,
+    "movement_feet": {
+      "walk": 30,
+      "swim": 30
+    }
+  },
+  "authored_operations": [
+    {
+      "key": "b001",
+      "name": "Amphibious",
+      "source_section": "Traits",
+      "full_rule": "Amphibious. The crab can breathe air and water.",
+      "budget": "passive_or_declared_trigger",
+      "steps": [
+        {
+          "intent": "Represent actual size/space, climb/swim/fly and breathing, jumps, straight-line charge history, opportunity exceptions, web surfaces and legal release.",
+          "mapping_group": "movement"
+        }
+      ],
+      "parameters_from_rule": {
+        "attack_bonus": [],
+        "save_dc": [],
+        "distances_feet": [],
+        "dice": []
+      },
+      "blockers": [
+        "map_movement"
+      ],
+      "ending_and_identity": "Exact actor/action/target/source instance; use every qualifier and ending in full_rule, not only extracted parameters.",
+      "behavior_plan": {
+        "budget": "passive_or_declared_trigger",
+        "source_outcomes": {},
+        "breathing_media": [
+          "air",
+          "water"
+        ]
+      }
+    },
+    {
+      "key": "b002",
+      "name": "Claw",
+      "source_section": "Actions",
+      "full_rule": "Claw. Melee Attack Roll: +3, reach 5 ft. Hit: 4 (1d6 + 1)\nBludgeoning damage. If the target is a Medium or\nsmaller creature, it has the Grappled condition (escape\nDC 11) from one of two claws.",
+      "budget": "action",
+      "steps": [
+        {
+          "intent": "Resolve declared roll or save, targets, range/reach, damage packets, multiattack choice, riders and exact action budget. A save-only action is not a weapon hit rider.",
+          "mapping_group": "attacks"
+        },
+        {
+          "intent": "Preserve immunity, source identity, thresholds, repeat saves, explicit ending events and target-relative deadlines.",
+          "mapping_group": "conditions"
+        }
+      ],
+      "parameters_from_rule": {
+        "attack_bonus": [
+          3
+        ],
+        "save_dc": [
+          11
+        ],
+        "distances_feet": [
+          5
+        ],
+        "dice": [
+          "1d6 + 1"
+        ]
+      },
+      "blockers": [
+        "map_attacks",
+        "map_conditions"
+      ],
+      "ending_and_identity": "Exact actor/action/target/source instance; use every qualifier and ending in full_rule, not only extracted parameters.",
+      "behavior_plan": {
+        "budget": "action",
+        "source_outcomes": {
+          "hit": "4 (1d6 + 1) Bludgeoning damage. If the target is a Medium or smaller creature, it has the Grappled condition (escape DC 11) from one of two claws."
+        },
+        "resolution": "attack_roll",
+        "attack_kind": "melee",
+        "damage_and_riders": "4 (1d6 + 1) Bludgeoning damage. If the target is a Medium or smaller creature, it has the Grappled condition (escape DC 11) from one of two claws.",
+        "permission": "ordinary familiar cannot attack; invocation exceptions must grant this exact attack or Attack action, not every Actions entry",
+        "relation": "Create exact grapple/tether relation, printed target size and escapeDC; preserve each limb/capacity restriction and associated Restrained only while related"
+      }
+    }
+  ],
+  "retained_definitions": [
+    {
+      "path": "data/core/monsters/imported_monsters.json",
+      "sha256": "f57bee1e93f185a89575bed3d8b2b610b53cfd3b7f2eb56448d1dd64a0126c5f",
+      "pointer": "/163",
+      "payload": {
+        "id": "giant_crab",
+        "name": "Giant Crab",
+        "hit_points": "3d8",
+        "armor_class": 15,
+        "speed": 6,
+        "ability_scores": {
+          "STR": 13,
+          "DEX": 15,
+          "CON": 11,
+          "INT": 1,
+          "WIS": 9,
+          "CHA": 3
+        },
+        "attacks": [
+          {
+            "name": "Claws",
+            "ability": "STR",
+            "damage": "1d6",
+            "range": 1,
+            "damage_type": "slashing"
+          }
+        ],
+        "ai_behavior": "aggressive"
+      },
+      "manifest_declarations": []
+    }
+  ],
+  "selection": {
+    "wild_shape_druid_levels_2_3": true,
+    "wild_shape_druid_levels_4_5": true,
+    "normal_familiar": false,
+    "pact_of_chain_special": false,
+    "animate_dead_output": false,
+    "held_swarm": false,
+    "encounter_comparison_only": false
+  },
+  "acquisition_links": [
+    "selection-links.json"
+  ],
+  "blockers": [
+    "map_statistics",
+    "map_attacks",
+    "map_conditions",
+    "map_movement"
+  ],
+  "source_reconciliation": "Official body is authoritative for this SRD candidate. Retained donor payloads are comparison/reuse seeds, including legacy values and manifest winners; do not merge their statistics or traits by ID. Direct Crown encounters retain separate candidates.",
+  "equipment_links": []
+}

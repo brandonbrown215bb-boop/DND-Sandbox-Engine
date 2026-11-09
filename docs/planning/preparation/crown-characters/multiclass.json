@@ -1,0 +1,283 @@
+{
+  "schema": "crown-character-candidate/1",
+  "id": "crown_multiclass",
+  "name": "Crown multiclass acquisition",
+  "kind": "acquisition_rules",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "scope": {
+    "total_character_level_maximum": 5
+  },
+  "operation_language": "authoring intent only; not registered engine syntax",
+  "runtime_support": "Retained definitions are reuse material, not proof of full rules. Every authored operation needs contract mapping and later production-path verification before promotion.",
+  "rules": {
+    "authority": "SRD 5.2.1",
+    "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      24,
+      25,
+      26
+    ],
+    "text": "Multiclassing\nMulticlassing allows you to gain levels in multiple\nclasses. With this rule, you have the option of gaining a level in a new class whenever you advance in\nlevel instead of gaining a level in your current class.\nDoing so lets you mix the abilities of those classes\nto realize a character concept that might not be reflected in a single class.\nPrerequisites\nTo qualify for a new class, you must have a score of\nat least 13 in the primary ability of the new class\nand your current classes. For example, a Barbarian\nwho decides to multiclass into the Druid class must\nhave Strength and Wisdom scores of 13 or higher,\nMagic Items\n1 Common\n1 Common, 1 Uncommon\n2 Common, 3 Uncommon, 1 Rare\n2 Common, 4 Uncommon, 3 Rare, 1 Very Rare\nsince Strength is the primary ability for Barbarians\nand Wisdom is the primary ability for Druids.\nExperience Points\nThe Experience Point cost to gain a level is based on\nyour total character level, not your level in a particular class, as shown in the Character Advancement\ntable in “Character Creation.” For example, if you\nare a level 6 Cleric / level 1 Fighter, you must gain\nenough XP to reach level 8 before you can take your\nsecond level as a Fighter or your seventh level as a\nCleric.\nHit Points and Hit Point Dice\nYou gain the Hit Points from your new class as described for levels after 1. You gain the level 1 Hit\nPoints for a class only when your total character\nlevel is 1.\nAdd together the Hit Dice granted by all your\nclasses to form your pool of Hit Dice. If these dice\nare the same die type, you can pool them together.\nFor example, both the Fighter and the Paladin have\na d10 Hit Die, so if you are a level 5 Fighter / level 5\nPaladin, you have ten d10 Hit Dice. If your classes\ngive you Hit Dice of different types, track them separately. If you are a level 5 Cleric / level 5 Paladin,\nfor example, you have five d8 Hit Dice and five d10\nHit Dice.\nProficiency Bonus\nYour Proficiency Bonus is based on your total character level, not your level in a particular class, as\nshown in the Character Advancement table. For\nexample, if you are a level 3 Fighter / level 2 Rogue,\nyou have the Proficiency Bonus of a level 5 character, which is +3.\nProficiencies\nWhen you gain your first level in a class other than\nyour initial class, you gain only some of the new\nclass’s starting proficiencies, as detailed in each\nclass’s description in “Classes.”\nClass Features\nWhen you gain a new level in a class, you get its features for that level. A few features have additional\nrules when you’re multiclassing. Check the information about multiclassing included in each of your\nclasses’ descriptions.\nSpecial rules apply to Extra Attack, Spellcasting,\nand features (such as Unarmored Defense) that give\nyou alternative ways to calculate your Armor Class.\nArmor Class\nIf you have multiple ways to calculate your Armor\nClass, you can benefit from only one at a time.\nFor example, a Monk/Sorcerer with a Monk’s\nUnarmored Defense feature and a Sorcerer’s Draconic Resilience feature must choose only one of\nthose features as a way to calculate Armor Class.\nExtra Attack\nIf you gain the Extra Attack feature from more than\none class, the features don’t stack. You can’t make\nmore than two attacks with this feature unless you\nhave a feature that says you can (such as the Fighter’s Two Extra Attacks feature).\nSimilarly, the Warlock’s Thirsting Blade invocation, which grants you the Extra Attack feature\nwith your pact weapon, doesn’t give you additional\nattacks if you also have Extra Attack.\nSpellcasting\nYour capacity for spellcasting depends partly on\nyour combined levels in all your spellcasting classes\nand partly on your individual levels in those classes.\nOnce you have the Spellcasting feature from more\nthan one class, use the rules below. If you multiclass\nbut have the Spellcasting feature from only one\nclass, follow the rules for that class.\nSpells Prepared.\nYou determine what spells you\ncan prepare for each class individually, as if you\nwere a single-classed member of that class. If you\nare a level 4 Ranger / level 3 Sorcerer, for example,\nyou can prepare five level 1 Ranger spells, and you\ncan prepare six Sorcerer spells of level 1 or 2 (as\nwell as four Sorcerer cantrips).\nEach spell you prepare is associated with one of\nyour classes, and you use the spellcasting ability of\nthat class when you cast the spell.\nCantrips.\nIf a cantrip of yours increases in power\nat higher levels, the increase is based on your total\ncharacter level, not your level in a particular class,\nunless the spell says otherwise.\nSpell Slots.\nYou determine your available spell\nslots by adding together the following:\n• All your levels in the Bard, Cleric, Druid, Sorcerer,\nand Wizard classes\n• Half your levels (round up) in the Paladin and\nRanger classes\nThen look up this total level in the Level column of\nthe Multiclass Spellcaster table. You use the slots for\nthat level to cast spells of an appropriate level from\nany class whose Spellcasting feature you have.\nThis table might give you spell slots of a higher\nlevel than the spells you prepare. You can use those\nslots but only to cast your lower-level spells. If a\nlower-level spell that you cast, like\nBurning Hands\n,\nhas an enhanced effect when cast at a higher level,\nyou can use the enhanced effect as normal.\nFor example, if you are a level 4 Ranger / level 3\nSorcerer, you count as a level 5 character when determining your spell slots, counting all your levels\nas a Sorcerer and half your Ranger levels. As shown\nin the Multiclass Spellcaster table, you have four\nlevel 1 spell slots, three level 2 slots, and two level 3\nslots. However, you can’t prepare any level 3 spells,\nnor can you prepare any level 2 Ranger spells. You\ncan use the spell slots of those levels to cast the\nspells you do prepare—and potentially enhance\ntheir effects.\nPact Magic.\nIf you have the Pact Magic feature\nfrom the Warlock class and the Spellcasting feature,\nyou can use the spell slots you gain from Pact Magic\nto cast spells you have prepared from classes with\nthe Spellcasting feature, and you can use the spell\nslots you gain from the Spellcasting feature to cast\nWarlock spells you have prepared. Multiclass Spellcaster:\nSpell Slots per Spell Level\nLevel 1 2 3 4 5 6 7 8 9\n1 2 — — — — — — — —\n2 3 — — — — — — — —\n3 4 2 — — — — — — —\n4 4 3 — — — — — — —\n5 4 3 2 — — — — — —\n6 4 3 3 — — — — — —\n7 4 3 3 1 — — — — —\n8 4 3 3 2 — — — — —\n9 4 3 3 3 1 — — — —\n10 4 3 3 3 2 — — — —\n11 4 3 3 3 2 1 — — —\n12 4 3 3 3 2 1 — — —\n13 4 3 3 3 2 1 1 — —\n14 4 3 3 3 2 1 1 — —\n15 4 3 3 3 2 1 1 1 —\n16 4 3 3 3 2 1 1 1 —\n17 4 3 3 3 2 1 1 1 1\n18 4 3 3 3 3 1 1 1 1\n19 4 3 3 3 3 2 1 1 1\n20 4 3 3 3 3 2 2 1 1"
+  },
+  "classes": {
+    "barbarian": {
+      "all": [
+        "STR"
+      ],
+      "armor": [
+        "shields"
+      ],
+      "weapons": [
+        "martial"
+      ],
+      "score_minimum": 13,
+      "hit_die": "d12",
+      "features": "All own-class level1 features plus later features at own-class thresholds; subclass at class3, feat entitlement at class4. See class candidate.",
+      "starting_equipment": [],
+      "saving_throws": []
+    },
+    "bard": {
+      "all": [
+        "CHA"
+      ],
+      "armor": [
+        "light"
+      ],
+      "skill_choice": {
+        "pick": 1,
+        "from": "any skill"
+      },
+      "tool_choice": {
+        "pick": 1,
+        "from": "Musical Instruments"
+      },
+      "score_minimum": 13,
+      "hit_die": "d8",
+      "features": "All own-class level1 features plus later features at own-class thresholds; subclass at class3, feat entitlement at class4. See class candidate.",
+      "starting_equipment": [],
+      "saving_throws": []
+    },
+    "cleric": {
+      "all": [
+        "WIS"
+      ],
+      "armor": [
+        "light",
+        "medium",
+        "shields"
+      ],
+      "score_minimum": 13,
+      "hit_die": "d8",
+      "features": "All own-class level1 features plus later features at own-class thresholds; subclass at class3, feat entitlement at class4. See class candidate.",
+      "starting_equipment": [],
+      "saving_throws": []
+    },
+    "druid": {
+      "all": [
+        "WIS"
+      ],
+      "armor": [
+        "light",
+        "shields"
+      ],
+      "score_minimum": 13,
+      "hit_die": "d8",
+      "features": "All own-class level1 features plus later features at own-class thresholds; subclass at class3, feat entitlement at class4. See class candidate.",
+      "starting_equipment": [],
+      "saving_throws": []
+    },
+    "fighter": {
+      "any": [
+        "STR",
+        "DEX"
+      ],
+      "armor": [
+        "light",
+        "medium",
+        "shields"
+      ],
+      "weapons": [
+        "martial"
+      ],
+      "score_minimum": 13,
+      "hit_die": "d10",
+      "features": "All own-class level1 features plus later features at own-class thresholds; subclass at class3, feat entitlement at class4. See class candidate.",
+      "starting_equipment": [],
+      "saving_throws": []
+    },
+    "monk": {
+      "all": [
+        "DEX",
+        "WIS"
+      ],
+      "score_minimum": 13,
+      "hit_die": "d8",
+      "features": "All own-class level1 features plus later features at own-class thresholds; subclass at class3, feat entitlement at class4. See class candidate.",
+      "starting_equipment": [],
+      "saving_throws": []
+    },
+    "paladin": {
+      "all": [
+        "STR",
+        "CHA"
+      ],
+      "armor": [
+        "light",
+        "medium",
+        "shields"
+      ],
+      "weapons": [
+        "martial"
+      ],
+      "score_minimum": 13,
+      "hit_die": "d10",
+      "features": "All own-class level1 features plus later features at own-class thresholds; subclass at class3, feat entitlement at class4. See class candidate.",
+      "starting_equipment": [],
+      "saving_throws": []
+    },
+    "ranger": {
+      "all": [
+        "DEX",
+        "WIS"
+      ],
+      "armor": [
+        "light",
+        "medium",
+        "shields"
+      ],
+      "weapons": [
+        "martial"
+      ],
+      "skill_choice": {
+        "pick": 1,
+        "from": "Ranger skill list"
+      },
+      "score_minimum": 13,
+      "hit_die": "d10",
+      "features": "All own-class level1 features plus later features at own-class thresholds; subclass at class3, feat entitlement at class4. See class candidate.",
+      "starting_equipment": [],
+      "saving_throws": []
+    },
+    "rogue": {
+      "all": [
+        "DEX"
+      ],
+      "armor": [
+        "light"
+      ],
+      "tools": [
+        "thieves_tools"
+      ],
+      "skill_choice": {
+        "pick": 1,
+        "from": "Rogue skill list"
+      },
+      "score_minimum": 13,
+      "hit_die": "d8",
+      "features": "All own-class level1 features plus later features at own-class thresholds; subclass at class3, feat entitlement at class4. See class candidate.",
+      "starting_equipment": [],
+      "saving_throws": []
+    },
+    "sorcerer": {
+      "all": [
+        "CHA"
+      ],
+      "score_minimum": 13,
+      "hit_die": "d6",
+      "features": "All own-class level1 features plus later features at own-class thresholds; subclass at class3, feat entitlement at class4. See class candidate.",
+      "starting_equipment": [],
+      "saving_throws": []
+    },
+    "warlock": {
+      "all": [
+        "CHA"
+      ],
+      "armor": [
+        "light"
+      ],
+      "score_minimum": 13,
+      "hit_die": "d8",
+      "features": "All own-class level1 features plus later features at own-class thresholds; subclass at class3, feat entitlement at class4. See class candidate.",
+      "starting_equipment": [],
+      "saving_throws": []
+    },
+    "wizard": {
+      "all": [
+        "INT"
+      ],
+      "score_minimum": 13,
+      "hit_die": "d6",
+      "features": "All own-class level1 features plus later features at own-class thresholds; subclass at class3, feat entitlement at class4. See class candidate.",
+      "starting_equipment": [],
+      "saving_throws": []
+    }
+  },
+  "authored_operations": [
+    {
+      "trigger": "First entry into another class",
+      "effects": [
+        "Require13 in primary abilities of new AND every current class; Fighter STR OR DEX, Monk DEX AND WIS, Paladin STR AND CHA, Ranger DEX AND WIS",
+        "Grant only listed multiclass proficiencies and Hit Die, plus all level1 class features; source skills/tools choices independent of starting equipment",
+        "Later HP uses selected class later-level rule, never first-level maximum a second time; add class Hit Die; PB uses total level (2 at1–4,3 at5)",
+        "Do not combine base AC alternatives; choose one legal formula",
+        "Extra Attack and Thirsting Blade do not stack"
+      ],
+      "required_extension_groups": [
+        "progression",
+        "choices",
+        "stats",
+        "attacks"
+      ]
+    },
+    {
+      "trigger": "Compute slots when Spellcasting acquired from more than one class",
+      "effects": [
+        "Sum full Bard/Cleric/Druid/Sorcerer/Wizard levels plus ceil(Paladin/2) plus ceil(Ranger/2); round each half-caster contribution up",
+        "Use combined slot table; preparation/cantrip counts and eligible spell levels remain separately determined as single-class member of each class",
+        "Each prepared spell keeps class and casting ability; cantrip damage scales total character level unless spell says otherwise",
+        "Pact slots recover on Short or Long Rest; separate Pact pool; may use Pact slots for prepared Spellcasting spells and ordinary Spellcasting slots for prepared Warlock spells"
+      ],
+      "required_extension_groups": [
+        "casting",
+        "resources"
+      ]
+    }
+  ],
+  "combined_spellcaster_slots_level1_to5": [
+    [
+      2,
+      0,
+      0
+    ],
+    [
+      3,
+      0,
+      0
+    ],
+    [
+      4,
+      2,
+      0
+    ],
+    [
+      4,
+      3,
+      0
+    ],
+    [
+      4,
+      3,
+      2
+    ]
+  ],
+  "unsupported_behavior": [
+    {
+      "groups": [
+        "progression",
+        "casting"
+      ],
+      "requirement": "Current permanent progression host refuses secondary-class features; production does not opt in. Must extend generic acquisition to full features/resources/subclass/casting before promotion. Existing prerequisite gate and once-only receipts are reuse points, not new work.",
+      "status": "explicit_host_limit"
+    }
+  ]
+}

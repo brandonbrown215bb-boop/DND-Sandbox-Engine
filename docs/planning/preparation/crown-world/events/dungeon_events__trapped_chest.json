@@ -1,0 +1,177 @@
+{
+  "schema": "crown-world-candidate/1",
+  "id": "dungeon_events__trapped_chest",
+  "name": "Trapped Chest",
+  "kind": "events",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring declarations only; not registered engine opcodes.",
+  "required_extensions": [
+    "discovery",
+    "hazards",
+    "locks_traps",
+    "objectives_rewards",
+    "rest_time"
+  ],
+  "authored_operations": [
+    {
+      "operation": "resolve_authored_check",
+      "seed_pointer": "/choices/0/check",
+      "check": {
+        "ability": "INT",
+        "dc": 13
+      },
+      "requirement": "Keep ability, skill/context, DC and optional familiar Help exactly. Choose actor and actual context; settle one branch once; never silently convert an ability check into a saving throw."
+    },
+    {
+      "operation": "settle_ordered_branch",
+      "seed_pointer": "/choices/0/success/effects",
+      "effects": [
+        {
+          "type": "give_item",
+          "item_id": "gold_100"
+        },
+        {
+          "type": "give_item",
+          "item_id": "potion_healing"
+        }
+      ],
+      "condition": null,
+      "requirement": "Retain order, exact quantities/formulas, recipient, costs, branch descriptions and occurrence identity; no repeated payment when a child resumes."
+    },
+    {
+      "operation": "settle_ordered_branch",
+      "seed_pointer": "/choices/0/failure/effects",
+      "effects": [
+        {
+          "type": "damage",
+          "value": "1d6",
+          "damage_type": "poison"
+        },
+        {
+          "type": "grant_condition",
+          "condition": "poisoned",
+          "duration": 3
+        },
+        {
+          "type": "give_item",
+          "item_id": "gold_50"
+        }
+      ],
+      "condition": null,
+      "requirement": "Retain order, exact quantities/formulas, recipient, costs, branch descriptions and occurrence identity; no repeated payment when a child resumes."
+    },
+    {
+      "operation": "settle_ordered_branch",
+      "seed_pointer": "/choices/1/effects",
+      "effects": [
+        {
+          "type": "damage",
+          "value": "1d6",
+          "damage_type": "poison"
+        },
+        {
+          "type": "grant_condition",
+          "condition": "poisoned",
+          "duration": 3
+        },
+        {
+          "type": "give_item",
+          "item_id": "gold_100"
+        }
+      ],
+      "condition": null,
+      "requirement": "Retain order, exact quantities/formulas, recipient, costs, branch descriptions and occurrence identity; no repeated payment when a child resumes."
+    },
+    {
+      "operation": "settle_ordered_branch",
+      "seed_pointer": "/choices/2/effects",
+      "effects": [],
+      "condition": null,
+      "requirement": "Retain order, exact quantities/formulas, recipient, costs, branch descriptions and occurrence identity; no repeated payment when a child resumes."
+    }
+  ],
+  "blockers": [
+    "Retain numeric event duration/unit and custom condition IDs as authored. Generic marker support is not proof of defined mechanical benefit, cure scope or turn/clock conversion; map each declared condition to its actual rule."
+  ],
+  "retained_input": {
+    "path": "data/core/events/dungeon_events.json",
+    "sha256": "db368f21178462a95f0bb78028ec8e10441f6467e4a6bb7b3843d6ecaeb20d35",
+    "pointer": "/events/0",
+    "payload": {
+      "id": "trapped_chest",
+      "name": "Trapped Chest",
+      "weight": 20,
+      "description": "A heavy iron chest sits in the corner. It looks valuable... and suspicious.",
+      "type": "choice",
+      "choices": [
+        {
+          "text": "Check for traps first",
+          "check": {
+            "ability": "INT",
+            "dc": 13
+          },
+          "success": {
+            "description": "You find and disarm a poison dart trap! The chest contains treasure.",
+            "effects": [
+              {
+                "type": "give_item",
+                "item_id": "gold_100"
+              },
+              {
+                "type": "give_item",
+                "item_id": "potion_healing"
+              }
+            ]
+          },
+          "failure": {
+            "description": "You don't notice the trap. A dart shoots out as you open the chest!",
+            "effects": [
+              {
+                "type": "damage",
+                "value": "1d6",
+                "damage_type": "poison"
+              },
+              {
+                "type": "grant_condition",
+                "condition": "poisoned",
+                "duration": 3
+              },
+              {
+                "type": "give_item",
+                "item_id": "gold_50"
+              }
+            ]
+          }
+        },
+        {
+          "text": "Just open it",
+          "effects": [
+            {
+              "type": "damage",
+              "value": "1d6",
+              "damage_type": "poison"
+            },
+            {
+              "type": "grant_condition",
+              "condition": "poisoned",
+              "duration": 3
+            },
+            {
+              "type": "give_item",
+              "item_id": "gold_100"
+            }
+          ],
+          "description": "A dart shoots out and hits you! But at least the treasure is yours."
+        },
+        {
+          "text": "Leave it alone",
+          "effects": [],
+          "description": "Sometimes the best treasure is the one you don't open."
+        }
+      ]
+    }
+  },
+  "authority": "Custom Crown campaign event, not an SRD trap/NPC/spell replacement",
+  "table_id": "dungeon_events",
+  "occurrence_policy": "Table may roll again; same in-flight occurrence must not reroll/reapply on reopen. Campaign-specific uniqueness beyond generated room claims is unresolved, not silently global once-per-event-ID."
+}

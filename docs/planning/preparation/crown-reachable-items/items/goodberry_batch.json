@@ -1,0 +1,79 @@
+{
+  "schema": "crown-reachable-item-candidate/1",
+  "id": "goodberry_batch",
+  "name": "Goodberry batch",
+  "kind": "created_item",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring intent only; not registered engine syntax.",
+  "rules": {
+    "authority": "SRD 5.2.1",
+    "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      137
+    ],
+    "text": "Ten berries appear in your hand and are infused with magic for the duration.\nA creature can take a Bonus Action to eat one berry.\nEating a berry restores 1 Hit Point, and the berry provides enough nourishment to sustain a creature for one day.\nUneaten berries disappear when the spell ends.",
+    "source_context": "../source-pages.json"
+  },
+  "definition": {
+    "id": "goodberry_batch",
+    "name": "Goodberry batch",
+    "count": 10,
+    "unit": "berry",
+    "expiry": "spell_end_after_24_hours"
+  },
+  "authored_operations": [
+    "Create ten actual berries in caster hand; retain source/batch identity and independent exact quantities.",
+    "Bonus Action consumes one berry for 1 HP and one day nourishment. Uneaten berries disappear when spell ends; no resale price or extra healing is invented."
+  ],
+  "retained_runtime_seeds": [],
+  "manifest_overrides": [],
+  "required_mapping": [
+    "created_items"
+  ],
+  "rules_owner": {
+    "path": "docs/planning/preparation/crown-spells/goodberry.json",
+    "sha256": "9da8a7f1b1c7873779e9f1628bd68db59a3632b94c2dc5fbf949a779f6af8973"
+  },
+  "retained_spell_draft": {
+    "authored_operations": [
+      {
+        "operation": "create_consumable_batch",
+        "parameters": {
+          "count": 10,
+          "expiry": "spell_end",
+          "consume": {
+            "action": "bonus_action",
+            "quantity": 1,
+            "heal": 1,
+            "nourishment_days": 1
+          }
+        },
+        "status": "authoring_declaration_not_a_registered_opcode",
+        "required_source_rules": [
+          "r001",
+          "r002",
+          "r003",
+          "r004"
+        ]
+      }
+    ]
+  },
+  "consumers": [
+    {
+      "channel": "spell_created_output",
+      "path": "docs/planning/preparation/crown-spells/goodberry.json",
+      "sha256": "9da8a7f1b1c7873779e9f1628bd68db59a3632b94c2dc5fbf949a779f6af8973",
+      "json_pointer": "/rules"
+    }
+  ],
+  "unsupported_behavior": [
+    {
+      "group": "created_items",
+      "requirement": "Map actual created copies/batches, source owner, portions, location, lifetime and exact ending/consumption without replay. Never replace transient magical output with a permanent tradeable catalog item."
+    },
+    {
+      "group": "definition",
+      "requirement": "No exact current loaded-source seed at this identity. This candidate needs deliberate contract mapping/promotion; it is not an installed item."
+    }
+  ]
+}

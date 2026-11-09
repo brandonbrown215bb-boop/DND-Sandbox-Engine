@@ -33,6 +33,52 @@ support status from newly written but unverified hooks.
 
 ## Import staging
 
+The [Crown cross-set mapping](planning/crown-engine-mapping/README.md) now joins
+all six completed writing passes to current shared contracts and verified slice
+boundaries. Its [assignments](planning/crown-engine-mapping/assignments.md) start
+with CXM-01/S-249 ammunition. The clause ledger, source/policy holds and future
+checks are planning artifacts, not executable syntax, installation permission
+or gameplay acceptance. No production candidates were promoted by mapping.
+
+The final [Crown world/event/object set](planning/preparation/crown-world/README.md)
+retains 74 non-loaded candidates and reuses the preceding complete candidate sets.
+It preserves the map/dungeons, four event tables and all branches, generated
+traps/loot, tactical objects, supplies/hazards, objectives and once-only reward
+intent. Full rules, code/source pins, world dependencies and blockers remain
+preparation. Monster loot and quest reward metadata do not prove payment.
+The subsequent mapping is linked above; neither pass changes runtime contracts.
+
+The [remaining Crown reachable-item set](planning/preparation/crown-reachable-items/README.md)
+adds 73 candidates and links 29 existing equipment candidates. It retains
+source acquisition evidence and maps all 183 spells' Material requirements;
+custom rewards, out-of-band sold components and physical creations keep their
+distinct source/lifetime limits. Nothing is loaded or enabled. Source/shop leads
+and unchanged seeds are preparation, not a new production availability export.
+
+The [Crown package-equipment set](planning/preparation/crown-equipment/README.md)
+retains 105 non-loaded candidates, exact package alternatives and six full pack
+lists. Existing item definitions/hashes and collision declarations are retained
+as seeds alongside source facts, authoring plans and blockers. This writing pass
+does not install items, repair runtime behavior or certify gameplay. It covers
+character-package equipment; the later item and world sets are written separately.
+
+The [Crown character/origin authoring set](planning/preparation/crown-characters/README.md)
+retains the twelve class/subclass packages through level 5, multiclass grants,
+eligible invocation/Metamagic options, nine species, four backgrounds and ten
+feats. Like the [183 spell candidates](planning/preparation/crown-spells/README.md),
+it stays outside `data/core` and `data/mods`. Authored operation plans are not
+registered runtime syntax; retained definitions/drafts and explicit unsupported
+clauses must be reconciled before deliberate promotion. Writing these sets did
+not change engine behavior or run gameplay checks.
+
+The [Crown creature/actor set](planning/preparation/crown-creatures/README.md)
+retains 94 written records with separate campaign/SRD identities, complete
+individual in-band selectors, full source bodies, unchanged donors, per-behavior
+plans and blockers. Its spell/character dependency map and item reuse links
+complete the creature-writing boundary without production enabling or gameplay
+proof. Held swarms, companion choices, custom boss ambiguities and reward
+settlement remain explicit. The world/event/object set above is now written too.
+
 For ordinary revised-class source preparation, use the
 [2024 reference view](../reference/2024/README.md). It selects revised records
 without translating them and maps them back to unchanged mixed-edition inputs.
@@ -100,6 +146,25 @@ are dated findings to reproduce when implementing the boundary, not claims
 that the editor or a schema already validates a complete installed content set.
 
 ## Source findings to retain
+
+### Recovered local inputs — 2026-11-08
+
+These locations were rechecked during the Crown recovery review. They reduce
+source hunting and duplicate authoring; they do not supply production-ready
+definitions. `.artifacts/` and `_staging/` are ignored, machine-local inputs.
+Their presence here does not make them available in another checkout. Keep
+selected authored candidates in tracked preparation files with source identity;
+do not make ignored reports the only home of new content work.
+
+| Need | Existing input and exact location | How to reuse it |
+|---|---|---|
+| Official in-scope rule bodies | `.artifacts/rules-authority/SRD_CC_v5.2.1.pdf` (364 pages); `source.txt` beside it records the source URL and SHA-256 `8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87`, rechecked against the PDF. | Read selected SRD pages before authoring. `source.txt` is provenance, not a full text extract; the neighboring text excerpt covers Hit Dice/rests only. A body absent from the revised class view is not necessarily unavailable locally. |
+| Fighter/Wizard starting, multiclass and progression source preparation | `.artifacts/antigravity/progression-sources.md`; use `progression-sources-corrections-review.md` beside it, which supersedes the older corrections-required review. Packet SHA-256 `c223a0d6c5e9ad510a62826f3cf41a95d479fd5db4d882f844407235e0d0851c` and the two raw class-file hashes still match. | Reuse the corrected coordinates/tables. Its explicit missing-source questions and dated runtime observations are not rules answers or current behavior certification. The [revised class view](../reference/2024/README.md) remains the ordinary class entry point. |
+| Existing descriptions, advancement and structured source records | `.artifacts/planning/foundry-modules-2026-10-17/phb/`: `classes.json`, `feats.json`, `origins.json`, `spells.json`, `equipment.json`, `actors.json`; `mm/actors.json` in the sibling directory. The folder retains `artifact-manifest.json`, `pack-inventory.json` and `report.md`. | Read these exported JSON snapshots offline; reopening the original databases is unnecessary for selected source lookup. Confirmed top-level records include 12 classes, 48 subclasses, 391 PHB spells, 77 feats, 15 species, 16 backgrounds, 127 PHB NPCs and 504 MM NPCs. All ten Crown feat names, Goliath/Orc and example eligible invocation/Metamagic bodies are present. These are broader donor sets: SRD authority and Crown eligibility still determine what to author. |
+| Corrections to the proposed Foundry converter | `.artifacts/planning/foundry-2024-architect-review-response-2026-10-17.md`, with the sibling original report, observations and reproduction script. | Use the corrected source interpretations and omitted-rule findings. `scripts/audit_foundry_2024_converter.js` is a prototype: its advertised validation/readiness tiers were not production Godot validation, and its translations omitted or guessed behavior. Do not bulk-promote its output as completed candidates. |
+| Prior actor/form, time/effect and world-interaction investigation | `.artifacts/planning/foundry-deep-review-2026-10-17/actors-inventory.md`, `time-effects.md`, `world-procedures.md`. | Reuse distinctions already investigated, such as form selection versus retained stats and area membership versus actual movement. These are dated observations about another implementation; current mechanics contracts own our syntax and supported behavior. |
+| Historical per-record requirements and gaps | [Human adjudications](reviews/dnd-data-runtime-adjudications.json), [frozen inventory](reviews/dnd-data-runtime-inventory.json), [source ownership](reviews/dnd-runtime-source-ownership.json). | The 3,929 adjudications retain requirements, evidence and gaps across source records, not 3,929 accepted rules. Use them to locate prior findings, then reconcile selected records and current owners. Follow the [hash/re-review boundary](#historical-audit-inputs); do not refresh hashes merely to revive stale support claims. |
+| Subclass/background candidate reuse | [Crown authoring reconciliation](planning/crown-roadmap.md#authoring-reconciliation--2026-11-08). | It distinguishes the nine older subclass drafts, newer Draconic preparation and four existing background candidates from missing authored behavior. Do not regenerate those starting records or mistake disabled/truncated drafts for complete rules. |
 
 The 2026-10-11 audit found abbreviated/guessed importer output: class features
 above level 5 could be dropped, descriptions truncated, activation/recovery

@@ -1,0 +1,816 @@
+{
+  "schema": "crown-creature-candidate/1",
+  "id": "mira",
+  "name": "Mira",
+  "kind": "campaign_companion",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring intent only; not registered engine syntax. Mapping requirements do not assert the whole referenced engine slice is absent.",
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile all source clauses, mappings and source differences before later production-path verification. Keep native paths until replacements cover them."
+  },
+  "source": {
+    "path": "data/core/campaigns/the_lost_crown.json",
+    "sha256": "3352b2d22be36e68591bfdf4ec73b8201f2bec6c69a3a60b0c8beb7d5074db44",
+    "pointer": "/companions/mira",
+    "payload": {
+      "name": "Mira",
+      "race_id": "elf",
+      "class_id": "ranger",
+      "ability_scores": {
+        "STR": 10,
+        "DEX": 16,
+        "CON": 12,
+        "INT": 10,
+        "WIS": 14,
+        "CHA": 10
+      }
+    },
+    "authority": "Crown campaign composition, not an SRD NPC stat block"
+  },
+  "class_candidate": {
+    "path": "docs/planning/preparation/crown-characters/classes/ranger.json",
+    "sha256": "fef56777cb210465cf78ebe30a122c57c9142679622b9a516053d5a130ec4c64"
+  },
+  "species_candidate": {
+    "path": "docs/planning/preparation/crown-characters/species/elf.json",
+    "sha256": "7fc66e9e06e41cd40a06323e1c8016365b27aa300e2d0407e9cf1cbc1d2fa032"
+  },
+  "current_class_seed": {
+    "path": "data/core/classes/ranger.json",
+    "sha256": "4f769bc8eb56b3dd19a8d9ee10c0be3743e0176df61a9ec0c0bd15e56a5e840a",
+    "payload": {
+      "id": "ranger",
+      "name": "Ranger",
+      "description": "Ranger class. 2024 SRD 5.2.1 progression; spell options remain curated.",
+      "hit_die": "d10",
+      "primary_ability": "DEX",
+      "multiclass_prerequisite": {
+        "all": [
+          "DEX",
+          "WIS"
+        ]
+      },
+      "saving_throw_proficiencies": [
+        "STR",
+        "DEX"
+      ],
+      "armor_proficiencies": [
+        "light",
+        "medium",
+        "shields"
+      ],
+      "weapon_proficiencies": [
+        "simple",
+        "martial"
+      ],
+      "creation_proficiency_choices": true,
+      "skill_choices": {
+        "pick": 3,
+        "from": [
+          "Animal Handling",
+          "Athletics",
+          "Insight",
+          "Investigation",
+          "Nature",
+          "Perception",
+          "Stealth",
+          "Survival"
+        ]
+      },
+      "spellcasting_focus_kinds": [
+        "druidic"
+      ],
+      "starting_equipment": [
+        "leather_armor",
+        "longbow",
+        "shortsword"
+      ],
+      "spell_list_ids": [
+        "aid",
+        "alarm",
+        "animal_friendship",
+        "animal_messenger",
+        "barkskin",
+        "commune_with_nature",
+        "conjure_animals",
+        "conjure_woodland_beings",
+        "cure_wounds",
+        "darkvision",
+        "daylight",
+        "detect_magic",
+        "detect_poison_and_disease",
+        "dispel_magic",
+        "dominate_beast",
+        "enhance_ability",
+        "ensnaring_strike",
+        "entangle",
+        "find_traps",
+        "fog_cloud",
+        "freedom_of_movement",
+        "goodberry",
+        "greater_restoration",
+        "gust_of_wind",
+        "hunters_mark",
+        "jump",
+        "lesser_restoration",
+        "locate_animals_or_plants",
+        "locate_creature",
+        "locate_object",
+        "longstrider",
+        "magic_weapon",
+        "meld_into_stone",
+        "nondetection",
+        "pass_without_trace",
+        "plant_growth",
+        "protection_from_energy",
+        "protection_from_poison",
+        "revivify",
+        "silence",
+        "speak_with_animals",
+        "speak_with_plants",
+        "spike_growth",
+        "stoneskin",
+        "tree_stride",
+        "water_breathing",
+        "water_walk",
+        "wind_wall"
+      ],
+      "spell_slots_by_character_level": {
+        "1": [
+          2
+        ],
+        "2": [
+          2
+        ],
+        "3": [
+          3
+        ],
+        "4": [
+          3
+        ],
+        "5": [
+          4,
+          2
+        ],
+        "6": [
+          4,
+          2
+        ],
+        "7": [
+          4,
+          3
+        ],
+        "8": [
+          4,
+          3
+        ],
+        "9": [
+          4,
+          3,
+          2
+        ],
+        "10": [
+          4,
+          3,
+          2
+        ],
+        "11": [
+          4,
+          3,
+          3
+        ],
+        "12": [
+          4,
+          3,
+          3
+        ],
+        "13": [
+          4,
+          3,
+          3,
+          1
+        ],
+        "14": [
+          4,
+          3,
+          3,
+          1
+        ],
+        "15": [
+          4,
+          3,
+          3,
+          2
+        ],
+        "16": [
+          4,
+          3,
+          3,
+          2
+        ],
+        "17": [
+          4,
+          3,
+          3,
+          3,
+          1
+        ],
+        "18": [
+          4,
+          3,
+          3,
+          3,
+          1
+        ],
+        "19": [
+          4,
+          3,
+          3,
+          3,
+          2
+        ],
+        "20": [
+          4,
+          3,
+          3,
+          3,
+          2
+        ]
+      },
+      "features_by_level": {
+        "1": [
+          {
+            "id": "ranger_spellcasting",
+            "name": "Spellcasting",
+            "type": "passive",
+            "description": "Wisdom-based prepared half-caster; only the class's curated spell records are available.",
+            "effects": [
+              {
+                "type": "spellcasting",
+                "ability": "WIS",
+                "spell_lists": [
+                  "ranger"
+                ],
+                "default_prepared_spells": [
+                  "hunters_mark"
+                ],
+                "capacity_by_level": {
+                  "1": {
+                    "cantrips": 0,
+                    "prepared_spells": 2
+                  },
+                  "2": {
+                    "cantrips": 0,
+                    "prepared_spells": 3
+                  },
+                  "3": {
+                    "cantrips": 0,
+                    "prepared_spells": 4
+                  },
+                  "4": {
+                    "cantrips": 0,
+                    "prepared_spells": 5
+                  },
+                  "5": {
+                    "cantrips": 0,
+                    "prepared_spells": 6
+                  },
+                  "6": {
+                    "cantrips": 0,
+                    "prepared_spells": 6
+                  },
+                  "7": {
+                    "cantrips": 0,
+                    "prepared_spells": 7
+                  },
+                  "8": {
+                    "cantrips": 0,
+                    "prepared_spells": 7
+                  },
+                  "9": {
+                    "cantrips": 0,
+                    "prepared_spells": 9
+                  },
+                  "10": {
+                    "cantrips": 0,
+                    "prepared_spells": 9
+                  },
+                  "11": {
+                    "cantrips": 0,
+                    "prepared_spells": 10
+                  },
+                  "12": {
+                    "cantrips": 0,
+                    "prepared_spells": 10
+                  },
+                  "13": {
+                    "cantrips": 0,
+                    "prepared_spells": 11
+                  },
+                  "14": {
+                    "cantrips": 0,
+                    "prepared_spells": 11
+                  },
+                  "15": {
+                    "cantrips": 0,
+                    "prepared_spells": 12
+                  },
+                  "16": {
+                    "cantrips": 0,
+                    "prepared_spells": 12
+                  },
+                  "17": {
+                    "cantrips": 0,
+                    "prepared_spells": 14
+                  },
+                  "18": {
+                    "cantrips": 0,
+                    "prepared_spells": 14
+                  },
+                  "19": {
+                    "cantrips": 0,
+                    "prepared_spells": 15
+                  },
+                  "20": {
+                    "cantrips": 0,
+                    "prepared_spells": 15
+                  }
+                }
+              }
+            ],
+            "rules_source": "dnd-2024-srd-5.2.1",
+            "rules_status": "2024-partial"
+          },
+          {
+            "id": "ranger_favored_enemy",
+            "name": "Favored Enemy",
+            "type": "passive",
+            "description": "Hunter's Mark is always prepared and can be cast without a spell slot 2 times per Long Rest, increasing to 3 at level 5, 4 at 9, 5 at 13, and 6 at 17.",
+            "effects": [
+              {
+                "type": "always_prepared_spells",
+                "spells": [
+                  "hunters_mark"
+                ]
+              },
+              {
+                "type": "spell_free_cast",
+                "spells": [
+                  "hunters_mark"
+                ],
+                "uses": 2,
+                "uses_by_level": {
+                  "5": 3,
+                  "9": 4,
+                  "13": 5,
+                  "17": 6
+                },
+                "uses_per": "long_rest"
+              }
+            ],
+            "rules_source": "dnd-2024-srd-5.2.1",
+            "rules_status": "2024-supported"
+          },
+          {
+            "id": "ranger_weapon_mastery",
+            "name": "Weapon Mastery",
+            "type": "passive",
+            "description": "Choose two proficient weapon types; uses the shared saved Weapon Mastery path.",
+            "effects": [
+              {
+                "type": "weapon_mastery",
+                "capacity_by_level": {
+                  "1": 2
+                }
+              }
+            ],
+            "rules_source": "dnd-2024-srd-5.2.1",
+            "rules_status": "2024-supported"
+          }
+        ],
+        "2": [
+          {
+            "id": "ranger_deft_explorer",
+            "name": "Deft Explorer",
+            "type": "passive",
+            "description": "Choose one proficient skill for Expertise. The two language choices are not represented by the game.",
+            "effects": [
+              {
+                "type": "skill_expertise_choice",
+                "count": 1
+              }
+            ],
+            "rules_source": "dnd-2024-srd-5.2.1",
+            "rules_status": "2024-partial"
+          },
+          {
+            "id": "ranger_fighting_style",
+            "name": "Fighting Style",
+            "type": "passive",
+            "description": "Choose from the Fighting Style options supported by the shared style picker; other 2024 styles are not yet represented.",
+            "effects": [
+              {
+                "type": "feature_choice",
+                "options": [
+                  {
+                    "id": "archery",
+                    "name": "Archery",
+                    "effects": [
+                      {
+                        "type": "fighting_style",
+                        "style": "archery"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "defense",
+                    "name": "Defense",
+                    "effects": [
+                      {
+                        "type": "fighting_style",
+                        "style": "defense"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "great_weapon_fighting",
+                    "name": "Great Weapon Fighting",
+                    "effects": [
+                      {
+                        "type": "fighting_style",
+                        "style": "great_weapon_fighting"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "two_weapon_fighting",
+                    "name": "Two-Weapon Fighting",
+                    "effects": [
+                      {
+                        "type": "fighting_style",
+                        "style": "two_weapon_fighting"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "rules_source": "dnd-2024-srd-5.2.1",
+            "rules_status": "2024-partial"
+          }
+        ],
+        "3": [
+          {
+            "id": "ranger_subclass",
+            "name": "Ranger Subclass",
+            "type": "passive",
+            "description": "Choose a Ranger subclass. Subclass features are maintained in separate subclass records.",
+            "effects": [],
+            "enabled": false,
+            "rules_source": "dnd-2024-srd-5.2.1",
+            "rules_status": "reference-only"
+          }
+        ],
+        "4": [
+          {
+            "id": "ranger_ability_improvement_4",
+            "name": "Ability Score Improvement",
+            "type": "passive",
+            "effects": [
+              {
+                "type": "asi"
+              }
+            ],
+            "rules_source": "dnd-2024-srd-5.2.1",
+            "rules_status": "2024-supported"
+          }
+        ],
+        "5": [
+          {
+            "id": "ranger_extra_attack",
+            "name": "Extra Attack",
+            "type": "passive",
+            "effects": [
+              {
+                "type": "extra_attack",
+                "count": 1
+              }
+            ],
+            "rules_source": "dnd-2024-srd-5.2.1",
+            "rules_status": "2024-supported"
+          }
+        ],
+        "6": [
+          {
+            "id": "ranger_roving",
+            "name": "Roving",
+            "type": "passive",
+            "description": "Speed increases by 10 feet without Heavy armor. Climb and swim speeds are not modeled.",
+            "effects": [
+              {
+                "type": "speed_bonus",
+                "bonus": 2,
+                "requires_no_heavy_armor": true
+              }
+            ],
+            "rules_source": "dnd-2024-srd-5.2.1",
+            "rules_status": "2024-partial"
+          }
+        ],
+        "7": [
+          {
+            "id": "ranger_subclass_feature_7",
+            "name": "Ranger Subclass Feature",
+            "type": "passive",
+            "description": "Subclass progression is stored in separate subclass records.",
+            "effects": [],
+            "enabled": false,
+            "rules_source": "dnd-2024-srd-5.2.1",
+            "rules_status": "reference-only"
+          }
+        ],
+        "8": [
+          {
+            "id": "ranger_ability_improvement_8",
+            "name": "Ability Score Improvement",
+            "type": "passive",
+            "effects": [
+              {
+                "type": "asi"
+              }
+            ],
+            "rules_source": "dnd-2024-srd-5.2.1",
+            "rules_status": "2024-supported"
+          }
+        ],
+        "9": [
+          {
+            "id": "ranger_expertise",
+            "name": "Expertise",
+            "type": "passive",
+            "description": "Choose two additional proficient skills for Expertise using the shared saved choice path.",
+            "effects": [
+              {
+                "type": "skill_expertise_choice",
+                "count": 2
+              }
+            ],
+            "rules_source": "dnd-2024-srd-5.2.1",
+            "rules_status": "2024-supported"
+          }
+        ],
+        "10": [
+          {
+            "id": "ranger_tireless",
+            "name": "Tireless",
+            "type": "active",
+            "description": "As a Magic action, gain 1d8 + Wisdom modifier temporary HP. Uses equal your Wisdom modifier (minimum 1), restored on a Long Rest. Short Rest Exhaustion recovery is not modeled.",
+            "executor": "class_feature",
+            "action_cost": "magic_action",
+            "uses_ability": "WIS",
+            "minimum_uses": 1,
+            "uses_per": "long_rest",
+            "effects": [
+              {
+                "type": "temporary_hp",
+                "value": "1d8+WIS"
+              }
+            ],
+            "rules_source": "dnd-2024-srd-5.2.1",
+            "rules_status": "2024-partial"
+          }
+        ],
+        "11": [
+          {
+            "id": "ranger_subclass_feature_11",
+            "name": "Ranger Subclass Feature",
+            "type": "passive",
+            "description": "Subclass progression is stored in separate subclass records.",
+            "effects": [],
+            "enabled": false,
+            "rules_source": "dnd-2024-srd-5.2.1",
+            "rules_status": "reference-only"
+          }
+        ],
+        "12": [
+          {
+            "id": "ranger_ability_improvement_12",
+            "name": "Ability Score Improvement",
+            "type": "passive",
+            "effects": [
+              {
+                "type": "asi"
+              }
+            ],
+            "rules_source": "dnd-2024-srd-5.2.1",
+            "rules_status": "2024-supported"
+          }
+        ],
+        "13": [
+          {
+            "id": "ranger_relentless_hunter",
+            "name": "Relentless Hunter",
+            "type": "passive",
+            "description": "Taking damage cannot break concentration on Hunter's Mark.",
+            "effects": [
+              {
+                "type": "concentration_protection",
+                "spells": [
+                  "hunters_mark"
+                ]
+              }
+            ],
+            "rules_source": "dnd-2024-srd-5.2.1",
+            "rules_status": "2024-supported"
+          }
+        ],
+        "14": [
+          {
+            "id": "ranger_natures_veil",
+            "name": "Nature's Veil",
+            "type": "active",
+            "description": "As a Bonus Action, become Invisible until the end of your next turn. Uses equal your Wisdom modifier (minimum 1), restored on a Long Rest.",
+            "executor": "class_feature",
+            "action_cost": "bonus_action",
+            "uses_ability": "WIS",
+            "minimum_uses": 1,
+            "uses_per": "long_rest",
+            "effects": [
+              {
+                "type": "grant_condition",
+                "condition": "invisible",
+                "duration": 2
+              }
+            ],
+            "rules_source": "dnd-2024-srd-5.2.1",
+            "rules_status": "2024-supported"
+          }
+        ],
+        "15": [
+          {
+            "id": "ranger_subclass_feature_15",
+            "name": "Ranger Subclass Feature",
+            "type": "passive",
+            "description": "Subclass progression is stored in separate subclass records.",
+            "effects": [],
+            "enabled": false,
+            "rules_source": "dnd-2024-srd-5.2.1",
+            "rules_status": "reference-only"
+          }
+        ],
+        "16": [
+          {
+            "id": "ranger_ability_improvement_16",
+            "name": "Ability Score Improvement",
+            "type": "passive",
+            "effects": [
+              {
+                "type": "asi"
+              }
+            ],
+            "rules_source": "dnd-2024-srd-5.2.1",
+            "rules_status": "2024-supported"
+          }
+        ],
+        "17": [
+          {
+            "id": "ranger_precise_hunter",
+            "name": "Precise Hunter",
+            "type": "passive",
+            "description": "You have Advantage on attack rolls against the creature marked by Hunter's Mark.",
+            "effects": [
+              {
+                "type": "attack_advantage_against_condition",
+                "condition": "hunters_mark"
+              }
+            ],
+            "rules_source": "dnd-2024-srd-5.2.1",
+            "rules_status": "2024-supported"
+          }
+        ],
+        "18": [
+          {
+            "id": "ranger_feral_senses",
+            "name": "Feral Senses",
+            "type": "passive",
+            "description": "Gain 30-foot Blindsight, allowing you to perceive invisible creatures within that range.",
+            "effects": [
+              {
+                "type": "blindsight",
+                "range_feet": 30
+              }
+            ],
+            "rules_source": "dnd-2024-srd-5.2.1",
+            "rules_status": "2024-supported"
+          }
+        ],
+        "19": [
+          {
+            "id": "ranger_epic_boon",
+            "name": "Epic Boon",
+            "type": "passive",
+            "description": "Choose an Epic Boon through the shared Character Sheet choice path.",
+            "effects": [
+              {
+                "type": "epic_boon_choice",
+                "options": [
+                  "irresistible_offense",
+                  "combat_prowess",
+                  "spell_recall"
+                ]
+              }
+            ],
+            "rules_source": "dnd-2024-srd-5.2.1",
+            "rules_status": "2024-partial"
+          }
+        ],
+        "20": [
+          {
+            "id": "ranger_foe_slayer",
+            "name": "Foe Slayer",
+            "type": "passive",
+            "description": "Hunter's Mark damage increases to 1d10.",
+            "effects": [
+              {
+                "type": "spell_damage_dice_override",
+                "spell_id": "hunters_mark",
+                "dice": "1d10"
+              }
+            ],
+            "rules_source": "dnd-2024-srd-5.2.1",
+            "rules_status": "2024-supported"
+          }
+        ]
+      },
+      "subclass_level": 3
+    }
+  },
+  "equipment_reachability": [
+    {
+      "id": "mira",
+      "class_id": "ranger",
+      "current_class_seed_items": [
+        "leather_armor",
+        "longbow",
+        "shortsword"
+      ],
+      "source": "data/core/classes/ranger.json",
+      "source_sha256": "4f769bc8eb56b3dd19a8d9ee10c0be3743e0176df61a9ec0c0bd15e56a5e840a",
+      "intended_package": "../crown-equipment/packages.json",
+      "boundary": "PartyManager.create_companion calls Character.initialize; current class seeds differ from the intended 2024 packages. No companion creation or seed replacement in this pass."
+    }
+  ],
+  "source_consumers": [
+    {
+      "path": "src/autoload/party_manager.gd",
+      "sha256": "0a26a8e2e6c4bd1e7e230b2f4dc54e7acccd0a07695d57f6121362c19cf06966"
+    },
+    {
+      "path": "src/characters/character.gd",
+      "sha256": "f99ec256dc07ef7d2226b5d4537afa42c2011f6edf7fc97fcee7a9980cce6bd6"
+    }
+  ],
+  "authored_operations": [
+    {
+      "trigger": "Campaign initialization",
+      "intent": "Create one level-1 Character with exact name/species/class/ability seed, stable companion and character IDs; no generated NPC monster stats."
+    },
+    {
+      "trigger": "Recruit, decline, return, dismiss or replace",
+      "intent": "Use existing roster states and four stable slots/owner seats; replacement inherits legal slot ownership; retain character HP/inventory/progression on rerecruit."
+    },
+    {
+      "trigger": "Crown milestone / level-up through 5",
+      "intent": "Reuse linked class/species package and actual legal choices, once-only grants and spell permissions. Do not retroactively replay equipment or origin grants on restore."
+    }
+  ],
+  "blockers": [
+    "map_party",
+    "map_forms",
+    "map_items"
+  ],
+  "explicit_blockers": [
+    "Campaign seed does not specify a 2024 background, lineage, skills/tools, subclass at 3 or later selectable features/spells. Resolve these as explicit legal choices or authored campaign defaults before promotion; do not label missing choices complete.",
+    "Fixed ability scores are campaign seeds. Do not add new background/species increases on top without an explicit reconciliation of how these seeds were built.",
+    "Current initializer/default class gear is not proof of the intended 2024 package. Reuse companion item links from reachable-item pass and package equipment; no additional free starting set on recruit."
+  ],
+  "equipment_candidate_links": [
+    {
+      "item_id": "leather_armor",
+      "candidate": "../crown-equipment/items/leather_armor.json",
+      "blocker": null
+    },
+    {
+      "item_id": "longbow",
+      "candidate": "../crown-equipment/items/longbow.json",
+      "blocker": null
+    },
+    {
+      "item_id": "shortsword",
+      "candidate": "../crown-equipment/items/shortsword.json",
+      "blocker": null
+    }
+  ]
+}

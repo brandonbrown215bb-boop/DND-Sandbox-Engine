@@ -1,0 +1,84 @@
+{
+  "schema": "crown-reachable-item-candidate/1",
+  "id": "crown_fragment",
+  "name": "Fragment of the Crown of Ages",
+  "kind": "quest_item",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring intent only; not registered engine syntax.",
+  "rules": {
+    "authority": "The Lost Crown campaign and current item definition",
+    "pdf_sha256": null,
+    "pages": [],
+    "text": "Existing Crown quest object: collect three fragments and defeat lich_king to satisfy the authored campaign goals. No SRD magic-item powers, attunement or resale value are supplied.",
+    "source_context": "../source-pages.json"
+  },
+  "definition": {
+    "id": "crown_fragment",
+    "name": "Fragment of the Crown of Ages",
+    "quest_item": true,
+    "required_count": 3,
+    "campaign_shop_value_gp": 0
+  },
+  "authored_operations": [
+    "Existing Crown quest object: collect three fragments and defeat lich_king to satisfy the authored campaign goals. No SRD magic-item powers, attunement or resale value are supplied."
+  ],
+  "retained_runtime_seeds": [
+    {
+      "path": "data/core/items/consumables.json",
+      "array_index": 11,
+      "file_sha256": "045f413d89391312c1e3a175351f90427accde8f21b8d087abc1d6c5d9c3ec2d",
+      "definition": {
+        "id": "crown_fragment",
+        "name": "Fragment of the Crown of Ages",
+        "description": "A shard of the shattered Crown of Ages. Three fragments are needed to confront the Lich King.",
+        "type": "currency",
+        "effects": [],
+        "value": 0,
+        "quest_item": true
+      }
+    }
+  ],
+  "manifest_overrides": [],
+  "required_mapping": [
+    "quest_items"
+  ],
+  "consumers": [
+    {
+      "channel": "campaign_goal_loot_or_tactical_object",
+      "path": "data/core/campaigns/the_lost_crown.json",
+      "sha256": "3352b2d22be36e68591bfdf4ec73b8201f2bec6c69a3a60b0c8beb7d5074db44",
+      "json_pointer": "/win_condition/goals/0/item_id"
+    },
+    {
+      "channel": "campaign_goal_loot_or_tactical_object",
+      "path": "data/core/campaigns/the_lost_crown.json",
+      "sha256": "3352b2d22be36e68591bfdf4ec73b8201f2bec6c69a3a60b0c8beb7d5074db44",
+      "json_pointer": "/dungeons/ruins_of_ashvale/loot/0/item_id"
+    },
+    {
+      "channel": "campaign_goal_loot_or_tactical_object",
+      "path": "data/core/campaigns/the_lost_crown.json",
+      "sha256": "3352b2d22be36e68591bfdf4ec73b8201f2bec6c69a3a60b0c8beb7d5074db44",
+      "json_pointer": "/dungeons/caverns_of_gloom/loot/0/item_id"
+    },
+    {
+      "channel": "campaign_goal_loot_or_tactical_object",
+      "path": "data/core/campaigns/the_lost_crown.json",
+      "sha256": "3352b2d22be36e68591bfdf4ec73b8201f2bec6c69a3a60b0c8beb7d5074db44",
+      "json_pointer": "/dungeons/tower_of_the_lich/loot/0/item_id"
+    },
+    {
+      "channel": "monster_reward_metadata",
+      "path": "data/core/monsters/core_monsters.json",
+      "sha256": "33bf505c91476b32f7dd2887dd0caa19521e4a9e206392b8d803090b105eb8c2",
+      "json_pointer": "/9/loot_table/0/item_id",
+      "details": "Loot-table metadata retained; combat currently copies it into entities. This is not proof that a post-combat roll/grant host executes it."
+    }
+  ],
+  "unsupported_behavior": [
+    {
+      "group": "quest_items",
+      "requirement": "Preserve exact key/item identity, three-fragment goal and once-only acquisition, ownership and allowed checkpoint recovery. A Crown-specific authored object is not an invented SRD magic-item ability."
+    }
+  ]
+}

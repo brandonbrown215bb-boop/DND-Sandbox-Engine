@@ -1,0 +1,68 @@
+{
+  "schema": "crown-world-candidate/1",
+  "id": "chest",
+  "name": "Offering chest",
+  "kind": "objects",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring declarations only; not registered engine opcodes.",
+  "required_extensions": [
+    "objects",
+    "locks_traps",
+    "senses"
+  ],
+  "authored_operations": [
+    {
+      "operation": "instantiate_exact_room_object",
+      "requirement": "Preserve all retained facts and exact room/object identity; mutations and contents persist with the room. Do not respawn removed/destroyed objects on revisit."
+    },
+    {
+      "operation": "interact_with_lock",
+      "key_id": "ashvale_brass_key",
+      "lock_dc": 15,
+      "requirement": "Use actual matching carried key, tools or legal force/pry route; retain authored loud 60-foot noise, distinct open/locked state and contents. Keys are linked item candidates, not additional rewards."
+    }
+  ],
+  "blockers": [
+    "Arcane Lock/Knock source exceptions and every tool route remain subject to full spell/equipment mapping; ordinary lock fields do not prove those rules."
+  ],
+  "retained_input": {
+    "path": "data/core/campaigns/the_lost_crown.json",
+    "sha256": "3352b2d22be36e68591bfdf4ec73b8201f2bec6c69a3a60b0c8beb7d5074db44",
+    "pointer": "/dungeons/ruins_of_ashvale/tactical_rooms/1/objects/1",
+    "payload": {
+      "id": "chest",
+      "kind": "container",
+      "name": "Offering chest",
+      "position": [
+        2,
+        0
+      ],
+      "material": "wood",
+      "size": "Medium",
+      "weight_lb": 20,
+      "fixed": false,
+      "hp": 10,
+      "max_hp": 10,
+      "contents": [
+        "potion_healing",
+        "potion_healing"
+      ],
+      "open": false,
+      "locked": false,
+      "lockable": true,
+      "key_id": "ashvale_brass_key",
+      "lock_dc": 15,
+      "interaction_noise": {
+        "force_open": {
+          "volume": "loud",
+          "range_feet": 60
+        },
+        "pry": {
+          "volume": "loud",
+          "range_feet": 60
+        }
+      },
+      "capacity": 10
+    }
+  }
+}

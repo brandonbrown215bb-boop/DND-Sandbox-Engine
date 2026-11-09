@@ -1,0 +1,70 @@
+{
+  "schema": "crown-equipment-candidate/1",
+  "id": "quiver",
+  "name": "Quiver",
+  "kind": "gear",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring intent only; not registered engine syntax.",
+  "rules": {
+    "authority": "SRD 5.2.1",
+    "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      95,
+      99
+    ],
+    "section": "Quiver",
+    "text": "Holds up to 20 Arrows. Ammunition storage is bought separately from ammunition.",
+    "source_context": "../source-pages.json"
+  },
+  "definition": {
+    "id": "quiver",
+    "name": "Quiver",
+    "weight_lb": 1,
+    "cost_gp": 1,
+    "capacity_arrows": 20
+  },
+  "authored_operations": [
+    "Holds up to 20 Arrows. Ammunition storage is bought separately from ammunition."
+  ],
+  "retained_runtime_seeds": [],
+  "manifest_overrides": [],
+  "required_mapping": [
+    "ammunition"
+  ],
+  "consumers": [
+    {
+      "package_id": "fighter",
+      "option": "B",
+      "quantity": 1,
+      "source": "docs/planning/preparation/crown-characters/classes/fighter.json"
+    },
+    {
+      "package_id": "ranger",
+      "option": "A",
+      "quantity": 1,
+      "source": "docs/planning/preparation/crown-characters/classes/ranger.json"
+    },
+    {
+      "package_id": "rogue",
+      "option": "A",
+      "quantity": 1,
+      "source": "docs/planning/preparation/crown-characters/classes/rogue.json"
+    },
+    {
+      "package_id": "soldier",
+      "option": "A",
+      "quantity": 1,
+      "source": "docs/planning/preparation/crown-characters/backgrounds/soldier.json"
+    }
+  ],
+  "unsupported_behavior": [
+    {
+      "group": "ammunition",
+      "requirement": "Separate Arrow pieces from purchase lots and Quiver; refuse empty attacks, spend/recover exact counts once, preserve counters at checkpoints."
+    },
+    {
+      "group": "definition",
+      "requirement": "No exact current item seed at this candidate identity. This authored record is not a loaded definition; map or promote deliberately later."
+    }
+  ]
+}

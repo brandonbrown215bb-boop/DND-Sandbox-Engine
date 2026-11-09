@@ -1,0 +1,107 @@
+{
+  "schema": "crown-equipment-candidate/1",
+  "id": "greatsword",
+  "name": "Greatsword",
+  "kind": "weapon",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring intent only; not registered engine syntax.",
+  "rules": {
+    "authority": "SRD 5.2.1",
+    "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      89,
+      90,
+      91
+    ],
+    "section": "Greatsword",
+    "text": "Greatsword: martial melee weapon; 2d6 slashing; properties heavy, two_handed; mastery graze. Range and Versatile values are in definition. The complete property and mastery rules on pp.89–90 apply only when their requirements are met.",
+    "source_context": "../source-pages.json"
+  },
+  "definition": {
+    "id": "greatsword",
+    "name": "Greatsword",
+    "category": "martial",
+    "weapon_kind": "melee",
+    "damage_dice": "2d6",
+    "damage_type": "slashing",
+    "properties": [
+      "heavy",
+      "two_handed"
+    ],
+    "mastery": "graze",
+    "weight_lb": 6,
+    "cost_gp": 50
+  },
+  "authored_operations": [
+    "Use declared weapon proficiency, ability, hands, range and properties for each actual attack; Finesse uses the same chosen ability for attack and damage. Thrown draws as part of the attack and retains the melee ability.",
+    "Light extra attack requires a different Light weapon and omits a positive ability modifier; Nick moves that single extra attack into the Attack action. Apply only an unlocked mastery with its exact target, timing and once-per-turn rules from source context.",
+    "Ammunition attacks require and spend one Arrow; recover floor(half spent) after one minute following the fight. Heavy melee needs Strength 13 and Heavy ranged needs Dexterity 13 to avoid Disadvantage; enforce normal/long ranges and Two-Handed only when attacking."
+  ],
+  "retained_runtime_seeds": [
+    {
+      "path": "data/core/items/imported_base_items.json",
+      "array_index": 15,
+      "file_sha256": "d450331c5dc1756fccc025c42e7f60bc6312a6829e59814e9864878a4abaae42",
+      "definition": {
+        "id": "greatsword",
+        "name": "Greatsword",
+        "description": "Standard D&D weapon: Greatsword.",
+        "type": "weapon",
+        "damage": "2d6",
+        "damage_type": "slashing",
+        "ability": "STR",
+        "range": 1,
+        "value": 50
+      }
+    },
+    {
+      "path": "data/core/items/weapons.json",
+      "array_index": 21,
+      "file_sha256": "6f6314edd2f971deea6f5d058e0e5f913757a662b2340a8a01c52d60432e0df5",
+      "definition": {
+        "id": "greatsword",
+        "weight": 6,
+        "name": "Greatsword",
+        "description": "A huge two-handed blade.",
+        "type": "weapon",
+        "weapon_type": "martial",
+        "damage": "2d6",
+        "damage_type": "slashing",
+        "properties": [
+          "heavy",
+          "two_handed"
+        ],
+        "ability": "STR",
+        "range": 1,
+        "value": 50
+      }
+    }
+  ],
+  "manifest_overrides": [
+    {
+      "type": "item",
+      "id": "greatsword",
+      "winner": "res://data/core/items/weapons.json#22",
+      "replaces": [
+        "res://data/core/items/imported_base_items.json#16"
+      ]
+    }
+  ],
+  "required_mapping": [
+    "weapons"
+  ],
+  "consumers": [
+    {
+      "package_id": "fighter",
+      "option": "A",
+      "quantity": 1,
+      "source": "docs/planning/preparation/crown-characters/classes/fighter.json"
+    }
+  ],
+  "unsupported_behavior": [
+    {
+      "group": "weapons",
+      "requirement": "Map complete weapon properties, masteries, hand/ability eligibility and actual attacks through shared owners. Reuse verified range/Heavy work; no item-ID dispatch or support claim from seed fields."
+    }
+  ]
+}

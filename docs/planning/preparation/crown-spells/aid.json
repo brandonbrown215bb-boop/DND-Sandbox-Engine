@@ -1,0 +1,179 @@
+{
+  "format": "crown-spell-candidate/1",
+  "id": "aid",
+  "name": "Aid",
+  "level": 2,
+  "status": "written_unverified_not_loaded",
+  "source": {
+    "authority": "SRD 5.2.1",
+    "url": "https://media.dndbeyond.com/compendium-images/srd/5.2/SRD_CC_v5.2.1.pdf",
+    "sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      107
+    ],
+    "header": {
+      "Casting Time": "Action",
+      "Range": "30 feet",
+      "Components": "V, S, M (a strip of white cloth)",
+      "Duration": "8 hours"
+    },
+    "attribution": "System Reference Document 5.2.1, Wizards of the Coast LLC; CC BY 4.0."
+  },
+  "casting": {
+    "casting_time": "Action",
+    "kind": "action",
+    "seconds": null,
+    "ritual_available": false,
+    "range": {
+      "source": "30 feet",
+      "kind": "distance",
+      "feet": 30
+    },
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "a strip of white cloth",
+    "duration": "8 hours",
+    "concentration": false,
+    "spell_lists": [
+      "bard",
+      "cleric",
+      "druid",
+      "paladin",
+      "ranger"
+    ]
+  },
+  "authored_intent": "Choose up to three creatures; increase current and maximum HP together for eight hours; add 5 HP per higher slot; same spell does not stack.",
+  "rules": [
+    {
+      "id": "r001",
+      "text": "Choose up to three creatures within range."
+    },
+    {
+      "id": "r002",
+      "text": "Each target’s Hit Point maximum and current Hit Points increase by 5 for the duration."
+    },
+    {
+      "id": "r003",
+      "text": "Using a Higher-Level Spell Slot."
+    },
+    {
+      "id": "r004",
+      "text": "Each target’s Hit Points increase by 5 for each spell slot level above 2."
+    }
+  ],
+  "authored_operations": [
+    {
+      "operation": "grant_maximum_and_current_hp",
+      "parameters": {
+        "recipients": {
+          "maximum": 3,
+          "within_cast_range": true
+        },
+        "amount": {
+          "base": 5,
+          "per_slot_above_base": 5
+        },
+        "nonstacking": "same_spell",
+        "duration": "casting.duration"
+      },
+      "status": "authoring_declaration_not_a_registered_opcode",
+      "required_source_rules": [
+        "r001",
+        "r002",
+        "r003",
+        "r004"
+      ]
+    }
+  ],
+  "runtime_draft": {
+    "origin": "new_shared_draft",
+    "definition": {
+      "id": "aid",
+      "name": "Aid",
+      "execution": "shared",
+      "level": 2,
+      "school": "abjuration",
+      "classes": [
+        "bard",
+        "cleric",
+        "druid",
+        "paladin",
+        "ranger"
+      ],
+      "components": [
+        "V",
+        "S",
+        "M"
+      ],
+      "duration": "8 hours",
+      "concentration": false,
+      "rules_source": "SRD 5.2.1",
+      "rules_status": "authoring-draft-unverified",
+      "range": 6,
+      "casting_time": "action",
+      "material": "a strip of white cloth",
+      "duration_seconds": 28800,
+      "description": "Choose up to three creatures within range. Each target’s Hit Point maximum and current Hit Points increase by 5 for the duration. Using a Higher-Level Spell Slot. Each target’s Hit Points increase by 5 for each spell slot level above 2.",
+      "target": "single",
+      "base_targets": 3,
+      "effects": [
+        {
+          "type": "max_hp_source",
+          "rule": {
+            "id": "aid_hp",
+            "kind": "increase",
+            "amount": 5,
+            "combine": "highest",
+            "raise_current": true
+          }
+        }
+      ]
+    },
+    "fragments": {},
+    "coverage": "Unverified. Neither a full definition nor a fragment certifies all source rules or controls. Required extensions are not silently waived."
+  },
+  "required_extensions": [
+    {
+      "group": "benefit_recipients",
+      "requirement": "Bind each chosen recipient, formula, recurring benefit and ending to the exact cast; self-only source carriers do not supply arbitrary recipients or every benefit kind.",
+      "spell_specific_intent": "Choose up to three creatures; increase current and maximum HP together for eight hours; add 5 HP per higher slot; same spell does not stack.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003",
+        "r004"
+      ],
+      "existing_owner_to_reuse": "src/characters/source_benefit_rules.gd",
+      "slice_references": "S-080/S-084/S-085/S-086/S-141",
+      "disposition": "requires_mapping_or_host_completion",
+      "note": "This is an authored handoff requirement, not a fresh runtime failure or claim that the whole referenced slice is missing."
+    },
+    {
+      "group": "benefit_recipients",
+      "requirement": "The base fixed max_hp_source can be written today. The shared upcast contract has no slot-scaled max-HP amount; add 5 to both current/max HP per paid slot above 2 without weakening ownership/nonstacking.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003",
+        "r004"
+      ],
+      "disposition": "not_expressible_by_the_selected_fragment"
+    }
+  ],
+  "audit": {
+    "source": "docs/audits/spells.md",
+    "batch": "088-4",
+    "production_definition_at_authoring": "res://data/core/spells/imported_spells.json#2",
+    "baseline_execution": "native",
+    "source_revision": "2a19eb1d",
+    "existing_conversion_label": "queued"
+  },
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile every source rule and required extension, then implement and verify through production paths before any deliberate promotion. Keep native behavior until covered."
+  }
+}

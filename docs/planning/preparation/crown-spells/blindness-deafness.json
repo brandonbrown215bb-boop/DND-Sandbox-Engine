@@ -1,0 +1,143 @@
+{
+  "format": "crown-spell-candidate/1",
+  "id": "blindness/deafness",
+  "name": "Blindness/Deafness",
+  "level": 2,
+  "status": "written_unverified_not_loaded",
+  "source": {
+    "authority": "SRD 5.2.1",
+    "url": "https://media.dndbeyond.com/compendium-images/srd/5.2/SRD_CC_v5.2.1.pdf",
+    "sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      113
+    ],
+    "header": {
+      "Casting Time": "Action",
+      "Range": "120 feet",
+      "Components": "V",
+      "Duration": "1 minute"
+    },
+    "attribution": "System Reference Document 5.2.1, Wizards of the Coast LLC; CC BY 4.0."
+  },
+  "casting": {
+    "casting_time": "Action",
+    "kind": "action",
+    "seconds": null,
+    "ritual_available": false,
+    "range": {
+      "source": "120 feet",
+      "kind": "distance",
+      "feet": 120
+    },
+    "components": [
+      "V"
+    ],
+    "material": null,
+    "duration": "1 minute",
+    "concentration": false,
+    "spell_lists": [
+      "bard",
+      "cleric",
+      "sorcerer",
+      "wizard"
+    ]
+  },
+  "authored_intent": "Choose Blinded or Deafened for each targeted creature; CON save, end-of-turn repeat CON save; one-minute non-Concentration lifetime; higher slots add creatures.",
+  "rules": [
+    {
+      "id": "r001",
+      "text": "One creature that you can see within range must succeed on a Constitution saving throw, or it has the Blinded or Deafened condition (your choice) for the duration."
+    },
+    {
+      "id": "r002",
+      "text": "At the end of each of its turns, the target repeats the save, ending the spell on itself on a success."
+    },
+    {
+      "id": "r003",
+      "text": "Using a Higher-Level Spell Slot."
+    },
+    {
+      "id": "r004",
+      "text": "You can target one additional creature for each spell slot level above 2."
+    }
+  ],
+  "authored_operations": [
+    {
+      "operation": "shared_definition_reference",
+      "parameters": {
+        "definition": "runtime_draft.definition"
+      },
+      "status": "shared_definition_reference_unverified",
+      "required_source_rules": [
+        "r001",
+        "r002",
+        "r003",
+        "r004"
+      ]
+    }
+  ],
+  "runtime_draft": {
+    "origin": "existing_shared_definition",
+    "definition": {
+      "attack_type": "none",
+      "base_targets": 1.0,
+      "casting_time": "action",
+      "classes": [
+        "bard",
+        "cleric",
+        "sorcerer",
+        "wizard"
+      ],
+      "components": [
+        "V"
+      ],
+      "concentration": false,
+      "description": "One creature that you can see within range must succeed on a Constitution saving throw, or it has the Blinded or Deafened condition (your choice) for the duration. At the end of each of its turns, the target repeats the save, ending the spell on itself on a success. Using a Higher-Level Spell Slot. You can target one additional creature for each spell slot level above 2.",
+      "duration": "1 minute",
+      "duration_seconds": 60,
+      "effects": [
+        {
+          "condition_options": [
+            "blinded",
+            "deafened"
+          ],
+          "on_failed_save": true,
+          "type": "grant_condition"
+        }
+      ],
+      "execution": "shared",
+      "id": "blindness/deafness",
+      "level": 2,
+      "name": "Blindness/Deafness",
+      "range": 24,
+      "repeat_save": "CON",
+      "repeat_save_schedule": "target_turn_end",
+      "requires_target_sight": true,
+      "rules_source": "SRD 5.2.1",
+      "rules_status": "authoring-draft-unverified",
+      "save": "CON",
+      "school": "transmutation",
+      "target": "single",
+      "upcast": {
+        "additional_targets_per_level": 1.0,
+        "starting_level": 2.0
+      }
+    },
+    "fragments": {},
+    "coverage": "Unverified. Neither a full definition nor a fragment certifies all source rules or controls. Required extensions are not silently waived."
+  },
+  "required_extensions": [],
+  "audit": {
+    "source": "docs/audits/spells.md",
+    "batch": "088-3",
+    "production_definition_at_authoring": "res://data/core/spells/crown_sc_05_support_02.json#1",
+    "baseline_execution": "shared",
+    "source_revision": "2a19eb1d",
+    "existing_conversion_label": "converted"
+  },
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile every source rule and required extension, then implement and verify through production paths before any deliberate promotion. Keep native behavior until covered."
+  }
+}

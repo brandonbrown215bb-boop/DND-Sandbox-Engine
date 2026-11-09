@@ -1,0 +1,235 @@
+{
+  "schema": "crown-character-candidate/1",
+  "id": "magic_initiate",
+  "name": "Magic Initiate",
+  "kind": "feat",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "scope": {
+    "total_character_level_maximum": 5
+  },
+  "operation_language": "authoring intent only; not registered engine syntax",
+  "runtime_support": "Retained definitions are reuse material, not proof of full rules. Every authored operation needs contract mapping and later production-path verification before promotion.",
+  "definition": {
+    "category": "Origin",
+    "repeatable": true,
+    "repeat_restriction": "Different spell list each acquisition",
+    "prerequisites": {},
+    "parameters": {
+      "spell_list": [
+        "cleric",
+        "druid",
+        "wizard"
+      ],
+      "spellcasting_ability": [
+        "INT",
+        "WIS",
+        "CHA"
+      ],
+      "cantrips": {
+        "pick": 2,
+        "from": "selected list",
+        "distinct": true
+      },
+      "level1_spell": {
+        "pick": 1,
+        "from": "same selected list"
+      },
+      "spell_choices_by_list": {
+        "cleric": {
+          "0": [
+            "guidance",
+            "light",
+            "mending",
+            "resistance",
+            "sacred_flame",
+            "spare_the_dying",
+            "thaumaturgy"
+          ],
+          "1": [
+            "bane",
+            "bless",
+            "command",
+            "create_or_destroy_water",
+            "cure_wounds",
+            "detect_evil_and_good",
+            "detect_magic",
+            "detect_poison_and_disease",
+            "guiding_bolt",
+            "healing_word",
+            "inflict_wounds",
+            "protection_from_evil_and_good",
+            "purify_food_and_drink",
+            "sanctuary",
+            "shield_of_faith"
+          ]
+        },
+        "druid": {
+          "0": [
+            "druidcraft",
+            "elementalism",
+            "guidance",
+            "mending",
+            "message",
+            "poison_spray",
+            "produce_flame",
+            "resistance",
+            "shillelagh",
+            "spare_the_dying",
+            "starry_wisp"
+          ],
+          "1": [
+            "animal_friendship",
+            "charm_person",
+            "create_or_destroy_water",
+            "cure_wounds",
+            "detect_magic",
+            "detect_poison_and_disease",
+            "entangle",
+            "faerie_fire",
+            "fog_cloud",
+            "goodberry",
+            "healing_word",
+            "ice_knife",
+            "jump",
+            "longstrider",
+            "protection_from_evil_and_good",
+            "purify_food_and_drink",
+            "speak_with_animals",
+            "thunderwave"
+          ]
+        },
+        "wizard": {
+          "0": [
+            "acid_splash",
+            "chill_touch",
+            "dancing_lights",
+            "elementalism",
+            "fire_bolt",
+            "light",
+            "mage_hand",
+            "mending",
+            "message",
+            "minor_illusion",
+            "poison_spray",
+            "prestidigitation",
+            "ray_of_frost",
+            "shocking_grasp",
+            "true_strike"
+          ],
+          "1": [
+            "alarm",
+            "burning_hands",
+            "charm_person",
+            "chromatic_orb",
+            "color_spray",
+            "comprehend_languages",
+            "detect_magic",
+            "disguise_self",
+            "expeditious_retreat",
+            "false_life",
+            "feather_fall",
+            "find_familiar",
+            "fog_cloud",
+            "grease",
+            "ice_knife",
+            "identify",
+            "illusory_script",
+            "jump",
+            "longstrider",
+            "mage_armor",
+            "magic_missile",
+            "protection_from_evil_and_good",
+            "ray_of_sickness",
+            "shield",
+            "silent_image",
+            "sleep",
+            "tashas_hideous_laughter",
+            "tensers_floating_disk",
+            "thunderwave",
+            "unseen_servant"
+          ]
+        }
+      }
+    }
+  },
+  "rules": {
+    "authority": "SRD 5.2.1",
+    "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      87
+    ],
+    "text": "Magic Initiate\nOrigin Feat\nYou gain the following benefits.\nTwo Cantrips.\nYou learn two cantrips of your\nchoice from the Cleric, Druid, or Wizard spell list.\nIntelligence, Wisdom, or Charisma is your spellcasting ability for this feat’s spells (choose when you\nselect this feat).\nLevel 1 Spell.\nChoose a level 1 spell from the same\nlist you selected for this feat’s cantrips. You always\nhave that spell prepared. You can cast it once without a spell slot, and you regain the ability to cast it\nin that way when you finish a Long Rest. You can\nalso cast the spell using any spell slots you have.\nSpell Change.\nWhenever you gain a new level, you\ncan replace one of the spells you chose for this feat\nwith a different spell of the same level from the chosen spell list.\nRepeatable.\nYou can take this feat more than\nonce, but you must choose a different spell list each\ntime."
+  },
+  "authored_operations": [
+    {
+      "trigger": "Acquisition",
+      "effects": [
+        "Learn two chosen cantrips; always prepare one chosen level1 spell using selected casting ability"
+      ],
+      "required_extension_groups": [
+        "choices",
+        "casting",
+        "resources"
+      ],
+      "ending_and_identity": "Exact acquired feat instance owns parameters, budgets and grants; once-only acquisition and per-turn receipts; no replay on restore."
+    },
+    {
+      "trigger": "Cast selected level1 spell",
+      "cost": "One free use per Long Rest per feat instance, OR appropriate slot; normal time/components",
+      "effects": [
+        "Grant legal access independently of class spell list; do not charge free use if using slot"
+      ],
+      "required_extension_groups": [
+        "choices",
+        "casting",
+        "resources"
+      ],
+      "ending_and_identity": "Exact acquired feat instance owns parameters, budgets and grants; once-only acquisition and per-turn receipts; no replay on restore."
+    },
+    {
+      "trigger": "Any new character level",
+      "effects": [
+        "May replace one of this instance’s spells with same-level spell from selected list; preserve list/ability and exact source identity"
+      ],
+      "required_extension_groups": [
+        "choices",
+        "casting",
+        "resources"
+      ],
+      "ending_and_identity": "Exact acquired feat instance owns parameters, budgets and grants; once-only acquisition and per-turn receipts; no replay on restore."
+    }
+  ],
+  "reused_from": [],
+  "retained_runtime_seed": null,
+  "unsupported_behavior": [
+    {
+      "groups": [
+        "choices",
+        "casting",
+        "resources"
+      ],
+      "requirement": "Learn two chosen cantrips; always prepare one chosen level1 spell using selected casting ability",
+      "status": "candidate_mapping_and_full_host_verification_required"
+    },
+    {
+      "groups": [
+        "choices",
+        "casting",
+        "resources"
+      ],
+      "requirement": "Grant legal access independently of class spell list; do not charge free use if using slot",
+      "status": "candidate_mapping_and_full_host_verification_required"
+    },
+    {
+      "groups": [
+        "choices",
+        "casting",
+        "resources"
+      ],
+      "requirement": "May replace one of this instance’s spells with same-level spell from selected list; preserve list/ability and exact source identity",
+      "status": "candidate_mapping_and_full_host_verification_required"
+    }
+  ],
+  "source_revision": "2a19eb1d (existing working-tree definitions and recovered drafts read on 2026-11-08)",
+  "reused_input_hashes": {}
+}

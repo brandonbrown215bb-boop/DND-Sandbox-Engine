@@ -1,0 +1,579 @@
+{
+  "schema": "crown-world-index/1",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "counts": {
+    "procedures": 13,
+    "campaign": 1,
+    "dungeons": 3,
+    "rooms": 1,
+    "objects": 9,
+    "hazards": 1,
+    "generation": 3,
+    "tables": 4,
+    "events": 29,
+    "milestones": 4,
+    "objectives": 1,
+    "rewards": 4,
+    "supplies": 1,
+    "total": 74
+  },
+  "scope": "Campaign map, three dungeons, all four loaded tables and every event/chain branch, generated trap/loot, all tactical objects/terrain, locks/keys, hazards, supplies, objectives, milestone and reward settlement; world dependencies of all spell and character candidates.",
+  "candidates": [
+    {
+      "id": "travel",
+      "kind": "procedures",
+      "path": "procedures/travel.json"
+    },
+    {
+      "id": "discovery",
+      "kind": "procedures",
+      "path": "procedures/discovery.json"
+    },
+    {
+      "id": "locks_traps",
+      "kind": "procedures",
+      "path": "procedures/locks_traps.json"
+    },
+    {
+      "id": "objects",
+      "kind": "procedures",
+      "path": "procedures/objects.json"
+    },
+    {
+      "id": "supplies",
+      "kind": "procedures",
+      "path": "procedures/supplies.json"
+    },
+    {
+      "id": "hazards",
+      "kind": "procedures",
+      "path": "procedures/hazards.json"
+    },
+    {
+      "id": "senses",
+      "kind": "procedures",
+      "path": "procedures/senses.json"
+    },
+    {
+      "id": "areas_wards",
+      "kind": "procedures",
+      "path": "procedures/areas_wards.json"
+    },
+    {
+      "id": "knowledge_social",
+      "kind": "procedures",
+      "path": "procedures/knowledge_social.json"
+    },
+    {
+      "id": "bodies_actors",
+      "kind": "procedures",
+      "path": "procedures/bodies_actors.json"
+    },
+    {
+      "id": "access_movement",
+      "kind": "procedures",
+      "path": "procedures/access_movement.json"
+    },
+    {
+      "id": "rest_time",
+      "kind": "procedures",
+      "path": "procedures/rest_time.json"
+    },
+    {
+      "id": "objectives_rewards",
+      "kind": "procedures",
+      "path": "procedures/objectives_rewards.json"
+    },
+    {
+      "id": "campaign_map",
+      "kind": "campaign",
+      "path": "campaign/campaign_map.json"
+    },
+    {
+      "id": "ruins_of_ashvale",
+      "kind": "dungeons",
+      "path": "dungeons/ruins_of_ashvale.json"
+    },
+    {
+      "id": "caverns_of_gloom",
+      "kind": "dungeons",
+      "path": "dungeons/caverns_of_gloom.json"
+    },
+    {
+      "id": "tower_of_the_lich",
+      "kind": "dungeons",
+      "path": "dungeons/tower_of_the_lich.json"
+    },
+    {
+      "id": "ashvale_antechamber",
+      "kind": "rooms",
+      "path": "rooms/ashvale_antechamber.json"
+    },
+    {
+      "id": "door",
+      "kind": "objects",
+      "path": "objects/door.json"
+    },
+    {
+      "id": "chest",
+      "kind": "objects",
+      "path": "objects/chest.json"
+    },
+    {
+      "id": "offering_bowl",
+      "kind": "objects",
+      "path": "objects/offering_bowl.json"
+    },
+    {
+      "id": "cistern",
+      "kind": "objects",
+      "path": "objects/cistern.json"
+    },
+    {
+      "id": "food_basket",
+      "kind": "objects",
+      "path": "objects/food_basket.json"
+    },
+    {
+      "id": "key",
+      "kind": "objects",
+      "path": "objects/key.json"
+    },
+    {
+      "id": "timber_partition",
+      "kind": "objects",
+      "path": "objects/timber_partition.json"
+    },
+    {
+      "id": "stone_partition",
+      "kind": "objects",
+      "path": "objects/stone_partition.json"
+    },
+    {
+      "id": "fallen_guard_bones",
+      "kind": "objects",
+      "path": "objects/fallen_guard_bones.json"
+    },
+    {
+      "id": "ashvale_lava_fissure",
+      "kind": "hazards",
+      "path": "hazards/ashvale_lava_fissure.json"
+    },
+    {
+      "id": "sequential_dungeon",
+      "kind": "generation",
+      "path": "generation/sequential_dungeon.json"
+    },
+    {
+      "id": "generated_trap_room",
+      "kind": "generation",
+      "path": "generation/generated_trap_room.json"
+    },
+    {
+      "id": "generated_loot_room",
+      "kind": "generation",
+      "path": "generation/generated_loot_room.json"
+    },
+    {
+      "id": "dungeon_events",
+      "kind": "tables",
+      "path": "tables/dungeon_events.json"
+    },
+    {
+      "id": "dungeon_events__trapped_chest",
+      "kind": "events",
+      "path": "events/dungeon_events__trapped_chest.json"
+    },
+    {
+      "id": "dungeon_events__undead_ambush",
+      "kind": "events",
+      "path": "events/dungeon_events__undead_ambush.json"
+    },
+    {
+      "id": "dungeon_events__mysterious_fountain",
+      "kind": "events",
+      "path": "events/dungeon_events__mysterious_fountain.json"
+    },
+    {
+      "id": "dungeon_events__cave_in",
+      "kind": "events",
+      "path": "events/dungeon_events__cave_in.json"
+    },
+    {
+      "id": "dungeon_events__ghostly_warning",
+      "kind": "events",
+      "path": "events/dungeon_events__ghostly_warning.json"
+    },
+    {
+      "id": "dungeon_events__treasure_room",
+      "kind": "events",
+      "path": "events/dungeon_events__treasure_room.json"
+    },
+    {
+      "id": "dungeon_events__ooze_encounter",
+      "kind": "events",
+      "path": "events/dungeon_events__ooze_encounter.json"
+    },
+    {
+      "id": "forest_events",
+      "kind": "tables",
+      "path": "tables/forest_events.json"
+    },
+    {
+      "id": "forest_events__goblin_ambush",
+      "kind": "events",
+      "path": "events/forest_events__goblin_ambush.json"
+    },
+    {
+      "id": "forest_events__wandering_merchant",
+      "kind": "events",
+      "path": "events/forest_events__wandering_merchant.json"
+    },
+    {
+      "id": "forest_events__mysterious_shrine",
+      "kind": "events",
+      "path": "events/forest_events__mysterious_shrine.json"
+    },
+    {
+      "id": "forest_events__hidden_cache",
+      "kind": "events",
+      "path": "events/forest_events__hidden_cache.json"
+    },
+    {
+      "id": "forest_events__wolf_pack",
+      "kind": "events",
+      "path": "events/forest_events__wolf_pack.json"
+    },
+    {
+      "id": "forest_events__fairy_ring",
+      "kind": "events",
+      "path": "events/forest_events__fairy_ring.json"
+    },
+    {
+      "id": "forest_events__fallen_traveler",
+      "kind": "events",
+      "path": "events/forest_events__fallen_traveler.json"
+    },
+    {
+      "id": "forest_events__spider_nest",
+      "kind": "events",
+      "path": "events/forest_events__spider_nest.json"
+    },
+    {
+      "id": "forest_events__fairy_court",
+      "kind": "events",
+      "path": "events/forest_events__fairy_court.json"
+    },
+    {
+      "id": "mountain_events",
+      "kind": "tables",
+      "path": "tables/mountain_events.json"
+    },
+    {
+      "id": "mountain_events__rockslide",
+      "kind": "events",
+      "path": "events/mountain_events__rockslide.json"
+    },
+    {
+      "id": "mountain_events__mountain_hermit",
+      "kind": "events",
+      "path": "events/mountain_events__mountain_hermit.json"
+    },
+    {
+      "id": "mountain_events__eagle_nest",
+      "kind": "events",
+      "path": "events/mountain_events__eagle_nest.json"
+    },
+    {
+      "id": "mountain_events__bandit_camp",
+      "kind": "events",
+      "path": "events/mountain_events__bandit_camp.json"
+    },
+    {
+      "id": "mountain_events__mountain_spring",
+      "kind": "events",
+      "path": "events/mountain_events__mountain_spring.json"
+    },
+    {
+      "id": "mountain_events__collapsed_mine",
+      "kind": "events",
+      "path": "events/mountain_events__collapsed_mine.json"
+    },
+    {
+      "id": "mountain_events__mountain_storm",
+      "kind": "events",
+      "path": "events/mountain_events__mountain_storm.json"
+    },
+    {
+      "id": "town_events",
+      "kind": "tables",
+      "path": "tables/town_events.json"
+    },
+    {
+      "id": "town_events__tavern_brawl",
+      "kind": "events",
+      "path": "events/town_events__tavern_brawl.json"
+    },
+    {
+      "id": "town_events__town_merchant",
+      "kind": "events",
+      "path": "events/town_events__town_merchant.json"
+    },
+    {
+      "id": "town_events__town_healer",
+      "kind": "events",
+      "path": "events/town_events__town_healer.json"
+    },
+    {
+      "id": "town_events__pickpocket",
+      "kind": "events",
+      "path": "events/town_events__pickpocket.json"
+    },
+    {
+      "id": "town_events__quest_board",
+      "kind": "events",
+      "path": "events/town_events__quest_board.json"
+    },
+    {
+      "id": "town_events__town_rest",
+      "kind": "events",
+      "path": "events/town_events__town_rest.json"
+    },
+    {
+      "id": "enter_dungeon_1",
+      "kind": "milestones",
+      "path": "milestones/enter_dungeon_1.json"
+    },
+    {
+      "id": "clear_dungeon_1",
+      "kind": "milestones",
+      "path": "milestones/clear_dungeon_1.json"
+    },
+    {
+      "id": "clear_dungeon_2",
+      "kind": "milestones",
+      "path": "milestones/clear_dungeon_2.json"
+    },
+    {
+      "id": "enter_dungeon_3",
+      "kind": "milestones",
+      "path": "milestones/enter_dungeon_3.json"
+    },
+    {
+      "id": "crown_goals",
+      "kind": "objectives",
+      "path": "objectives/crown_goals.json"
+    },
+    {
+      "id": "ruins_of_ashvale_clear",
+      "kind": "rewards",
+      "path": "rewards/ruins_of_ashvale_clear.json"
+    },
+    {
+      "id": "caverns_of_gloom_clear",
+      "kind": "rewards",
+      "path": "rewards/caverns_of_gloom_clear.json"
+    },
+    {
+      "id": "tower_of_the_lich_clear",
+      "kind": "rewards",
+      "path": "rewards/tower_of_the_lich_clear.json"
+    },
+    {
+      "id": "quest_board_bounty",
+      "kind": "rewards",
+      "path": "rewards/quest_board_bounty.json"
+    },
+    {
+      "id": "camp_and_inn",
+      "kind": "supplies",
+      "path": "supplies/camp_and_inn.json"
+    }
+  ],
+  "events": [
+    {
+      "table_id": "dungeon_events",
+      "id": "trapped_chest",
+      "path": "events/dungeon_events__trapped_chest.json",
+      "source_pointer": "/events/0"
+    },
+    {
+      "table_id": "dungeon_events",
+      "id": "undead_ambush",
+      "path": "events/dungeon_events__undead_ambush.json",
+      "source_pointer": "/events/1"
+    },
+    {
+      "table_id": "dungeon_events",
+      "id": "mysterious_fountain",
+      "path": "events/dungeon_events__mysterious_fountain.json",
+      "source_pointer": "/events/2"
+    },
+    {
+      "table_id": "dungeon_events",
+      "id": "cave_in",
+      "path": "events/dungeon_events__cave_in.json",
+      "source_pointer": "/events/3"
+    },
+    {
+      "table_id": "dungeon_events",
+      "id": "ghostly_warning",
+      "path": "events/dungeon_events__ghostly_warning.json",
+      "source_pointer": "/events/4"
+    },
+    {
+      "table_id": "dungeon_events",
+      "id": "treasure_room",
+      "path": "events/dungeon_events__treasure_room.json",
+      "source_pointer": "/events/5"
+    },
+    {
+      "table_id": "dungeon_events",
+      "id": "ooze_encounter",
+      "path": "events/dungeon_events__ooze_encounter.json",
+      "source_pointer": "/events/6"
+    },
+    {
+      "table_id": "forest_events",
+      "id": "goblin_ambush",
+      "path": "events/forest_events__goblin_ambush.json",
+      "source_pointer": "/events/0"
+    },
+    {
+      "table_id": "forest_events",
+      "id": "wandering_merchant",
+      "path": "events/forest_events__wandering_merchant.json",
+      "source_pointer": "/events/1"
+    },
+    {
+      "table_id": "forest_events",
+      "id": "mysterious_shrine",
+      "path": "events/forest_events__mysterious_shrine.json",
+      "source_pointer": "/events/2"
+    },
+    {
+      "table_id": "forest_events",
+      "id": "hidden_cache",
+      "path": "events/forest_events__hidden_cache.json",
+      "source_pointer": "/events/3"
+    },
+    {
+      "table_id": "forest_events",
+      "id": "wolf_pack",
+      "path": "events/forest_events__wolf_pack.json",
+      "source_pointer": "/events/4"
+    },
+    {
+      "table_id": "forest_events",
+      "id": "fairy_ring",
+      "path": "events/forest_events__fairy_ring.json",
+      "source_pointer": "/events/5"
+    },
+    {
+      "table_id": "forest_events",
+      "id": "fallen_traveler",
+      "path": "events/forest_events__fallen_traveler.json",
+      "source_pointer": "/events/6"
+    },
+    {
+      "table_id": "forest_events",
+      "id": "spider_nest",
+      "path": "events/forest_events__spider_nest.json",
+      "source_pointer": "/events/7"
+    },
+    {
+      "table_id": "forest_events",
+      "id": "fairy_court",
+      "path": "events/forest_events__fairy_court.json",
+      "source_pointer": "/events/5/chain_event"
+    },
+    {
+      "table_id": "mountain_events",
+      "id": "rockslide",
+      "path": "events/mountain_events__rockslide.json",
+      "source_pointer": "/events/0"
+    },
+    {
+      "table_id": "mountain_events",
+      "id": "mountain_hermit",
+      "path": "events/mountain_events__mountain_hermit.json",
+      "source_pointer": "/events/1"
+    },
+    {
+      "table_id": "mountain_events",
+      "id": "eagle_nest",
+      "path": "events/mountain_events__eagle_nest.json",
+      "source_pointer": "/events/2"
+    },
+    {
+      "table_id": "mountain_events",
+      "id": "bandit_camp",
+      "path": "events/mountain_events__bandit_camp.json",
+      "source_pointer": "/events/3"
+    },
+    {
+      "table_id": "mountain_events",
+      "id": "mountain_spring",
+      "path": "events/mountain_events__mountain_spring.json",
+      "source_pointer": "/events/4"
+    },
+    {
+      "table_id": "mountain_events",
+      "id": "collapsed_mine",
+      "path": "events/mountain_events__collapsed_mine.json",
+      "source_pointer": "/events/5"
+    },
+    {
+      "table_id": "mountain_events",
+      "id": "mountain_storm",
+      "path": "events/mountain_events__mountain_storm.json",
+      "source_pointer": "/events/6"
+    },
+    {
+      "table_id": "town_events",
+      "id": "tavern_brawl",
+      "path": "events/town_events__tavern_brawl.json",
+      "source_pointer": "/events/0"
+    },
+    {
+      "table_id": "town_events",
+      "id": "town_merchant",
+      "path": "events/town_events__town_merchant.json",
+      "source_pointer": "/events/1"
+    },
+    {
+      "table_id": "town_events",
+      "id": "town_healer",
+      "path": "events/town_events__town_healer.json",
+      "source_pointer": "/events/2"
+    },
+    {
+      "table_id": "town_events",
+      "id": "pickpocket",
+      "path": "events/town_events__pickpocket.json",
+      "source_pointer": "/events/3"
+    },
+    {
+      "table_id": "town_events",
+      "id": "quest_board",
+      "path": "events/town_events__quest_board.json",
+      "source_pointer": "/events/4"
+    },
+    {
+      "table_id": "town_events",
+      "id": "town_rest",
+      "path": "events/town_events__town_rest.json",
+      "source_pointer": "/events/5"
+    }
+  ],
+  "links": [
+    "source-pages.json",
+    "dependency-map.json",
+    "required-extensions.json",
+    "acquisition-links.json",
+    "README.md",
+    "check_candidates.py",
+    "consumer-trace.json"
+  ],
+  "production_boundary": "No DataLoader manifest, loaded data, GDScript, runtime contracts, saves or enabled flags changed."
+}

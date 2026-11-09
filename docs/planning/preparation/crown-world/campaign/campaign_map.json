@@ -1,0 +1,284 @@
+{
+  "schema": "crown-world-candidate/1",
+  "id": "campaign_map",
+  "name": "The Lost Crown map",
+  "kind": "campaign",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring declarations only; not registered engine opcodes.",
+  "required_extensions": [
+    "travel",
+    "senses",
+    "access_movement",
+    "objectives_rewards"
+  ],
+  "authored_operations": [
+    {
+      "operation": "use_existing_map",
+      "tile_count": 43,
+      "requirement": "Preserve every authored tile, coordinate, start, name, dungeon entrance and terrain-to-event-table mapping; do not synthesize an expanded world."
+    },
+    {
+      "operation": "resolve_destination",
+      "requirement": "Dungeon entrances route to their dungeon; town entry opens shop before any random event. Other terrains use the mapped weighted table. Preserve actual represented arrivals, visibility and visited-location state."
+    }
+  ],
+  "blockers": [
+    "town_events is loaded/mapped but ordinary town destination opens a shop directly; do not claim town-event delivery is proven. dungeon_events is referenced by dungeon definitions but generated traps select trapped_chest directly."
+  ],
+  "retained_input": {
+    "path": "data/core/campaigns/the_lost_crown.json",
+    "sha256": "3352b2d22be36e68591bfdf4ec73b8201f2bec6c69a3a60b0c8beb7d5074db44",
+    "pointer": "/map",
+    "payload": {
+      "type": "hex_grid",
+      "miles_per_hex": 5,
+      "tiles": [
+        {
+          "q": 0,
+          "r": 0,
+          "terrain": "town",
+          "name": "Elderwick",
+          "start": true
+        },
+        {
+          "q": 1,
+          "r": 0,
+          "terrain": "plains"
+        },
+        {
+          "q": 2,
+          "r": 0,
+          "terrain": "forest"
+        },
+        {
+          "q": 3,
+          "r": 0,
+          "terrain": "forest"
+        },
+        {
+          "q": 4,
+          "r": 0,
+          "terrain": "forest"
+        },
+        {
+          "q": 5,
+          "r": 0,
+          "terrain": "mountain"
+        },
+        {
+          "q": -1,
+          "r": 0,
+          "terrain": "plains"
+        },
+        {
+          "q": -2,
+          "r": 0,
+          "terrain": "forest"
+        },
+        {
+          "q": -3,
+          "r": 0,
+          "terrain": "mountain"
+        },
+        {
+          "q": 0,
+          "r": -1,
+          "terrain": "plains"
+        },
+        {
+          "q": 1,
+          "r": -1,
+          "terrain": "forest"
+        },
+        {
+          "q": 2,
+          "r": -1,
+          "terrain": "forest"
+        },
+        {
+          "q": 3,
+          "r": -1,
+          "terrain": "dungeon_entrance",
+          "name": "Ruins of Ashvale",
+          "dungeon_id": "ruins_of_ashvale"
+        },
+        {
+          "q": -1,
+          "r": -1,
+          "terrain": "plains"
+        },
+        {
+          "q": -2,
+          "r": -1,
+          "terrain": "mountain"
+        },
+        {
+          "q": 0,
+          "r": 1,
+          "terrain": "forest"
+        },
+        {
+          "q": 1,
+          "r": 1,
+          "terrain": "plains"
+        },
+        {
+          "q": 2,
+          "r": 1,
+          "terrain": "town",
+          "name": "Thornhaven"
+        },
+        {
+          "q": -1,
+          "r": 1,
+          "terrain": "forest"
+        },
+        {
+          "q": -2,
+          "r": 1,
+          "terrain": "forest"
+        },
+        {
+          "q": -3,
+          "r": 1,
+          "terrain": "swamp"
+        },
+        {
+          "q": 0,
+          "r": 2,
+          "terrain": "forest"
+        },
+        {
+          "q": 1,
+          "r": 2,
+          "terrain": "swamp"
+        },
+        {
+          "q": -1,
+          "r": 2,
+          "terrain": "forest"
+        },
+        {
+          "q": -2,
+          "r": 2,
+          "terrain": "swamp"
+        },
+        {
+          "q": -3,
+          "r": 2,
+          "terrain": "dungeon_entrance",
+          "name": "Caverns of Gloom",
+          "dungeon_id": "caverns_of_gloom"
+        },
+        {
+          "q": 0,
+          "r": -2,
+          "terrain": "mountain"
+        },
+        {
+          "q": 1,
+          "r": -2,
+          "terrain": "mountain"
+        },
+        {
+          "q": 2,
+          "r": -2,
+          "terrain": "plains"
+        },
+        {
+          "q": -1,
+          "r": -2,
+          "terrain": "mountain"
+        },
+        {
+          "q": 0,
+          "r": -3,
+          "terrain": "mountain"
+        },
+        {
+          "q": 1,
+          "r": -3,
+          "terrain": "mountain"
+        },
+        {
+          "q": 2,
+          "r": -3,
+          "terrain": "mountain"
+        },
+        {
+          "q": 3,
+          "r": -3,
+          "terrain": "dungeon_entrance",
+          "name": "Tower of the Lich",
+          "dungeon_id": "tower_of_the_lich"
+        },
+        {
+          "q": -1,
+          "r": 3,
+          "terrain": "plains"
+        },
+        {
+          "q": 0,
+          "r": 3,
+          "terrain": "town",
+          "name": "Bogwater"
+        },
+        {
+          "q": 1,
+          "r": 3,
+          "terrain": "swamp"
+        },
+        {
+          "q": 4,
+          "r": -1,
+          "terrain": "mountain"
+        },
+        {
+          "q": 5,
+          "r": -1,
+          "terrain": "mountain"
+        },
+        {
+          "q": 4,
+          "r": -2,
+          "terrain": "mountain"
+        },
+        {
+          "q": 3,
+          "r": 1,
+          "terrain": "plains"
+        },
+        {
+          "q": 4,
+          "r": 1,
+          "terrain": "desert"
+        },
+        {
+          "q": 5,
+          "r": 1,
+          "terrain": "desert"
+        }
+      ],
+      "event_tables": {
+        "forest": "forest_events",
+        "mountain": "mountain_events",
+        "town": "town_events",
+        "dungeon": "dungeon_events",
+        "plains": "forest_events",
+        "swamp": "forest_events",
+        "desert": "mountain_events"
+      }
+    }
+  },
+  "campaign_identity": {
+    "id": "the_lost_crown",
+    "name": "The Lost Crown",
+    "description": "An ancient Crown of Ages has been shattered into three fragments, each hidden in a dangerous dungeon. Recover all three and defeat the Lich King who seeks to reassemble it for his own dark purposes.",
+    "player_count": {
+      "min": 1,
+      "max": 4
+    },
+    "starting_level": 1,
+    "max_level": 5
+  }
+}

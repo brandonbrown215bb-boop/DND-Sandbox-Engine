@@ -1,0 +1,507 @@
+{
+  "schema": "crown-creature-candidate/1",
+  "id": "crown_lich_king",
+  "name": "The Lich King",
+  "kind": "campaign_encounter",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring intent only; not registered engine syntax. Mapping requirements do not assert the whole referenced engine slice is absent.",
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile all source clauses, mappings and source differences before later production-path verification. Keep native paths until replacements cover them."
+  },
+  "source": {
+    "path": "data/core/monsters/core_monsters.json",
+    "sha256": "33bf505c91476b32f7dd2887dd0caa19521e4a9e206392b8d803090b105eb8c2",
+    "pointer": "/9",
+    "payload": {
+      "id": "lich_king",
+      "name": "The Lich King",
+      "description": "An ancient and powerful undead sorcerer who seeks the Crown of Ages to dominate the living.",
+      "size": "medium",
+      "challenge_rating": 8,
+      "hit_points": "18d8 + 54",
+      "armor_class": 17,
+      "speed": 6,
+      "ability_scores": {
+        "STR": 11,
+        "DEX": 16,
+        "CON": 16,
+        "INT": 20,
+        "WIS": 14,
+        "CHA": 16
+      },
+      "damage_immunities": [
+        "poison",
+        "necrotic"
+      ],
+      "condition_immunities": [
+        "charmed",
+        "exhaustion",
+        "frightened",
+        "paralyzed",
+        "poisoned"
+      ],
+      "saving_throw_bonuses": {
+        "CON": 5,
+        "INT": 8,
+        "WIS": 4
+      },
+      "attacks": [
+        {
+          "name": "Paralyzing Touch",
+          "ability": "INT",
+          "damage": "3d6",
+          "damage_type": "necrotic",
+          "range": 1,
+          "extra_effects": [
+            {
+              "type": "paralyze_save",
+              "dc": 15,
+              "save": "CON",
+              "duration": 1
+            }
+          ]
+        }
+      ],
+      "spells": [
+        {
+          "id": "fire_bolt",
+          "type": "cantrip"
+        },
+        {
+          "id": "ray_of_frost",
+          "type": "cantrip"
+        },
+        {
+          "id": "magic_missile",
+          "type": "spell",
+          "level": 1
+        },
+        {
+          "id": "shield",
+          "type": "spell",
+          "level": 1
+        },
+        {
+          "id": "scorching_ray",
+          "type": "spell",
+          "level": 2
+        },
+        {
+          "id": "fireball",
+          "type": "spell",
+          "level": 3
+        },
+        {
+          "id": "counterspell",
+          "type": "spell",
+          "level": 3
+        }
+      ],
+      "spell_slots": {
+        "1": 4,
+        "2": 3,
+        "3": 3
+      },
+      "ai_behavior": "defensive",
+      "special_abilities": [
+        {
+          "id": "legendary_resistance",
+          "name": "Legendary Resistance (3/Day)",
+          "description": "If the Lich King fails a saving throw, it can choose to succeed instead.",
+          "uses": 3
+        },
+        {
+          "id": "turn_resistance",
+          "name": "Turn Resistance",
+          "description": "Has advantage on saving throws against effects that turn undead."
+        },
+        {
+          "id": "rejuvenation",
+          "name": "Rejuvenation",
+          "description": "If it has a phylactery, the Lich King gains a new body in 1d10 days, regaining all hit points."
+        }
+      ],
+      "loot_table": [
+        {
+          "item_id": "crown_fragment",
+          "chance": 1.0
+        },
+        {
+          "item_id": "gold_100",
+          "chance": 1.0
+        },
+        {
+          "item_id": "gold_100",
+          "chance": 1.0
+        },
+        {
+          "item_id": "potion_greater_healing",
+          "chance": 1.0
+        }
+      ],
+      "xp": 3900,
+      "is_boss": true
+    },
+    "authority": "Existing Crown authored creature; not asserted SRD 5.2.1 compliance"
+  },
+  "retained_definitions": [
+    {
+      "path": "data/core/monsters/core_monsters.json",
+      "sha256": "33bf505c91476b32f7dd2887dd0caa19521e4a9e206392b8d803090b105eb8c2",
+      "pointer": "/9",
+      "payload": {
+        "id": "lich_king",
+        "name": "The Lich King",
+        "description": "An ancient and powerful undead sorcerer who seeks the Crown of Ages to dominate the living.",
+        "size": "medium",
+        "challenge_rating": 8,
+        "hit_points": "18d8 + 54",
+        "armor_class": 17,
+        "speed": 6,
+        "ability_scores": {
+          "STR": 11,
+          "DEX": 16,
+          "CON": 16,
+          "INT": 20,
+          "WIS": 14,
+          "CHA": 16
+        },
+        "damage_immunities": [
+          "poison",
+          "necrotic"
+        ],
+        "condition_immunities": [
+          "charmed",
+          "exhaustion",
+          "frightened",
+          "paralyzed",
+          "poisoned"
+        ],
+        "saving_throw_bonuses": {
+          "CON": 5,
+          "INT": 8,
+          "WIS": 4
+        },
+        "attacks": [
+          {
+            "name": "Paralyzing Touch",
+            "ability": "INT",
+            "damage": "3d6",
+            "damage_type": "necrotic",
+            "range": 1,
+            "extra_effects": [
+              {
+                "type": "paralyze_save",
+                "dc": 15,
+                "save": "CON",
+                "duration": 1
+              }
+            ]
+          }
+        ],
+        "spells": [
+          {
+            "id": "fire_bolt",
+            "type": "cantrip"
+          },
+          {
+            "id": "ray_of_frost",
+            "type": "cantrip"
+          },
+          {
+            "id": "magic_missile",
+            "type": "spell",
+            "level": 1
+          },
+          {
+            "id": "shield",
+            "type": "spell",
+            "level": 1
+          },
+          {
+            "id": "scorching_ray",
+            "type": "spell",
+            "level": 2
+          },
+          {
+            "id": "fireball",
+            "type": "spell",
+            "level": 3
+          },
+          {
+            "id": "counterspell",
+            "type": "spell",
+            "level": 3
+          }
+        ],
+        "spell_slots": {
+          "1": 4,
+          "2": 3,
+          "3": 3
+        },
+        "ai_behavior": "defensive",
+        "special_abilities": [
+          {
+            "id": "legendary_resistance",
+            "name": "Legendary Resistance (3/Day)",
+            "description": "If the Lich King fails a saving throw, it can choose to succeed instead.",
+            "uses": 3
+          },
+          {
+            "id": "turn_resistance",
+            "name": "Turn Resistance",
+            "description": "Has advantage on saving throws against effects that turn undead."
+          },
+          {
+            "id": "rejuvenation",
+            "name": "Rejuvenation",
+            "description": "If it has a phylactery, the Lich King gains a new body in 1d10 days, regaining all hit points."
+          }
+        ],
+        "loot_table": [
+          {
+            "item_id": "crown_fragment",
+            "chance": 1.0
+          },
+          {
+            "item_id": "gold_100",
+            "chance": 1.0
+          },
+          {
+            "item_id": "gold_100",
+            "chance": 1.0
+          },
+          {
+            "item_id": "potion_greater_healing",
+            "chance": 1.0
+          }
+        ],
+        "xp": 3900,
+        "is_boss": true
+      },
+      "manifest_declarations": []
+    }
+  ],
+  "campaign_monster_id": "lich_king",
+  "srd_comparison_candidate": null,
+  "conversion_policy": "Preserve campaign identity and all existing custom rules. Source-reconcile overlapping SRD creatures explicitly; candidate authoring does not replace a campaign definition. Goblin Chief and Lich King have no automatic official replacement.",
+  "authored_operations": [
+    {
+      "key": "attack_0",
+      "trigger": "Selected action attack",
+      "budget": "action; multiattack only if explicitly granted",
+      "full_rule_payload": {
+        "name": "Paralyzing Touch",
+        "ability": "INT",
+        "damage": "3d6",
+        "damage_type": "necrotic",
+        "range": 1,
+        "extra_effects": [
+          {
+            "type": "paralyze_save",
+            "dc": 15,
+            "save": "CON",
+            "duration": 1
+          }
+        ]
+      },
+      "steps": [
+        "Resolve authored range/ability/damage and each declared extra effect in order through shared operations.",
+        "Retain separate save-only, after-hit, max-HP, corrosion and condition outcomes; native effect-name recognition is not complete behavior."
+      ],
+      "blockers": [
+        "map_attacks",
+        "map_conditions"
+      ],
+      "behavior_plan": {
+        "budget": "action or member of source-declared Multiattack",
+        "resolution": "Printed campaign attack with native ability/cell range; source conversion must settle feet and explicit final attack modifiers",
+        "hit_damage": {
+          "formula": "3d6",
+          "type": "necrotic"
+        },
+        "after_hit_in_order": [
+          {
+            "type": "paralyze_save",
+            "dc": 15,
+            "save": "CON",
+            "duration": 1
+          }
+        ],
+        "source_boundary": "Keep current custom attack separate from official comparison; map every save, defense, condition ending, max-HP or exact-item effect explicitly."
+      }
+    },
+    {
+      "key": "trait_0",
+      "full_rule_payload": {
+        "id": "legendary_resistance",
+        "name": "Legendary Resistance (3/Day)",
+        "description": "If the Lich King fails a saving throw, it can choose to succeed instead.",
+        "uses": 3
+      },
+      "steps": [
+        {
+          "intent": "Charge exact source-owned action/reaction/use once; preserve recharge dice, daily and Long Rest schedules as separately authored rules.",
+          "mapping_group": "resources"
+        }
+      ],
+      "blockers": [
+        "custom_underspecified"
+      ],
+      "behavior_plan": {
+        "trigger": "Self fails a saving throw",
+        "choice": "Succeed instead",
+        "spend": "One exact source use from3/Day pool",
+        "action_or_reaction_cost": "None specified by custom source; do not invent Reaction payment",
+        "recovery": "Daily boundary must be explicitly mapped"
+      }
+    },
+    {
+      "key": "trait_1",
+      "full_rule_payload": {
+        "id": "turn_resistance",
+        "name": "Turn Resistance",
+        "description": "Has advantage on saving throws against effects that turn undead."
+      },
+      "steps": [
+        {
+          "intent": "Preserve printed ability/save/skill/initiative, size/type, defenses, senses, languages, HP and feet; do not infer all saves from abilities or treat native cell speeds as feet.",
+          "mapping_group": "statistics"
+        }
+      ],
+      "blockers": [
+        "custom_underspecified"
+      ],
+      "behavior_plan": {
+        "trigger": "Saving throw against effect that turns Undead",
+        "effect": "Advantage"
+      }
+    },
+    {
+      "key": "trait_2",
+      "full_rule_payload": {
+        "id": "rejuvenation",
+        "name": "Rejuvenation",
+        "description": "If it has a phylactery, the Lich King gains a new body in 1d10 days, regaining all hit points."
+      },
+      "steps": [
+        {
+          "intent": "Retain death/max-HP/corpse identity, delayed creation/control and cancellation; no untracked zombie creation or automatic finale revival.",
+          "mapping_group": "aftermath"
+        }
+      ],
+      "blockers": [
+        "custom_underspecified"
+      ],
+      "behavior_plan": {
+        "trigger": "Death with a phylactery",
+        "delay": "1d10 days",
+        "effect": "Gain new body and all HP",
+        "blockers": [
+          "Represent exact phylactery and death relation",
+          "Resolve campaign win/revival policy",
+          "Define located new-body arrival without inventing source parameters"
+        ]
+      }
+    }
+  ],
+  "blockers": [
+    "map_statistics",
+    "source_reconciliation",
+    "map_attacks",
+    "map_items"
+  ],
+  "selection_links": [
+    "selection-links.json"
+  ],
+  "loot": {
+    "metadata": [
+      {
+        "item_id": "crown_fragment",
+        "chance": 1.0
+      },
+      {
+        "item_id": "gold_100",
+        "chance": 1.0
+      },
+      {
+        "item_id": "gold_100",
+        "chance": 1.0
+      },
+      {
+        "item_id": "potion_greater_healing",
+        "chance": 1.0
+      }
+    ],
+    "item_pass": {
+      "path": "docs/planning/preparation/crown-reachable-items/reachability.json",
+      "sha256": "060c7989394a5dd9f9079bca55527b5a22dcb3d7c4e7d0568f3ae784c472220c"
+    },
+    "candidate_index": "../crown-reachable-items/index.json",
+    "settlement": "No generic post-combat payment established by the reachable-item trace. Do not duplicate campaign boss/room rewards.",
+    "candidate_links": [
+      {
+        "item_id": "crown_fragment",
+        "candidate": "../crown-reachable-items/items/crown_fragment.json"
+      },
+      {
+        "item_id": "gold_100",
+        "candidate": "../crown-reachable-items/items/gold_100.json"
+      },
+      {
+        "item_id": "gold_100",
+        "candidate": "../crown-reachable-items/items/gold_100.json"
+      },
+      {
+        "item_id": "potion_greater_healing",
+        "candidate": "../crown-reachable-items/items/potion_greater_healing.json"
+      }
+    ]
+  },
+  "spell_candidates": [
+    {
+      "path": "docs/planning/preparation/crown-spells/fire_bolt.json",
+      "sha256": "51962c4e2d40b8b5897465d3c6ff2431003dd8fb06ff74656218740b30b984c4"
+    },
+    {
+      "path": "docs/planning/preparation/crown-spells/ray_of_frost.json",
+      "sha256": "4d59d317fe47aa86e059a252bcb2a27f897b233b39b1a4f42848024d3c6fcfd0"
+    },
+    {
+      "path": "docs/planning/preparation/crown-spells/magic_missile.json",
+      "sha256": "f92e2be48adcb0acbbfcf66de9d9c21067fa11ea9743df7b8254a265f5930d97"
+    },
+    {
+      "path": "docs/planning/preparation/crown-spells/shield.json",
+      "sha256": "1840c88a121ed19bfd4a70dcb615e3623f70ff5f25da4554690560c86315b28a"
+    },
+    {
+      "path": "docs/planning/preparation/crown-spells/scorching_ray.json",
+      "sha256": "1e6dfe19de7343f42ab4c03d4f060ca9f7b99c015dd4f4b6fbc9113b40bbb0cc"
+    },
+    {
+      "path": "docs/planning/preparation/crown-spells/fireball.json",
+      "sha256": "4e6b0ddef1c94651a711e557c9f3af0f19808d82aa85c207c88201cbbdbc0ac6"
+    },
+    {
+      "path": "docs/planning/preparation/crown-spells/counterspell.json",
+      "sha256": "54fe5a6a1fa07c3631724df7e7f646721327ab1ed6d230f5e40234710f9c2221"
+    }
+  ],
+  "explicit_blockers": [
+    "Keep CR8/18d8+54 HP/AC17, three legendary resistances, Turn Resistance, seven spells and 4/3/3 slots. Do not substitute SRD Lich or remove finale as high CR.",
+    "Paralyzing Touch duration 1 has no unit/exit timing in seed. Pin current native interpretation separately before translation; do not import SRD Lich duration.",
+    "Rejuvenation requires a phylactery and a 1d10-day new body; source lacks represented phylactery and Crown win/revival policy. Preserve as blocked aftermath; no automatic ten-day simulation or campaign completion reversal.",
+    "Legendary Resistance (3/Day) needs exact replenishment schedule and optional failed-save window; no blanket immunity."
+  ],
+  "retained_runtime_observations": {
+    "source": {
+      "path": "src/combat/combat_action.gd",
+      "sha256": "2833d2c8b3f6b2fd5a6b0acf97a927d8b5299362d9e5db8517ff5506d53892f8"
+    },
+    "function": "resolve_monster_attack_effects",
+    "boundary": "Read-only code observation, not gameplay verification: after a hit poison_save/restrain/paralyze_save call saving_throw_to_dc and add_condition with max(1,duration) turn count; corrode_armor adds AC-1 modifier for duration default10 rather than damaging a carried armor copy. reduce_max_hp uses existing damage receipt and direct maxHP mutation. Do not treat these simplified interpretations as source rules or replace them here."
+  }
+}

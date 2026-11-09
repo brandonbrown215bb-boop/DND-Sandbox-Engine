@@ -1,0 +1,124 @@
+{
+  "format": "crown-spell-candidate/1",
+  "id": "water_walk",
+  "name": "Water Walk",
+  "level": 3,
+  "status": "written_unverified_not_loaded",
+  "source": {
+    "authority": "SRD 5.2.1",
+    "url": "https://media.dndbeyond.com/compendium-images/srd/5.2/SRD_CC_v5.2.1.pdf",
+    "sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      173,
+      174
+    ],
+    "header": {
+      "Casting Time": "Action or Ritual",
+      "Range": "30 feet",
+      "Components": "V, S, M (a piece of cork)",
+      "Duration": "1 hour"
+    },
+    "attribution": "System Reference Document 5.2.1, Wizards of the Coast LLC; CC BY 4.0."
+  },
+  "casting": {
+    "casting_time": "Action or Ritual",
+    "kind": "action",
+    "seconds": null,
+    "ritual_available": true,
+    "range": {
+      "source": "30 feet",
+      "kind": "distance",
+      "feet": 30
+    },
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "a piece of cork",
+    "duration": "1 hour",
+    "concentration": false,
+    "spell_lists": [
+      "cleric",
+      "druid",
+      "ranger",
+      "sorcerer"
+    ]
+  },
+  "authored_intent": "Up to ten willing creatures traverse liquids as solid ground; lava heat remains harmful; each recipient spends a Bonus Action to pass voluntarily between surface and liquid; falling passes through into the liquid; no obsolete automatic 60-foot rise or invented dismissal.",
+  "rules": [
+    {
+      "id": "r001",
+      "text": "This spell grants the ability to move across any liquid surface—such as water, acid, mud, snow, quicksand, or lava—as if it were harmless solid ground (creatures crossing molten lava can still take damage from the heat)."
+    },
+    {
+      "id": "r002",
+      "text": "Up to ten willing creatures of your choice within range gain this ability for the duration."
+    },
+    {
+      "id": "r003",
+      "text": "An affected target must take a Bonus Action to pass from the liquid’s surface into the liquid itself and vice versa, but if the target falls into the liquid, the target passes through the surface into the liquid below."
+    }
+  ],
+  "authored_operations": [
+    {
+      "operation": "grant_surface_traversal",
+      "parameters": {
+        "chosen_willing_targets_max": 10,
+        "surfaces": [
+          "water",
+          "acid",
+          "mud",
+          "snow",
+          "quicksand",
+          "lava"
+        ],
+        "surface": "harmless_solid_ground",
+        "lava_heat": "still_harmful",
+        "voluntary_surface_submerged_transition_action": "bonus_action",
+        "fall_into_liquid": "passes_through_surface"
+      },
+      "status": "authoring_declaration_not_a_registered_opcode",
+      "required_source_rules": [
+        "r001",
+        "r002",
+        "r003"
+      ]
+    }
+  ],
+  "runtime_draft": {
+    "origin": "proposed_operations",
+    "definition": null,
+    "fragments": {},
+    "coverage": "Unverified. Neither a full definition nor a fragment certifies all source rules or controls. Required extensions are not silently waived."
+  },
+  "required_extensions": [
+    {
+      "group": "liquid_surfaces",
+      "requirement": "Treat the surface as traversable ground while preserving lava heat; voluntary surface/submerged transition costs a Bonus Action, and falling passes through.",
+      "spell_specific_intent": "Up to ten willing creatures traverse liquids as solid ground; lava heat remains harmful; each recipient spends a Bonus Action to pass voluntarily between surface and liquid; falling passes through into the liquid; no obsolete automatic 60-foot rise or invented dismissal.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003"
+      ],
+      "existing_owner_to_reuse": "src/combat/combat_child_actions.gd",
+      "slice_references": "S-180/S-185/S-200",
+      "disposition": "requires_mapping_or_host_completion",
+      "note": "This is an authored handoff requirement, not a fresh runtime failure or claim that the whole referenced slice is missing."
+    }
+  ],
+  "audit": {
+    "source": "docs/audits/spells.md",
+    "batch": "088-6",
+    "production_definition_at_authoring": "res://data/core/spells/imported_spells.json#193",
+    "baseline_execution": "native",
+    "source_revision": "2a19eb1d",
+    "existing_conversion_label": "queued"
+  },
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile every source rule and required extension, then implement and verify through production paths before any deliberate promotion. Keep native behavior until covered."
+  }
+}

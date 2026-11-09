@@ -1,0 +1,230 @@
+{
+  "format": "crown-spell-candidate/1",
+  "id": "alter_self",
+  "name": "Alter Self",
+  "level": 2,
+  "status": "written_unverified_not_loaded",
+  "source": {
+    "authority": "SRD 5.2.1",
+    "url": "https://media.dndbeyond.com/compendium-images/srd/5.2/SRD_CC_v5.2.1.pdf",
+    "sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      107
+    ],
+    "header": {
+      "Casting Time": "Action",
+      "Range": "Self",
+      "Components": "V, S",
+      "Duration": "Concentration, up to 1 hour"
+    },
+    "attribution": "System Reference Document 5.2.1, Wizards of the Coast LLC; CC BY 4.0."
+  },
+  "casting": {
+    "casting_time": "Action",
+    "kind": "action",
+    "seconds": null,
+    "ritual_available": false,
+    "range": {
+      "source": "Self",
+      "kind": "self",
+      "feet": 0
+    },
+    "components": [
+      "V",
+      "S"
+    ],
+    "material": null,
+    "duration": "Concentration, up to 1 hour",
+    "concentration": true,
+    "spell_lists": [
+      "sorcerer",
+      "wizard"
+    ]
+  },
+  "authored_intent": "Choose aquatic adaptation, appearance or natural weapons; Magic action switches option; natural Unarmed Strike growth deals 1d6 of its listed type using casting ability, with no invented mastery grant; retain appearance and movement limits.",
+  "rules": [
+    {
+      "id": "r001",
+      "text": "You alter your physical form."
+    },
+    {
+      "id": "r002",
+      "text": "Choose one of the following options."
+    },
+    {
+      "id": "r003",
+      "text": "Its effects last for the duration, during which you can take a Magic action to replace the option you chose with a different one."
+    },
+    {
+      "id": "r004",
+      "text": "Aquatic Adaptation."
+    },
+    {
+      "id": "r005",
+      "text": "You sprout gills and grow webs between your fingers."
+    },
+    {
+      "id": "r006",
+      "text": "You can breathe underwater and gain a Swim Speed equal to your Speed."
+    },
+    {
+      "id": "r007",
+      "text": "Change Appearance."
+    },
+    {
+      "id": "r008",
+      "text": "You alter your appearance."
+    },
+    {
+      "id": "r009",
+      "text": "You decide what you look like, including your height, weight, facial features, sound of your voice, hair length, coloration, and other distinguishing characteristics."
+    },
+    {
+      "id": "r010",
+      "text": "You can make yourself appear as a member of another species, though none of your statistics change."
+    },
+    {
+      "id": "r011",
+      "text": "You can’t appear as a creature of a different size, and your basic shape stays the same; if you’re bipedal, you can’t use this spell to become quadrupedal, for instance."
+    },
+    {
+      "id": "r012",
+      "text": "For the duration, you can take a Magic action to change your appearance in this way again."
+    },
+    {
+      "id": "r013",
+      "text": "Natural Weapons."
+    },
+    {
+      "id": "r014",
+      "text": "You grow claws (Slashing), fangs (Piercing), horns (Piercing), or hooves (Bludgeoning)."
+    },
+    {
+      "id": "r015",
+      "text": "When you use your Unarmed Strike to deal damage with that new growth, it deals 1d6 damage of the type in parentheses instead of dealing the normal damage for your Unarmed Strike, and you use your spellcasting ability modifier for the attack and damage rolls rather than using Strength."
+    }
+  ],
+  "authored_operations": [
+    {
+      "operation": "choose_form_benefit",
+      "parameters": {
+        "switch_action": "magic_action",
+        "choices": {
+          "aquatic": {
+            "breathe_water": true,
+            "swim_speed": "recipient.speed"
+          },
+          "appearance": {
+            "same_size": true,
+            "same_basic_shape": true,
+            "statistics_unchanged": true,
+            "change_again_action": "magic_action"
+          },
+          "natural_weapons": {
+            "choices": {
+              "claws": "slashing",
+              "fangs": "piercing",
+              "horns": "piercing",
+              "hooves": "bludgeoning"
+            },
+            "attack_kind": "unarmed_strike",
+            "damage": "1d6",
+            "attack_ability": "casting_ability",
+            "damage_ability": "casting_ability"
+          }
+        }
+      },
+      "status": "authoring_declaration_not_a_registered_opcode",
+      "required_source_rules": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006",
+        "r007",
+        "r008",
+        "r009",
+        "r010",
+        "r011",
+        "r012",
+        "r013",
+        "r014",
+        "r015"
+      ]
+    }
+  ],
+  "runtime_draft": {
+    "origin": "proposed_operations",
+    "definition": null,
+    "fragments": {},
+    "coverage": "Unverified. Neither a full definition nor a fragment certifies all source rules or controls. Required extensions are not silently waived."
+  },
+  "required_extensions": [
+    {
+      "group": "forms",
+      "requirement": "Declare legal forms, retained/replaced abilities and senses, gear policy, costs, restrictions and actual reversion/expulsion without refilling resources.",
+      "spell_specific_intent": "Choose aquatic adaptation, appearance or natural weapons; Magic action switches option; natural Unarmed Strike growth deals 1d6 of its listed type using casting ability, with no invented mastery grant; retain appearance and movement limits.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006",
+        "r007",
+        "r008",
+        "r009",
+        "r010",
+        "r011",
+        "r012",
+        "r013",
+        "r014",
+        "r015"
+      ],
+      "existing_owner_to_reuse": "src/characters/actor_projection_rules.gd",
+      "slice_references": "S-162/S-163/S-164",
+      "disposition": "requires_mapping_or_host_completion",
+      "note": "This is an authored handoff requirement, not a fresh runtime failure or claim that the whole referenced slice is missing."
+    },
+    {
+      "group": "granted_actions",
+      "requirement": "Author the correct actor, action kind, budgets, choices, range and repeated effects; retain the parent cast/source and avoid a new named executor.",
+      "spell_specific_intent": "Choose aquatic adaptation, appearance or natural weapons; Magic action switches option; natural Unarmed Strike growth deals 1d6 of its listed type using casting ability, with no invented mastery grant; retain appearance and movement limits.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006",
+        "r007",
+        "r008",
+        "r009",
+        "r010",
+        "r011",
+        "r012",
+        "r013",
+        "r014",
+        "r015"
+      ],
+      "existing_owner_to_reuse": "src/combat/combat_child_actions.gd",
+      "slice_references": "S-134/S-135/S-146/S-148",
+      "disposition": "requires_mapping_or_host_completion",
+      "note": "This is an authored handoff requirement, not a fresh runtime failure or claim that the whole referenced slice is missing."
+    }
+  ],
+  "audit": {
+    "source": "docs/audits/spells.md",
+    "batch": "088-8",
+    "production_definition_at_authoring": "res://data/core/spells/imported_spells.json#4",
+    "baseline_execution": "native",
+    "source_revision": "2a19eb1d",
+    "existing_conversion_label": "queued"
+  },
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile every source rule and required extension, then implement and verify through production paths before any deliberate promotion. Keep native behavior until covered."
+  }
+}

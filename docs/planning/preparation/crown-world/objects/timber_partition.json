@@ -1,0 +1,47 @@
+{
+  "schema": "crown-world-candidate/1",
+  "id": "timber_partition",
+  "name": "Old timber partition",
+  "kind": "objects",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring declarations only; not registered engine opcodes.",
+  "required_extensions": [
+    "objects",
+    "hazards",
+    "access_movement"
+  ],
+  "authored_operations": [
+    {
+      "operation": "instantiate_exact_room_object",
+      "requirement": "Preserve all retained facts and exact room/object identity; mutations and contents persist with the room. Do not respawn removed/destroyed objects on revisit."
+    }
+  ],
+  "blockers": [],
+  "retained_input": {
+    "path": "data/core/campaigns/the_lost_crown.json",
+    "sha256": "3352b2d22be36e68591bfdf4ec73b8201f2bec6c69a3a60b0c8beb7d5074db44",
+    "pointer": "/dungeons/ruins_of_ashvale/tactical_rooms/1/objects/6",
+    "payload": {
+      "id": "timber_partition",
+      "kind": "barrier",
+      "name": "Old timber partition",
+      "position": [
+        0,
+        -1
+      ],
+      "material": "wood",
+      "size": "Large",
+      "height_feet": 10,
+      "fixed": true,
+      "armor_class": 15,
+      "hp": 27,
+      "max_hp": 27,
+      "flammable": true,
+      "damage_immunities": [
+        "poison",
+        "psychic"
+      ],
+      "contents": []
+    }
+  }
+}

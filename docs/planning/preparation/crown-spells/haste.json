@@ -1,0 +1,151 @@
+{
+  "format": "crown-spell-candidate/1",
+  "id": "haste",
+  "name": "Haste",
+  "level": 3,
+  "status": "written_unverified_not_loaded",
+  "source": {
+    "authority": "SRD 5.2.1",
+    "url": "https://media.dndbeyond.com/compendium-images/srd/5.2/SRD_CC_v5.2.1.pdf",
+    "sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      139
+    ],
+    "header": {
+      "Casting Time": "Action",
+      "Range": "30 feet",
+      "Components": "V, S, M (a shaving of licorice root)",
+      "Duration": "Concentration, up to 1 minute"
+    },
+    "attribution": "System Reference Document 5.2.1, Wizards of the Coast LLC; CC BY 4.0."
+  },
+  "casting": {
+    "casting_time": "Action",
+    "kind": "action",
+    "seconds": null,
+    "ritual_available": false,
+    "range": {
+      "source": "30 feet",
+      "kind": "distance",
+      "feet": 30
+    },
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "a shaving of licorice root",
+    "duration": "Concentration, up to 1 minute",
+    "concentration": true,
+    "spell_lists": [
+      "sorcerer",
+      "wizard"
+    ]
+  },
+  "authored_intent": "Seen willing creature; double Speed, +2 AC, DEX-save Advantage; one restricted extra action each turn; Attack option permits only one attack; end lethargy through end of next turn.",
+  "rules": [
+    {
+      "id": "r001",
+      "text": "Choose a willing creature that you can see within range."
+    },
+    {
+      "id": "r002",
+      "text": "Until the spell ends, the target’s Speed is doubled, it gains a +2 bonus to Armor Class, it has Advantage on Dexterity saving throws, and it gains an additional action on each of its turns."
+    },
+    {
+      "id": "r003",
+      "text": "That action can be used to take only the Attack (one attack only), Dash, Disengage, Hide, or Utilize action."
+    },
+    {
+      "id": "r004",
+      "text": "When the spell ends, the target is Incapacitated and has a Speed of 0 until the end of its next turn, as a wave of lethargy washes over it."
+    }
+  ],
+  "authored_operations": [
+    {
+      "operation": "grant_restricted_turn_benefits",
+      "parameters": {
+        "target": "seen_willing_creature",
+        "speed_multiplier": 2,
+        "ac_bonus": 2,
+        "save_advantage": [
+          "DEX"
+        ],
+        "extra_action": {
+          "count": 1,
+          "choices": [
+            "attack_one_attack",
+            "dash",
+            "disengage",
+            "hide",
+            "utilize"
+          ]
+        },
+        "ending": {
+          "conditions": [
+            "incapacitated",
+            "speed_zero"
+          ],
+          "until": "recipient_next_turn_end"
+        }
+      },
+      "status": "authoring_declaration_not_a_registered_opcode",
+      "required_source_rules": [
+        "r001",
+        "r002",
+        "r003",
+        "r004"
+      ]
+    }
+  ],
+  "runtime_draft": {
+    "origin": "fragments_only",
+    "definition": null,
+    "fragments": {
+      "fixed_ac_portion_only": {
+        "effects": [
+          {
+            "type": "grant_source_benefits",
+            "benefits": [
+              {
+                "stat": "AC",
+                "amount": 2
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "coverage": "Unverified. Neither a full definition nor a fragment certifies all source rules or controls. Required extensions are not silently waived."
+  },
+  "required_extensions": [
+    {
+      "group": "restricted_budgets",
+      "requirement": "Express Action-vs-Bonus exclusivity, restricted extra actions, attack counts and lost actions/Reactions; never turn a restricted grant into a general budget.",
+      "spell_specific_intent": "Seen willing creature; double Speed, +2 AC, DEX-save Advantage; one restricted extra action each turn; Attack option permits only one attack; end lethargy through end of next turn.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003",
+        "r004"
+      ],
+      "existing_owner_to_reuse": "src/combat/combat_turn_budget.gd",
+      "slice_references": "S-146/S-148/S-160",
+      "disposition": "requires_mapping_or_host_completion",
+      "note": "This is an authored handoff requirement, not a fresh runtime failure or claim that the whole referenced slice is missing."
+    }
+  ],
+  "audit": {
+    "source": "docs/audits/spells.md",
+    "batch": "088-4",
+    "production_definition_at_authoring": "res://data/core/spells/imported_spells.json#92",
+    "baseline_execution": "native",
+    "source_revision": "2a19eb1d",
+    "existing_conversion_label": "queued"
+  },
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile every source rule and required extension, then implement and verify through production paths before any deliberate promotion. Keep native behavior until covered."
+  }
+}

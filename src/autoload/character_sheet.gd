@@ -158,6 +158,16 @@ func _populate(c: Character, ritual_message: String = "") -> void:
 		vitals += "   Form: %s" % DruidRules.current_form(c).get("name", "Beast")
 	_add_section("Vitals", [vitals])
 	_add_section("Recovery", [CorpseRules.status(c, int(GameManager.campaign_elapsed_seconds))])
+	if not c.ammunition_recovery.is_empty():
+		var recover_ammo := Button.new()
+		recover_ammo.name = "RecoverAmmunition"
+		recover_ammo.text = "Recover ammunition (1 minute)"
+		recover_ammo.tooltip_text = AmmunitionRules.recovery_error(c)
+		recover_ammo.disabled = not recover_ammo.tooltip_text.is_empty()
+		recover_ammo.pressed.connect(func():
+			var result := AmmunitionRules.recover(c)
+			_populate(c, str(result.message)))
+		_content.add_child(recover_ammo)
 	var revival_choice := CheckBox.new()
 	revival_choice.name = "RevivalWillingness"
 	revival_choice.text = "Accept magical revival if I die"

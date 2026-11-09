@@ -1,0 +1,158 @@
+{
+  "format": "crown-spell-candidate/1",
+  "id": "hypnotic_pattern",
+  "name": "Hypnotic Pattern",
+  "level": 3,
+  "status": "written_unverified_not_loaded",
+  "source": {
+    "authority": "SRD 5.2.1",
+    "url": "https://media.dndbeyond.com/compendium-images/srd/5.2/SRD_CC_v5.2.1.pdf",
+    "sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      141
+    ],
+    "header": {
+      "Casting Time": "Action",
+      "Range": "120 feet",
+      "Components": "S, M (a pinch of confetti)",
+      "Duration": "Concentration, up to 1 minute"
+    },
+    "attribution": "System Reference Document 5.2.1, Wizards of the Coast LLC; CC BY 4.0."
+  },
+  "casting": {
+    "casting_time": "Action",
+    "kind": "action",
+    "seconds": null,
+    "ritual_available": false,
+    "range": {
+      "source": "120 feet",
+      "kind": "distance",
+      "feet": 120
+    },
+    "components": [
+      "S",
+      "M"
+    ],
+    "material": "a pinch of confetti",
+    "duration": "Concentration, up to 1 minute",
+    "concentration": true,
+    "spell_lists": [
+      "bard",
+      "sorcerer",
+      "warlock",
+      "wizard"
+    ]
+  },
+  "authored_intent": "30-foot cube; WIS saves only for creatures that see pattern; failed targets Charmed, Incapacitated and Speed 0; damage or another creature shake action ends for exact target.",
+  "rules": [
+    {
+      "id": "r001",
+      "text": "You create a twisting pattern of colors in a 30-foot Cube within range."
+    },
+    {
+      "id": "r002",
+      "text": "The pattern appears for a moment and vanishes."
+    },
+    {
+      "id": "r003",
+      "text": "Each creature in the area who can see the pattern must succeed on a Wisdom saving throw or have the Charmed condition for the duration."
+    },
+    {
+      "id": "r004",
+      "text": "While Charmed, the creature has the Incapacitated condition and a Speed of 0."
+    },
+    {
+      "id": "r005",
+      "text": "The spell ends for an affected creature if it takes any damage or if someone else uses an action to shake the creature out of its stupor."
+    }
+  ],
+  "authored_operations": [
+    {
+      "operation": "shared_definition_reference",
+      "parameters": {
+        "definition": "runtime_draft.definition"
+      },
+      "status": "shared_definition_reference_unverified",
+      "required_source_rules": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005"
+      ]
+    }
+  ],
+  "runtime_draft": {
+    "origin": "existing_shared_definition",
+    "definition": {
+      "area_save_requires_sight": true,
+      "attack_type": "none",
+      "casting_time": "action",
+      "classes": [
+        "bard",
+        "sorcerer",
+        "warlock",
+        "wizard"
+      ],
+      "components": [
+        "S",
+        "M"
+      ],
+      "concentration": true,
+      "description": "You create a twisting pattern of colors in a 30-foot Cube within range. The pattern appears for a moment and vanishes. Each creature in the area who can see the pattern must succeed on a Wisdom saving throw or have the Charmed condition for the duration. While Charmed, the creature has the Incapacitated condition and a Speed of 0. The spell ends for an affected creature if it takes any damage or if someone else uses an action to shake the creature out of its stupor.",
+      "duration": "Concentration, up to 1 minute",
+      "duration_seconds": 60,
+      "effects": [
+        {
+          "shape": "square",
+          "size_feet": 30.0,
+          "type": "area_selection"
+        },
+        {
+          "condition": "charmed",
+          "on_failed_save": true,
+          "type": "grant_condition"
+        },
+        {
+          "condition": "incapacitated",
+          "on_failed_save": true,
+          "type": "grant_condition"
+        },
+        {
+          "condition": "speed_zero",
+          "on_failed_save": true,
+          "type": "grant_condition"
+        }
+      ],
+      "end_on_any_damage": true,
+      "end_on_shake_action": true,
+      "execution": "shared",
+      "id": "hypnotic_pattern",
+      "level": 3,
+      "material": "a pinch of confetti",
+      "name": "Hypnotic Pattern",
+      "range": 24,
+      "rules_source": "SRD 5.2.1",
+      "rules_status": "authoring-draft-unverified",
+      "save": "WIS",
+      "school": "illusion",
+      "target": "area"
+    },
+    "fragments": {},
+    "coverage": "Unverified. Neither a full definition nor a fragment certifies all source rules or controls. Required extensions are not silently waived."
+  },
+  "required_extensions": [],
+  "audit": {
+    "source": "docs/audits/spells.md",
+    "batch": "088-3",
+    "production_definition_at_authoring": "res://data/core/spells/crown_sc_06.json#2",
+    "baseline_execution": "shared",
+    "source_revision": "2a19eb1d",
+    "existing_conversion_label": "converted"
+  },
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile every source rule and required extension, then implement and verify through production paths before any deliberate promotion. Keep native behavior until covered."
+  }
+}

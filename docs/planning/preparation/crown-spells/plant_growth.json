@@ -1,0 +1,214 @@
+{
+  "format": "crown-spell-candidate/1",
+  "id": "plant_growth",
+  "name": "Plant Growth",
+  "level": 3,
+  "status": "written_unverified_not_loaded",
+  "source": {
+    "authority": "SRD 5.2.1",
+    "url": "https://media.dndbeyond.com/compendium-images/srd/5.2/SRD_CC_v5.2.1.pdf",
+    "sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      153
+    ],
+    "header": {
+      "Casting Time": "Action (Overgrowth) or 8 hours (Enrichment)",
+      "Range": "150 feet",
+      "Components": "V, S",
+      "Duration": "Instantaneous"
+    },
+    "attribution": "System Reference Document 5.2.1, Wizards of the Coast LLC; CC BY 4.0."
+  },
+  "casting": {
+    "casting_time": "Action (Overgrowth) or 8 hours (Enrichment)",
+    "kind": "action",
+    "seconds": 28800,
+    "ritual_available": false,
+    "range": {
+      "source": "150 feet",
+      "kind": "distance",
+      "feet": 150
+    },
+    "components": [
+      "V",
+      "S"
+    ],
+    "material": null,
+    "duration": "Instantaneous",
+    "concentration": false,
+    "spell_lists": [
+      "bard",
+      "druid",
+      "ranger"
+    ]
+  },
+  "authored_intent": "Choose instant overgrowth or eight-hour enrichment; instant 100-foot-radius plants impose four-feet-per-foot movement with selected exclusions; enrichment half-mile radius doubles food yield for one year; no invented plant creation.",
+  "rules": [
+    {
+      "id": "r001",
+      "text": "This spell channels vitality into plants."
+    },
+    {
+      "id": "r002",
+      "text": "The casting time you use determines whether the spell has the Overgrowth or the Enrichment effect below."
+    },
+    {
+      "id": "r003",
+      "text": "Overgrowth."
+    },
+    {
+      "id": "r004",
+      "text": "Choose a point within range."
+    },
+    {
+      "id": "r005",
+      "text": "All normal plants in a 100-foot-radius Sphere centered on that point become thick and overgrown."
+    },
+    {
+      "id": "r006",
+      "text": "A creature moving through that area must spend 4 feet of movement for every 1 foot it moves."
+    },
+    {
+      "id": "r007",
+      "text": "You can exclude one or more areas of any size within the spell’s area from being affected."
+    },
+    {
+      "id": "r008",
+      "text": "Enrichment."
+    },
+    {
+      "id": "r009",
+      "text": "All plants in a half-mile radius centered on a point within range become enriched for 365 days."
+    },
+    {
+      "id": "r010",
+      "text": "The plants yield twice the normal amount of food when harvested."
+    },
+    {
+      "id": "r011",
+      "text": "They can benefit from only one Plant Growth per year."
+    }
+  ],
+  "authored_operations": [
+    {
+      "operation": "choose_cast_time_effect",
+      "parameters": {
+        "choices": {
+          "action": {
+            "sphere_radius_feet": 100,
+            "normal_plants_only": true,
+            "movement_cost_multiplier": 4,
+            "exclude_arbitrary_subareas": true
+          },
+          "eight_hours": {
+            "radius_miles": 0.5,
+            "duration_days": 365,
+            "food_yield_multiplier": 2,
+            "benefit_maximum": "once_per_year"
+          }
+        }
+      },
+      "status": "authoring_declaration_not_a_registered_opcode",
+      "required_source_rules": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006",
+        "r007",
+        "r008",
+        "r009",
+        "r010",
+        "r011"
+      ]
+    }
+  ],
+  "runtime_draft": {
+    "origin": "proposed_operations",
+    "definition": null,
+    "fragments": {},
+    "coverage": "Unverified. Neither a full definition nor a fragment certifies all source rules or controls. Required extensions are not silently waived."
+  },
+  "required_extensions": [
+    {
+      "group": "quantities",
+      "requirement": "Create/consume/purify real measured quantities with exact ownership, containers, expiry and source outcomes, not descriptive substitutes.",
+      "spell_specific_intent": "Choose instant overgrowth or eight-hour enrichment; instant 100-foot-radius plants impose four-feet-per-foot movement with selected exclusions; enrichment half-mile radius doubles food yield for one year; no invented plant creation.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006",
+        "r007",
+        "r008",
+        "r009",
+        "r010",
+        "r011"
+      ],
+      "existing_owner_to_reuse": "src/characters/inventory.gd",
+      "slice_references": "S-196/S-197/S-199/S-205",
+      "disposition": "requires_mapping_or_host_completion",
+      "note": "This is an authored handoff requirement, not a fresh runtime failure or claim that the whole referenced slice is missing."
+    },
+    {
+      "group": "terrain",
+      "requirement": "Represent actual source-defined terrain movement cost, anchoring, camouflage, plant selection and discovery; preserve actor travel and once-only movement damage.",
+      "spell_specific_intent": "Choose instant overgrowth or eight-hour enrichment; instant 100-foot-radius plants impose four-feet-per-foot movement with selected exclusions; enrichment half-mile radius doubles food yield for one year; no invented plant creation.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006",
+        "r007",
+        "r008",
+        "r009",
+        "r010",
+        "r011"
+      ],
+      "existing_owner_to_reuse": "src/dungeon/local_room_rules.gd",
+      "slice_references": "S-179/S-227/S-228",
+      "disposition": "requires_mapping_or_host_completion",
+      "note": "This is an authored handoff requirement, not a fresh runtime failure or claim that the whole referenced slice is missing."
+    },
+    {
+      "group": "long_cast",
+      "requirement": "Preserve the source casting duration, participants, ritual extension, interruption and once-only payment; do not replace a timed cast with an Action.",
+      "spell_specific_intent": "Choose instant overgrowth or eight-hour enrichment; instant 100-foot-radius plants impose four-feet-per-foot movement with selected exclusions; enrichment half-mile radius doubles food yield for one year; no invented plant creation.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006",
+        "r007",
+        "r008",
+        "r009",
+        "r010",
+        "r011"
+      ],
+      "existing_owner_to_reuse": "src/spells/cast_interruption_rules.gd",
+      "slice_references": "S-066/S-067/S-134",
+      "disposition": "requires_mapping_or_host_completion",
+      "note": "This is an authored handoff requirement, not a fresh runtime failure or claim that the whole referenced slice is missing."
+    }
+  ],
+  "audit": {
+    "source": "docs/audits/spells.md",
+    "batch": "088-5",
+    "production_definition_at_authoring": "res://data/core/spells/imported_spells.json#138",
+    "baseline_execution": "native",
+    "source_revision": "2a19eb1d",
+    "existing_conversion_label": "queued"
+  },
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile every source rule and required extension, then implement and verify through production paths before any deliberate promotion. Keep native behavior until covered."
+  }
+}

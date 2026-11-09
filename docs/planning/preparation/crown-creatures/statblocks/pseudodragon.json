@@ -1,0 +1,341 @@
+{
+  "schema": "crown-creature-candidate/1",
+  "id": "srd_pseudodragon",
+  "name": "Pseudodragon",
+  "kind": "srd_statblock",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring intent only; not registered engine syntax. Mapping requirements do not assert the whole referenced engine slice is absent.",
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile all source clauses, mappings and source differences before later production-path verification. Keep native paths until replacements cover them."
+  },
+  "source": {
+    "authority": "SRD 5.2.1",
+    "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      316
+    ],
+    "text": "Pseudodragon\nTiny Dragon, Neutral Good\nAC 14 Initiative +2 (12)\nHP 10 (3d4 + 3)\nSpeed 15 ft., Fly 60 ft.\nMOD SAVE MOD SAVE MOD SAVE\nStr 6 −2 −2 Dex 15 +2 +2 Con 13 +1 +1\nInt 10 +0 +0 WIS 12 +1 +1 Cha 10 +0 +0\nSkills Perception +5, Stealth +4\nSenses Blindsight 10 ft., Darkvision 60 ft.;\nPassive Perception 15\nLanguages Understands Common and Draconic but can’t\nspeak\nCR 1/4 (XP 50; PB +2)\nTraits\nMagic Resistance. The pseudodragon has Advan-\ntage on saving throws against spells and other magi-\ncal effects.\nActions\nMultiattack. The pseudodragon makes two Bite attacks.\nBite. Melee Attack Roll: +4, reach 5 ft. Hit: 4 (1d4 + 2)\nPiercing damage.\nSting. Constitution Saving Throw: DC 12, one creature\nthe pseudodragon can see within 5 feet. Failure: 5 (2d4)\nPoison damage, and the target has the Poisoned condi-\ntion for 1 hour. Failure by 5 or More: While Poisoned,\nthe target also has the Unconscious condition, which\nends early if the target takes damage or a creature\nwithin 5 feet of it takes an action to wake it.",
+    "transcription": "Two-column extraction; line breaks retained. Whole selected page context is in source-pages.json. No stat correction inferred from donor data."
+  },
+  "statistics": {
+    "identity_line": "Tiny Dragon, Neutral Good",
+    "AC": "14 Initiative +2 (12)",
+    "HP": "10 (3d4 + 3)",
+    "Speed": "15 ft., Fly 60 ft.",
+    "Skills": "Perception +5, Stealth +4",
+    "Senses": "Blindsight 10 ft., Darkvision 60 ft.;\nPassive Perception 15",
+    "Languages": "Understands Common and Draconic but can’t\nspeak",
+    "CR": "1/4 (XP 50; PB +2)",
+    "ability_scores": {
+      "STR": 6,
+      "DEX": 15,
+      "CON": 13,
+      "INT": 10,
+      "WIS": 12,
+      "CHA": 10
+    },
+    "saving_throw_modifiers": {
+      "STR": -2,
+      "DEX": 2,
+      "CON": 1,
+      "INT": 0,
+      "WIS": 1,
+      "CHA": 0
+    },
+    "initiative_modifier": 2,
+    "initiative_score_printed": 12,
+    "armor_class": 14,
+    "movement_feet": {
+      "walk": 15,
+      "fly": 60
+    }
+  },
+  "authored_operations": [
+    {
+      "key": "b001",
+      "name": "Magic Resistance",
+      "source_section": "Traits",
+      "full_rule": "Magic Resistance. The pseudodragon has Advantage on saving throws against spells and other magical effects.",
+      "budget": "passive_or_declared_trigger",
+      "steps": [
+        {
+          "intent": "Apply conditional Advantage/Disadvantage or roll adjustment only to the qualifying exact check/save/attack and its declared window.",
+          "mapping_group": "rolls"
+        }
+      ],
+      "parameters_from_rule": {
+        "attack_bonus": [],
+        "save_dc": [],
+        "distances_feet": [],
+        "dice": []
+      },
+      "blockers": [
+        "map_rolls"
+      ],
+      "ending_and_identity": "Exact actor/action/target/source instance; use every qualifier and ending in full_rule, not only extracted parameters.",
+      "behavior_plan": {
+        "budget": "passive_or_declared_trigger",
+        "source_outcomes": {},
+        "trigger": "Saving throw against spell or other magical effect",
+        "roll_adjustment": "advantage"
+      }
+    },
+    {
+      "key": "b002",
+      "name": "Multiattack",
+      "source_section": "Actions",
+      "full_rule": "Multiattack. The pseudodragon makes two Bite attacks.",
+      "budget": "action",
+      "steps": [
+        {
+          "intent": "Resolve declared roll or save, targets, range/reach, damage packets, multiattack choice, riders and exact action budget. A save-only action is not a weapon hit rider.",
+          "mapping_group": "attacks"
+        }
+      ],
+      "parameters_from_rule": {
+        "attack_bonus": [],
+        "save_dc": [],
+        "distances_feet": [],
+        "dice": []
+      },
+      "blockers": [
+        "map_attacks"
+      ],
+      "ending_and_identity": "Exact actor/action/target/source instance; use every qualifier and ending in full_rule, not only extracted parameters.",
+      "behavior_plan": {
+        "budget": "action",
+        "source_outcomes": {},
+        "resolution": "authored_attack_sequence",
+        "steps": [
+          "Bite",
+          "Bite"
+        ],
+        "permission": "Multiattack is its own action, not Attack action; do not allow it for a one-attack Pact Reaction."
+      }
+    },
+    {
+      "key": "b003",
+      "name": "Bite",
+      "source_section": "Actions",
+      "full_rule": "Bite. Melee Attack Roll: +4, reach 5 ft. Hit: 4 (1d4 + 2)\nPiercing damage.",
+      "budget": "action",
+      "steps": [
+        {
+          "intent": "Resolve declared roll or save, targets, range/reach, damage packets, multiattack choice, riders and exact action budget. A save-only action is not a weapon hit rider.",
+          "mapping_group": "attacks"
+        }
+      ],
+      "parameters_from_rule": {
+        "attack_bonus": [
+          4
+        ],
+        "save_dc": [],
+        "distances_feet": [
+          5
+        ],
+        "dice": [
+          "1d4 + 2"
+        ]
+      },
+      "blockers": [
+        "map_attacks"
+      ],
+      "ending_and_identity": "Exact actor/action/target/source instance; use every qualifier and ending in full_rule, not only extracted parameters.",
+      "behavior_plan": {
+        "budget": "action",
+        "source_outcomes": {
+          "hit": "4 (1d4 + 2) Piercing damage."
+        },
+        "resolution": "attack_roll",
+        "attack_kind": "melee",
+        "damage_and_riders": "4 (1d4 + 2) Piercing damage.",
+        "permission": "ordinary familiar cannot attack; invocation exceptions must grant this exact attack or Attack action, not every Actions entry"
+      }
+    },
+    {
+      "key": "b004",
+      "name": "Sting",
+      "source_section": "Actions",
+      "full_rule": "Sting. Constitution Saving Throw: DC 12, one creature\nthe pseudodragon can see within 5 feet. Failure: 5 (2d4)\nPoison damage, and the target has the Poisoned condition for 1 hour. Failure by 5 or More: While Poisoned,\nthe target also has the Unconscious condition, which\nends early if the target takes damage or a creature\nwithin 5 feet of it takes an action to wake it.",
+      "budget": "action",
+      "steps": [
+        {
+          "intent": "Resolve declared roll or save, targets, range/reach, damage packets, multiattack choice, riders and exact action budget. A save-only action is not a weapon hit rider.",
+          "mapping_group": "attacks"
+        },
+        {
+          "intent": "Preserve immunity, source identity, thresholds, repeat saves, explicit ending events and target-relative deadlines.",
+          "mapping_group": "conditions"
+        }
+      ],
+      "parameters_from_rule": {
+        "attack_bonus": [],
+        "save_dc": [
+          12
+        ],
+        "distances_feet": [
+          5,
+          5
+        ],
+        "dice": [
+          "2d4"
+        ]
+      },
+      "blockers": [
+        "map_attacks",
+        "map_conditions"
+      ],
+      "ending_and_identity": "Exact actor/action/target/source instance; use every qualifier and ending in full_rule, not only extracted parameters.",
+      "behavior_plan": {
+        "budget": "action",
+        "source_outcomes": {
+          "failure_by_5_or_more": "While Poisoned, the target also has the Unconscious condition, which ends early if the target takes damage or a creature within 5 feet of it takes an action to wake it.",
+          "failure": "5 (2d4) Poison damage, and the target has the Poisoned condition for 1 hour."
+        },
+        "resolution": "CON save DC12, seen creature within5 feet",
+        "failure": "2d4 Poison and Poisoned1 hour",
+        "failure_by_5_or_more": "While Poisoned also Unconscious; damage or action by creature within5 feet wakes it; preserve Poisoned if only waking ends"
+      }
+    }
+  ],
+  "retained_definitions": [
+    {
+      "path": "data/core/monsters/imported_monsters.json",
+      "sha256": "f57bee1e93f185a89575bed3d8b2b610b53cfd3b7f2eb56448d1dd64a0126c5f",
+      "pointer": "/319",
+      "payload": {
+        "id": "pseudodragon",
+        "name": "Pseudodragon",
+        "hit_points": "2d4 + 2",
+        "armor_class": 13,
+        "speed": 3,
+        "ability_scores": {
+          "STR": 6,
+          "DEX": 15,
+          "CON": 13,
+          "INT": 10,
+          "WIS": 12,
+          "CHA": 10
+        },
+        "attacks": [
+          {
+            "name": "Claws",
+            "ability": "STR",
+            "damage": "1d6",
+            "range": 1,
+            "damage_type": "slashing"
+          }
+        ],
+        "ai_behavior": "aggressive"
+      },
+      "manifest_declarations": [
+        {
+          "type": "monster",
+          "id": "pseudodragon",
+          "winner": "res://data/core/monsters/srd_monsters.json#224",
+          "replaces": [
+            "res://data/core/monsters/imported_monsters.json#320"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "data/core/monsters/srd_monsters.json",
+      "sha256": "83786ed8bafc802e37b7794c04ba8901e3e10b35d288f301c92f01bbed50cd73",
+      "pointer": "/223",
+      "payload": {
+        "id": "pseudodragon",
+        "name": "Pseudodragon",
+        "description": "A tiny dragon companion with a sleep-poison sting.",
+        "size": "tiny",
+        "challenge_rating": 0.25,
+        "hit_points": "3d4 + 3",
+        "armor_class": 14,
+        "speed": 3,
+        "ability_scores": {
+          "STR": 6,
+          "DEX": 15,
+          "CON": 13,
+          "INT": 10,
+          "WIS": 12,
+          "CHA": 10
+        },
+        "attacks": [
+          {
+            "name": "Bite",
+            "ability": "DEX",
+            "damage": "1d4 + 2",
+            "damage_type": "piercing",
+            "range": 1
+          },
+          {
+            "name": "Sting",
+            "ability": "CON",
+            "damage": "2d4",
+            "damage_type": "poison",
+            "range": 1,
+            "extra_effects": [
+              {
+                "type": "poison_sleep",
+                "save": "CON",
+                "dc": 12
+              }
+            ]
+          }
+        ],
+        "ai_behavior": "defensive",
+        "special_abilities": [
+          {
+            "id": "multiattack",
+            "name": "Multiattack",
+            "description": "Makes two Bite attacks."
+          },
+          {
+            "id": "fly",
+            "name": "Fly",
+            "description": "Fly speed 12 hexes (60 ft)."
+          },
+          {
+            "id": "magic_resistance",
+            "name": "Magic Resistance",
+            "description": "Advantage on saving throws against spells and magical effects."
+          }
+        ],
+        "loot_table": [],
+        "xp": 50
+      },
+      "manifest_declarations": [
+        {
+          "type": "monster",
+          "id": "pseudodragon",
+          "winner": "res://data/core/monsters/srd_monsters.json#224",
+          "replaces": [
+            "res://data/core/monsters/imported_monsters.json#320"
+          ]
+        }
+      ]
+    }
+  ],
+  "selection": {
+    "wild_shape_druid_levels_2_3": false,
+    "wild_shape_druid_levels_4_5": false,
+    "normal_familiar": false,
+    "pact_of_chain_special": true,
+    "animate_dead_output": false,
+    "held_swarm": false,
+    "encounter_comparison_only": false
+  },
+  "acquisition_links": [
+    "selection-links.json"
+  ],
+  "blockers": [
+    "map_statistics",
+    "map_attacks",
+    "map_conditions",
+    "map_rolls"
+  ],
+  "source_reconciliation": "Official body is authoritative for this SRD candidate. Retained donor payloads are comparison/reuse seeds, including legacy values and manifest winners; do not merge their statistics or traits by ID. Direct Crown encounters retain separate candidates.",
+  "equipment_links": []
+}

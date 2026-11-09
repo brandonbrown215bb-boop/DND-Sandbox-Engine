@@ -1,0 +1,134 @@
+{
+  "format": "crown-spell-candidate/1",
+  "id": "cure_wounds",
+  "name": "Cure Wounds",
+  "level": 1,
+  "status": "written_unverified_not_loaded",
+  "source": {
+    "authority": "SRD 5.2.1",
+    "url": "https://media.dndbeyond.com/compendium-images/srd/5.2/SRD_CC_v5.2.1.pdf",
+    "sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      121
+    ],
+    "header": {
+      "Casting Time": "Action",
+      "Range": "Touch",
+      "Components": "V, S",
+      "Duration": "Instantaneous"
+    },
+    "attribution": "System Reference Document 5.2.1, Wizards of the Coast LLC; CC BY 4.0."
+  },
+  "casting": {
+    "casting_time": "Action",
+    "kind": "action",
+    "seconds": null,
+    "ritual_available": false,
+    "range": {
+      "source": "Touch",
+      "kind": "touch",
+      "feet": 5
+    },
+    "components": [
+      "V",
+      "S"
+    ],
+    "material": null,
+    "duration": "Instantaneous",
+    "concentration": false,
+    "spell_lists": [
+      "bard",
+      "cleric",
+      "druid",
+      "paladin",
+      "ranger"
+    ]
+  },
+  "authored_intent": "Touch creature; heal 2d8 plus selected casting ability; higher slots add 2d8; no obsolete 2014 base dice.",
+  "rules": [
+    {
+      "id": "r001",
+      "text": "A creature you touch regains a number of Hit Points equal to 2d8 plus your spellcasting ability modifier."
+    },
+    {
+      "id": "r002",
+      "text": "Using a Higher-Level Spell Slot."
+    },
+    {
+      "id": "r003",
+      "text": "The healing increases by 2d8 for each spell slot level above 1."
+    }
+  ],
+  "authored_operations": [
+    {
+      "operation": "shared_definition_reference",
+      "parameters": {
+        "definition": "runtime_draft.definition"
+      },
+      "status": "shared_definition_reference_unverified",
+      "required_source_rules": [
+        "r001",
+        "r002",
+        "r003"
+      ]
+    }
+  ],
+  "runtime_draft": {
+    "origin": "existing_shared_definition",
+    "definition": {
+      "attack_type": "none",
+      "casting_time": "action",
+      "classes": [
+        "bard",
+        "cleric",
+        "druid",
+        "paladin",
+        "ranger"
+      ],
+      "components": [
+        "V",
+        "S"
+      ],
+      "concentration": false,
+      "description": "A creature you touch regains a number of Hit Points equal to 2d8 plus your spellcasting ability modifier. Using a Higher-Level Spell Slot. The healing increases by 2d8 for each spell slot level above 1.",
+      "duration": "Instantaneous",
+      "effects": [
+        {
+          "ability_bonus_from_caster": true,
+          "type": "heal",
+          "value": "2d8"
+        }
+      ],
+      "execution": "shared",
+      "id": "cure_wounds",
+      "level": 1,
+      "name": "Cure Wounds",
+      "range": 1,
+      "range_kind": "touch",
+      "rules_source": "SRD 5.2.1",
+      "rules_status": "authoring-draft-unverified",
+      "school": "abjuration",
+      "target": "single",
+      "upcast": {
+        "healing_dice_per_level": "2d8",
+        "starting_level": 1.0
+      }
+    },
+    "fragments": {},
+    "coverage": "Unverified. Neither a full definition nor a fragment certifies all source rules or controls. Required extensions are not silently waived."
+  },
+  "required_extensions": [],
+  "audit": {
+    "source": "docs/audits/spells.md",
+    "batch": "088-2",
+    "production_definition_at_authoring": "res://data/core/spells/conversion_batch_002.json#1",
+    "baseline_execution": "shared",
+    "source_revision": "2a19eb1d",
+    "existing_conversion_label": "already_shared_baseline"
+  },
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile every source rule and required extension, then implement and verify through production paths before any deliberate promotion. Keep native behavior until covered."
+  }
+}

@@ -1,0 +1,227 @@
+{
+  "format": "crown-spell-candidate/1",
+  "id": "enlarge/reduce",
+  "name": "Enlarge/Reduce",
+  "level": 2,
+  "status": "written_unverified_not_loaded",
+  "source": {
+    "authority": "SRD 5.2.1",
+    "url": "https://media.dndbeyond.com/compendium-images/srd/5.2/SRD_CC_v5.2.1.pdf",
+    "sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      127,
+      128
+    ],
+    "header": {
+      "Casting Time": "Action",
+      "Range": "30 feet",
+      "Components": "V, S, M (a pinch of powdered iron)",
+      "Duration": "Concentration, up to 1 minute"
+    },
+    "attribution": "System Reference Document 5.2.1, Wizards of the Coast LLC; CC BY 4.0."
+  },
+  "casting": {
+    "casting_time": "Action",
+    "kind": "action",
+    "seconds": null,
+    "ritual_available": false,
+    "range": {
+      "source": "30 feet",
+      "kind": "distance",
+      "feet": 30
+    },
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "a pinch of powdered iron",
+    "duration": "Concentration, up to 1 minute",
+    "concentration": true,
+    "spell_lists": [
+      "bard",
+      "druid",
+      "sorcerer",
+      "wizard"
+    ]
+  },
+  "authored_intent": "Seen creature/object; worn/carried objects excluded as direct targets; unwilling creature CON save; size changes by one category with source-defined STR check/save Advantage or Disadvantage; weapon/unarmed plus/minus 1d4, reduction minimum 1; dropped/thrown/ammunition gear reverts at exact boundary; no invented weight multiplier.",
+  "rules": [
+    {
+      "id": "r001",
+      "text": "For the duration, the spell enlarges or reduces a creature or an object you can see within range (see the chosen effect below)."
+    },
+    {
+      "id": "r002",
+      "text": "A targeted object must be neither worn nor carried."
+    },
+    {
+      "id": "r003",
+      "text": "If the target is an unwilling creature, it can make a Constitution saving throw."
+    },
+    {
+      "id": "r004",
+      "text": "On a successful save, the spell has no effect."
+    },
+    {
+      "id": "r005",
+      "text": "Everything that a targeted creature is wearing and carrying changes size with it."
+    },
+    {
+      "id": "r006",
+      "text": "Any item it drops returns to normal size at once."
+    },
+    {
+      "id": "r007",
+      "text": "A thrown weapon or piece of ammunition returns to normal size immediately after it hits or misses a target."
+    },
+    {
+      "id": "r008",
+      "text": "Enlarge."
+    },
+    {
+      "id": "r009",
+      "text": "The target’s size increases by one category—from Medium to Large, for example."
+    },
+    {
+      "id": "r010",
+      "text": "The target also has Advantage on Strength checks and Strength saving throws."
+    },
+    {
+      "id": "r011",
+      "text": "The target’s attacks with its enlarged weapons or Unarmed Strikes deal an extra 1d4 damage on a hit."
+    },
+    {
+      "id": "r012",
+      "text": "Reduce."
+    },
+    {
+      "id": "r013",
+      "text": "The target’s size decreases by one category—from Medium to Small, for example."
+    },
+    {
+      "id": "r014",
+      "text": "The target also has Disadvantage on Strength checks and Strength saving throws."
+    },
+    {
+      "id": "r015",
+      "text": "The target’s attacks with its reduced weapons or Unarmed Strikes deal 1d4 less damage on a hit (this can’t reduce the damage below 1)."
+    }
+  ],
+  "authored_operations": [
+    {
+      "operation": "change_size_and_attack_damage",
+      "parameters": {
+        "target": "seen_creature_or_unworn_uncarried_object",
+        "unwilling_save": "CON",
+        "changes": {
+          "enlarge": {
+            "size_categories": 1,
+            "STR_checks_and_saves": "advantage",
+            "weapon_unarmed_damage": "+1d4"
+          },
+          "reduce": {
+            "size_categories": -1,
+            "STR_checks_and_saves": "disadvantage",
+            "weapon_unarmed_damage": "-1d4",
+            "damage_minimum": 1
+          }
+        },
+        "gear_changes_with_owner": true,
+        "dropped_gear": "revert_immediately",
+        "thrown_weapon_or_ammunition": "revert_after_hit_or_miss"
+      },
+      "status": "authoring_declaration_not_a_registered_opcode",
+      "required_source_rules": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006",
+        "r007",
+        "r008",
+        "r009",
+        "r010",
+        "r011",
+        "r012",
+        "r013",
+        "r014",
+        "r015"
+      ]
+    }
+  ],
+  "runtime_draft": {
+    "origin": "proposed_operations",
+    "definition": null,
+    "fragments": {},
+    "coverage": "Unverified. Neither a full definition nor a fragment certifies all source rules or controls. Required extensions are not silently waived."
+  },
+  "required_extensions": [
+    {
+      "group": "forms",
+      "requirement": "Declare legal forms, retained/replaced abilities and senses, gear policy, costs, restrictions and actual reversion/expulsion without refilling resources.",
+      "spell_specific_intent": "Seen creature/object; worn/carried objects excluded as direct targets; unwilling creature CON save; size changes by one category with source-defined STR check/save Advantage or Disadvantage; weapon/unarmed plus/minus 1d4, reduction minimum 1; dropped/thrown/ammunition gear reverts at exact boundary; no invented weight multiplier.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006",
+        "r007",
+        "r008",
+        "r009",
+        "r010",
+        "r011",
+        "r012",
+        "r013",
+        "r014",
+        "r015"
+      ],
+      "existing_owner_to_reuse": "src/characters/actor_projection_rules.gd",
+      "slice_references": "S-162/S-163/S-164",
+      "disposition": "requires_mapping_or_host_completion",
+      "note": "This is an authored handoff requirement, not a fresh runtime failure or claim that the whole referenced slice is missing."
+    },
+    {
+      "group": "attack_riders",
+      "requirement": "Bind damage or next-result benefits to eligible hit/roll occurrences, casting source and expiry; retain packet damage types, critical behavior and consumption.",
+      "spell_specific_intent": "Seen creature/object; worn/carried objects excluded as direct targets; unwilling creature CON save; size changes by one category with source-defined STR check/save Advantage or Disadvantage; weapon/unarmed plus/minus 1d4, reduction minimum 1; dropped/thrown/ammunition gear reverts at exact boundary; no invented weight multiplier.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006",
+        "r007",
+        "r008",
+        "r009",
+        "r010",
+        "r011",
+        "r012",
+        "r013",
+        "r014",
+        "r015"
+      ],
+      "existing_owner_to_reuse": "src/combat/combat_action.gd",
+      "slice_references": "S-076/S-077/S-109/S-126/S-127",
+      "disposition": "requires_mapping_or_host_completion",
+      "note": "This is an authored handoff requirement, not a fresh runtime failure or claim that the whole referenced slice is missing."
+    }
+  ],
+  "audit": {
+    "source": "docs/audits/spells.md",
+    "batch": "088-4",
+    "production_definition_at_authoring": "res://data/core/spells/imported_spells.json#63",
+    "baseline_execution": "native",
+    "source_revision": "2a19eb1d",
+    "existing_conversion_label": "queued"
+  },
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile every source rule and required extension, then implement and verify through production paths before any deliberate promotion. Keep native behavior until covered."
+  }
+}

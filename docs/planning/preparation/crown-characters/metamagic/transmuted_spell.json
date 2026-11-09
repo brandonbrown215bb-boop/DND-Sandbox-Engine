@@ -1,0 +1,52 @@
+{
+  "schema": "crown-character-candidate/1",
+  "id": "transmuted_spell",
+  "name": "Transmuted Spell",
+  "kind": "metamagic",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "scope": {
+    "total_character_level_maximum": 5
+  },
+  "operation_language": "authoring intent only; not registered engine syntax",
+  "runtime_support": "Retained definitions are reuse material, not proof of full rules. Every authored operation needs contract mapping and later production-path verification before promotion.",
+  "minimum_sorcerer_level": 2,
+  "rules": {
+    "authority": "SRD 5.2.1",
+    "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      67
+    ],
+    "text": "Transmuted Spell\nCost: 1 Sorcery Point\nWhen you cast a spell that deals a type of damage\nfrom the following list, you can spend 1 Sorcery\nPoint to change that damage type to one of the\nother listed types: Acid, Cold, Fire, Lightning, Poison, Thunder."
+  },
+  "authored_operations": [
+    {
+      "trigger": "Cast spell dealing Acid/Cold/Fire/Lightning/Poison/Thunder",
+      "cost": {
+        "resource": "sorcery_points",
+        "amount": 1
+      },
+      "effects": [
+        "Change that damage type to another listed type for exact cast; preserve other types and all targets"
+      ],
+      "combination_exception": "none",
+      "ending_and_identity": "Capture edits on exact cast; preserve dice/targets/recipients through settlement; pay once after legal selection.",
+      "required_extension_groups": [
+        "casting",
+        "rolls",
+        "resources"
+      ]
+    }
+  ],
+  "unsupported_behavior": [
+    {
+      "groups": [
+        "casting",
+        "rolls"
+      ],
+      "requirement": "Map exact option onto every eligible in-band spell payload/host; existing native support is bounded, not universal. Do not mutate global spell definitions.",
+      "status": "mapping_and_host_verification_required"
+    }
+  ],
+  "source_revision": "2a19eb1d (existing working-tree definitions and recovered drafts read on 2026-11-08)",
+  "reused_input_hashes": {}
+}

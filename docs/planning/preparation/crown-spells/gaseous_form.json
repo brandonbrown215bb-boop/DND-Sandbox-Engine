@@ -1,0 +1,207 @@
+{
+  "format": "crown-spell-candidate/1",
+  "id": "gaseous_form",
+  "name": "Gaseous Form",
+  "level": 3,
+  "status": "written_unverified_not_loaded",
+  "source": {
+    "authority": "SRD 5.2.1",
+    "url": "https://media.dndbeyond.com/compendium-images/srd/5.2/SRD_CC_v5.2.1.pdf",
+    "sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      134,
+      135
+    ],
+    "header": {
+      "Casting Time": "Action",
+      "Range": "Touch",
+      "Components": "V, S, M (a bit of gauze)",
+      "Duration": "Concentration, up to 1 hour"
+    },
+    "attribution": "System Reference Document 5.2.1, Wizards of the Coast LLC; CC BY 4.0."
+  },
+  "casting": {
+    "casting_time": "Action",
+    "kind": "action",
+    "seconds": null,
+    "ritual_available": false,
+    "range": {
+      "source": "Touch",
+      "kind": "touch",
+      "feet": 5
+    },
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "a bit of gauze",
+    "duration": "Concentration, up to 1 hour",
+    "concentration": true,
+    "spell_lists": [
+      "sorcerer",
+      "warlock",
+      "wizard"
+    ]
+  },
+  "authored_intent": "Touch willing creature and gear into mist; Fly 10/Hover, B/P/S Resistance including magical attacks, Prone immunity and STR/DEX/CON save Advantage; share creature spaces and narrow openings, liquids act solid; no item use/talking/attacking/casting; ends at 0 HP or recipient Magic action; higher slots add creatures.",
+  "rules": [
+    {
+      "id": "r001",
+      "text": "A willing creature you touch shape-shifts, along with everything it’s wearing and carrying, into a misty cloud for the duration."
+    },
+    {
+      "id": "r002",
+      "text": "The spell ends on the target if it drops to 0 Hit Points or if it takes a Magic action to end the spell on itself."
+    },
+    {
+      "id": "r003",
+      "text": "While in this form, the target’s only method of movement is a Fly Speed of 10 feet, and it can hover."
+    },
+    {
+      "id": "r004",
+      "text": "The target can enter and occupy the space of another creature."
+    },
+    {
+      "id": "r005",
+      "text": "The target has Resistance to Bludgeoning, Piercing, and Slashing damage; it has Immunity to the Prone condition; and it has Advantage on Strength, Dexterity, and Constitution saving throws."
+    },
+    {
+      "id": "r006",
+      "text": "The target can pass through narrow openings, but it treats liquids as though they were solid surfaces."
+    },
+    {
+      "id": "r007",
+      "text": "The target can’t talk or manipulate objects, and any objects it was carrying or holding can’t be dropped, used, or otherwise interacted with."
+    },
+    {
+      "id": "r008",
+      "text": "Finally, the target can’t attack or cast spells."
+    },
+    {
+      "id": "r009",
+      "text": "Using a Higher-Level Spell Slot."
+    },
+    {
+      "id": "r010",
+      "text": "You can target one additional creature for each spell slot level above 3."
+    }
+  ],
+  "authored_operations": [
+    {
+      "operation": "project_mist_form",
+      "parameters": {
+        "target": "willing_touched_creature_and_gear",
+        "movement": {
+          "only": "fly",
+          "speed_feet": 10,
+          "hover": true,
+          "occupy_other_creature_space": true,
+          "narrow_gaps": true,
+          "liquid": "solid_surface"
+        },
+        "resistance": [
+          "bludgeoning",
+          "piercing",
+          "slashing"
+        ],
+        "condition_immunity": [
+          "prone"
+        ],
+        "save_advantage": [
+          "STR",
+          "DEX",
+          "CON"
+        ],
+        "forbidden": [
+          "talk",
+          "manipulate_objects",
+          "drop_or_use_merged_gear",
+          "attack",
+          "cast"
+        ],
+        "ends": [
+          "zero_hp",
+          "recipient_magic_action"
+        ],
+        "upcast_additional_targets": 1
+      },
+      "status": "authoring_declaration_not_a_registered_opcode",
+      "required_source_rules": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006",
+        "r007",
+        "r008",
+        "r009",
+        "r010"
+      ]
+    }
+  ],
+  "runtime_draft": {
+    "origin": "proposed_operations",
+    "definition": null,
+    "fragments": {},
+    "coverage": "Unverified. Neither a full definition nor a fragment certifies all source rules or controls. Required extensions are not silently waived."
+  },
+  "required_extensions": [
+    {
+      "group": "forms",
+      "requirement": "Declare legal forms, retained/replaced abilities and senses, gear policy, costs, restrictions and actual reversion/expulsion without refilling resources.",
+      "spell_specific_intent": "Touch willing creature and gear into mist; Fly 10/Hover, B/P/S Resistance including magical attacks, Prone immunity and STR/DEX/CON save Advantage; share creature spaces and narrow openings, liquids act solid; no item use/talking/attacking/casting; ends at 0 HP or recipient Magic action; higher slots add creatures.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006",
+        "r007",
+        "r008",
+        "r009",
+        "r010"
+      ],
+      "existing_owner_to_reuse": "src/characters/actor_projection_rules.gd",
+      "slice_references": "S-162/S-163/S-164",
+      "disposition": "requires_mapping_or_host_completion",
+      "note": "This is an authored handoff requirement, not a fresh runtime failure or claim that the whole referenced slice is missing."
+    },
+    {
+      "group": "flight",
+      "requirement": "Supply actual three-dimensional occupancy/movement, hover or attachment limits, source ending and legal fall/landing; a Speed bonus alone is not flight.",
+      "spell_specific_intent": "Touch willing creature and gear into mist; Fly 10/Hover, B/P/S Resistance including magical attacks, Prone immunity and STR/DEX/CON save Advantage; share creature spaces and narrow openings, liquids act solid; no item use/talking/attacking/casting; ends at 0 HP or recipient Magic action; higher slots add creatures.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006",
+        "r007",
+        "r008",
+        "r009",
+        "r010"
+      ],
+      "existing_owner_to_reuse": "src/combat/combat_child_actions.gd",
+      "slice_references": "S-180/S-181/S-185",
+      "disposition": "requires_mapping_or_host_completion",
+      "note": "This is an authored handoff requirement, not a fresh runtime failure or claim that the whole referenced slice is missing."
+    }
+  ],
+  "audit": {
+    "source": "docs/audits/spells.md",
+    "batch": "088-6",
+    "production_definition_at_authoring": "res://data/core/spells/imported_spells.json#83",
+    "baseline_execution": "native",
+    "source_revision": "2a19eb1d",
+    "existing_conversion_label": "queued"
+  },
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile every source rule and required extension, then implement and verify through production paths before any deliberate promotion. Keep native behavior until covered."
+  }
+}

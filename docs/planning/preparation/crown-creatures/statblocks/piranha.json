@@ -1,0 +1,150 @@
+{
+  "schema": "crown-creature-candidate/1",
+  "id": "srd_piranha",
+  "name": "Piranha",
+  "kind": "srd_statblock",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring intent only; not registered engine syntax. Mapping requirements do not assert the whole referenced engine slice is absent.",
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile all source clauses, mappings and source differences before later production-path verification. Keep native paths until replacements cover them."
+  },
+  "source": {
+    "authority": "SRD 5.2.1",
+    "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      358
+    ],
+    "text": "Piranha\nTiny Beast, Unaligned\nAC 13 Initiative +3 (13)\nHP 1 (1d4 − 1)\nSpeed 5 ft., Swim 40 ft.\nMOD SAVE MOD SAVE MOD SAVE\nStr 2 −4 −4 Dex 16 +3 +3 Con 9 −1 −1\nInt 1 −5 −5 WIS 7 −2 −2 Cha 2 −4 −4\nSenses Darkvision 60 ft.; Passive Perception 8\nLanguages None\nCR 0 (XP 10; PB +2)\nTraits\nWater Breathing. The piranha can breathe only\nunderwater.\nActions\nBite. Melee Attack Roll: +5 (with Advantage if the target\ndoesn’t have all its Hit Points), reach 5 ft. Hit: 1 Pierc-\ning damage.",
+    "transcription": "Two-column extraction; line breaks retained. Whole selected page context is in source-pages.json. No stat correction inferred from donor data."
+  },
+  "statistics": {
+    "identity_line": "Tiny Beast, Unaligned",
+    "AC": "13 Initiative +3 (13)",
+    "HP": "1 (1d4 − 1)",
+    "Speed": "5 ft., Swim 40 ft.",
+    "Senses": "Darkvision 60 ft.; Passive Perception 8",
+    "Languages": "None",
+    "CR": "0 (XP 10; PB +2)",
+    "ability_scores": {
+      "STR": 2,
+      "DEX": 16,
+      "CON": 9,
+      "INT": 1,
+      "WIS": 7,
+      "CHA": 2
+    },
+    "saving_throw_modifiers": {
+      "STR": -4,
+      "DEX": 3,
+      "CON": -1,
+      "INT": -5,
+      "WIS": -2,
+      "CHA": -4
+    },
+    "initiative_modifier": 3,
+    "initiative_score_printed": 13,
+    "armor_class": 13,
+    "movement_feet": {
+      "walk": 5,
+      "swim": 40
+    }
+  },
+  "authored_operations": [
+    {
+      "key": "b001",
+      "name": "Water Breathing",
+      "source_section": "Traits",
+      "full_rule": "Water Breathing. The piranha can breathe only\nunderwater.",
+      "budget": "passive_or_declared_trigger",
+      "steps": [
+        {
+          "intent": "Represent actual size/space, climb/swim/fly and breathing, jumps, straight-line charge history, opportunity exceptions, web surfaces and legal release.",
+          "mapping_group": "movement"
+        }
+      ],
+      "parameters_from_rule": {
+        "attack_bonus": [],
+        "save_dc": [],
+        "distances_feet": [],
+        "dice": []
+      },
+      "blockers": [
+        "map_movement"
+      ],
+      "ending_and_identity": "Exact actor/action/target/source instance; use every qualifier and ending in full_rule, not only extracted parameters.",
+      "behavior_plan": {
+        "budget": "passive_or_declared_trigger",
+        "source_outcomes": {},
+        "breathing_media": [
+          "water"
+        ],
+        "air_breathing": false
+      }
+    },
+    {
+      "key": "b002",
+      "name": "Bite",
+      "source_section": "Actions",
+      "full_rule": "Bite. Melee Attack Roll: +5 (with Advantage if the target\ndoesn’t have all its Hit Points), reach 5 ft. Hit: 1 Piercing damage.",
+      "budget": "action",
+      "steps": [
+        {
+          "intent": "Resolve declared roll or save, targets, range/reach, damage packets, multiattack choice, riders and exact action budget. A save-only action is not a weapon hit rider.",
+          "mapping_group": "attacks"
+        },
+        {
+          "intent": "Apply conditional Advantage/Disadvantage or roll adjustment only to the qualifying exact check/save/attack and its declared window.",
+          "mapping_group": "rolls"
+        }
+      ],
+      "parameters_from_rule": {
+        "attack_bonus": [
+          5
+        ],
+        "save_dc": [],
+        "distances_feet": [
+          5
+        ],
+        "dice": []
+      },
+      "blockers": [
+        "map_attacks",
+        "map_rolls"
+      ],
+      "ending_and_identity": "Exact actor/action/target/source instance; use every qualifier and ending in full_rule, not only extracted parameters.",
+      "behavior_plan": {
+        "budget": "action",
+        "source_outcomes": {
+          "hit": "1 Piercing damage."
+        },
+        "resolution": "attack_roll",
+        "attack_kind": "melee",
+        "damage_and_riders": "1 Piercing damage.",
+        "permission": "ordinary familiar cannot attack; invocation exceptions must grant this exact attack or Attack action, not every Actions entry"
+      }
+    }
+  ],
+  "retained_definitions": [],
+  "selection": {
+    "wild_shape_druid_levels_2_3": true,
+    "wild_shape_druid_levels_4_5": true,
+    "normal_familiar": true,
+    "pact_of_chain_special": false,
+    "animate_dead_output": false,
+    "held_swarm": false,
+    "encounter_comparison_only": false
+  },
+  "acquisition_links": [
+    "selection-links.json"
+  ],
+  "blockers": [
+    "map_statistics",
+    "map_attacks",
+    "map_movement",
+    "map_rolls"
+  ],
+  "source_reconciliation": "Official body is authoritative for this SRD candidate. Retained donor payloads are comparison/reuse seeds, including legacy values and manifest winners; do not merge their statistics or traits by ID. Direct Crown encounters retain separate candidates.",
+  "equipment_links": []
+}

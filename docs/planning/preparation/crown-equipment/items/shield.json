@@ -1,0 +1,103 @@
+{
+  "schema": "crown-equipment-candidate/1",
+  "id": "shield",
+  "name": "Shield",
+  "kind": "armor",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring intent only; not registered engine syntax.",
+  "rules": {
+    "authority": "SRD 5.2.1",
+    "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      92
+    ],
+    "section": "Shield",
+    "text": "Only one suit and one Shield at a time. Without Light/Medium/Heavy armor training, worn armor gives Disadvantage on Strength/Dexterity D20 Tests and prevents spellcasting. A Shield gives its AC bonus only with training. A listed Strength requirement reduces Speed by 10 feet unless met; listed Stealth Disadvantage applies while worn.",
+    "source_context": "../source-pages.json"
+  },
+  "definition": {
+    "id": "shield",
+    "name": "Shield",
+    "category": "shield",
+    "ac": 2,
+    "ac_kind": "bonus",
+    "dexterity_cap": 0,
+    "strength_requirement": null,
+    "stealth_disadvantage": false,
+    "weight_lb": 6,
+    "cost_gp": 10,
+    "don": "Utilize action",
+    "doff": "Utilize action"
+  },
+  "authored_operations": [
+    "Only one suit and one Shield at a time. Without Light/Medium/Heavy armor training, worn armor gives Disadvantage on Strength/Dexterity D20 Tests and prevents spellcasting. A Shield gives its AC bonus only with training. A listed Strength requirement reduces Speed by 10 feet unless met; listed Stealth Disadvantage applies while worn."
+  ],
+  "retained_runtime_seeds": [
+    {
+      "path": "data/core/items/armor.json",
+      "array_index": 3,
+      "file_sha256": "a54147bee457f31cff9b7003814837328d43e617d3e24ab0195c876d13cd1c01",
+      "definition": {
+        "id": "shield",
+        "weight": 6,
+        "name": "Shield",
+        "description": "A wooden or metal shield carried in one hand.",
+        "type": "shield",
+        "ac_bonus": 2,
+        "value": 10
+      }
+    },
+    {
+      "path": "data/core/items/imported_base_items.json",
+      "array_index": 47,
+      "file_sha256": "d450331c5dc1756fccc025c42e7f60bc6312a6829e59814e9864878a4abaae42",
+      "definition": {
+        "id": "shield",
+        "name": "Shield",
+        "description": "A shield is made from wood or metal and is carried in one hand. Wielding a shield increases your Armor Class by 2. You can benefit from only one shield at a time.",
+        "type": "shield",
+        "ac_bonus": 2,
+        "value": 10
+      }
+    }
+  ],
+  "manifest_overrides": [
+    {
+      "type": "item",
+      "id": "shield",
+      "winner": "res://data/core/items/armor.json#4",
+      "replaces": [
+        "res://data/core/items/imported_base_items.json#48"
+      ]
+    }
+  ],
+  "required_mapping": [
+    "armor"
+  ],
+  "consumers": [
+    {
+      "package_id": "cleric",
+      "option": "A",
+      "quantity": 1,
+      "source": "docs/planning/preparation/crown-characters/classes/cleric.json"
+    },
+    {
+      "package_id": "druid",
+      "option": "A",
+      "quantity": 1,
+      "source": "docs/planning/preparation/crown-characters/classes/druid.json"
+    },
+    {
+      "package_id": "paladin",
+      "option": "A",
+      "quantity": 1,
+      "source": "docs/planning/preparation/crown-characters/classes/paladin.json"
+    }
+  ],
+  "unsupported_behavior": [
+    {
+      "group": "armor",
+      "requirement": "Map AC, training, Strength/Stealth penalties and real don/doff. Reuse delivered timing; broader penalty consumers and content still require reconciliation."
+    }
+  ]
+}

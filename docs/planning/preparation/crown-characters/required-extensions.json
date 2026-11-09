@@ -1,0 +1,2054 @@
+{
+  "schema": "crown-character-extension-map/1",
+  "warning": "Grouped authoring requirements, not claims that every named shared owner is absent. No engine fixes or gameplay proof in this pass.",
+  "groups": [
+    {
+      "id": "progression",
+      "slices": "S-047/S-048/S-231/S-232/S-234",
+      "reference": "docs/mechanics/permanent-progression.md",
+      "required_boundary": "Own exact once-only class/subclass/species/background/feat grants at class versus character thresholds, including full secondary-class features; preserve legacy saves.",
+      "members": [
+        {
+          "candidate": "classes/barbarian.json",
+          "feature": "Barbarian Subclass"
+        },
+        {
+          "candidate": "classes/barbarian.json",
+          "feature": "Ability Score Improvement"
+        },
+        {
+          "candidate": "classes/barbarian.json",
+          "feature": "Barbarian"
+        },
+        {
+          "candidate": "classes/bard.json",
+          "feature": "Expertise"
+        },
+        {
+          "candidate": "classes/bard.json",
+          "feature": "Bard Subclass"
+        },
+        {
+          "candidate": "classes/bard.json",
+          "feature": "Ability Score Improvement"
+        },
+        {
+          "candidate": "classes/bard.json",
+          "feature": "Bard"
+        },
+        {
+          "candidate": "classes/cleric.json",
+          "feature": "Cleric Subclass"
+        },
+        {
+          "candidate": "classes/cleric.json",
+          "feature": "Ability Score Improvement"
+        },
+        {
+          "candidate": "classes/cleric.json",
+          "feature": "Cleric"
+        },
+        {
+          "candidate": "classes/druid.json",
+          "feature": "Druid Subclass"
+        },
+        {
+          "candidate": "classes/druid.json",
+          "feature": "Ability Score Improvement"
+        },
+        {
+          "candidate": "classes/druid.json",
+          "feature": "Druid"
+        },
+        {
+          "candidate": "classes/fighter.json",
+          "feature": "Fighter Subclass"
+        },
+        {
+          "candidate": "classes/fighter.json",
+          "feature": "Ability Score Improvement"
+        },
+        {
+          "candidate": "classes/fighter.json",
+          "feature": "Fighter"
+        },
+        {
+          "candidate": "classes/monk.json",
+          "feature": "Monk Subclass"
+        },
+        {
+          "candidate": "classes/monk.json",
+          "feature": "Ability Score Improvement"
+        },
+        {
+          "candidate": "classes/monk.json",
+          "feature": "Monk"
+        },
+        {
+          "candidate": "classes/paladin.json",
+          "feature": "Paladin Subclass"
+        },
+        {
+          "candidate": "classes/paladin.json",
+          "feature": "Ability Score Improvement"
+        },
+        {
+          "candidate": "classes/paladin.json",
+          "feature": "Paladin"
+        },
+        {
+          "candidate": "classes/ranger.json",
+          "feature": "Ranger Subclass"
+        },
+        {
+          "candidate": "classes/ranger.json",
+          "feature": "Ability Score Improvement"
+        },
+        {
+          "candidate": "classes/ranger.json",
+          "feature": "Ranger"
+        },
+        {
+          "candidate": "classes/rogue.json",
+          "feature": "Expertise"
+        },
+        {
+          "candidate": "classes/rogue.json",
+          "feature": "Rogue Subclass"
+        },
+        {
+          "candidate": "classes/rogue.json",
+          "feature": "Ability Score Improvement"
+        },
+        {
+          "candidate": "classes/rogue.json",
+          "feature": "Rogue"
+        },
+        {
+          "candidate": "classes/sorcerer.json",
+          "feature": "Sorcerer Subclass"
+        },
+        {
+          "candidate": "classes/sorcerer.json",
+          "feature": "Ability Score Improvement"
+        },
+        {
+          "candidate": "classes/sorcerer.json",
+          "feature": "Sorcerer"
+        },
+        {
+          "candidate": "subclasses/draconic_sorcery.json",
+          "feature": "Draconic Resilience"
+        },
+        {
+          "candidate": "classes/warlock.json",
+          "feature": "Warlock Subclass"
+        },
+        {
+          "candidate": "classes/warlock.json",
+          "feature": "Ability Score Improvement"
+        },
+        {
+          "candidate": "classes/warlock.json",
+          "feature": "Warlock"
+        },
+        {
+          "candidate": "classes/wizard.json",
+          "feature": "Wizard Subclass"
+        },
+        {
+          "candidate": "classes/wizard.json",
+          "feature": "Ability Score Improvement"
+        },
+        {
+          "candidate": "classes/wizard.json",
+          "feature": "Wizard"
+        },
+        {
+          "candidate": "invocations/lessons_of_the_first_ones.json",
+          "feature": "Lessons of the First Ones"
+        },
+        {
+          "candidate": "species/dragonborn.json",
+          "feature": "Dragonborn"
+        },
+        {
+          "candidate": "species/dwarf.json",
+          "feature": "Dwarf"
+        },
+        {
+          "candidate": "species/elf.json",
+          "feature": "Elf"
+        },
+        {
+          "candidate": "species/gnome.json",
+          "feature": "Gnome"
+        },
+        {
+          "candidate": "species/goliath.json",
+          "feature": "Goliath"
+        },
+        {
+          "candidate": "species/halfling.json",
+          "feature": "Halfling"
+        },
+        {
+          "candidate": "species/human.json",
+          "feature": "Human"
+        },
+        {
+          "candidate": "species/orc.json",
+          "feature": "Orc"
+        },
+        {
+          "candidate": "species/tiefling.json",
+          "feature": "Tiefling"
+        },
+        {
+          "candidate": "feats/skilled.json",
+          "feature": "Skilled"
+        },
+        {
+          "candidate": "feats/ability_score_improvement.json",
+          "feature": "Ability Score Improvement"
+        },
+        {
+          "candidate": "feats/grappler.json",
+          "feature": "Grappler"
+        },
+        {
+          "candidate": "backgrounds/acolyte.json",
+          "feature": "Acolyte"
+        },
+        {
+          "candidate": "backgrounds/criminal.json",
+          "feature": "Criminal"
+        },
+        {
+          "candidate": "backgrounds/sage.json",
+          "feature": "Sage"
+        },
+        {
+          "candidate": "backgrounds/soldier.json",
+          "feature": "Soldier"
+        },
+        {
+          "candidate": "multiclass.json",
+          "feature": "Multiclass acquisition and casting"
+        }
+      ]
+    },
+    {
+      "id": "choices",
+      "slices": "S-045/S-046/S-233",
+      "reference": "docs/mechanics/progression-choices.md",
+      "required_boundary": "Legal parameterized picks, replacements, prerequisite dependency checks, repeated instances and source ownership; reuse delivered class tool/skill and Skilled paths.",
+      "members": [
+        {
+          "candidate": "classes/barbarian.json",
+          "feature": "Weapon Mastery"
+        },
+        {
+          "candidate": "classes/barbarian.json",
+          "feature": "Barbarian Subclass"
+        },
+        {
+          "candidate": "classes/barbarian.json",
+          "feature": "Primal Knowledge"
+        },
+        {
+          "candidate": "classes/barbarian.json",
+          "feature": "Ability Score Improvement"
+        },
+        {
+          "candidate": "classes/bard.json",
+          "feature": "Spellcasting"
+        },
+        {
+          "candidate": "classes/bard.json",
+          "feature": "Expertise"
+        },
+        {
+          "candidate": "classes/bard.json",
+          "feature": "Bard Subclass"
+        },
+        {
+          "candidate": "classes/bard.json",
+          "feature": "Ability Score Improvement"
+        },
+        {
+          "candidate": "subclasses/college_of_lore.json",
+          "feature": "Bonus Proficiencies"
+        },
+        {
+          "candidate": "classes/cleric.json",
+          "feature": "Spellcasting"
+        },
+        {
+          "candidate": "classes/cleric.json",
+          "feature": "Divine Order"
+        },
+        {
+          "candidate": "classes/cleric.json",
+          "feature": "Cleric Subclass"
+        },
+        {
+          "candidate": "classes/cleric.json",
+          "feature": "Ability Score Improvement"
+        },
+        {
+          "candidate": "subclasses/life_domain.json",
+          "feature": "Life Domain Spells"
+        },
+        {
+          "candidate": "classes/druid.json",
+          "feature": "Spellcasting"
+        },
+        {
+          "candidate": "classes/druid.json",
+          "feature": "Primal Order"
+        },
+        {
+          "candidate": "classes/druid.json",
+          "feature": "Wild Shape"
+        },
+        {
+          "candidate": "classes/druid.json",
+          "feature": "Druid Subclass"
+        },
+        {
+          "candidate": "classes/druid.json",
+          "feature": "Ability Score Improvement"
+        },
+        {
+          "candidate": "subclasses/circle_of_the_land.json",
+          "feature": "Circle of the Land Spells"
+        },
+        {
+          "candidate": "classes/fighter.json",
+          "feature": "Fighting Style"
+        },
+        {
+          "candidate": "classes/fighter.json",
+          "feature": "Weapon Mastery"
+        },
+        {
+          "candidate": "classes/fighter.json",
+          "feature": "Fighter Subclass"
+        },
+        {
+          "candidate": "classes/fighter.json",
+          "feature": "Ability Score Improvement"
+        },
+        {
+          "candidate": "classes/monk.json",
+          "feature": "Monk Subclass"
+        },
+        {
+          "candidate": "classes/monk.json",
+          "feature": "Ability Score Improvement"
+        },
+        {
+          "candidate": "classes/paladin.json",
+          "feature": "Spellcasting"
+        },
+        {
+          "candidate": "classes/paladin.json",
+          "feature": "Weapon Mastery"
+        },
+        {
+          "candidate": "classes/paladin.json",
+          "feature": "Fighting Style"
+        },
+        {
+          "candidate": "classes/paladin.json",
+          "feature": "Paladin Subclass"
+        },
+        {
+          "candidate": "classes/paladin.json",
+          "feature": "Ability Score Improvement"
+        },
+        {
+          "candidate": "subclasses/oath_of_devotion.json",
+          "feature": "Oath of Devotion Spells"
+        },
+        {
+          "candidate": "classes/ranger.json",
+          "feature": "Spellcasting"
+        },
+        {
+          "candidate": "classes/ranger.json",
+          "feature": "Weapon Mastery"
+        },
+        {
+          "candidate": "classes/ranger.json",
+          "feature": "Deft Explorer"
+        },
+        {
+          "candidate": "classes/ranger.json",
+          "feature": "Fighting Style"
+        },
+        {
+          "candidate": "classes/ranger.json",
+          "feature": "Ranger Subclass"
+        },
+        {
+          "candidate": "classes/ranger.json",
+          "feature": "Ability Score Improvement"
+        },
+        {
+          "candidate": "subclasses/hunter.json",
+          "feature": "Hunter’s Prey"
+        },
+        {
+          "candidate": "classes/rogue.json",
+          "feature": "Expertise"
+        },
+        {
+          "candidate": "classes/rogue.json",
+          "feature": "Thieves’ Cant"
+        },
+        {
+          "candidate": "classes/rogue.json",
+          "feature": "Weapon Mastery"
+        },
+        {
+          "candidate": "classes/rogue.json",
+          "feature": "Rogue Subclass"
+        },
+        {
+          "candidate": "classes/rogue.json",
+          "feature": "Ability Score Improvement"
+        },
+        {
+          "candidate": "classes/sorcerer.json",
+          "feature": "Spellcasting"
+        },
+        {
+          "candidate": "classes/sorcerer.json",
+          "feature": "Metamagic"
+        },
+        {
+          "candidate": "classes/sorcerer.json",
+          "feature": "Sorcerer Subclass"
+        },
+        {
+          "candidate": "classes/sorcerer.json",
+          "feature": "Ability Score Improvement"
+        },
+        {
+          "candidate": "subclasses/draconic_sorcery.json",
+          "feature": "Draconic Spells"
+        },
+        {
+          "candidate": "classes/warlock.json",
+          "feature": "Eldritch Invocations"
+        },
+        {
+          "candidate": "classes/warlock.json",
+          "feature": "Pact Magic"
+        },
+        {
+          "candidate": "classes/warlock.json",
+          "feature": "Warlock Subclass"
+        },
+        {
+          "candidate": "classes/warlock.json",
+          "feature": "Ability Score Improvement"
+        },
+        {
+          "candidate": "subclasses/fiend_patron.json",
+          "feature": "Fiend Spells"
+        },
+        {
+          "candidate": "classes/wizard.json",
+          "feature": "Spellcasting"
+        },
+        {
+          "candidate": "classes/wizard.json",
+          "feature": "Scholar"
+        },
+        {
+          "candidate": "classes/wizard.json",
+          "feature": "Wizard Subclass"
+        },
+        {
+          "candidate": "classes/wizard.json",
+          "feature": "Ability Score Improvement"
+        },
+        {
+          "candidate": "classes/wizard.json",
+          "feature": "Memorize Spell"
+        },
+        {
+          "candidate": "subclasses/evoker.json",
+          "feature": "Evocation Savant"
+        },
+        {
+          "candidate": "invocations/lessons_of_the_first_ones.json",
+          "feature": "Lessons of the First Ones"
+        },
+        {
+          "candidate": "invocations/pact_of_the_tome.json",
+          "feature": "Pact of the Tome"
+        },
+        {
+          "candidate": "species/dragonborn.json",
+          "feature": "Dragonborn"
+        },
+        {
+          "candidate": "species/dwarf.json",
+          "feature": "Dwarf"
+        },
+        {
+          "candidate": "species/elf.json",
+          "feature": "Elf"
+        },
+        {
+          "candidate": "species/gnome.json",
+          "feature": "Gnome"
+        },
+        {
+          "candidate": "species/goliath.json",
+          "feature": "Goliath"
+        },
+        {
+          "candidate": "species/halfling.json",
+          "feature": "Halfling"
+        },
+        {
+          "candidate": "species/human.json",
+          "feature": "Human"
+        },
+        {
+          "candidate": "species/orc.json",
+          "feature": "Orc"
+        },
+        {
+          "candidate": "species/tiefling.json",
+          "feature": "Tiefling"
+        },
+        {
+          "candidate": "feats/magic_initiate.json",
+          "feature": "Magic Initiate"
+        },
+        {
+          "candidate": "feats/skilled.json",
+          "feature": "Skilled"
+        },
+        {
+          "candidate": "feats/ability_score_improvement.json",
+          "feature": "Ability Score Improvement"
+        },
+        {
+          "candidate": "backgrounds/acolyte.json",
+          "feature": "Acolyte"
+        },
+        {
+          "candidate": "backgrounds/criminal.json",
+          "feature": "Criminal"
+        },
+        {
+          "candidate": "backgrounds/sage.json",
+          "feature": "Sage"
+        },
+        {
+          "candidate": "backgrounds/soldier.json",
+          "feature": "Soldier"
+        },
+        {
+          "candidate": "multiclass.json",
+          "feature": "Multiclass acquisition and casting"
+        }
+      ]
+    },
+    {
+      "id": "casting",
+      "slices": "S-134–S-142/S-123–S-127",
+      "reference": "docs/mechanics/spell-permissions-and-preparation.md",
+      "required_boundary": "Class/list/ability/book/free-use/slot/preparation permissions and exact captured cast edits across actual eligible spell payloads. Spell candidates own spell behavior.",
+      "members": [
+        {
+          "candidate": "classes/bard.json",
+          "feature": "Spellcasting"
+        },
+        {
+          "candidate": "classes/cleric.json",
+          "feature": "Spellcasting"
+        },
+        {
+          "candidate": "classes/cleric.json",
+          "feature": "Divine Order"
+        },
+        {
+          "candidate": "subclasses/life_domain.json",
+          "feature": "Disciple of Life"
+        },
+        {
+          "candidate": "subclasses/life_domain.json",
+          "feature": "Life Domain Spells"
+        },
+        {
+          "candidate": "classes/druid.json",
+          "feature": "Spellcasting"
+        },
+        {
+          "candidate": "classes/druid.json",
+          "feature": "Druidic"
+        },
+        {
+          "candidate": "classes/druid.json",
+          "feature": "Primal Order"
+        },
+        {
+          "candidate": "classes/druid.json",
+          "feature": "Wild Companion"
+        },
+        {
+          "candidate": "classes/druid.json",
+          "feature": "Wild Resurgence"
+        },
+        {
+          "candidate": "subclasses/circle_of_the_land.json",
+          "feature": "Circle of the Land Spells"
+        },
+        {
+          "candidate": "classes/fighter.json",
+          "feature": "Fighting Style"
+        },
+        {
+          "candidate": "classes/paladin.json",
+          "feature": "Spellcasting"
+        },
+        {
+          "candidate": "classes/paladin.json",
+          "feature": "Fighting Style"
+        },
+        {
+          "candidate": "classes/paladin.json",
+          "feature": "Paladin’s Smite"
+        },
+        {
+          "candidate": "classes/paladin.json",
+          "feature": "Faithful Steed"
+        },
+        {
+          "candidate": "subclasses/oath_of_devotion.json",
+          "feature": "Oath of Devotion Spells"
+        },
+        {
+          "candidate": "classes/ranger.json",
+          "feature": "Spellcasting"
+        },
+        {
+          "candidate": "classes/ranger.json",
+          "feature": "Favored Enemy"
+        },
+        {
+          "candidate": "classes/ranger.json",
+          "feature": "Fighting Style"
+        },
+        {
+          "candidate": "subclasses/hunter.json",
+          "feature": "Hunter’s Lore"
+        },
+        {
+          "candidate": "classes/sorcerer.json",
+          "feature": "Spellcasting"
+        },
+        {
+          "candidate": "classes/sorcerer.json",
+          "feature": "Innate Sorcery"
+        },
+        {
+          "candidate": "classes/sorcerer.json",
+          "feature": "Font of Magic"
+        },
+        {
+          "candidate": "classes/sorcerer.json",
+          "feature": "Metamagic"
+        },
+        {
+          "candidate": "subclasses/draconic_sorcery.json",
+          "feature": "Draconic Spells"
+        },
+        {
+          "candidate": "classes/warlock.json",
+          "feature": "Eldritch Invocations"
+        },
+        {
+          "candidate": "classes/warlock.json",
+          "feature": "Pact Magic"
+        },
+        {
+          "candidate": "classes/warlock.json",
+          "feature": "Magical Cunning"
+        },
+        {
+          "candidate": "subclasses/fiend_patron.json",
+          "feature": "Fiend Spells"
+        },
+        {
+          "candidate": "classes/wizard.json",
+          "feature": "Spellcasting"
+        },
+        {
+          "candidate": "classes/wizard.json",
+          "feature": "Ritual Adept"
+        },
+        {
+          "candidate": "classes/wizard.json",
+          "feature": "Arcane Recovery"
+        },
+        {
+          "candidate": "classes/wizard.json",
+          "feature": "Memorize Spell"
+        },
+        {
+          "candidate": "subclasses/evoker.json",
+          "feature": "Evocation Savant"
+        },
+        {
+          "candidate": "subclasses/evoker.json",
+          "feature": "Potent Cantrip"
+        },
+        {
+          "candidate": "invocations/agonizing_blast.json",
+          "feature": "Agonizing Blast"
+        },
+        {
+          "candidate": "invocations/armor_of_shadows.json",
+          "feature": "Armor of Shadows"
+        },
+        {
+          "candidate": "invocations/ascendant_step.json",
+          "feature": "Ascendant Step"
+        },
+        {
+          "candidate": "invocations/eldritch_spear.json",
+          "feature": "Eldritch Spear"
+        },
+        {
+          "candidate": "invocations/fiendish_vigor.json",
+          "feature": "Fiendish Vigor"
+        },
+        {
+          "candidate": "invocations/gaze_of_two_minds.json",
+          "feature": "Gaze of Two Minds"
+        },
+        {
+          "candidate": "invocations/gift_of_the_depths.json",
+          "feature": "Gift of the Depths"
+        },
+        {
+          "candidate": "invocations/mask_of_many_faces.json",
+          "feature": "Mask of Many Faces"
+        },
+        {
+          "candidate": "invocations/master_of_myriad_forms.json",
+          "feature": "Master of Myriad Forms"
+        },
+        {
+          "candidate": "invocations/misty_visions.json",
+          "feature": "Misty Visions"
+        },
+        {
+          "candidate": "invocations/one_with_shadows.json",
+          "feature": "One with Shadows"
+        },
+        {
+          "candidate": "invocations/otherworldly_leap.json",
+          "feature": "Otherworldly Leap"
+        },
+        {
+          "candidate": "invocations/pact_of_the_chain.json",
+          "feature": "Pact of the Chain"
+        },
+        {
+          "candidate": "invocations/pact_of_the_tome.json",
+          "feature": "Pact of the Tome"
+        },
+        {
+          "candidate": "invocations/repelling_blast.json",
+          "feature": "Repelling Blast"
+        },
+        {
+          "candidate": "metamagic/careful_spell.json",
+          "feature": "Careful Spell"
+        },
+        {
+          "candidate": "metamagic/distant_spell.json",
+          "feature": "Distant Spell"
+        },
+        {
+          "candidate": "metamagic/empowered_spell.json",
+          "feature": "Empowered Spell"
+        },
+        {
+          "candidate": "metamagic/extended_spell.json",
+          "feature": "Extended Spell"
+        },
+        {
+          "candidate": "metamagic/heightened_spell.json",
+          "feature": "Heightened Spell"
+        },
+        {
+          "candidate": "metamagic/quickened_spell.json",
+          "feature": "Quickened Spell"
+        },
+        {
+          "candidate": "metamagic/seeking_spell.json",
+          "feature": "Seeking Spell"
+        },
+        {
+          "candidate": "metamagic/subtle_spell.json",
+          "feature": "Subtle Spell"
+        },
+        {
+          "candidate": "metamagic/transmuted_spell.json",
+          "feature": "Transmuted Spell"
+        },
+        {
+          "candidate": "metamagic/twinned_spell.json",
+          "feature": "Twinned Spell"
+        },
+        {
+          "candidate": "species/elf.json",
+          "feature": "Elf"
+        },
+        {
+          "candidate": "species/gnome.json",
+          "feature": "Gnome"
+        },
+        {
+          "candidate": "species/tiefling.json",
+          "feature": "Tiefling"
+        },
+        {
+          "candidate": "feats/magic_initiate.json",
+          "feature": "Magic Initiate"
+        },
+        {
+          "candidate": "backgrounds/acolyte.json",
+          "feature": "Acolyte"
+        },
+        {
+          "candidate": "backgrounds/criminal.json",
+          "feature": "Criminal"
+        },
+        {
+          "candidate": "backgrounds/sage.json",
+          "feature": "Sage"
+        },
+        {
+          "candidate": "backgrounds/soldier.json",
+          "feature": "Soldier"
+        },
+        {
+          "candidate": "multiclass.json",
+          "feature": "Multiclass acquisition and casting"
+        }
+      ]
+    },
+    {
+      "id": "resources",
+      "slices": "S-052–S-060",
+      "reference": "docs/mechanics/shared-resource-pools.md",
+      "required_boundary": "Exact source pool, capacity, recovery, fixed/rolled exchange, refund and payment timing; preserve separate class Channel Divinity and ordinary/Pact/created slots.",
+      "members": [
+        {
+          "candidate": "classes/barbarian.json",
+          "feature": "Rage"
+        },
+        {
+          "candidate": "classes/bard.json",
+          "feature": "Bardic Inspiration"
+        },
+        {
+          "candidate": "classes/bard.json",
+          "feature": "Spellcasting"
+        },
+        {
+          "candidate": "classes/bard.json",
+          "feature": "Font of Inspiration"
+        },
+        {
+          "candidate": "subclasses/college_of_lore.json",
+          "feature": "Cutting Words"
+        },
+        {
+          "candidate": "classes/cleric.json",
+          "feature": "Spellcasting"
+        },
+        {
+          "candidate": "classes/cleric.json",
+          "feature": "Channel Divinity"
+        },
+        {
+          "candidate": "subclasses/life_domain.json",
+          "feature": "Preserve Life"
+        },
+        {
+          "candidate": "classes/druid.json",
+          "feature": "Spellcasting"
+        },
+        {
+          "candidate": "classes/druid.json",
+          "feature": "Wild Shape"
+        },
+        {
+          "candidate": "classes/druid.json",
+          "feature": "Wild Companion"
+        },
+        {
+          "candidate": "classes/druid.json",
+          "feature": "Wild Resurgence"
+        },
+        {
+          "candidate": "subclasses/circle_of_the_land.json",
+          "feature": "Land’s Aid"
+        },
+        {
+          "candidate": "classes/fighter.json",
+          "feature": "Second Wind"
+        },
+        {
+          "candidate": "classes/fighter.json",
+          "feature": "Action Surge"
+        },
+        {
+          "candidate": "classes/fighter.json",
+          "feature": "Tactical Mind"
+        },
+        {
+          "candidate": "classes/monk.json",
+          "feature": "Monk’s Focus"
+        },
+        {
+          "candidate": "classes/monk.json",
+          "feature": "Uncanny Metabolism"
+        },
+        {
+          "candidate": "classes/monk.json",
+          "feature": "Deflect Attacks"
+        },
+        {
+          "candidate": "classes/paladin.json",
+          "feature": "Lay On Hands"
+        },
+        {
+          "candidate": "classes/paladin.json",
+          "feature": "Spellcasting"
+        },
+        {
+          "candidate": "classes/paladin.json",
+          "feature": "Channel Divinity"
+        },
+        {
+          "candidate": "subclasses/oath_of_devotion.json",
+          "feature": "Sacred Weapon"
+        },
+        {
+          "candidate": "classes/ranger.json",
+          "feature": "Spellcasting"
+        },
+        {
+          "candidate": "classes/ranger.json",
+          "feature": "Favored Enemy"
+        },
+        {
+          "candidate": "classes/sorcerer.json",
+          "feature": "Spellcasting"
+        },
+        {
+          "candidate": "classes/sorcerer.json",
+          "feature": "Innate Sorcery"
+        },
+        {
+          "candidate": "classes/sorcerer.json",
+          "feature": "Font of Magic"
+        },
+        {
+          "candidate": "classes/sorcerer.json",
+          "feature": "Sorcerous Restoration"
+        },
+        {
+          "candidate": "classes/warlock.json",
+          "feature": "Pact Magic"
+        },
+        {
+          "candidate": "classes/warlock.json",
+          "feature": "Magical Cunning"
+        },
+        {
+          "candidate": "classes/wizard.json",
+          "feature": "Spellcasting"
+        },
+        {
+          "candidate": "classes/wizard.json",
+          "feature": "Arcane Recovery"
+        },
+        {
+          "candidate": "invocations/eldritch_smite.json",
+          "feature": "Eldritch Smite"
+        },
+        {
+          "candidate": "metamagic/careful_spell.json",
+          "feature": "Careful Spell"
+        },
+        {
+          "candidate": "metamagic/distant_spell.json",
+          "feature": "Distant Spell"
+        },
+        {
+          "candidate": "metamagic/empowered_spell.json",
+          "feature": "Empowered Spell"
+        },
+        {
+          "candidate": "metamagic/extended_spell.json",
+          "feature": "Extended Spell"
+        },
+        {
+          "candidate": "metamagic/heightened_spell.json",
+          "feature": "Heightened Spell"
+        },
+        {
+          "candidate": "metamagic/quickened_spell.json",
+          "feature": "Quickened Spell"
+        },
+        {
+          "candidate": "metamagic/seeking_spell.json",
+          "feature": "Seeking Spell"
+        },
+        {
+          "candidate": "metamagic/subtle_spell.json",
+          "feature": "Subtle Spell"
+        },
+        {
+          "candidate": "metamagic/transmuted_spell.json",
+          "feature": "Transmuted Spell"
+        },
+        {
+          "candidate": "metamagic/twinned_spell.json",
+          "feature": "Twinned Spell"
+        },
+        {
+          "candidate": "species/dragonborn.json",
+          "feature": "Dragonborn"
+        },
+        {
+          "candidate": "species/dwarf.json",
+          "feature": "Dwarf"
+        },
+        {
+          "candidate": "species/elf.json",
+          "feature": "Elf"
+        },
+        {
+          "candidate": "species/goliath.json",
+          "feature": "Goliath"
+        },
+        {
+          "candidate": "species/orc.json",
+          "feature": "Orc"
+        },
+        {
+          "candidate": "species/tiefling.json",
+          "feature": "Tiefling"
+        },
+        {
+          "candidate": "feats/magic_initiate.json",
+          "feature": "Magic Initiate"
+        },
+        {
+          "candidate": "multiclass.json",
+          "feature": "Multiclass acquisition and casting"
+        }
+      ]
+    },
+    {
+      "id": "rolls",
+      "slices": "S-076/S-077/S-091/S-094/S-096/S-240",
+      "reference": "docs/mechanics/owned-ability-check-modifiers.md",
+      "required_boundary": "Exact attack/check/save/initiative/damage dice windows and settlement; thresholds, substitution, selected rerolls, damage replacement and once-per-turn limits.",
+      "members": [
+        {
+          "candidate": "classes/barbarian.json",
+          "feature": "Rage"
+        },
+        {
+          "candidate": "classes/barbarian.json",
+          "feature": "Danger Sense"
+        },
+        {
+          "candidate": "classes/barbarian.json",
+          "feature": "Reckless Attack"
+        },
+        {
+          "candidate": "classes/barbarian.json",
+          "feature": "Primal Knowledge"
+        },
+        {
+          "candidate": "subclasses/path_of_the_berserker.json",
+          "feature": "Frenzy"
+        },
+        {
+          "candidate": "classes/bard.json",
+          "feature": "Bardic Inspiration"
+        },
+        {
+          "candidate": "classes/bard.json",
+          "feature": "Jack of All Trades"
+        },
+        {
+          "candidate": "subclasses/college_of_lore.json",
+          "feature": "Cutting Words"
+        },
+        {
+          "candidate": "classes/cleric.json",
+          "feature": "Divine Order"
+        },
+        {
+          "candidate": "classes/cleric.json",
+          "feature": "Channel Divinity"
+        },
+        {
+          "candidate": "classes/cleric.json",
+          "feature": "Sear Undead"
+        },
+        {
+          "candidate": "subclasses/life_domain.json",
+          "feature": "Disciple of Life"
+        },
+        {
+          "candidate": "classes/druid.json",
+          "feature": "Primal Order"
+        },
+        {
+          "candidate": "subclasses/circle_of_the_land.json",
+          "feature": "Land’s Aid"
+        },
+        {
+          "candidate": "classes/fighter.json",
+          "feature": "Second Wind"
+        },
+        {
+          "candidate": "classes/fighter.json",
+          "feature": "Tactical Mind"
+        },
+        {
+          "candidate": "subclasses/champion.json",
+          "feature": "Improved Critical"
+        },
+        {
+          "candidate": "subclasses/champion.json",
+          "feature": "Remarkable Athlete"
+        },
+        {
+          "candidate": "classes/monk.json",
+          "feature": "Martial Arts"
+        },
+        {
+          "candidate": "classes/monk.json",
+          "feature": "Uncanny Metabolism"
+        },
+        {
+          "candidate": "classes/monk.json",
+          "feature": "Deflect Attacks"
+        },
+        {
+          "candidate": "classes/monk.json",
+          "feature": "Stunning Strike"
+        },
+        {
+          "candidate": "classes/ranger.json",
+          "feature": "Favored Enemy"
+        },
+        {
+          "candidate": "subclasses/hunter.json",
+          "feature": "Hunter’s Prey"
+        },
+        {
+          "candidate": "classes/rogue.json",
+          "feature": "Sneak Attack"
+        },
+        {
+          "candidate": "classes/rogue.json",
+          "feature": "Steady Aim"
+        },
+        {
+          "candidate": "classes/rogue.json",
+          "feature": "Cunning Strike"
+        },
+        {
+          "candidate": "classes/rogue.json",
+          "feature": "Uncanny Dodge"
+        },
+        {
+          "candidate": "classes/sorcerer.json",
+          "feature": "Innate Sorcery"
+        },
+        {
+          "candidate": "classes/sorcerer.json",
+          "feature": "Metamagic"
+        },
+        {
+          "candidate": "subclasses/fiend_patron.json",
+          "feature": "Dark One’s Blessing"
+        },
+        {
+          "candidate": "subclasses/evoker.json",
+          "feature": "Potent Cantrip"
+        },
+        {
+          "candidate": "invocations/agonizing_blast.json",
+          "feature": "Agonizing Blast"
+        },
+        {
+          "candidate": "invocations/eldritch_mind.json",
+          "feature": "Eldritch Mind"
+        },
+        {
+          "candidate": "invocations/fiendish_vigor.json",
+          "feature": "Fiendish Vigor"
+        },
+        {
+          "candidate": "metamagic/careful_spell.json",
+          "feature": "Careful Spell"
+        },
+        {
+          "candidate": "metamagic/distant_spell.json",
+          "feature": "Distant Spell"
+        },
+        {
+          "candidate": "metamagic/empowered_spell.json",
+          "feature": "Empowered Spell"
+        },
+        {
+          "candidate": "metamagic/extended_spell.json",
+          "feature": "Extended Spell"
+        },
+        {
+          "candidate": "metamagic/heightened_spell.json",
+          "feature": "Heightened Spell"
+        },
+        {
+          "candidate": "metamagic/quickened_spell.json",
+          "feature": "Quickened Spell"
+        },
+        {
+          "candidate": "metamagic/seeking_spell.json",
+          "feature": "Seeking Spell"
+        },
+        {
+          "candidate": "metamagic/subtle_spell.json",
+          "feature": "Subtle Spell"
+        },
+        {
+          "candidate": "metamagic/transmuted_spell.json",
+          "feature": "Transmuted Spell"
+        },
+        {
+          "candidate": "metamagic/twinned_spell.json",
+          "feature": "Twinned Spell"
+        },
+        {
+          "candidate": "species/dragonborn.json",
+          "feature": "Dragonborn"
+        },
+        {
+          "candidate": "species/dwarf.json",
+          "feature": "Dwarf"
+        },
+        {
+          "candidate": "species/elf.json",
+          "feature": "Elf"
+        },
+        {
+          "candidate": "species/gnome.json",
+          "feature": "Gnome"
+        },
+        {
+          "candidate": "species/goliath.json",
+          "feature": "Goliath"
+        },
+        {
+          "candidate": "species/halfling.json",
+          "feature": "Halfling"
+        },
+        {
+          "candidate": "species/orc.json",
+          "feature": "Orc"
+        },
+        {
+          "candidate": "feats/alert.json",
+          "feature": "Alert"
+        },
+        {
+          "candidate": "feats/savage_attacker.json",
+          "feature": "Savage Attacker"
+        },
+        {
+          "candidate": "feats/archery.json",
+          "feature": "Archery"
+        },
+        {
+          "candidate": "feats/great_weapon_fighting.json",
+          "feature": "Great Weapon Fighting"
+        },
+        {
+          "candidate": "feats/two_weapon_fighting.json",
+          "feature": "Two-Weapon Fighting"
+        }
+      ]
+    },
+    {
+      "id": "attacks",
+      "slices": "S-084/S-085/S-127/S-236",
+      "reference": "docs/mechanics/attack-unit-substitution.md",
+      "required_boundary": "Qualifying weapon/Unarmed/pact/Light attacks, substitutions, damage riders, critical thresholds and nonstacking attack counts.",
+      "members": [
+        {
+          "candidate": "classes/barbarian.json",
+          "feature": "Weapon Mastery"
+        },
+        {
+          "candidate": "classes/barbarian.json",
+          "feature": "Extra Attack"
+        },
+        {
+          "candidate": "subclasses/path_of_the_berserker.json",
+          "feature": "Frenzy"
+        },
+        {
+          "candidate": "classes/fighter.json",
+          "feature": "Fighting Style"
+        },
+        {
+          "candidate": "classes/fighter.json",
+          "feature": "Weapon Mastery"
+        },
+        {
+          "candidate": "classes/fighter.json",
+          "feature": "Extra Attack"
+        },
+        {
+          "candidate": "subclasses/champion.json",
+          "feature": "Improved Critical"
+        },
+        {
+          "candidate": "classes/monk.json",
+          "feature": "Martial Arts"
+        },
+        {
+          "candidate": "classes/monk.json",
+          "feature": "Extra Attack"
+        },
+        {
+          "candidate": "classes/monk.json",
+          "feature": "Stunning Strike"
+        },
+        {
+          "candidate": "subclasses/warrior_of_the_open_hand.json",
+          "feature": "Open Hand Technique"
+        },
+        {
+          "candidate": "classes/paladin.json",
+          "feature": "Weapon Mastery"
+        },
+        {
+          "candidate": "classes/paladin.json",
+          "feature": "Fighting Style"
+        },
+        {
+          "candidate": "classes/paladin.json",
+          "feature": "Extra Attack"
+        },
+        {
+          "candidate": "subclasses/oath_of_devotion.json",
+          "feature": "Sacred Weapon"
+        },
+        {
+          "candidate": "classes/ranger.json",
+          "feature": "Weapon Mastery"
+        },
+        {
+          "candidate": "classes/ranger.json",
+          "feature": "Fighting Style"
+        },
+        {
+          "candidate": "classes/ranger.json",
+          "feature": "Extra Attack"
+        },
+        {
+          "candidate": "subclasses/hunter.json",
+          "feature": "Hunter’s Prey"
+        },
+        {
+          "candidate": "classes/rogue.json",
+          "feature": "Sneak Attack"
+        },
+        {
+          "candidate": "classes/rogue.json",
+          "feature": "Weapon Mastery"
+        },
+        {
+          "candidate": "classes/rogue.json",
+          "feature": "Cunning Strike"
+        },
+        {
+          "candidate": "invocations/eldritch_smite.json",
+          "feature": "Eldritch Smite"
+        },
+        {
+          "candidate": "invocations/investment_of_the_chain_master.json",
+          "feature": "Investment of the Chain Master"
+        },
+        {
+          "candidate": "invocations/pact_of_the_blade.json",
+          "feature": "Pact of the Blade"
+        },
+        {
+          "candidate": "invocations/pact_of_the_chain.json",
+          "feature": "Pact of the Chain"
+        },
+        {
+          "candidate": "invocations/thirsting_blade.json",
+          "feature": "Thirsting Blade"
+        },
+        {
+          "candidate": "species/dragonborn.json",
+          "feature": "Dragonborn"
+        },
+        {
+          "candidate": "feats/savage_attacker.json",
+          "feature": "Savage Attacker"
+        },
+        {
+          "candidate": "feats/grappler.json",
+          "feature": "Grappler"
+        },
+        {
+          "candidate": "feats/archery.json",
+          "feature": "Archery"
+        },
+        {
+          "candidate": "feats/great_weapon_fighting.json",
+          "feature": "Great Weapon Fighting"
+        },
+        {
+          "candidate": "feats/two_weapon_fighting.json",
+          "feature": "Two-Weapon Fighting"
+        },
+        {
+          "candidate": "multiclass.json",
+          "feature": "Multiclass acquisition and casting"
+        }
+      ]
+    },
+    {
+      "id": "stats",
+      "slices": "S-084/S-085/S-130",
+      "reference": "docs/mechanics/source-owned-stat-protections.md",
+      "required_boundary": "Legal selected base AC, training/equipment conditions, source-owned speeds/HP and refresh at real grant and equipment boundaries.",
+      "members": [
+        {
+          "candidate": "classes/barbarian.json",
+          "feature": "Unarmored Defense"
+        },
+        {
+          "candidate": "classes/barbarian.json",
+          "feature": "Fast Movement"
+        },
+        {
+          "candidate": "classes/monk.json",
+          "feature": "Unarmored Defense"
+        },
+        {
+          "candidate": "classes/monk.json",
+          "feature": "Unarmored Movement"
+        },
+        {
+          "candidate": "subclasses/draconic_sorcery.json",
+          "feature": "Draconic Resilience"
+        },
+        {
+          "candidate": "species/dragonborn.json",
+          "feature": "Dragonborn"
+        },
+        {
+          "candidate": "species/dwarf.json",
+          "feature": "Dwarf"
+        },
+        {
+          "candidate": "feats/defense.json",
+          "feature": "Defense"
+        },
+        {
+          "candidate": "multiclass.json",
+          "feature": "Multiclass acquisition and casting"
+        }
+      ]
+    },
+    {
+      "id": "source_lifetimes",
+      "slices": "S-070/S-080/S-086/S-141",
+      "reference": "docs/mechanics/source-end-rules.md",
+      "required_boundary": "Capture exact grant/recipient/item identity, duration/upkeep, triggers and early endings; propagate cleanup without global definition edits.",
+      "members": [
+        {
+          "candidate": "classes/barbarian.json",
+          "feature": "Rage"
+        },
+        {
+          "candidate": "classes/bard.json",
+          "feature": "Bardic Inspiration"
+        },
+        {
+          "candidate": "invocations/gaze_of_two_minds.json",
+          "feature": "Gaze of Two Minds"
+        },
+        {
+          "candidate": "invocations/pact_of_the_blade.json",
+          "feature": "Pact of the Blade"
+        }
+      ]
+    },
+    {
+      "id": "conditions",
+      "slices": "S-235/S-236/S-246–S-248",
+      "reference": "docs/mechanics/core-rules-status.md",
+      "required_boundary": "Reuse delivered condition spine; author selected saves, suppression/ending exceptions, exact source and recipient, and actual compelled behavior.",
+      "members": [
+        {
+          "candidate": "classes/cleric.json",
+          "feature": "Channel Divinity"
+        },
+        {
+          "candidate": "classes/cleric.json",
+          "feature": "Sear Undead"
+        },
+        {
+          "candidate": "classes/monk.json",
+          "feature": "Stunning Strike"
+        },
+        {
+          "candidate": "subclasses/warrior_of_the_open_hand.json",
+          "feature": "Open Hand Technique"
+        },
+        {
+          "candidate": "classes/paladin.json",
+          "feature": "Lay On Hands"
+        },
+        {
+          "candidate": "classes/rogue.json",
+          "feature": "Cunning Strike"
+        },
+        {
+          "candidate": "invocations/eldritch_smite.json",
+          "feature": "Eldritch Smite"
+        },
+        {
+          "candidate": "feats/grappler.json",
+          "feature": "Grappler"
+        }
+      ]
+    },
+    {
+      "id": "movement",
+      "slices": "S-179/S-180/S-239/S-241",
+      "reference": "docs/mechanics/physical-facts-space-and-movement.md",
+      "required_boundary": "Legal displacement, climb/swim/fly/jump, size/space checks, post-hit granted moves and Opportunity Attack policy; execute in actual hosts.",
+      "members": [
+        {
+          "candidate": "classes/cleric.json",
+          "feature": "Channel Divinity"
+        },
+        {
+          "candidate": "classes/fighter.json",
+          "feature": "Second Wind"
+        },
+        {
+          "candidate": "classes/fighter.json",
+          "feature": "Tactical Shift"
+        },
+        {
+          "candidate": "subclasses/champion.json",
+          "feature": "Remarkable Athlete"
+        },
+        {
+          "candidate": "classes/monk.json",
+          "feature": "Monk’s Focus"
+        },
+        {
+          "candidate": "subclasses/warrior_of_the_open_hand.json",
+          "feature": "Open Hand Technique"
+        },
+        {
+          "candidate": "classes/rogue.json",
+          "feature": "Cunning Action"
+        },
+        {
+          "candidate": "classes/rogue.json",
+          "feature": "Steady Aim"
+        },
+        {
+          "candidate": "classes/rogue.json",
+          "feature": "Cunning Strike"
+        },
+        {
+          "candidate": "subclasses/thief.json",
+          "feature": "Second-Story Work"
+        },
+        {
+          "candidate": "invocations/ascendant_step.json",
+          "feature": "Ascendant Step"
+        },
+        {
+          "candidate": "invocations/gift_of_the_depths.json",
+          "feature": "Gift of the Depths"
+        },
+        {
+          "candidate": "invocations/otherworldly_leap.json",
+          "feature": "Otherworldly Leap"
+        },
+        {
+          "candidate": "invocations/repelling_blast.json",
+          "feature": "Repelling Blast"
+        },
+        {
+          "candidate": "species/dragonborn.json",
+          "feature": "Dragonborn"
+        },
+        {
+          "candidate": "species/dwarf.json",
+          "feature": "Dwarf"
+        },
+        {
+          "candidate": "species/elf.json",
+          "feature": "Elf"
+        },
+        {
+          "candidate": "species/gnome.json",
+          "feature": "Gnome"
+        },
+        {
+          "candidate": "species/goliath.json",
+          "feature": "Goliath"
+        },
+        {
+          "candidate": "species/halfling.json",
+          "feature": "Halfling"
+        },
+        {
+          "candidate": "species/human.json",
+          "feature": "Human"
+        },
+        {
+          "candidate": "species/orc.json",
+          "feature": "Orc"
+        },
+        {
+          "candidate": "species/tiefling.json",
+          "feature": "Tiefling"
+        },
+        {
+          "candidate": "feats/grappler.json",
+          "feature": "Grappler"
+        }
+      ]
+    },
+    {
+      "id": "forms",
+      "slices": "S-154–S-158/S-163/S-164",
+      "reference": "docs/mechanics/created-actors-and-placement.md",
+      "required_boundary": "Full legal forms, retained stats/equipment, owned actors, arrival, command/Reaction budgets, source lifetime and exploration hosts; existing curated form lists are not complete source sets.",
+      "members": [
+        {
+          "candidate": "classes/druid.json",
+          "feature": "Wild Shape"
+        },
+        {
+          "candidate": "classes/druid.json",
+          "feature": "Wild Companion"
+        },
+        {
+          "candidate": "classes/paladin.json",
+          "feature": "Faithful Steed"
+        },
+        {
+          "candidate": "invocations/investment_of_the_chain_master.json",
+          "feature": "Investment of the Chain Master"
+        },
+        {
+          "candidate": "invocations/master_of_myriad_forms.json",
+          "feature": "Master of Myriad Forms"
+        },
+        {
+          "candidate": "invocations/pact_of_the_chain.json",
+          "feature": "Pact of the Chain"
+        },
+        {
+          "candidate": "species/goliath.json",
+          "feature": "Goliath"
+        }
+      ]
+    },
+    {
+      "id": "reactions",
+      "slices": "S-041/S-109/S-114",
+      "reference": "docs/mechanics/party-intervention-and-allocation.md",
+      "required_boundary": "Exact attack/damage/fall event, eligible owner, optional resource spend, reduction then redirection and legal off-turn choice; no blanket native-handler equivalence.",
+      "members": [
+        {
+          "candidate": "subclasses/college_of_lore.json",
+          "feature": "Cutting Words"
+        },
+        {
+          "candidate": "classes/monk.json",
+          "feature": "Deflect Attacks"
+        },
+        {
+          "candidate": "classes/monk.json",
+          "feature": "Slow Fall"
+        },
+        {
+          "candidate": "classes/paladin.json",
+          "feature": "Paladin’s Smite"
+        },
+        {
+          "candidate": "classes/rogue.json",
+          "feature": "Uncanny Dodge"
+        },
+        {
+          "candidate": "invocations/investment_of_the_chain_master.json",
+          "feature": "Investment of the Chain Master"
+        },
+        {
+          "candidate": "species/goliath.json",
+          "feature": "Goliath"
+        },
+        {
+          "candidate": "species/orc.json",
+          "feature": "Orc"
+        }
+      ]
+    },
+    {
+      "id": "falling",
+      "slices": "S-181",
+      "reference": "docs/mechanics/physical-facts-space-and-movement.md",
+      "required_boundary": "Slow Fall must reduce real falling damage at its legal Reaction window; not just store a passive modifier.",
+      "members": [
+        {
+          "candidate": "classes/monk.json",
+          "feature": "Slow Fall"
+        }
+      ]
+    },
+    {
+      "id": "actions",
+      "slices": "S-028/S-237",
+      "reference": "docs/mechanics/ordinary-actions.md",
+      "required_boundary": "Execute actual permitted actions with correct action/Bonus Action/Reaction substitution and costs; Action Surge excludes Magic.",
+      "members": [
+        {
+          "candidate": "classes/fighter.json",
+          "feature": "Action Surge"
+        },
+        {
+          "candidate": "classes/monk.json",
+          "feature": "Martial Arts"
+        },
+        {
+          "candidate": "classes/monk.json",
+          "feature": "Monk’s Focus"
+        },
+        {
+          "candidate": "classes/rogue.json",
+          "feature": "Cunning Action"
+        },
+        {
+          "candidate": "subclasses/thief.json",
+          "feature": "Fast Hands"
+        },
+        {
+          "candidate": "species/orc.json",
+          "feature": "Orc"
+        }
+      ]
+    },
+    {
+      "id": "languages",
+      "slices": "S-218/S-219/S-232",
+      "reference": "docs/mechanics/ordinary-actions.md",
+      "required_boundary": "Known languages, Common+two standard choices, class secret/extra languages and actual messages; reuse OA local speech, do not invent world answers.",
+      "members": [
+        {
+          "candidate": "classes/druid.json",
+          "feature": "Druidic"
+        },
+        {
+          "candidate": "classes/ranger.json",
+          "feature": "Deft Explorer"
+        },
+        {
+          "candidate": "classes/rogue.json",
+          "feature": "Thieves’ Cant"
+        },
+        {
+          "candidate": "species/dragonborn.json",
+          "feature": "Dragonborn"
+        },
+        {
+          "candidate": "species/dwarf.json",
+          "feature": "Dwarf"
+        },
+        {
+          "candidate": "species/elf.json",
+          "feature": "Elf"
+        },
+        {
+          "candidate": "species/gnome.json",
+          "feature": "Gnome"
+        },
+        {
+          "candidate": "species/goliath.json",
+          "feature": "Goliath"
+        },
+        {
+          "candidate": "species/halfling.json",
+          "feature": "Halfling"
+        },
+        {
+          "candidate": "species/human.json",
+          "feature": "Human"
+        },
+        {
+          "candidate": "species/orc.json",
+          "feature": "Orc"
+        },
+        {
+          "candidate": "species/tiefling.json",
+          "feature": "Tiefling"
+        }
+      ]
+    },
+    {
+      "id": "world",
+      "slices": "S-190/S-191/S-218/S-219/S-227–S-230",
+      "reference": "docs/mechanics/ordinary-actions.md",
+      "required_boundary": "Represented observer senses, illumination, information, disguise/illusion, rest/time and object/trap interactions; declare unavailable facts/outcomes explicitly.",
+      "members": [
+        {
+          "candidate": "classes/druid.json",
+          "feature": "Druidic"
+        },
+        {
+          "candidate": "classes/paladin.json",
+          "feature": "Channel Divinity"
+        },
+        {
+          "candidate": "subclasses/oath_of_devotion.json",
+          "feature": "Sacred Weapon"
+        },
+        {
+          "candidate": "subclasses/hunter.json",
+          "feature": "Hunter’s Lore"
+        },
+        {
+          "candidate": "classes/rogue.json",
+          "feature": "Cunning Action"
+        },
+        {
+          "candidate": "subclasses/thief.json",
+          "feature": "Fast Hands"
+        },
+        {
+          "candidate": "classes/warlock.json",
+          "feature": "Magical Cunning"
+        },
+        {
+          "candidate": "classes/wizard.json",
+          "feature": "Ritual Adept"
+        },
+        {
+          "candidate": "invocations/devils_sight.json",
+          "feature": "Devil’s Sight"
+        },
+        {
+          "candidate": "invocations/gaze_of_two_minds.json",
+          "feature": "Gaze of Two Minds"
+        },
+        {
+          "candidate": "invocations/mask_of_many_faces.json",
+          "feature": "Mask of Many Faces"
+        },
+        {
+          "candidate": "invocations/misty_visions.json",
+          "feature": "Misty Visions"
+        },
+        {
+          "candidate": "invocations/one_with_shadows.json",
+          "feature": "One with Shadows"
+        },
+        {
+          "candidate": "species/dragonborn.json",
+          "feature": "Dragonborn"
+        },
+        {
+          "candidate": "species/dwarf.json",
+          "feature": "Dwarf"
+        },
+        {
+          "candidate": "species/elf.json",
+          "feature": "Elf"
+        },
+        {
+          "candidate": "species/gnome.json",
+          "feature": "Gnome"
+        },
+        {
+          "candidate": "species/goliath.json",
+          "feature": "Goliath"
+        },
+        {
+          "candidate": "species/halfling.json",
+          "feature": "Halfling"
+        },
+        {
+          "candidate": "species/human.json",
+          "feature": "Human"
+        },
+        {
+          "candidate": "species/orc.json",
+          "feature": "Orc"
+        },
+        {
+          "candidate": "species/tiefling.json",
+          "feature": "Tiefling"
+        }
+      ]
+    },
+    {
+      "id": "items",
+      "slices": "S-047/S-164/S-196/S-197/S-210",
+      "reference": "docs/content_pipeline.md",
+      "required_boundary": "Exact equipment copies and quantities, linked tool/equipment choices, topics, hands/properties/weight, pact bonds and timed clockwork objects; do not substitute unknown items.",
+      "members": [
+        {
+          "candidate": "classes/barbarian.json",
+          "feature": "Barbarian"
+        },
+        {
+          "candidate": "classes/bard.json",
+          "feature": "Bard"
+        },
+        {
+          "candidate": "classes/cleric.json",
+          "feature": "Cleric"
+        },
+        {
+          "candidate": "classes/druid.json",
+          "feature": "Druid"
+        },
+        {
+          "candidate": "classes/fighter.json",
+          "feature": "Fighter"
+        },
+        {
+          "candidate": "classes/monk.json",
+          "feature": "Monk"
+        },
+        {
+          "candidate": "classes/paladin.json",
+          "feature": "Paladin"
+        },
+        {
+          "candidate": "classes/ranger.json",
+          "feature": "Ranger"
+        },
+        {
+          "candidate": "classes/rogue.json",
+          "feature": "Rogue"
+        },
+        {
+          "candidate": "classes/sorcerer.json",
+          "feature": "Sorcerer"
+        },
+        {
+          "candidate": "classes/warlock.json",
+          "feature": "Warlock"
+        },
+        {
+          "candidate": "classes/wizard.json",
+          "feature": "Wizard"
+        },
+        {
+          "candidate": "invocations/pact_of_the_blade.json",
+          "feature": "Pact of the Blade"
+        },
+        {
+          "candidate": "invocations/pact_of_the_tome.json",
+          "feature": "Pact of the Tome"
+        },
+        {
+          "candidate": "species/gnome.json",
+          "feature": "Gnome"
+        },
+        {
+          "candidate": "species/goliath.json",
+          "feature": "Goliath"
+        },
+        {
+          "candidate": "feats/great_weapon_fighting.json",
+          "feature": "Great Weapon Fighting"
+        },
+        {
+          "candidate": "backgrounds/acolyte.json",
+          "feature": "Acolyte"
+        },
+        {
+          "candidate": "backgrounds/criminal.json",
+          "feature": "Criminal"
+        },
+        {
+          "candidate": "backgrounds/sage.json",
+          "feature": "Sage"
+        },
+        {
+          "candidate": "backgrounds/soldier.json",
+          "feature": "Soldier"
+        }
+      ]
+    },
+    {
+      "id": "allocation",
+      "slices": "S-098/S-101/S-102",
+      "reference": "docs/mechanics/party-intervention-and-allocation.md",
+      "required_boundary": "Actual chosen recipients, area and healing allocation with Bloodied/half-maximum eligibility; shared dice versus separately rolled healing remain explicit.",
+      "members": [
+        {
+          "candidate": "subclasses/life_domain.json",
+          "feature": "Preserve Life"
+        },
+        {
+          "candidate": "subclasses/circle_of_the_land.json",
+          "feature": "Land’s Aid"
+        }
+      ]
+    },
+    {
+      "id": "initiative",
+      "slices": "unassigned generic initiative exchange; S-233 acquisition reuse",
+      "reference": "docs/planning/crown-roadmap.md#wider-recovery-review--2026-11-08",
+      "required_boundary": "Alert: after-roll willing-ally initiative swap in same combat, neither Incapacitated; immediate exact values and order, no arbitrary late exchange.",
+      "members": [
+        {
+          "candidate": "feats/alert.json",
+          "feature": "Alert"
+        }
+      ]
+    }
+  ]
+}

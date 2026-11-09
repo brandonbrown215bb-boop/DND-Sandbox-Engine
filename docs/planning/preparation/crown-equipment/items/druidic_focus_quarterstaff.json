@@ -1,0 +1,103 @@
+{
+  "schema": "crown-equipment-candidate/1",
+  "id": "druidic_focus_quarterstaff",
+  "name": "Wooden Staff (Druidic Focus; also Quarterstaff)",
+  "kind": "focus",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring intent only; not registered engine syntax.",
+  "rules": {
+    "authority": "SRD 5.2.1",
+    "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      97,
+      105,
+      106
+    ],
+    "section": "Wooden Staff (Druidic Focus; also Quarterstaff)",
+    "text": "Wooden Staff (Druidic Focus; also Quarterstaff) is a focus for druid, ranger spells, subject to the class casting permission and Material-component rules. Form: held. This same item is also a Quarterstaff, not a second item.",
+    "source_context": "../source-pages.json"
+  },
+  "definition": {
+    "id": "druidic_focus_quarterstaff",
+    "name": "Wooden Staff (Druidic Focus; also Quarterstaff)",
+    "weight_lb": 4,
+    "cost_gp": 5,
+    "class_permissions": [
+      "druid",
+      "ranger"
+    ],
+    "form": "held",
+    "base_weapon_candidate_id": "quarterstaff"
+  },
+  "authored_operations": [
+    "A focus can replace Material components only if the spell neither consumes them nor specifies their cost, and a feature permits that focus. Hold the focus unless its item description permits another form; accessing materials needs a free hand, which can also perform Somatic components. Check actual class permission, hands and Holy Symbol worn/borne/held form (SRD pp.105–106).",
+    "Retain one exact item copy with both weapon and focus roles for staff forms; do not substitute a plain Quarterstaff, or grant a second free weapon."
+  ],
+  "retained_runtime_seeds": [
+    {
+      "path": "data/core/items/srd_gear.json",
+      "array_index": 26,
+      "file_sha256": "ed873f9a0967f5bb6e20241428e4f53b92c011fa547321af69798ece822b57d4",
+      "definition": {
+        "id": "wooden_staff",
+        "weight": 4,
+        "name": "Wooden Staff (Druidic Focus)",
+        "description": "A staff of living wood used to channel druidic spells.",
+        "type": "tool",
+        "effects": [
+          {
+            "type": "spellcasting_focus"
+          }
+        ],
+        "value": 5
+      }
+    },
+    {
+      "path": "data/core/items/weapons.json",
+      "array_index": 38,
+      "file_sha256": "6f6314edd2f971deea6f5d058e0e5f913757a662b2340a8a01c52d60432e0df5",
+      "definition": {
+        "id": "druidic_focus_quarterstaff",
+        "weight": 4,
+        "name": "Druidic Focus (Quarterstaff)",
+        "description": "A wooden staff carved to channel primal magic. It is also a Quarterstaff, and a Druid or Ranger holding it can use it as a Spellcasting Focus.",
+        "type": "weapon",
+        "weapon_type": "simple",
+        "damage": "1d6",
+        "damage_type": "bludgeoning",
+        "properties": [
+          "versatile"
+        ],
+        "versatile_damage": "1d8",
+        "ability": "STR",
+        "range": 1,
+        "value": 5,
+        "spellcasting_focus_kind": "druidic"
+      }
+    }
+  ],
+  "manifest_overrides": [],
+  "required_mapping": [
+    "focuses",
+    "weapons"
+  ],
+  "consumers": [
+    {
+      "package_id": "druid",
+      "option": "A",
+      "quantity": 1,
+      "source": "docs/planning/preparation/crown-characters/classes/druid.json"
+    }
+  ],
+  "unsupported_behavior": [
+    {
+      "group": "focuses",
+      "requirement": "Map class-owned focus permission, free hands, Material costs/consumption and Holy Symbol held/worn/borne forms. Staff is one exact copy with both Quarterstaff and focus roles; existing tool-only staff seeds do not provide the weapon role."
+    },
+    {
+      "group": "weapons",
+      "requirement": "Map complete weapon properties, masteries, hand/ability eligibility and actual attacks through shared owners. Reuse verified range/Heavy work; no item-ID dispatch or support claim from seed fields."
+    }
+  ],
+  "reconciliation_note": "Existing production druidic_focus_quarterstaff already combines Quarterstaff damage/Versatile and druidic focus kind. Reuse it directly; wooden_staff remains comparison material. Full rules/hosts still need mapping, but do not rebuild the already-present combined seed. The existing Crown G2 boundary explicitly retains Shillelagh and Weapon Mastery item-ID matching as limits for this focus staff (docs/planning/vocabulary-slices.md#class-proficiency-at-creation--crown-g2)."
+}

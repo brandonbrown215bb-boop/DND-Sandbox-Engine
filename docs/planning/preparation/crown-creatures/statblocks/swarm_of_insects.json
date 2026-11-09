@@ -1,0 +1,213 @@
+{
+  "schema": "crown-creature-candidate/1",
+  "id": "srd_swarm_of_insects",
+  "name": "Swarm of Insects",
+  "kind": "srd_statblock",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring intent only; not registered engine syntax. Mapping requirements do not assert the whole referenced engine slice is absent.",
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile all source clauses, mappings and source differences before later production-path verification. Keep native paths until replacements cover them."
+  },
+  "source": {
+    "authority": "SRD 5.2.1",
+    "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      361
+    ],
+    "text": "Swarm of Insects\nMedium Swarm of Tiny Beasts, Unaligned\nAC 11 Initiative +1 (11)\nHP 19 (3d8 + 6)\nSpeed 20 ft., Climb or Fly 20 ft. (GM’s choice)\nMOD SAVE MOD SAVE MOD SAVE\nStr 3 −4 −4 Dex 13 +1 +1 Con 14 +2 +2\nInt 1 −5 −5 WIS 7 −2 −2 Cha 1 −5 −5\nResistances Bludgeoning, Piercing, Slashing\nImmunities Charmed, Frightened, Grappled, Paralyzed,\nPetrified, Prone, Restrained, Stunned\nSenses Blindsight 30 ft.; Passive Perception 8\nLanguages None\nCR 1/2 (XP 100; PB +2)\nTraits\nSpider Climb. If the swarm has a Climb Speed, the\nswarm can climb difficult surfaces, including along ceil-\nings, without needing to make an ability check.\nSwarm. The swarm can occupy another creature’s\nspace and vice versa, and the swarm can move through\nany opening large enough for a Tiny insect. The swarm\ncan’t regain Hit Points or gain Temporary Hit Points.\nActions\nBites. Melee Attack Roll: +3, reach 5 ft. Hit: 6 (2d4 + 1)\nPoison damage, or 3 (1d4 + 1) Poison damage if the\nswarm is Bloodied.",
+    "transcription": "Two-column extraction; line breaks retained. Whole selected page context is in source-pages.json. No stat correction inferred from donor data."
+  },
+  "statistics": {
+    "identity_line": "Medium Swarm of Tiny Beasts, Unaligned",
+    "AC": "11 Initiative +1 (11)",
+    "HP": "19 (3d8 + 6)",
+    "Speed": "20 ft., Climb or Fly 20 ft. (GM’s choice)",
+    "Resistances": "Bludgeoning, Piercing, Slashing",
+    "Immunities": "Charmed, Frightened, Grappled, Paralyzed,\nPetrified, Prone, Restrained, Stunned",
+    "Senses": "Blindsight 30 ft.; Passive Perception 8",
+    "Languages": "None",
+    "CR": "1/2 (XP 100; PB +2)",
+    "ability_scores": {
+      "STR": 3,
+      "DEX": 13,
+      "CON": 14,
+      "INT": 1,
+      "WIS": 7,
+      "CHA": 1
+    },
+    "saving_throw_modifiers": {
+      "STR": -4,
+      "DEX": 1,
+      "CON": 2,
+      "INT": -5,
+      "WIS": -2,
+      "CHA": -5
+    },
+    "initiative_modifier": 1,
+    "initiative_score_printed": 11,
+    "armor_class": 11,
+    "movement_feet": {
+      "walk": 20,
+      "fly": 20
+    }
+  },
+  "authored_operations": [
+    {
+      "key": "b001",
+      "name": "Spider Climb",
+      "source_section": "Traits",
+      "full_rule": "Spider Climb. If the swarm has a Climb Speed, the\nswarm can climb difficult surfaces, including along ceilings, without needing to make an ability check.",
+      "budget": "passive_or_declared_trigger",
+      "steps": [
+        {
+          "intent": "Represent actual size/space, climb/swim/fly and breathing, jumps, straight-line charge history, opportunity exceptions, web surfaces and legal release.",
+          "mapping_group": "movement"
+        }
+      ],
+      "parameters_from_rule": {
+        "attack_bonus": [],
+        "save_dc": [],
+        "distances_feet": [],
+        "dice": []
+      },
+      "blockers": [
+        "map_movement"
+      ],
+      "ending_and_identity": "Exact actor/action/target/source instance; use every qualifier and ending in full_rule, not only extracted parameters.",
+      "behavior_plan": {
+        "budget": "passive_or_declared_trigger",
+        "source_outcomes": {},
+        "surfaces": "Difficult climbing surfaces including ceilings",
+        "ability_check_required": false,
+        "speed": "Printed Climb Speed; conditional for Swarm of Insects"
+      }
+    },
+    {
+      "key": "b002",
+      "name": "Swarm",
+      "source_section": "Traits",
+      "full_rule": "Swarm. The swarm can occupy another creature’s\nspace and vice versa, and the swarm can move through\nany opening large enough for a Tiny insect. The swarm\ncan’t regain Hit Points or gain Temporary Hit Points.",
+      "budget": "passive_or_declared_trigger",
+      "steps": [
+        {
+          "intent": "Represent actual size/space, climb/swim/fly and breathing, jumps, straight-line charge history, opportunity exceptions, web surfaces and legal release.",
+          "mapping_group": "movement"
+        }
+      ],
+      "parameters_from_rule": {
+        "attack_bonus": [],
+        "save_dc": [],
+        "distances_feet": [],
+        "dice": []
+      },
+      "blockers": [
+        "map_movement"
+      ],
+      "ending_and_identity": "Exact actor/action/target/source instance; use every qualifier and ending in full_rule, not only extracted parameters.",
+      "behavior_plan": {
+        "budget": "passive_or_declared_trigger",
+        "source_outcomes": {},
+        "shared_space": true,
+        "gap": "One constituent Tiny animal",
+        "healing": false,
+        "temporary_hp_gain": false,
+        "eligibility": "Held; not offered as individual animal form"
+      }
+    },
+    {
+      "key": "b003",
+      "name": "Bites",
+      "source_section": "Actions",
+      "full_rule": "Bites. Melee Attack Roll: +3, reach 5 ft. Hit: 6 (2d4 + 1)\nPoison damage, or 3 (1d4 + 1) Poison damage if the\nswarm is Bloodied.",
+      "budget": "action",
+      "steps": [
+        {
+          "intent": "Resolve declared roll or save, targets, range/reach, damage packets, multiattack choice, riders and exact action budget. A save-only action is not a weapon hit rider.",
+          "mapping_group": "attacks"
+        }
+      ],
+      "parameters_from_rule": {
+        "attack_bonus": [
+          3
+        ],
+        "save_dc": [],
+        "distances_feet": [
+          5
+        ],
+        "dice": [
+          "2d4 + 1",
+          "1d4 + 1"
+        ]
+      },
+      "blockers": [
+        "map_attacks"
+      ],
+      "ending_and_identity": "Exact actor/action/target/source instance; use every qualifier and ending in full_rule, not only extracted parameters.",
+      "behavior_plan": {
+        "budget": "action",
+        "source_outcomes": {
+          "hit": "6 (2d4 + 1) Poison damage, or 3 (1d4 + 1) Poison damage if the swarm is Bloodied."
+        },
+        "resolution": "attack_roll",
+        "attack_kind": "melee",
+        "damage_and_riders": "6 (2d4 + 1) Poison damage, or 3 (1d4 + 1) Poison damage if the swarm is Bloodied.",
+        "permission": "ordinary familiar cannot attack; invocation exceptions must grant this exact attack or Attack action, not every Actions entry"
+      }
+    }
+  ],
+  "retained_definitions": [
+    {
+      "path": "data/core/monsters/imported_monsters.json",
+      "sha256": "f57bee1e93f185a89575bed3d8b2b610b53cfd3b7f2eb56448d1dd64a0126c5f",
+      "pointer": "/379",
+      "payload": {
+        "id": "swarm_of_insects",
+        "name": "Swarm of Insects",
+        "hit_points": "5d8",
+        "armor_class": 12,
+        "speed": 4,
+        "ability_scores": {
+          "STR": 3,
+          "DEX": 13,
+          "CON": 10,
+          "INT": 1,
+          "WIS": 7,
+          "CHA": 1
+        },
+        "attacks": [
+          {
+            "name": "Claws",
+            "ability": "STR",
+            "damage": "1d6",
+            "range": 1,
+            "damage_type": "slashing"
+          }
+        ],
+        "ai_behavior": "aggressive"
+      },
+      "manifest_declarations": []
+    }
+  ],
+  "selection": {
+    "wild_shape_druid_levels_2_3": false,
+    "wild_shape_druid_levels_4_5": false,
+    "normal_familiar": false,
+    "pact_of_chain_special": false,
+    "animate_dead_output": false,
+    "held_swarm": true,
+    "encounter_comparison_only": false
+  },
+  "acquisition_links": [
+    "selection-links.json"
+  ],
+  "blockers": [
+    "map_statistics",
+    "map_attacks",
+    "map_movement",
+    "selection_swarm_adjudication"
+  ],
+  "source_reconciliation": "Official body is authoritative for this SRD candidate. Retained donor payloads are comparison/reuse seeds, including legacy values and manifest winners; do not merge their statistics or traits by ID. Direct Crown encounters retain separate candidates.",
+  "equipment_links": []
+}

@@ -1,0 +1,49 @@
+{
+  "schema": "crown-world-candidate/1",
+  "id": "hazards",
+  "name": "Hazards",
+  "kind": "procedures",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring declarations only; not registered engine opcodes.",
+  "required_extensions": [
+    "hazards"
+  ],
+  "authored_operations": [
+    {
+      "operation": "resolve_hazards",
+      "requirement": "Bind heat, burning, falling, breathing/suffocation and selected environmental exposure to actual positions, altitude, surfaces, time and defenses. Distinguish an effect appearing from creature movement, entry, start/end turns and elapsed ticks. Water Walk grants traversal without heat immunity; source-specific descent/landing and breathing exceptions remain attached."
+    }
+  ],
+  "blockers": [
+    "Ashvale heat is campaign-authored 1d4 at five feet, not generic SRD lava damage. Storm/rockslide/cave-in events remain custom checks, not a whole weather or avalanche simulation. No general weather, underwater route, air volume or climate can be inferred from terrain names."
+  ],
+  "slices": "S-180/S-181/S-197/S-198/S-200/S-205",
+  "source_context_pages": [
+    178,
+    181,
+    182,
+    185,
+    189,
+    195,
+    196
+  ],
+  "source_context": "../source-pages.json",
+  "current_owner_pins": [
+    {
+      "path": "src/dungeon/local_room_rules.gd",
+      "sha256": "cbe65b9c14cc2261555f0cc29e65f669d288967b757f7999f70f9062bf81cd8e"
+    },
+    {
+      "path": "src/characters/survival_rules.gd",
+      "sha256": "d4aa4d499b960e30aad896fba8fcb4bb450b254a2957a063cdce6dc7866854d3"
+    }
+  ],
+  "reuse_boundary": "Existing accepted pieces remain accepted at their documented limits; these requirements do not mark the entire slices missing.",
+  "source_parameters": {
+    "authority": "SRD 5.2.1 pp.178,182,189; retain source and spell exceptions",
+    "falling": "1d6 Bludgeoning per 10 feet fallen, maximum 20d6; Prone on landing unless no damage taken. Falling into water/liquid allows Reaction DC15 STR(Athletics) or DEX(Acrobatics), success halves resulting fall damage.",
+    "suffocation": "Hold breath minutes = 1 + CON modifier, minimum 30 seconds. Out of breath or choking gains 1 Exhaustion at end of each turn. Breathing again removes all Exhaustion gained from suffocation, not unrelated Exhaustion.",
+    "flight_loss": "Incapacitated, Prone or Fly Speed 0 causes fall unless hovering; specific spell descent rules remain exceptions.",
+    "custom_lava": "Ashvale cell [3,-1], authored 1d4 heat with five-foot reach; not an SRD generic lava formula."
+  }
+}

@@ -1,0 +1,59 @@
+{
+  "schema": "crown-equipment-candidate/1",
+  "id": "costume",
+  "name": "Costume",
+  "kind": "gear",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring intent only; not registered engine syntax.",
+  "rules": {
+    "authority": "SRD 5.2.1",
+    "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      95,
+      97
+    ],
+    "section": "Costume",
+    "text": "While wearing it, gain Advantage on ability checks to impersonate the person or type of person represented.",
+    "source_context": "../source-pages.json"
+  },
+  "definition": {
+    "id": "costume",
+    "name": "Costume",
+    "weight_lb": 4,
+    "cost_gp": 5
+  },
+  "authored_operations": [
+    "While wearing it, gain Advantage on ability checks to impersonate the person or type of person represented."
+  ],
+  "retained_runtime_seeds": [
+    {
+      "path": "data/core/items/srd_gear.json",
+      "array_index": 6,
+      "file_sha256": "ed873f9a0967f5bb6e20241428e4f53b92c011fa547321af69798ece822b57d4",
+      "definition": {
+        "id": "costume",
+        "name": "Costume",
+        "description": "A set of theatrical clothing.",
+        "weight": 4,
+        "type": "tool",
+        "value": 5
+      }
+    }
+  ],
+  "manifest_overrides": [],
+  "required_mapping": [
+    "context_benefits"
+  ],
+  "consumers": [
+    {
+      "pack_id": "entertainers_pack",
+      "quantity": 3
+    }
+  ],
+  "unsupported_behavior": [
+    {
+      "group": "context_benefits",
+      "requirement": "Map exact-copy consulted Book topic/accuracy and eligible skills, costume impersonation and crowbar leverage. Existing purpose-aware/context modifier hooks are reuse points, not generic support certification."
+    }
+  ]
+}

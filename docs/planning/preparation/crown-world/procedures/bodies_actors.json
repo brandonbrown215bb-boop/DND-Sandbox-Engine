@@ -1,0 +1,42 @@
+{
+  "schema": "crown-world-candidate/1",
+  "id": "bodies_actors",
+  "name": "Bodies Actors",
+  "kind": "procedures",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring declarations only; not registered engine opcodes.",
+  "required_extensions": [
+    "bodies_actors"
+  ],
+  "authored_operations": [
+    {
+      "operation": "resolve_bodies_actors",
+      "requirement": "Reuse creature selectors and actor candidates. Bind exact remains/body identity, creature type/size, age of death, preservation, knowledge, gear, consumed/reanimated state and ownership. Carry created actors, commands, control/appearance lifetimes, death, legal arrivals and temporary equipment through room/combat transitions without respawning or paying loot."
+    }
+  ],
+  "blockers": [
+    "Campaign guard bones and event traveler prose lack some life/death/knowledge facts. Do not infer a valid Revivify target or fabricate corpse answers. Created undead equipment, temporary steed tack and campaign finale Rejuvenation policy retain creature-pass blockers."
+  ],
+  "slices": "S-119/S-154/S-155/S-156/S-157/S-158/S-162/S-163/S-164",
+  "source_context_pages": [
+    182,
+    185,
+    189
+  ],
+  "source_context": "../source-pages.json",
+  "current_owner_pins": [
+    {
+      "path": "src/dungeon/local_room_bodies.gd",
+      "sha256": "95fc766f85c7ca0d075d8db72513dbe39ab276cb96dace6a285d498e0e45c600"
+    },
+    {
+      "path": "src/dungeon/local_room_created.gd",
+      "sha256": "ea1a213284db338fa0a6f127345cdeb7e55248ba3356a1cf64787010ab3037d8"
+    },
+    {
+      "path": "src/dungeon/local_room_familiars.gd",
+      "sha256": "d8a06fbb02f21a148ab553466920f905e765c7e85f48ea8f71451a16e7b55e79"
+    }
+  ],
+  "reuse_boundary": "Existing accepted pieces remain accepted at their documented limits; these requirements do not mark the entire slices missing."
+}

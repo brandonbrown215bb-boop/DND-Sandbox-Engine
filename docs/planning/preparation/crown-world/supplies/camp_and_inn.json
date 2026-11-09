@@ -1,0 +1,58 @@
+{
+  "schema": "crown-world-candidate/1",
+  "id": "camp_and_inn",
+  "name": "Camp, inn and rest consumers",
+  "kind": "supplies",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring declarations only; not registered engine opcodes.",
+  "required_extensions": [
+    "rest_time",
+    "supplies",
+    "hazards",
+    "objectives_rewards"
+  ],
+  "authored_operations": [
+    {
+      "operation": "reuse_shared_rests",
+      "short_rest_seconds": 3600,
+      "long_rest_seconds": 28800,
+      "requirement": "Keep eligibility, interruptions, Hit Dice and exact actor/source recovery from existing RestRules. Inn event effects retain their separate seed semantics pending mapping."
+    },
+    {
+      "operation": "overworld_post_rest_ambush",
+      "ability": "DEX",
+      "skill": "Stealth",
+      "dc": "12 + max(0, PlayerManager player_count - 1)",
+      "monster_pool": [
+        "goblin",
+        "wolf",
+        "bandit",
+        "giant_spider",
+        "skeleton"
+      ],
+      "count_inclusive": [
+        2,
+        3
+      ],
+      "surprise": true,
+      "requirement": "Retain existing best-living-character check after successful Long Rest and failure-only ambush; do not call this the full SRD watch/surprise procedure."
+    }
+  ],
+  "blockers": [
+    "Current ambush DC counts players, not active companion seats; preserve observation pending explicit campaign choice. No infinite town supplies or standard inn price/rest duration is inferred from event prose."
+  ],
+  "current_owner_pins": [
+    {
+      "path": "src/overworld/overworld_state.gd",
+      "sha256": "615f9f73289038fc7fbbab80006391d6c70629875e64be1d132b4d56eb47c9a5"
+    },
+    {
+      "path": "src/characters/rest_rules.gd",
+      "sha256": "1548c49c6bdfa520a588e53915527c1b3b56e60f5f23d00468943dfaa0368595"
+    },
+    {
+      "path": "src/characters/survival_rules.gd",
+      "sha256": "d4aa4d499b960e30aad896fba8fcb4bb450b254a2957a063cdce6dc7866854d3"
+    }
+  ]
+}

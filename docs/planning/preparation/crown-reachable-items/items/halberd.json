@@ -1,0 +1,121 @@
+{
+  "schema": "crown-reachable-item-candidate/1",
+  "id": "halberd",
+  "name": "Halberd",
+  "kind": "weapon",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring intent only; not registered engine syntax.",
+  "rules": {
+    "authority": "SRD 5.2.1",
+    "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      89,
+      90,
+      91
+    ],
+    "text": "Halberd: martial melee; damage 1d10 slashing; properties heavy, reach, two_handed; mastery cleave. Exact range/Versatile, weight and cost are normalized from the p.91 row in definition. Complete property/mastery rules on pp.89–90 apply.",
+    "source_context": "../source-pages.json"
+  },
+  "definition": {
+    "id": "halberd",
+    "name": "Halberd",
+    "category": "martial",
+    "weapon_kind": "melee",
+    "damage_dice": "1d10",
+    "damage_type": "slashing",
+    "properties": [
+      "heavy",
+      "reach",
+      "two_handed"
+    ],
+    "mastery": "cleave",
+    "weight_lb": 6,
+    "cost_gp": 20
+  },
+  "authored_operations": [
+    "Resolve actual proficient attack ability, same ability for Finesse attack/damage, range, hands and declared properties before paying/rolling. Thrown uses its melee ability where applicable and draws as part of attack; Reach adds 5 feet for attacks and Opportunity Attacks.",
+    "Loading fires at most one piece per action, Bonus Action or Reaction regardless of attack count. Ammunition spends one actual typed piece per attack, requires free loading hand for one-handed weapons, and recovers floor(half spent) after one minute following a fight.",
+    "Heavy checks Strength 13 for melee or Dexterity 13 for ranged; enforce normal/long range. Lance is Two-Handed unless mounted. Light/Nick use one extra different-Light-weapon attack and omit positive ability damage; apply only an unlocked mastery with the exact source trigger, target, duration and cap."
+  ],
+  "retained_runtime_seeds": [
+    {
+      "path": "data/core/items/imported_base_items.json",
+      "array_index": 16,
+      "file_sha256": "d450331c5dc1756fccc025c42e7f60bc6312a6829e59814e9864878a4abaae42",
+      "definition": {
+        "id": "halberd",
+        "name": "Halberd",
+        "description": "Standard D&D weapon: Halberd.",
+        "type": "weapon",
+        "damage": "1d10",
+        "damage_type": "slashing",
+        "ability": "STR",
+        "range": 1,
+        "value": 20
+      }
+    },
+    {
+      "path": "data/core/items/weapons.json",
+      "array_index": 22,
+      "file_sha256": "6f6314edd2f971deea6f5d058e0e5f913757a662b2340a8a01c52d60432e0df5",
+      "definition": {
+        "id": "halberd",
+        "weight": 6,
+        "name": "Halberd",
+        "description": "An axe blade topped with a spike on a long pole.",
+        "type": "weapon",
+        "weapon_type": "martial",
+        "damage": "1d10",
+        "damage_type": "slashing",
+        "properties": [
+          "heavy",
+          "reach",
+          "two_handed"
+        ],
+        "ability": "STR",
+        "range": 2,
+        "value": 20
+      }
+    }
+  ],
+  "manifest_overrides": [
+    {
+      "type": "item",
+      "id": "halberd",
+      "winner": "res://data/core/items/weapons.json#23",
+      "replaces": [
+        "res://data/core/items/imported_base_items.json#17"
+      ]
+    }
+  ],
+  "required_mapping": [
+    "weapons"
+  ],
+  "consumers": [
+    {
+      "channel": "historical_shop_inventory",
+      "path": "docs/planning/crown-content-scope.md",
+      "sha256": "3bcb9799865f1779aa7da1c1b041a6ac938c33491dfd502641593bf767a8528e",
+      "details": "Pinned 64-ID Windows export inventory; retained below, not rerun here."
+    },
+    {
+      "channel": "source_shop_candidate",
+      "path": "data/core/items/imported_base_items.json",
+      "sha256": "d450331c5dc1756fccc025c42e7f60bc6312a6829e59814e9864878a4abaae42",
+      "json_pointer": "/16",
+      "details": "Positive shop type/value and, for consumables, declared supported effect names. This is a source selection lead, not a loaded availability certification; manifest wins remain authoritative."
+    },
+    {
+      "channel": "pact_weapon_form",
+      "path": "docs/planning/preparation/crown-characters/invocations/pact_of_the_blade.json",
+      "sha256": "ae155ef90caa35d254f685caa6208383178e4d8dd77360795f165e32016b4046",
+      "json_pointer": "/rules"
+    }
+  ],
+  "unsupported_behavior": [
+    {
+      "group": "weapons",
+      "requirement": "Map all declared weapon properties, mastery eligibility and actual attack routes. Reuse accepted range/Heavy owners; Loading, ammunition, hands and source-specific exceptions still need their complete contract mapping."
+    }
+  ]
+}

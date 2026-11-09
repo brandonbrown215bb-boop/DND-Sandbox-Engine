@@ -1,0 +1,186 @@
+{
+  "format": "crown-spell-candidate/1",
+  "id": "nystuls_magic_aura",
+  "name": "Arcanist’s Magic Aura",
+  "level": 2,
+  "status": "written_unverified_not_loaded",
+  "source": {
+    "authority": "SRD 5.2.1",
+    "url": "https://media.dndbeyond.com/compendium-images/srd/5.2/SRD_CC_v5.2.1.pdf",
+    "sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      110,
+      111
+    ],
+    "header": {
+      "Casting Time": "Action",
+      "Range": "Touch",
+      "Components": "V, S, M (a small square of silk)",
+      "Duration": "24 hours"
+    },
+    "attribution": "System Reference Document 5.2.1, Wizards of the Coast LLC; CC BY 4.0."
+  },
+  "casting": {
+    "casting_time": "Action",
+    "kind": "action",
+    "seconds": null,
+    "ritual_available": false,
+    "range": {
+      "source": "Touch",
+      "kind": "touch",
+      "feet": 5
+    },
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "a small square of silk",
+    "duration": "24 hours",
+    "concentration": false,
+    "spell_lists": [
+      "wizard"
+    ]
+  },
+  "authored_intent": "Touch willing creature for Mask or unworn/uncarried object for False Aura; Mask selects different creature type for spells/magical effects, False Aura changes detected magic/school; thirty daily casts on same target make duration until dispelled.",
+  "rules": [
+    {
+      "id": "r001",
+      "text": "With a touch, you place an illusion on a willing creature or an object that isn’t being worn or carried."
+    },
+    {
+      "id": "r002",
+      "text": "A creature gains the Mask effect below, and an object gains the False Aura effect below."
+    },
+    {
+      "id": "r003",
+      "text": "The effect lasts for the duration."
+    },
+    {
+      "id": "r004",
+      "text": "If you cast the spell on the same target every day for 30 days, the illusion lasts until dispelled."
+    },
+    {
+      "id": "r005",
+      "text": "Mask (Creature)."
+    },
+    {
+      "id": "r006",
+      "text": "Choose a creature type other than the target’s actual type."
+    },
+    {
+      "id": "r007",
+      "text": "Spells and other magical effects treat the target as if it were a creature of the chosen type."
+    },
+    {
+      "id": "r008",
+      "text": "False Aura (Object)."
+    },
+    {
+      "id": "r009",
+      "text": "You change the way the target appears to spells and magical effects that detect magical auras, such as Detect Magic ."
+    },
+    {
+      "id": "r010",
+      "text": "You can make a nonmagical object appear magical, make a magic item appear nonmagical, or change the object’s aura so that it appears to belong to a school of magic you choose."
+    }
+  ],
+  "authored_operations": [
+    {
+      "operation": "mask_magical_classification",
+      "parameters": {
+        "target_choices": {
+          "willing_creature": {
+            "mask": "choose_different_creature_type",
+            "applies_to": "spells_and_magical_effects"
+          },
+          "unworn_uncarried_object": {
+            "false_aura_choices": [
+              "nonmagical_appears_magical",
+              "magical_appears_nonmagical",
+              "chosen_school"
+            ]
+          }
+        },
+        "repeat_same_target_days": 30,
+        "after_repetition": "until_dispelled"
+      },
+      "status": "authoring_declaration_not_a_registered_opcode",
+      "required_source_rules": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006",
+        "r007",
+        "r008",
+        "r009",
+        "r010"
+      ]
+    }
+  ],
+  "runtime_draft": {
+    "origin": "proposed_operations",
+    "definition": null,
+    "fragments": {},
+    "coverage": "Unverified. Neither a full definition nor a fragment certifies all source rules or controls. Required extensions are not silently waived."
+  },
+  "required_extensions": [
+    {
+      "group": "detection_masking",
+      "requirement": "Change only the specified detection/classification/sensor result for the exact recipient; preserve true identity and recast/permanence rules.",
+      "spell_specific_intent": "Touch willing creature for Mask or unworn/uncarried object for False Aura; Mask selects different creature type for spells/magical effects, False Aura changes detected magic/school; thirty daily casts on same target make duration until dispelled.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006",
+        "r007",
+        "r008",
+        "r009",
+        "r010"
+      ],
+      "existing_owner_to_reuse": "src/combat/combat_perception.gd",
+      "slice_references": "S-194/S-195",
+      "disposition": "requires_mapping_or_host_completion",
+      "note": "This is an authored handoff requirement, not a fresh runtime failure or claim that the whole referenced slice is missing."
+    },
+    {
+      "group": "illusions",
+      "requirement": "Represent exact appearance/senses/location, interactions and Study checks; retain observer-specific disbelief, permitted changes and real consequences.",
+      "spell_specific_intent": "Touch willing creature for Mask or unworn/uncarried object for False Aura; Mask selects different creature type for spells/magical effects, False Aura changes detected magic/school; thirty daily casts on same target make duration until dispelled.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006",
+        "r007",
+        "r008",
+        "r009",
+        "r010"
+      ],
+      "existing_owner_to_reuse": "src/combat/combat_perception.gd",
+      "slice_references": "S-187/S-188/S-189/S-195",
+      "disposition": "requires_mapping_or_host_completion",
+      "note": "This is an authored handoff requirement, not a fresh runtime failure or claim that the whole referenced slice is missing."
+    }
+  ],
+  "audit": {
+    "source": "docs/audits/spells.md",
+    "batch": "088-7",
+    "production_definition_at_authoring": "res://data/core/spells/imported_spells.json#134",
+    "baseline_execution": "native",
+    "source_revision": "2a19eb1d",
+    "existing_conversion_label": "queued"
+  },
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile every source rule and required extension, then implement and verify through production paths before any deliberate promotion. Keep native behavior until covered."
+  }
+}

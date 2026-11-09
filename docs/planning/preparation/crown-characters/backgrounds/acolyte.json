@@ -1,0 +1,242 @@
+{
+  "schema": "crown-character-candidate/1",
+  "id": "acolyte",
+  "name": "Acolyte",
+  "kind": "background",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "scope": {
+    "total_character_level_maximum": 5
+  },
+  "operation_language": "authoring intent only; not registered engine syntax",
+  "runtime_support": "Retained definitions are reuse material, not proof of full rules. Every authored operation needs contract mapping and later production-path verification before promotion.",
+  "reused_from": [
+    "docs/planning/crown-backgrounds/candidates.json",
+    "docs/planning/crown-backgrounds/README.md"
+  ],
+  "retained_candidate": {
+    "id": "acolyte",
+    "name": "Acolyte",
+    "source_quote": "Acolyte\nAbility Scores: Intelligence, Wisdom, Charisma\nFeat: Magic Initiate (Cleric) (see “Feats”)\nSkill Proficiencies: Insight and Religion\nTool Proficiency: Calligrapher’s Supplies\nEquipment: Choose A or B: (A) Calligrapher’s Supplies, Book (prayers), Holy Symbol, Parchment (10 sheets), Robe, 8 GP; or (B) 50 GP",
+    "ability_options": [
+      "INT",
+      "WIS",
+      "CHA"
+    ],
+    "origin_feat": {
+      "feat_id": "magic_initiate",
+      "parameter": "cleric"
+    },
+    "skills": [
+      "Insight",
+      "Religion"
+    ],
+    "tool_proficiency": {
+      "fixed": "calligraphers_supplies"
+    },
+    "equipment_options": {
+      "A": {
+        "items": [
+          {
+            "source_text": "Calligrapher’s Supplies",
+            "quantity": 1,
+            "item_id": "calligraphers_supplies"
+          },
+          {
+            "source_text": "Book (prayers)",
+            "quantity": 1,
+            "item_id": null,
+            "note": "No loaded generic Book item; topic 'prayers' must be represented (SRD p.96 Book bonus depends on topic).",
+            "topic": "prayers"
+          },
+          {
+            "source_text": "Holy Symbol",
+            "quantity": 1,
+            "item_id": "holy_symbol",
+            "note": "SRD p.97: a Holy Symbol takes one of the forms in the Holy Symbols table (Amulet, Emblem, Reliquary). Background does not name a form; loaded generic holy_symbol vs amulet/emblem/reliquary must be reconciled."
+          },
+          {
+            "source_text": "Parchment",
+            "quantity": 10,
+            "item_id": null,
+            "note": "No loaded Parchment item (SRD p.95/99, 1 SP per sheet)."
+          },
+          {
+            "source_text": "Robe",
+            "quantity": 1,
+            "item_id": "robe"
+          }
+        ],
+        "gp": 8
+      },
+      "B": {
+        "items": [],
+        "gp": 50
+      }
+    },
+    "source": {
+      "document": "SRD 5.2.1",
+      "file": "SRD_CC_v5.2.1.pdf",
+      "pdf_page": 83,
+      "printed_page": 83,
+      "section": "Character Origins > Background Descriptions"
+    }
+  },
+  "definition": {
+    "id": "acolyte",
+    "name": "Acolyte",
+    "ability_options": [
+      "INT",
+      "WIS",
+      "CHA"
+    ],
+    "origin_feat": {
+      "feat_id": "magic_initiate",
+      "parameter": "cleric"
+    },
+    "skills": [
+      "Insight",
+      "Religion"
+    ],
+    "tool_proficiency": {
+      "fixed": "calligraphers_supplies"
+    },
+    "equipment_options": {
+      "A": {
+        "items": [
+          {
+            "source_text": "Calligrapher’s Supplies",
+            "quantity": 1,
+            "item_id": "calligraphers_supplies"
+          },
+          {
+            "source_text": "Book (prayers)",
+            "quantity": 1,
+            "item_id": null,
+            "note": "No loaded generic Book item; topic 'prayers' must be represented (SRD p.96 Book bonus depends on topic).",
+            "topic": "prayers"
+          },
+          {
+            "source_text": "Holy Symbol",
+            "quantity": 1,
+            "item_id": "holy_symbol",
+            "note": "SRD p.97: a Holy Symbol takes one of the forms in the Holy Symbols table (Amulet, Emblem, Reliquary). Background does not name a form; loaded generic holy_symbol vs amulet/emblem/reliquary must be reconciled."
+          },
+          {
+            "source_text": "Parchment",
+            "quantity": 10,
+            "item_id": null,
+            "note": "No loaded Parchment item (SRD p.95/99, 1 SP per sheet)."
+          },
+          {
+            "source_text": "Robe",
+            "quantity": 1,
+            "item_id": "robe"
+          }
+        ],
+        "gp": 8
+      },
+      "B": {
+        "items": [],
+        "gp": 50
+      }
+    }
+  },
+  "ability_rule": {
+    "source": {
+      "pdf_page": 83,
+      "printed_page": 83
+    },
+    "quote": "A background lists three of your character’s ability scores. Increase one by 2 and another one by 1, or increase all three by 1. None of these increases can raise a score above 20.",
+    "patterns": [
+      [
+        2,
+        1
+      ],
+      [
+        1,
+        1,
+        1
+      ]
+    ],
+    "cap": 20
+  },
+  "source": {
+    "authority": "SRD 5.2.1",
+    "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      83
+    ],
+    "text": "Acolyte\nAbility Scores: Intelligence, Wisdom, Charisma\nFeat: Magic Initiate (Cleric) (see “Feats”)\nSkill Proficiencies: Insight and Religion\nTool Proficiency: Calligrapher’s Supplies\nEquipment: Choose A or B: (A) Calligrapher’s Supplies, Book (prayers), Holy Symbol, Parchment (10 sheets), Robe, 8 GP; or (B) 50 GP"
+  },
+  "authored_operations": [
+    {
+      "trigger": "Creation confirm",
+      "effects": [
+        "Choose+2/+1 to distinct listed abilities OR+1 to all3, cap20",
+        "Grant fixed background Origin feat; Acolyte fixes Cleric list, Sage fixes Wizard list but each still chooses legal casting ability and spells",
+        "Grant two fixed skills and fixed/chosen tool from candidate",
+        "Choose equipment A with exact quantities and GP OR50 GP; Soldier item equals chosen Gaming Set"
+      ],
+      "required_extension_groups": [
+        "progression",
+        "choices",
+        "items",
+        "casting"
+      ],
+      "ending_and_identity": "Whole package validates before committing; separate source receipts; restore applies no grants."
+    }
+  ],
+  "feat_candidate": "../feats/magic_initiate.json",
+  "item_reconciliation": [
+    {
+      "source_text": "Calligrapher’s Supplies",
+      "item_id": "calligraphers_supplies",
+      "present_in_core_source_inventory": true,
+      "resolution": "Source record exists; this static lookup does not certify loaded behavior."
+    },
+    {
+      "source_text": "Book (prayers)",
+      "item_id": null,
+      "present_in_core_source_inventory": false,
+      "resolution": "Resolve exact item/content facts before promotion; null remains explicit, never substitute unrelated item."
+    },
+    {
+      "source_text": "Holy Symbol",
+      "item_id": "holy_symbol",
+      "present_in_core_source_inventory": true,
+      "resolution": "Source record exists; this static lookup does not certify loaded behavior."
+    },
+    {
+      "source_text": "Parchment",
+      "item_id": null,
+      "present_in_core_source_inventory": false,
+      "resolution": "Resolve exact item/content facts before promotion; null remains explicit, never substitute unrelated item."
+    },
+    {
+      "source_text": "Robe",
+      "item_id": "robe",
+      "present_in_core_source_inventory": true,
+      "resolution": "Source record exists; this static lookup does not certify loaded behavior."
+    }
+  ],
+  "unsupported_behavior": [
+    {
+      "groups": [
+        "progression",
+        "choices"
+      ],
+      "requirement": "S-231 background content/creation host with fixed parameterized feat, ability patterns, equipment alternative and atomic source-owned grants remains required. Existing class tools and Skilled acquisition are reuse, not work to restart."
+    },
+    {
+      "groups": [
+        "items"
+      ],
+      "requirement": "Retain Book topic prayers/history; exact Parchment quantities; ordinary Pouch vs Component Pouch; Traveler’s Clothes, Arrows, Quiver; Soldier chosen Gaming Set and its matching item. Holy Symbol form remains explicit Amulet/Emblem/Reliquary selection or unresolved generic mapping, never silently chosen."
+    }
+  ],
+  "source_revision": "2a19eb1d (existing working-tree definitions and recovered drafts read on 2026-11-08)",
+  "reused_input_hashes": {
+    "docs/planning/crown-backgrounds/candidates.json": "5993552dd5ae7b247f7b0c72a10c57809b6c49618448cdb8d02fcfbd0311243c",
+    "docs/planning/crown-backgrounds/README.md": "356e543b6e0411bc1d7afcd4313ec92f83d005de59d5104a90ed0912a4a2e7dd"
+  }
+}

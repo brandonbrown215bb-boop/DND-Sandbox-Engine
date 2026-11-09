@@ -1,0 +1,2321 @@
+{
+  "schema": "crown-clause-routes/1",
+  "groups": {
+    "crown-spells": {
+      "attack_interception": [
+        "ILLUSION",
+        "REACTION"
+      ],
+      "attack_riders": [
+        "RIDER"
+      ],
+      "attitude_scopes": [
+        "KNOWLEDGE",
+        "BENEFIT"
+      ],
+      "auras": [
+        "ZONE",
+        "BENEFIT"
+      ],
+      "barriers": [
+        "BARRIER"
+      ],
+      "benefit_only_rest": [
+        "REST"
+      ],
+      "benefit_recipients": [
+        "BENEFIT",
+        "LIFETIME"
+      ],
+      "breathing": [
+        "BREATH"
+      ],
+      "cast_failure": [
+        "BUDGET"
+      ],
+      "communication": [
+        "LANGUAGE",
+        "KNOWLEDGE"
+      ],
+      "compelled_actions": [
+        "GRANTED_MOVE",
+        "BUDGET"
+      ],
+      "containment": [
+        "CONTAIN"
+      ],
+      "created_actors": [
+        "ACTOR",
+        "COMMAND"
+      ],
+      "created_objects": [
+        "CREATION"
+      ],
+      "curse_damage_routes": [
+        "RIDER"
+      ],
+      "curses_and_attunement": [
+        "ITEM_MAGIC"
+      ],
+      "damage_copy": [
+        "DAMAGE_COPY"
+      ],
+      "damage_repeat_saves": [
+        "REPEAT"
+      ],
+      "damage_to_healing": [
+        "DAMAGE_HEAL"
+      ],
+      "death_and_remains": [
+        "REMAINS"
+      ],
+      "detection": [
+        "DETECT"
+      ],
+      "detection_masking": [
+        "DETECT",
+        "LIFETIME"
+      ],
+      "dispelling": [
+        "DISPEL"
+      ],
+      "divination": [
+        "KNOWLEDGE"
+      ],
+      "falling": [
+        "FALL"
+      ],
+      "flight": [
+        "MOVE",
+        "FALL"
+      ],
+      "forced_movement": [
+        "GRANTED_MOVE"
+      ],
+      "forms": [
+        "FORM"
+      ],
+      "granted_actions": [
+        "CREATION",
+        "BUDGET"
+      ],
+      "granted_movement": [
+        "MOVE"
+      ],
+      "heard_targeting": [
+        "LIGHT"
+      ],
+      "illusions": [
+        "ILLUSION"
+      ],
+      "item_benefits": [
+        "ITEM_MAGIC"
+      ],
+      "light_and_darkness": [
+        "LIGHT",
+        "DISPEL"
+      ],
+      "liquid_surfaces": [
+        "MOVE",
+        "BREATH"
+      ],
+      "long_cast": [
+        "WORK"
+      ],
+      "long_lifetimes": [
+        "LIFETIME"
+      ],
+      "object_ignition": [
+        "OBJECT",
+        "HAZARD"
+      ],
+      "object_repair": [
+        "REPAIR"
+      ],
+      "object_targets": [
+        "OBJECT"
+      ],
+      "objects": [
+        "OBJECT"
+      ],
+      "phasing": [
+        "PHASE"
+      ],
+      "post_hit_casts": [
+        "POSTHIT"
+      ],
+      "quantities": [
+        "QUANTITY",
+        "SUPPLY",
+        "CREATION"
+      ],
+      "reaction_routes": [
+        "REACTION"
+      ],
+      "remote_senses": [
+        "REMOTE"
+      ],
+      "restricted_budgets": [
+        "BUDGET"
+      ],
+      "retained_conversion_limit": [
+        "BASE"
+      ],
+      "retargeting": [
+        "RIDER"
+      ],
+      "roll_hosts": [
+        "ROLL",
+        "BENEFIT"
+      ],
+      "stored_spells": [
+        "STORAGE"
+      ],
+      "teleportation": [
+        "PHASE"
+      ],
+      "terrain": [
+        "MOVE",
+        "ZONE"
+      ],
+      "tethers": [
+        "GRAPPLE",
+        "ZONE"
+      ],
+      "travel": [
+        "TRAVEL"
+      ],
+      "utility_world": [
+        "CREATION",
+        "OBJECT",
+        "KNOWLEDGE"
+      ],
+      "wards_and_triggers": [
+        "WARD"
+      ],
+      "world_outcomes": [
+        "KNOWLEDGE"
+      ],
+      "zones": [
+        "ZONE"
+      ]
+    },
+    "crown-characters": {
+      "progression": [
+        "ACQUIRE",
+        "MULTI",
+        "BACKGROUND",
+        "SPECIES"
+      ],
+      "choices": [
+        "CHOICE"
+      ],
+      "casting": [
+        "CAST"
+      ],
+      "resources": [
+        "POOL"
+      ],
+      "rolls": [
+        "ROLL",
+        "DICE"
+      ],
+      "attacks": [
+        "WEAPON",
+        "RIDER"
+      ],
+      "stats": [
+        "ARMOR",
+        "BENEFIT"
+      ],
+      "source_lifetimes": [
+        "LIFETIME"
+      ],
+      "conditions": [
+        "BASE",
+        "GRAPPLE"
+      ],
+      "movement": [
+        "MOVE",
+        "GRANTED_MOVE"
+      ],
+      "forms": [
+        "FORM",
+        "ACTOR",
+        "COMMAND"
+      ],
+      "reactions": [
+        "REACTION",
+        "DEFLECT"
+      ],
+      "falling": [
+        "FALL"
+      ],
+      "actions": [
+        "BUDGET"
+      ],
+      "languages": [
+        "LANGUAGE"
+      ],
+      "world": [
+        "KNOWLEDGE",
+        "DETECT"
+      ],
+      "items": [
+        "PACK",
+        "COMPONENT",
+        "ITEM_MAGIC"
+      ],
+      "allocation": [
+        "BENEFIT",
+        "POOL"
+      ],
+      "initiative": [
+        "INIT"
+      ]
+    },
+    "crown-equipment": {
+      "ordinary_items": [
+        "PACK",
+        "OBJECT"
+      ],
+      "weapons": [
+        "WEAPON"
+      ],
+      "armor": [
+        "ARMOR"
+      ],
+      "ammunition": [
+        "AMMO"
+      ],
+      "packs": [
+        "PACK",
+        "CARRY"
+      ],
+      "containers": [
+        "CARRY",
+        "QUANTITY"
+      ],
+      "environment": [
+        "SUPPLY"
+      ],
+      "hazards": [
+        "HAZARD"
+      ],
+      "context_benefits": [
+        "TOOL",
+        "KNOWLEDGE"
+      ],
+      "bindings": [
+        "GRAPPLE"
+      ],
+      "light_fuel": [
+        "LIGHT",
+        "QUANTITY"
+      ],
+      "oil": [
+        "ITEM_ATTACK",
+        "HAZARD",
+        "QUANTITY"
+      ],
+      "healing": [
+        "ITEM_ATTACK",
+        "QUANTITY"
+      ],
+      "attack_items": [
+        "ITEM_ATTACK"
+      ],
+      "tools": [
+        "TOOL"
+      ],
+      "crafting": [
+        "CRAFT"
+      ],
+      "focuses": [
+        "COMPONENT"
+      ],
+      "choices": [
+        "PACK",
+        "CHOICE"
+      ],
+      "spellbooks": [
+        "BOOK"
+      ]
+    },
+    "crown-reachable-items": {
+      "weapons": [
+        "WEAPON"
+      ],
+      "armor": [
+        "ARMOR"
+      ],
+      "ammunition": [
+        "AMMO"
+      ],
+      "net": [
+        "ITEM_ATTACK",
+        "GRAPPLE"
+      ],
+      "potions": [
+        "ITEM_ATTACK",
+        "QUANTITY"
+      ],
+      "components": [
+        "COMPONENT"
+      ],
+      "currency_rewards": [
+        "CLEAR_REWARD",
+        "EVENT_REWARD",
+        "MONSTER_REWARD"
+      ],
+      "quest_items": [
+        "WARD",
+        "CLEAR_REWARD"
+      ],
+      "campaign_custom": [
+        "ITEM_ATTACK"
+      ],
+      "created_items": [
+        "CREATION",
+        "QUANTITY",
+        "SUPPLY"
+      ],
+      "created_books": [
+        "BOOK"
+      ],
+      "character_creations": [
+        "CREATION",
+        "ITEM_MAGIC"
+      ],
+      "legacy_components": [
+        "COMPONENT"
+      ]
+    },
+    "crown-creatures": {
+      "map_statistics": [
+        "ACTOR"
+      ],
+      "map_attacks": [
+        "ACTOR",
+        "WEAPON",
+        "RIDER"
+      ],
+      "map_conditions": [
+        "BASE",
+        "GRAPPLE",
+        "LIFETIME"
+      ],
+      "map_movement": [
+        "MOVE",
+        "GRANTED_MOVE",
+        "FALL",
+        "PHASE"
+      ],
+      "map_senses": [
+        "LIGHT",
+        "REMOTE",
+        "LANGUAGE",
+        "DETECT"
+      ],
+      "map_resources": [
+        "POOL",
+        "COMMAND"
+      ],
+      "map_forms": [
+        "FORM",
+        "ACTOR",
+        "COMMAND"
+      ],
+      "map_aftermath": [
+        "REMAINS"
+      ],
+      "map_items": [
+        "REPAIR",
+        "ITEM_MAGIC"
+      ],
+      "map_party": [
+        "COMPANION"
+      ],
+      "map_containment": [
+        "CONTAIN"
+      ],
+      "map_casting": [
+        "CAST"
+      ],
+      "map_rolls": [
+        "ROLL"
+      ]
+    },
+    "crown-world": {
+      "travel": [
+        "TRAVEL"
+      ],
+      "discovery": [
+        "TOOL",
+        "KNOWLEDGE",
+        "TRAP"
+      ],
+      "locks_traps": [
+        "WARD",
+        "TRAP"
+      ],
+      "objects": [
+        "OBJECT",
+        "CARRY",
+        "REPAIR"
+      ],
+      "supplies": [
+        "SUPPLY",
+        "QUANTITY"
+      ],
+      "hazards": [
+        "HAZARD",
+        "FALL",
+        "BREATH"
+      ],
+      "senses": [
+        "LIGHT",
+        "REMOTE"
+      ],
+      "areas_wards": [
+        "ZONE",
+        "WARD",
+        "STORAGE",
+        "DISPEL"
+      ],
+      "knowledge_social": [
+        "LANGUAGE",
+        "KNOWLEDGE",
+        "ILLUSION"
+      ],
+      "bodies_actors": [
+        "REMAINS",
+        "ACTOR",
+        "COMMAND"
+      ],
+      "access_movement": [
+        "MOVE",
+        "PHASE",
+        "CONTAIN",
+        "BARRIER"
+      ],
+      "rest_time": [
+        "WORK",
+        "REST",
+        "LIFETIME"
+      ],
+      "objectives_rewards": [
+        "CLEAR_REWARD",
+        "EVENT_REWARD",
+        "MONSTER_REWARD",
+        "EVENT"
+      ]
+    }
+  },
+  "features": {
+    "barbarian_weapon_mastery": [
+      "WEAPON",
+      "CHOICE"
+    ],
+    "fighter_weapon_mastery": [
+      "WEAPON",
+      "CHOICE"
+    ],
+    "paladin_weapon_mastery": [
+      "WEAPON",
+      "CHOICE"
+    ],
+    "ranger_weapon_mastery": [
+      "WEAPON",
+      "CHOICE"
+    ],
+    "rogue_weapon_mastery": [
+      "WEAPON",
+      "CHOICE"
+    ],
+    "barbarian_extra_attack": [
+      "WEAPON",
+      "BUDGET"
+    ],
+    "fighter_extra_attack": [
+      "WEAPON",
+      "BUDGET"
+    ],
+    "monk_extra_attack": [
+      "WEAPON",
+      "BUDGET"
+    ],
+    "paladin_extra_attack": [
+      "WEAPON",
+      "BUDGET"
+    ],
+    "ranger_extra_attack": [
+      "WEAPON",
+      "BUDGET"
+    ],
+    "barbarian_ability_score_improvement": [
+      "CHOICE",
+      "ACQUIRE"
+    ],
+    "bard_ability_score_improvement": [
+      "CHOICE",
+      "ACQUIRE"
+    ],
+    "cleric_ability_score_improvement": [
+      "CHOICE",
+      "ACQUIRE"
+    ],
+    "druid_ability_score_improvement": [
+      "CHOICE",
+      "ACQUIRE"
+    ],
+    "fighter_ability_score_improvement": [
+      "CHOICE",
+      "ACQUIRE"
+    ],
+    "monk_ability_score_improvement": [
+      "CHOICE",
+      "ACQUIRE"
+    ],
+    "paladin_ability_score_improvement": [
+      "CHOICE",
+      "ACQUIRE"
+    ],
+    "ranger_ability_score_improvement": [
+      "CHOICE",
+      "ACQUIRE"
+    ],
+    "rogue_ability_score_improvement": [
+      "CHOICE",
+      "ACQUIRE"
+    ],
+    "sorcerer_ability_score_improvement": [
+      "CHOICE",
+      "ACQUIRE"
+    ],
+    "warlock_ability_score_improvement": [
+      "CHOICE",
+      "ACQUIRE"
+    ],
+    "wizard_ability_score_improvement": [
+      "CHOICE",
+      "ACQUIRE"
+    ],
+    "barbarian_barbarian_subclass": [
+      "ACQUIRE",
+      "CHOICE"
+    ],
+    "bard_bard_subclass": [
+      "ACQUIRE",
+      "CHOICE"
+    ],
+    "cleric_cleric_subclass": [
+      "ACQUIRE",
+      "CHOICE"
+    ],
+    "druid_druid_subclass": [
+      "ACQUIRE",
+      "CHOICE"
+    ],
+    "fighter_fighter_subclass": [
+      "ACQUIRE",
+      "CHOICE"
+    ],
+    "monk_monk_subclass": [
+      "ACQUIRE",
+      "CHOICE"
+    ],
+    "paladin_paladin_subclass": [
+      "ACQUIRE",
+      "CHOICE"
+    ],
+    "ranger_ranger_subclass": [
+      "ACQUIRE",
+      "CHOICE"
+    ],
+    "rogue_rogue_subclass": [
+      "ACQUIRE",
+      "CHOICE"
+    ],
+    "sorcerer_sorcerer_subclass": [
+      "ACQUIRE",
+      "CHOICE"
+    ],
+    "warlock_warlock_subclass": [
+      "ACQUIRE",
+      "CHOICE"
+    ],
+    "wizard_wizard_subclass": [
+      "ACQUIRE",
+      "CHOICE"
+    ],
+    "bard_spellcasting": [
+      "CAST",
+      "ACQUIRE"
+    ],
+    "cleric_spellcasting": [
+      "CAST",
+      "ACQUIRE"
+    ],
+    "druid_spellcasting": [
+      "CAST",
+      "ACQUIRE"
+    ],
+    "paladin_spellcasting": [
+      "CAST",
+      "ACQUIRE"
+    ],
+    "ranger_spellcasting": [
+      "CAST",
+      "ACQUIRE"
+    ],
+    "sorcerer_spellcasting": [
+      "CAST",
+      "ACQUIRE"
+    ],
+    "warlock_pact_magic": [
+      "CAST",
+      "ACQUIRE"
+    ],
+    "wizard_spellcasting": [
+      "CAST",
+      "BOOK",
+      "ACQUIRE"
+    ],
+    "cleric_life_domain_spells": [
+      "CAST",
+      "CHOICE",
+      "ACQUIRE"
+    ],
+    "circle_of_the_land_circle_of_the_land_spells": [
+      "CAST",
+      "CHOICE",
+      "ACQUIRE"
+    ],
+    "paladin_oath_of_devotion_spells": [
+      "CAST",
+      "CHOICE",
+      "ACQUIRE"
+    ],
+    "sorcerer_draconic_spells": [
+      "CAST",
+      "CHOICE",
+      "ACQUIRE"
+    ],
+    "warlock_fiend_spells": [
+      "CAST",
+      "CHOICE",
+      "ACQUIRE"
+    ],
+    "barbarian_rage": [
+      "POOL",
+      "BENEFIT",
+      "RIDER",
+      "LIFETIME",
+      "BUDGET"
+    ],
+    "barbarian_unarmored_defense": [
+      "ARMOR",
+      "BENEFIT"
+    ],
+    "monk_unarmored_defense": [
+      "ARMOR",
+      "BENEFIT"
+    ],
+    "barbarian_danger_sense": [
+      "ROLL"
+    ],
+    "barbarian_reckless_attack": [
+      "RIDER",
+      "ROLL",
+      "LIFETIME"
+    ],
+    "barbarian_primal_knowledge": [
+      "CHOICE",
+      "ROLL"
+    ],
+    "barbarian_fast_movement": [
+      "BENEFIT",
+      "ARMOR",
+      "MOVE"
+    ],
+    "monk_unarmored_movement": [
+      "BENEFIT",
+      "ARMOR",
+      "MOVE"
+    ],
+    "path_of_the_berserker_frenzy": [
+      "RIDER",
+      "DICE"
+    ],
+    "bard_bardic_inspiration": [
+      "ROLL",
+      "POOL",
+      "LIFETIME"
+    ],
+    "bard_expertise": [
+      "CHOICE",
+      "ACQUIRE",
+      "ROLL"
+    ],
+    "rogue_expertise": [
+      "CHOICE",
+      "ACQUIRE",
+      "ROLL"
+    ],
+    "wizard_scholar": [
+      "CHOICE",
+      "ACQUIRE",
+      "ROLL"
+    ],
+    "college_of_lore_bonus_proficiencies": [
+      "CHOICE",
+      "ACQUIRE",
+      "ROLL"
+    ],
+    "bard_jack_of_all_trades": [
+      "ROLL"
+    ],
+    "bard_font_of_inspiration": [
+      "POOL",
+      "ROLL"
+    ],
+    "college_of_lore_cutting_words": [
+      "ROLL",
+      "REACTION",
+      "POOL"
+    ],
+    "cleric_divine_order": [
+      "CHOICE",
+      "CAST",
+      "ROLL",
+      "ACQUIRE"
+    ],
+    "druid_primal_order": [
+      "CHOICE",
+      "CAST",
+      "ROLL",
+      "ACQUIRE"
+    ],
+    "cleric_channel_divinity": [
+      "POOL",
+      "BENEFIT",
+      "GRANTED_MOVE",
+      "BASE"
+    ],
+    "cleric_sear_undead": [
+      "BASE",
+      "POOL",
+      "ZONE"
+    ],
+    "life_domain_disciple_of_life": [
+      "BENEFIT",
+      "CAST",
+      "LIFETIME"
+    ],
+    "life_domain_preserve_life": [
+      "BENEFIT",
+      "POOL"
+    ],
+    "druid_druidic": [
+      "LANGUAGE",
+      "KNOWLEDGE",
+      "CAST"
+    ],
+    "druid_wild_shape": [
+      "FORM",
+      "ACTOR",
+      "CHOICE",
+      "POOL"
+    ],
+    "druid_wild_companion": [
+      "CAST",
+      "COMPONENT",
+      "ACTOR",
+      "COMMAND",
+      "LIFETIME"
+    ],
+    "druid_wild_resurgence": [
+      "POOL"
+    ],
+    "circle_of_the_land_land_s_aid": [
+      "BASE",
+      "ZONE",
+      "BENEFIT",
+      "POOL"
+    ],
+    "fighter_fighting_style": [
+      "CHOICE",
+      "CAST",
+      "WEAPON"
+    ],
+    "paladin_fighting_style": [
+      "CHOICE",
+      "CAST",
+      "WEAPON"
+    ],
+    "ranger_fighting_style": [
+      "CHOICE",
+      "CAST",
+      "WEAPON"
+    ],
+    "fighter_second_wind": [
+      "POOL",
+      "BASE"
+    ],
+    "fighter_action_surge": [
+      "BUDGET",
+      "POOL"
+    ],
+    "fighter_tactical_mind": [
+      "ROLL",
+      "POOL"
+    ],
+    "fighter_tactical_shift": [
+      "GRANTED_MOVE",
+      "POOL"
+    ],
+    "champion_improved_critical": [
+      "DICE"
+    ],
+    "champion_remarkable_athlete": [
+      "ROLL",
+      "GRANTED_MOVE"
+    ],
+    "monk_martial_arts": [
+      "WEAPON",
+      "DICE",
+      "GRAPPLE",
+      "BUDGET"
+    ],
+    "monk_monks_focus": [
+      "POOL",
+      "BUDGET",
+      "MOVE",
+      "WEAPON"
+    ],
+    "monk_uncanny_metabolism": [
+      "POOL",
+      "BASE"
+    ],
+    "monk_deflect_attacks": [
+      "DEFLECT"
+    ],
+    "monk_slow_fall": [
+      "FALL",
+      "REACTION"
+    ],
+    "monk_stunning_strike": [
+      "POSTHIT",
+      "RIDER",
+      "BASE",
+      "POOL"
+    ],
+    "monk_open_hand_technique": [
+      "BASE",
+      "GRANTED_MOVE"
+    ],
+    "paladin_lay_on_hands": [
+      "BENEFIT",
+      "POOL",
+      "BASE"
+    ],
+    "paladin_paladins_smite": [
+      "CAST",
+      "POSTHIT",
+      "POOL"
+    ],
+    "paladin_channel_divinity": [
+      "DETECT",
+      "POOL",
+      "LIFETIME"
+    ],
+    "paladin_faithful_steed": [
+      "CAST",
+      "ACTOR",
+      "COMMAND"
+    ],
+    "oath_of_devotion_sacred_weapon": [
+      "ITEM_MAGIC",
+      "WEAPON",
+      "LIGHT",
+      "LIFETIME"
+    ],
+    "ranger_favored_enemy": [
+      "CAST",
+      "RIDER",
+      "DETECT"
+    ],
+    "ranger_deft_explorer": [
+      "CHOICE",
+      "LANGUAGE",
+      "ACQUIRE"
+    ],
+    "hunter_hunter_s_lore": [
+      "DETECT"
+    ],
+    "hunter_hunter_s_prey": [
+      "RIDER",
+      "BUDGET",
+      "CHOICE"
+    ],
+    "rogue_sneak_attack": [
+      "RIDER",
+      "DICE"
+    ],
+    "rogue_thieves_cant": [
+      "LANGUAGE",
+      "KNOWLEDGE"
+    ],
+    "rogue_cunning_action": [
+      "BUDGET",
+      "BASE"
+    ],
+    "rogue_steady_aim": [
+      "RIDER",
+      "MOVE",
+      "LIFETIME"
+    ],
+    "rogue_cunning_strike": [
+      "POSTHIT",
+      "DICE",
+      "BASE",
+      "GRANTED_MOVE",
+      "TOOL"
+    ],
+    "rogue_uncanny_dodge": [
+      "REACTION",
+      "DEFLECT"
+    ],
+    "thief_fast_hands": [
+      "TOOL",
+      "BUDGET",
+      "WARD",
+      "TRAP",
+      "ITEM_ATTACK"
+    ],
+    "thief_second_story_work": [
+      "MOVE"
+    ],
+    "sorcerer_innate_sorcery": [
+      "CAST",
+      "ROLL",
+      "POOL",
+      "LIFETIME"
+    ],
+    "sorcerer_font_of_magic": [
+      "POOL",
+      "REST",
+      "WORK"
+    ],
+    "sorcerer_sorcerous_restoration": [
+      "POOL",
+      "REST",
+      "WORK"
+    ],
+    "warlock_magical_cunning": [
+      "POOL",
+      "REST",
+      "WORK"
+    ],
+    "wizard_arcane_recovery": [
+      "POOL",
+      "REST",
+      "WORK",
+      "BOOK"
+    ],
+    "sorcerer_metamagic": [
+      "CHOICE",
+      "CAST"
+    ],
+    "draconic_sorcery_draconic_resilience": [
+      "BENEFIT",
+      "ARMOR",
+      "ACQUIRE"
+    ],
+    "warlock_eldritch_invocations": [
+      "CHOICE",
+      "ACQUIRE"
+    ],
+    "fiend_dark_ones_blessing": [
+      "RIDER",
+      "BENEFIT"
+    ],
+    "wizard_ritual_adept": [
+      "BOOK",
+      "CAST",
+      "WORK"
+    ],
+    "wizard_memorize_spell": [
+      "BOOK",
+      "CAST",
+      "WORK"
+    ],
+    "evoker_evocation_savant": [
+      "BOOK",
+      "CAST",
+      "WORK"
+    ],
+    "evoker_potent_cantrip": [
+      "DICE",
+      "BASE"
+    ]
+  },
+  "candidates": {
+    "crown-characters:agonizing_blast": {
+      "default": [
+        "RIDER",
+        "CAST",
+        "CHOICE"
+      ]
+    },
+    "crown-characters:armor_of_shadows": {
+      "default": [
+        "CAST",
+        "CHOICE"
+      ]
+    },
+    "crown-characters:ascendant_step": {
+      "default": [
+        "CAST",
+        "CHOICE"
+      ]
+    },
+    "crown-characters:mask_of_many_faces": {
+      "default": [
+        "CAST",
+        "CHOICE"
+      ]
+    },
+    "crown-characters:master_of_myriad_forms": {
+      "default": [
+        "CAST",
+        "CHOICE"
+      ]
+    },
+    "crown-characters:misty_visions": {
+      "default": [
+        "CAST",
+        "CHOICE"
+      ]
+    },
+    "crown-characters:one_with_shadows": {
+      "default": [
+        "CAST",
+        "CHOICE"
+      ]
+    },
+    "crown-characters:otherworldly_leap": {
+      "default": [
+        "CAST",
+        "CHOICE"
+      ]
+    },
+    "crown-characters:devils_sight": {
+      "default": [
+        "LIGHT"
+      ]
+    },
+    "crown-characters:eldritch_mind": {
+      "default": [
+        "ROLL"
+      ]
+    },
+    "crown-characters:eldritch_smite": {
+      "default": [
+        "POSTHIT",
+        "POOL"
+      ]
+    },
+    "crown-characters:eldritch_spear": {
+      "default": [
+        "CAST"
+      ]
+    },
+    "crown-characters:fiendish_vigor": {
+      "default": [
+        "CAST",
+        "DICE"
+      ]
+    },
+    "crown-characters:gaze_of_two_minds": {
+      "default": [
+        "REMOTE",
+        "LIFETIME"
+      ]
+    },
+    "crown-characters:gift_of_the_depths": {
+      "default": [
+        "CAST",
+        "BREATH",
+        "MOVE"
+      ]
+    },
+    "crown-characters:investment_of_the_chain_master": {
+      "default": [
+        "COMMAND",
+        "FORM",
+        "REACTION"
+      ]
+    },
+    "crown-characters:lessons_of_the_first_ones": {
+      "default": [
+        "CHOICE",
+        "ACQUIRE"
+      ]
+    },
+    "crown-characters:pact_of_the_blade": {
+      "default": [
+        "ITEM_MAGIC",
+        "CREATION",
+        "WEAPON"
+      ]
+    },
+    "crown-characters:pact_of_the_chain": {
+      "default": [
+        "COMMAND",
+        "ACTOR",
+        "CAST",
+        "COMPONENT"
+      ]
+    },
+    "crown-characters:pact_of_the_tome": {
+      "default": [
+        "BOOK",
+        "CAST",
+        "CREATION"
+      ]
+    },
+    "crown-characters:repelling_blast": {
+      "default": [
+        "GRANTED_MOVE",
+        "RIDER"
+      ]
+    },
+    "crown-characters:thirsting_blade": {
+      "default": [
+        "WEAPON",
+        "BUDGET"
+      ]
+    },
+    "crown-characters:careful_spell": {
+      "default": [
+        "CAST",
+        "POOL"
+      ]
+    },
+    "crown-characters:distant_spell": {
+      "default": [
+        "CAST",
+        "POOL"
+      ]
+    },
+    "crown-characters:extended_spell": {
+      "default": [
+        "CAST",
+        "POOL"
+      ]
+    },
+    "crown-characters:heightened_spell": {
+      "default": [
+        "CAST",
+        "POOL"
+      ]
+    },
+    "crown-characters:quickened_spell": {
+      "default": [
+        "CAST",
+        "POOL"
+      ]
+    },
+    "crown-characters:subtle_spell": {
+      "default": [
+        "CAST",
+        "POOL"
+      ]
+    },
+    "crown-characters:transmuted_spell": {
+      "default": [
+        "CAST",
+        "POOL"
+      ]
+    },
+    "crown-characters:twinned_spell": {
+      "default": [
+        "CAST",
+        "POOL"
+      ]
+    },
+    "crown-characters:empowered_spell": {
+      "default": [
+        "CAST",
+        "DICE",
+        "POOL"
+      ]
+    },
+    "crown-characters:seeking_spell": {
+      "default": [
+        "CAST",
+        "DICE",
+        "POOL"
+      ]
+    },
+    "crown-characters:dragonborn": {
+      "default": [
+        "SPECIES"
+      ],
+      "operations": {
+        "0": [
+          "SPECIES",
+          "LANGUAGE",
+          "LIGHT"
+        ],
+        "1": [
+          "BENEFIT"
+        ],
+        "2": [
+          "BASE",
+          "WEAPON",
+          "BUDGET",
+          "POOL"
+        ],
+        "3": [
+          "FALL",
+          "MOVE",
+          "POOL",
+          "LIFETIME"
+        ]
+      }
+    },
+    "crown-characters:dwarf": {
+      "default": [
+        "SPECIES"
+      ],
+      "operations": {
+        "0": [
+          "SPECIES",
+          "LANGUAGE",
+          "LIGHT"
+        ],
+        "1": [
+          "BENEFIT",
+          "ROLL"
+        ],
+        "2": [
+          "ACQUIRE",
+          "BENEFIT"
+        ],
+        "3": [
+          "LIGHT",
+          "POOL",
+          "LIFETIME"
+        ]
+      }
+    },
+    "crown-characters:elf": {
+      "default": [
+        "SPECIES"
+      ],
+      "operations": {
+        "0": [
+          "SPECIES",
+          "LANGUAGE",
+          "LIGHT"
+        ],
+        "1": [
+          "ROLL"
+        ],
+        "2": [
+          "CHOICE"
+        ],
+        "3": [
+          "REST",
+          "BASE"
+        ],
+        "4": [
+          "CAST",
+          "ACQUIRE"
+        ]
+      }
+    },
+    "crown-characters:gnome": {
+      "default": [
+        "SPECIES"
+      ],
+      "operations": {
+        "0": [
+          "SPECIES",
+          "LANGUAGE",
+          "LIGHT"
+        ],
+        "1": [
+          "ROLL"
+        ],
+        "2": [
+          "CAST"
+        ],
+        "3": [
+          "CREATION",
+          "WORK"
+        ]
+      }
+    },
+    "crown-characters:goliath": {
+      "default": [
+        "SPECIES"
+      ],
+      "operations": {
+        "0": [
+          "SPECIES",
+          "LANGUAGE"
+        ],
+        "1": [
+          "POSTHIT",
+          "DEFLECT",
+          "PHASE",
+          "POOL"
+        ],
+        "2": [
+          "FORM",
+          "BENEFIT"
+        ],
+        "3": [
+          "GRAPPLE",
+          "CARRY",
+          "ROLL"
+        ]
+      }
+    },
+    "crown-characters:halfling": {
+      "default": [
+        "SPECIES"
+      ],
+      "operations": {
+        "0": [
+          "SPECIES",
+          "LANGUAGE"
+        ],
+        "1": [
+          "ROLL"
+        ],
+        "2": [
+          "MOVE"
+        ],
+        "3": [
+          "ROLL"
+        ],
+        "4": [
+          "BASE",
+          "LIGHT"
+        ]
+      }
+    },
+    "crown-characters:human": {
+      "default": [
+        "SPECIES"
+      ],
+      "operations": {
+        "0": [
+          "SPECIES",
+          "LANGUAGE"
+        ],
+        "1": [
+          "ROLL",
+          "REST"
+        ],
+        "2": [
+          "CHOICE"
+        ],
+        "3": [
+          "CHOICE",
+          "ACQUIRE"
+        ]
+      }
+    },
+    "crown-characters:orc": {
+      "default": [
+        "SPECIES"
+      ],
+      "operations": {
+        "0": [
+          "SPECIES",
+          "LANGUAGE",
+          "LIGHT"
+        ],
+        "1": [
+          "BUDGET",
+          "BENEFIT",
+          "POOL"
+        ],
+        "2": [
+          "BASE",
+          "REMAINS"
+        ]
+      }
+    },
+    "crown-characters:tiefling": {
+      "default": [
+        "SPECIES"
+      ],
+      "operations": {
+        "0": [
+          "SPECIES",
+          "LANGUAGE",
+          "LIGHT"
+        ],
+        "1": [
+          "BENEFIT",
+          "CAST",
+          "ACQUIRE"
+        ],
+        "2": [
+          "CAST"
+        ],
+        "3": [
+          "CAST",
+          "ACQUIRE"
+        ]
+      }
+    },
+    "crown-characters:alert": {
+      "default": [
+        "CHOICE",
+        "INIT",
+        "ROLL"
+      ],
+      "operations": {
+        "0": [
+          "ROLL"
+        ],
+        "1": [
+          "INIT"
+        ]
+      }
+    },
+    "crown-characters:magic_initiate": {
+      "default": [
+        "CAST",
+        "CHOICE",
+        "ACQUIRE"
+      ]
+    },
+    "crown-characters:savage_attacker": {
+      "default": [
+        "DICE",
+        "WEAPON"
+      ]
+    },
+    "crown-characters:great_weapon_fighting": {
+      "default": [
+        "DICE",
+        "WEAPON"
+      ]
+    },
+    "crown-characters:skilled": {
+      "default": [
+        "CHOICE",
+        "ACQUIRE"
+      ]
+    },
+    "crown-characters:ability_score_improvement": {
+      "default": [
+        "CHOICE",
+        "ACQUIRE"
+      ]
+    },
+    "crown-characters:grappler": {
+      "default": [
+        "GRAPPLE",
+        "CHOICE",
+        "ACQUIRE"
+      ]
+    },
+    "crown-characters:archery": {
+      "default": [
+        "WEAPON"
+      ]
+    },
+    "crown-characters:two_weapon_fighting": {
+      "default": [
+        "WEAPON"
+      ]
+    },
+    "crown-characters:defense": {
+      "default": [
+        "ARMOR",
+        "BENEFIT"
+      ]
+    },
+    "crown-characters:acolyte": {
+      "default": [
+        "BACKGROUND",
+        "PACK",
+        "CHOICE",
+        "ACQUIRE"
+      ]
+    },
+    "crown-characters:criminal": {
+      "default": [
+        "BACKGROUND",
+        "PACK",
+        "CHOICE",
+        "ACQUIRE"
+      ]
+    },
+    "crown-characters:sage": {
+      "default": [
+        "BACKGROUND",
+        "PACK",
+        "CHOICE",
+        "ACQUIRE"
+      ]
+    },
+    "crown-characters:soldier": {
+      "default": [
+        "BACKGROUND",
+        "PACK",
+        "CHOICE",
+        "ACQUIRE"
+      ]
+    },
+    "crown-characters:crown_multiclass": {
+      "default": [
+        "MULTI",
+        "CAST",
+        "ACQUIRE"
+      ]
+    },
+    "crown-spells:aid": {
+      "default": [
+        "BENEFIT",
+        "LIFETIME"
+      ],
+      "rules": {
+        "r001": [
+          "BASE",
+          "BENEFIT"
+        ],
+        "r002": [
+          "BENEFIT",
+          "LIFETIME"
+        ],
+        "r003": [
+          "BENEFIT"
+        ],
+        "r004": [
+          "BENEFIT"
+        ]
+      }
+    },
+    "crown-spells:fireball": {
+      "default": [
+        "BASE",
+        "OBJECT",
+        "HAZARD"
+      ]
+    },
+    "crown-spells:burning_hands": {
+      "default": [
+        "BASE",
+        "OBJECT",
+        "HAZARD"
+      ]
+    },
+    "crown-spells:fire_bolt": {
+      "default": [
+        "BASE",
+        "OBJECT",
+        "HAZARD"
+      ]
+    },
+    "crown-spells:chromatic_orb": {
+      "default": [
+        "BASE",
+        "COMPONENT"
+      ]
+    },
+    "crown-spells:true_strike": {
+      "default": [
+        "BASE",
+        "WEAPON",
+        "COMPONENT"
+      ]
+    },
+    "crown-spells:shatter": {
+      "default": [
+        "BASE",
+        "OBJECT"
+      ]
+    },
+    "crown-spells:thunderwave": {
+      "default": [
+        "BASE",
+        "OBJECT"
+      ]
+    },
+    "crown-spells:bestow_curse": {
+      "default": [
+        "RIDER",
+        "LIFETIME",
+        "BUDGET",
+        "ROLL"
+      ]
+    },
+    "crown-spells:tashas_hideous_laughter": {
+      "default": [
+        "REPEAT",
+        "BASE",
+        "LIFETIME"
+      ]
+    },
+    "crown-spells:slow": {
+      "default": [
+        "BUDGET",
+        "BENEFIT"
+      ]
+    },
+    "crown-spells:hex": {
+      "default": [
+        "RIDER",
+        "LIFETIME",
+        "DETECT"
+      ]
+    },
+    "crown-spells:hunters_mark": {
+      "default": [
+        "RIDER",
+        "LIFETIME",
+        "DETECT"
+      ]
+    },
+    "crown-spells:warding_bond": {
+      "default": [
+        "DAMAGE_COPY",
+        "BENEFIT",
+        "COMPONENT",
+        "LIFETIME"
+      ]
+    },
+    "crown-spells:prayer_of_healing": {
+      "default": [
+        "REST",
+        "WORK"
+      ]
+    },
+    "crown-spells:animate_dead": {
+      "default": [
+        "ACTOR",
+        "COMMAND",
+        "REMAINS",
+        "WORK",
+        "LIFETIME"
+      ]
+    },
+    "crown-spells:find_familiar": {
+      "default": [
+        "ACTOR",
+        "COMMAND",
+        "REMOTE",
+        "WORK",
+        "COMPONENT"
+      ]
+    },
+    "crown-spells:find_steed": {
+      "default": [
+        "ACTOR",
+        "COMMAND",
+        "FORM"
+      ]
+    },
+    "crown-spells:phantom_steed": {
+      "default": [
+        "ACTOR",
+        "COMMAND",
+        "TRAVEL",
+        "LIFETIME"
+      ]
+    },
+    "crown-spells:tensers_floating_disk": {
+      "default": [
+        "CREATION",
+        "CONTAIN",
+        "TRAVEL"
+      ]
+    },
+    "crown-spells:rope_trick": {
+      "default": [
+        "CONTAIN",
+        "PHASE",
+        "BARRIER"
+      ]
+    },
+    "crown-spells:sacred_flame": {
+      "default": [
+        "BASE"
+      ]
+    },
+    "crown-spells:lesser_restoration": {
+      "default": [
+        "BASE"
+      ]
+    },
+    "crown-spells:resistance": {
+      "default": [
+        "BENEFIT",
+        "DEFLECT"
+      ]
+    },
+    "crown-world:sequential_dungeon": {
+      "default": [
+        "EVENT",
+        "ACTOR",
+        "CLEAR_REWARD",
+        "TRAVEL"
+      ]
+    },
+    "crown-world:quest_board_bounty": {
+      "default": [
+        "EVENT_REWARD"
+      ]
+    },
+    "crown-world:ruins_of_ashvale_clear": {
+      "default": [
+        "CLEAR_REWARD"
+      ]
+    },
+    "crown-world:caverns_of_gloom_clear": {
+      "default": [
+        "CLEAR_REWARD"
+      ]
+    },
+    "crown-world:tower_of_the_lich_clear": {
+      "default": [
+        "CLEAR_REWARD"
+      ]
+    },
+    "crown-world:town_events__quest_board": {
+      "default": [
+        "EVENT",
+        "KNOWLEDGE",
+        "EVENT_REWARD"
+      ],
+      "operations": {
+        "0": [
+          "EVENT_REWARD",
+          "ACTOR"
+        ],
+        "1": [
+          "EVENT_REWARD"
+        ],
+        "2": [
+          "EVENT",
+          "KNOWLEDGE"
+        ]
+      }
+    },
+    "crown-creatures:srd_gray_ooze": {
+      "operations": {
+        "0": [
+          "PHASE"
+        ],
+        "1": [
+          "REPAIR",
+          "AMMO"
+        ],
+        "2": [
+          "ACTOR",
+          "REPAIR"
+        ]
+      }
+    },
+    "crown-creatures:srd_imp": {
+      "operations": {
+        "0": [
+          "ROLL"
+        ],
+        "2": [
+          "CAST",
+          "LIFETIME"
+        ],
+        "3": [
+          "FORM"
+        ]
+      }
+    },
+    "crown-creatures:srd_pseudodragon": {
+      "operations": {
+        "0": [
+          "ROLL"
+        ],
+        "1": [
+          "ACTOR",
+          "WEAPON"
+        ]
+      }
+    },
+    "crown-creatures:srd_quasit": {
+      "operations": {
+        "0": [
+          "ROLL"
+        ],
+        "2": [
+          "CAST",
+          "LIFETIME"
+        ],
+        "3": [
+          "ACTOR",
+          "BASE",
+          "POOL"
+        ],
+        "4": [
+          "FORM"
+        ]
+      }
+    },
+    "crown-creatures:srd_sphinx_of_wonder": {
+      "operations": {
+        "0": [
+          "ROLL"
+        ],
+        "2": [
+          "ROLL",
+          "REACTION",
+          "POOL"
+        ]
+      }
+    },
+    "crown-creatures:srd_sprite": {
+      "operations": {
+        "2": [
+          "DETECT"
+        ],
+        "3": [
+          "CAST",
+          "LIFETIME"
+        ]
+      }
+    },
+    "crown-creatures:srd_wight": {
+      "operations": {
+        "0": [
+          "LIGHT",
+          "ROLL"
+        ],
+        "1": [
+          "ACTOR",
+          "WEAPON"
+        ],
+        "4": [
+          "ACTOR",
+          "REMAINS",
+          "BENEFIT"
+        ]
+      }
+    },
+    "crown-creatures:srd_zombie": {
+      "operations": {
+        "0": [
+          "BASE",
+          "REMAINS",
+          "ROLL"
+        ]
+      }
+    },
+    "crown-creatures:srd_ape": {
+      "operations": {
+        "0": [
+          "ACTOR",
+          "WEAPON"
+        ]
+      }
+    },
+    "crown-creatures:srd_baboon": {
+      "operations": {
+        "0": [
+          "RIDER",
+          "ROLL"
+        ]
+      }
+    },
+    "crown-creatures:srd_black_bear": {
+      "operations": {
+        "0": [
+          "ACTOR",
+          "WEAPON"
+        ]
+      }
+    },
+    "crown-creatures:srd_boar": {
+      "operations": {
+        "0": [
+          "RIDER",
+          "ROLL"
+        ]
+      }
+    },
+    "crown-creatures:srd_cat": {
+      "operations": {
+        "0": [
+          "MOVE"
+        ]
+      }
+    },
+    "crown-creatures:srd_crab": {
+      "operations": {
+        "0": [
+          "BREATH"
+        ]
+      }
+    },
+    "crown-creatures:srd_crocodile": {
+      "operations": {
+        "0": [
+          "BREATH"
+        ]
+      }
+    },
+    "crown-creatures:srd_deer": {
+      "operations": {
+        "0": [
+          "GRANTED_MOVE"
+        ]
+      }
+    },
+    "crown-creatures:srd_frog": {
+      "operations": {
+        "0": [
+          "BREATH"
+        ],
+        "1": [
+          "MOVE"
+        ]
+      }
+    },
+    "crown-creatures:srd_giant_crab": {
+      "operations": {
+        "0": [
+          "BREATH"
+        ]
+      }
+    },
+    "crown-creatures:srd_giant_fire_beetle": {
+      "operations": {
+        "0": [
+          "LIGHT"
+        ]
+      }
+    },
+    "crown-creatures:srd_giant_frog": {
+      "operations": {
+        "0": [
+          "BREATH"
+        ],
+        "1": [
+          "MOVE"
+        ],
+        "3": [
+          "CONTAIN",
+          "BASE"
+        ]
+      }
+    },
+    "crown-creatures:srd_giant_lizard": {
+      "operations": {
+        "0": [
+          "MOVE"
+        ]
+      }
+    },
+    "crown-creatures:srd_giant_rat": {
+      "operations": {
+        "0": [
+          "RIDER",
+          "ROLL"
+        ]
+      }
+    },
+    "crown-creatures:srd_giant_seahorse": {
+      "operations": {
+        "0": [
+          "BREATH"
+        ],
+        "2": [
+          "GRANTED_MOVE"
+        ]
+      }
+    },
+    "crown-creatures:srd_giant_spider": {
+      "operations": {
+        "0": [
+          "MOVE"
+        ],
+        "1": [
+          "MOVE",
+          "DETECT"
+        ]
+      }
+    },
+    "crown-creatures:srd_giant_wolf_spider": {
+      "operations": {
+        "0": [
+          "MOVE"
+        ]
+      }
+    },
+    "crown-creatures:srd_hyena": {
+      "operations": {
+        "0": [
+          "RIDER",
+          "ROLL"
+        ]
+      }
+    },
+    "crown-creatures:srd_lizard": {
+      "operations": {
+        "0": [
+          "MOVE"
+        ]
+      }
+    },
+    "crown-creatures:srd_mule": {
+      "operations": {
+        "0": [
+          "CARRY"
+        ]
+      }
+    },
+    "crown-creatures:srd_octopus": {
+      "operations": {
+        "0": [
+          "PHASE"
+        ],
+        "1": [
+          "BREATH"
+        ],
+        "3": [
+          "ZONE",
+          "REACTION",
+          "GRANTED_MOVE",
+          "POOL"
+        ]
+      }
+    },
+    "crown-creatures:srd_owl": {
+      "operations": {
+        "0": [
+          "GRANTED_MOVE"
+        ]
+      }
+    },
+    "crown-creatures:srd_piranha": {
+      "operations": {
+        "0": [
+          "BREATH"
+        ]
+      }
+    },
+    "crown-creatures:srd_rat": {
+      "operations": {
+        "0": [
+          "GRANTED_MOVE"
+        ]
+      }
+    },
+    "crown-creatures:srd_raven": {
+      "operations": {
+        "0": [
+          "LANGUAGE",
+          "KNOWLEDGE"
+        ]
+      }
+    },
+    "crown-creatures:srd_reef_shark": {
+      "operations": {
+        "0": [
+          "RIDER",
+          "ROLL"
+        ],
+        "1": [
+          "BREATH"
+        ]
+      }
+    },
+    "crown-creatures:srd_seahorse": {
+      "operations": {
+        "0": [
+          "BREATH"
+        ],
+        "1": [
+          "GRANTED_MOVE"
+        ]
+      }
+    },
+    "crown-creatures:srd_spider": {
+      "operations": {
+        "0": [
+          "MOVE"
+        ],
+        "1": [
+          "MOVE",
+          "DETECT"
+        ]
+      }
+    },
+    "crown-creatures:srd_swarm_of_bats": {
+      "operations": {
+        "0": [
+          "ACTOR",
+          "BENEFIT",
+          "MOVE"
+        ]
+      }
+    },
+    "crown-creatures:srd_swarm_of_insects": {
+      "operations": {
+        "0": [
+          "MOVE"
+        ],
+        "1": [
+          "ACTOR",
+          "BENEFIT",
+          "MOVE"
+        ]
+      }
+    },
+    "crown-creatures:srd_swarm_of_rats": {
+      "operations": {
+        "0": [
+          "ACTOR",
+          "BENEFIT",
+          "MOVE"
+        ]
+      }
+    },
+    "crown-creatures:srd_swarm_of_ravens": {
+      "operations": {
+        "0": [
+          "ACTOR",
+          "BENEFIT",
+          "MOVE"
+        ]
+      }
+    },
+    "crown-creatures:srd_vulture": {
+      "operations": {
+        "0": [
+          "RIDER",
+          "ROLL"
+        ]
+      }
+    },
+    "crown-creatures:srd_wolf": {
+      "operations": {
+        "0": [
+          "RIDER",
+          "ROLL"
+        ]
+      }
+    },
+    "crown-reachable-items:potion_greater_healing": {
+      "default": [
+        "ITEM_ATTACK",
+        "MIX",
+        "QUANTITY"
+      ],
+      "operations": {
+        "2": [
+          "MIX"
+        ]
+      }
+    },
+    "crown-reachable-items:potion_healing": {
+      "default": [
+        "ITEM_ATTACK",
+        "MIX",
+        "QUANTITY"
+      ],
+      "operations": {
+        "2": [
+          "MIX"
+        ]
+      }
+    },
+    "crown-reachable-items:potion_superior_healing": {
+      "default": [
+        "ITEM_ATTACK",
+        "MIX",
+        "QUANTITY"
+      ],
+      "operations": {
+        "2": [
+          "MIX"
+        ]
+      }
+    },
+    "crown-reachable-items:potion_supreme_healing": {
+      "default": [
+        "ITEM_ATTACK",
+        "MIX",
+        "QUANTITY"
+      ],
+      "operations": {
+        "2": [
+          "MIX"
+        ]
+      }
+    }
+  },
+  "supplements": {
+    "packages.json": [
+      "PACK",
+      "CHOICE"
+    ],
+    "languages.json": [
+      "LANGUAGE"
+    ],
+    "dependency-map.json": [
+      "ACTOR",
+      "COMMAND",
+      "OBJECT",
+      "KNOWLEDGE",
+      "CAST"
+    ],
+    "acquisition-links.json": [
+      "PACK",
+      "ACTOR",
+      "CLEAR_REWARD",
+      "EVENT_REWARD",
+      "MONSTER_REWARD"
+    ],
+    "consumer-trace.json": [
+      "EVENT",
+      "CLEAR_REWARD",
+      "EVENT_REWARD",
+      "MONSTER_REWARD"
+    ],
+    "selection-links.json": [
+      "ACTOR",
+      "FORM",
+      "COMMAND",
+      "COMPANION"
+    ],
+    "reachability.json": [
+      "PACK",
+      "COMPONENT",
+      "CLEAR_REWARD",
+      "EVENT_REWARD",
+      "MONSTER_REWARD"
+    ],
+    "spell-materials.json": [
+      "COMPONENT"
+    ],
+    "created-item-boundaries.json": [
+      "CREATION",
+      "CRAFT"
+    ],
+    "animal-source-inventory.json": [
+      "ACTOR",
+      "FORM"
+    ]
+  }
+}

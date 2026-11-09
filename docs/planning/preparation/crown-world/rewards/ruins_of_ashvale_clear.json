@@ -1,0 +1,44 @@
+{
+  "schema": "crown-world-candidate/1",
+  "id": "ruins_of_ashvale_clear",
+  "name": "Ruins of Ashvale clear reward",
+  "kind": "rewards",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring declarations only; not registered engine opcodes.",
+  "required_extensions": [
+    "objectives_rewards",
+    "objects"
+  ],
+  "authored_operations": [
+    {
+      "operation": "settle_dungeon_clear",
+      "claim": "cleared_dungeons:ruins_of_ashvale",
+      "recipient": "first active character, fallback active player",
+      "rewards": [
+        {
+          "item_id": "crown_fragment"
+        },
+        {
+          "item_id": "gold_100"
+        }
+      ],
+      "requirement": "Win pending boss encounter, claim dungeon clear once, grant every listed occurrence, apply its clear milestone and exit. Revisit of cleared dungeon must not regenerate one-time encounters/rewards."
+    }
+  ],
+  "blockers": [
+    "Existing native route found, not newly tested. claim_reward is a distinct ledger and is not the authority used by this payout; do not layer a second payout or assume monster loot is included. Inventory-full delivery/claim ordering still needs proof."
+  ],
+  "retained_input": {
+    "path": "data/core/campaigns/the_lost_crown.json",
+    "sha256": "3352b2d22be36e68591bfdf4ec73b8201f2bec6c69a3a60b0c8beb7d5074db44",
+    "pointer": "/dungeons/ruins_of_ashvale/loot",
+    "payload": [
+      {
+        "item_id": "crown_fragment"
+      },
+      {
+        "item_id": "gold_100"
+      }
+    ]
+  }
+}

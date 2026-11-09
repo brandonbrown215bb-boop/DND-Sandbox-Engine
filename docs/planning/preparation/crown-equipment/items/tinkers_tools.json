@@ -1,0 +1,89 @@
+{
+  "schema": "crown-equipment-candidate/1",
+  "id": "tinkers_tools",
+  "name": "Tinker's Tools",
+  "kind": "tool",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring intent only; not registered engine syntax.",
+  "rules": {
+    "authority": "SRD 5.2.1",
+    "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      93,
+      94
+    ],
+    "section": "Tinker's Tools",
+    "text": "Ability: dexterity. Utilize: Assemble a Tiny item composed of scrap, which falls apart in 1 minute (DC 20). Craft: Musket, Pistol, Bell, Bullseye Lantern, Flask, Hooded Lantern, Hunting Trap, Lock, Manacles, Mirror, Shovel, Signal Whistle, Tinderbox. Tool proficiency adds PB to ability checks using the tool; if also proficient in a skill used with the check, gain Advantage. Each Artisan tool needs its own proficiency.",
+    "source_context": "../source-pages.json"
+  },
+  "definition": {
+    "id": "tinkers_tools",
+    "name": "Tinker's Tools",
+    "ability": "dexterity",
+    "weight_lb": 10,
+    "cost_gp": 50,
+    "utilize": "Assemble a Tiny item composed of scrap, which falls apart in 1 minute (DC 20)",
+    "craft_source_list": "Musket, Pistol, Bell, Bullseye Lantern, Flask, Hooded Lantern, Hunting Trap, Lock, Manacles, Mirror, Shovel, Signal Whistle, Tinderbox"
+  },
+  "authored_operations": [
+    "Utilize chooses one task: Assemble a Tiny item composed of scrap, which falls apart in 1 minute (DC 20). Use dexterity, the declared DC and actual tool copy; apply PB for the matching proficiency and Advantage when the applicable skill is also proficient.",
+    "Crafting needs the source procedure, materials, time, proficiency and legal result definition; this list grants no products. Keep unavailable craft consumers explicit rather than synthesizing items."
+  ],
+  "retained_runtime_seeds": [
+    {
+      "path": "data/core/items/imported_magic_tools.json",
+      "array_index": 53,
+      "file_sha256": "7403cb6637b668bbfd13787473f467f618af88874c60c0a696adad165255caca",
+      "definition": {
+        "id": "tinkers_tools",
+        "name": "Tinker's Tools",
+        "description": "",
+        "type": "tool",
+        "effects": [],
+        "value": 50
+      }
+    },
+    {
+      "path": "data/core/items/imported_magic_tools.json",
+      "array_index": 54,
+      "file_sha256": "7403cb6637b668bbfd13787473f467f618af88874c60c0a696adad165255caca",
+      "definition": {
+        "id": "tinkers_tools",
+        "name": "Tinker's Tools",
+        "description": "{'type': 'list', 'style': 'list-hang-notitle', 'items': [{'name': 'Ability:', 'type': 'item', 'entries': ['Dexterity']}, {'name': 'Utilize:', 'type': 'item', 'entries': ['Assemble a Tiny item composed of scrap, which falls apart in 1 minute (20)']}, {'name': 'Craft:', 'type': 'item', 'entries': ['Musket, Pistol, Bell, Bullseye Lantern, Flask, Hooded Lantern, Hunting Trap, Lock, Manacles, Mirror, Shovel, Signal Whistle, Tinderbox']}]}",
+        "type": "tool",
+        "effects": [],
+        "value": 50
+      }
+    }
+  ],
+  "manifest_overrides": [
+    {
+      "type": "item",
+      "id": "tinkers_tools",
+      "winner": "res://data/core/items/imported_magic_tools.json#55",
+      "replaces": [
+        "res://data/core/items/imported_magic_tools.json#54"
+      ]
+    }
+  ],
+  "required_mapping": [
+    "tools",
+    "crafting"
+  ],
+  "consumers": [
+    {
+      "choice_id": "chosen_tool"
+    }
+  ],
+  "unsupported_behavior": [
+    {
+      "group": "tools",
+      "requirement": "Map exact variant proficiency, declared tool ability/DC, PB plus applicable skill Advantage and actual Utilize task outcomes. Do not use a generic +PB check as every tool action."
+    },
+    {
+      "group": "crafting",
+      "requirement": "Craft source lists are preserved, not executable recipes or item grants. Reconcile the official crafting procedures and result definitions later; absent result definitions remain dependencies, not reasons to expand this package pass."
+    }
+  ]
+}

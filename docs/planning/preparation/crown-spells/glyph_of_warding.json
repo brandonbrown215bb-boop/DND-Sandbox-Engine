@@ -1,0 +1,347 @@
+{
+  "format": "crown-spell-candidate/1",
+  "id": "glyph_of_warding",
+  "name": "Glyph of Warding",
+  "level": 3,
+  "status": "written_unverified_not_loaded",
+  "source": {
+    "authority": "SRD 5.2.1",
+    "url": "https://media.dndbeyond.com/compendium-images/srd/5.2/SRD_CC_v5.2.1.pdf",
+    "sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      136,
+      137
+    ],
+    "header": {
+      "Casting Time": "1 hour",
+      "Range": "Touch",
+      "Components": "V, S, M (powdered diamond worth 200+ GP, which the spell consumes)",
+      "Duration": "Until dispelled or triggered"
+    },
+    "attribution": "System Reference Document 5.2.1, Wizards of the Coast LLC; CC BY 4.0."
+  },
+  "casting": {
+    "casting_time": "1 hour",
+    "kind": "timed",
+    "seconds": 3600,
+    "ritual_available": false,
+    "range": {
+      "source": "Touch",
+      "kind": "touch",
+      "feet": 5
+    },
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "powdered diamond worth 200+ GP, which the spell consumes",
+    "duration": "Until dispelled or triggered",
+    "concentration": false,
+    "spell_lists": [
+      "bard",
+      "cleric",
+      "wizard"
+    ]
+  },
+  "authored_intent": "One-hour cast, consumed 200-GP incense/diamond; surface or closable object; exact 10-foot relocation ending; choose trigger/exceptions and Explosive Runes or stored eligible spell; spell storage costs and triggered targets/concentration.",
+  "rules": [
+    {
+      "id": "r001",
+      "text": "You inscribe a glyph that later unleashes a magical effect."
+    },
+    {
+      "id": "r002",
+      "text": "You inscribe it either on a surface (such as a table or a section of floor) or within an object that can be closed (such as a book or chest) to conceal the glyph."
+    },
+    {
+      "id": "r003",
+      "text": "The glyph can cover an area no larger than 10 feet in diameter."
+    },
+    {
+      "id": "r004",
+      "text": "If the surface or object is moved more than 10 feet from where you cast this spell, the glyph is broken, and the spell ends without being triggered."
+    },
+    {
+      "id": "r005",
+      "text": "The glyph is nearly imperceptible and requires a successful Wisdom (Perception) check against your spell save DC to notice."
+    },
+    {
+      "id": "r006",
+      "text": "When you inscribe the glyph, you set its trigger and choose whether it’s an explosive rune or a spell glyph, as explained below."
+    },
+    {
+      "id": "r007",
+      "text": "Set the Trigger."
+    },
+    {
+      "id": "r008",
+      "text": "You decide what triggers the glyph when you cast the spell."
+    },
+    {
+      "id": "r009",
+      "text": "For glyphs inscribed on a surface, common triggers include touching or stepping on the glyph, removing another object covering it, or approaching within a certain distance of it."
+    },
+    {
+      "id": "r010",
+      "text": "For glyphs inscribed within an object, common triggers include opening that object or seeing the glyph."
+    },
+    {
+      "id": "r011",
+      "text": "Once a glyph is triggered, this spell ends."
+    },
+    {
+      "id": "r012",
+      "text": "You can refine the trigger so that only creatures of certain types activate it (for example, the glyph could be set to affect Aberrations)."
+    },
+    {
+      "id": "r013",
+      "text": "You can also set conditions for creatures that don’t trigger the glyph, such as those who say a certain password."
+    },
+    {
+      "id": "r014",
+      "text": "Explosive Rune."
+    },
+    {
+      "id": "r015",
+      "text": "When triggered, the glyph erupts with magical energy in a 20-foot-radius Sphere centered on the glyph."
+    },
+    {
+      "id": "r016",
+      "text": "Each creature in the area makes a Dexterity saving throw."
+    },
+    {
+      "id": "r017",
+      "text": "A creature takes 5d8 Acid, Cold, Fire, Lightning, or Thunder damage (your choice when you create the glyph) on a failed save or half as much damage on a successful one."
+    },
+    {
+      "id": "r018",
+      "text": "Spell Glyph."
+    },
+    {
+      "id": "r019",
+      "text": "You can store a prepared spell of level 3 or lower in the glyph by casting it as part of creating the glyph."
+    },
+    {
+      "id": "r020",
+      "text": "The spell must target a single creature or an area."
+    },
+    {
+      "id": "r021",
+      "text": "The spell being stored has no immediate effect when cast in this way."
+    },
+    {
+      "id": "r022",
+      "text": "When the glyph is triggered, the stored spell takes effect."
+    },
+    {
+      "id": "r023",
+      "text": "If the spell has a target, it targets the creature that triggered the glyph."
+    },
+    {
+      "id": "r024",
+      "text": "If the spell affects an area, the area is centered on that creature."
+    },
+    {
+      "id": "r025",
+      "text": "If the spell summons Hostile creatures or creates harmful objects or traps, they appear as close as possible to the intruder and attack it."
+    },
+    {
+      "id": "r026",
+      "text": "If the spell requires Concentration, it lasts until the end of its full duration."
+    },
+    {
+      "id": "r027",
+      "text": "Using a Higher-Level Spell Slot."
+    },
+    {
+      "id": "r028",
+      "text": "The damage of an explosive rune increases by 1d8 for each spell slot level above 3."
+    },
+    {
+      "id": "r029",
+      "text": "If you create a spell glyph, you can store any spell of up to the same level as the spell slot you use for the Glyph of Warding ."
+    }
+  ],
+  "authored_operations": [
+    {
+      "operation": "store_triggered_effect",
+      "parameters": {
+        "placement": {
+          "surface_or_closed_object": true,
+          "diameter_feet_max": 10
+        },
+        "moved_more_than_feet": 10,
+        "moved_result": "end_without_trigger",
+        "notice": {
+          "check": "WIS_Perception",
+          "dc": "caster_spell_dc"
+        },
+        "trigger": "authored_with_type_password_exceptions",
+        "on_trigger": "end_glyph",
+        "choices": {
+          "explosive": {
+            "sphere_radius_feet": 20,
+            "save": "DEX",
+            "damage": "5d8",
+            "type_choices": [
+              "acid",
+              "cold",
+              "fire",
+              "lightning",
+              "thunder"
+            ],
+            "half_on_success": true,
+            "upcast_per_slot": "1d8"
+          },
+          "stored_spell": {
+            "prepared": true,
+            "max_level": "paid_slot_level",
+            "targets": [
+              "single_creature",
+              "area"
+            ],
+            "pay_stored_spell_too": true,
+            "release_target": "triggering_creature",
+            "area_center": "triggering_creature",
+            "hostile_creations": "nearest_legal_intruder_space_attack_intruder",
+            "concentration": "last_full_duration_without_concentrating"
+          }
+        }
+      },
+      "status": "authoring_declaration_not_a_registered_opcode",
+      "required_source_rules": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006",
+        "r007",
+        "r008",
+        "r009",
+        "r010",
+        "r011",
+        "r012",
+        "r013",
+        "r014",
+        "r015",
+        "r016",
+        "r017",
+        "r018",
+        "r019",
+        "r020",
+        "r021",
+        "r022",
+        "r023",
+        "r024",
+        "r025",
+        "r026",
+        "r027",
+        "r028",
+        "r029"
+      ]
+    }
+  ],
+  "runtime_draft": {
+    "origin": "proposed_operations",
+    "definition": null,
+    "fragments": {},
+    "coverage": "Unverified. Neither a full definition nor a fragment certifies all source rules or controls. Required extensions are not silently waived."
+  },
+  "required_extensions": [
+    {
+      "group": "stored_spells",
+      "requirement": "Retain the stored eligible spell, both costs, source level, trigger/exceptions, relocation ending and release/concentration/target rules; no spell-ID dispatch.",
+      "spell_specific_intent": "One-hour cast, consumed 200-GP incense/diamond; surface or closable object; exact 10-foot relocation ending; choose trigger/exceptions and Explosive Runes or stored eligible spell; spell storage costs and triggered targets/concentration.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006",
+        "r007",
+        "r008",
+        "r009",
+        "r010",
+        "r011",
+        "r012",
+        "r013",
+        "r014",
+        "r015",
+        "r016",
+        "r017",
+        "r018",
+        "r019",
+        "r020",
+        "r021",
+        "r022",
+        "r023",
+        "r024",
+        "r025",
+        "r026",
+        "r027",
+        "r028",
+        "r029"
+      ],
+      "existing_owner_to_reuse": "src/spells/spell_effects.gd",
+      "slice_references": "S-150/S-151/S-184",
+      "disposition": "requires_mapping_or_host_completion",
+      "note": "This is an authored handoff requirement, not a fresh runtime failure or claim that the whole referenced slice is missing."
+    },
+    {
+      "group": "long_cast",
+      "requirement": "Preserve the source casting duration, participants, ritual extension, interruption and once-only payment; do not replace a timed cast with an Action.",
+      "spell_specific_intent": "One-hour cast, consumed 200-GP incense/diamond; surface or closable object; exact 10-foot relocation ending; choose trigger/exceptions and Explosive Runes or stored eligible spell; spell storage costs and triggered targets/concentration.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006",
+        "r007",
+        "r008",
+        "r009",
+        "r010",
+        "r011",
+        "r012",
+        "r013",
+        "r014",
+        "r015",
+        "r016",
+        "r017",
+        "r018",
+        "r019",
+        "r020",
+        "r021",
+        "r022",
+        "r023",
+        "r024",
+        "r025",
+        "r026",
+        "r027",
+        "r028",
+        "r029"
+      ],
+      "existing_owner_to_reuse": "src/spells/cast_interruption_rules.gd",
+      "slice_references": "S-066/S-067/S-134",
+      "disposition": "requires_mapping_or_host_completion",
+      "note": "This is an authored handoff requirement, not a fresh runtime failure or claim that the whole referenced slice is missing."
+    }
+  ],
+  "audit": {
+    "source": "docs/audits/spells.md",
+    "batch": "088-5",
+    "production_definition_at_authoring": "res://data/core/spells/imported_spells.json#85",
+    "baseline_execution": "native",
+    "source_revision": "2a19eb1d",
+    "existing_conversion_label": "queued"
+  },
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile every source rule and required extension, then implement and verify through production paths before any deliberate promotion. Keep native behavior until covered."
+  }
+}

@@ -1,0 +1,152 @@
+{
+  "format": "crown-spell-candidate/1",
+  "id": "rope_trick",
+  "name": "Rope Trick",
+  "level": 2,
+  "status": "written_unverified_not_loaded",
+  "source": {
+    "authority": "SRD 5.2.1",
+    "url": "https://media.dndbeyond.com/compendium-images/srd/5.2/SRD_CC_v5.2.1.pdf",
+    "sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      159
+    ],
+    "header": {
+      "Casting Time": "Action",
+      "Range": "Touch",
+      "Components": "V, S, M (a segment of rope)",
+      "Duration": "1 hour"
+    },
+    "attribution": "System Reference Document 5.2.1, Wizards of the Coast LLC; CC BY 4.0."
+  },
+  "casting": {
+    "casting_time": "Action",
+    "kind": "action",
+    "seconds": null,
+    "ritual_available": false,
+    "range": {
+      "source": "Touch",
+      "kind": "touch",
+      "feet": 5
+    },
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "a segment of rope",
+    "duration": "1 hour",
+    "concentration": false,
+    "spell_lists": [
+      "wizard"
+    ]
+  },
+  "authored_intent": "Touch rope; create extradimensional entrance and space for eight Medium-or-smaller creatures; rope up/down, window vision, climbing access and combat/spell barrier; end safely releases occupants and contents.",
+  "rules": [
+    {
+      "id": "r001",
+      "text": "You touch a rope."
+    },
+    {
+      "id": "r002",
+      "text": "One end of it hovers upward until the rope hangs perpendicular to the ground or the rope reaches a ceiling."
+    },
+    {
+      "id": "r003",
+      "text": "At the rope’s upper end, an Invisible 3-foot-by-5-foot portal opens to an extradimensional space that lasts until the spell ends."
+    },
+    {
+      "id": "r004",
+      "text": "That space can be reached by climbing the rope, which can be pulled into or dropped out of it."
+    },
+    {
+      "id": "r005",
+      "text": "The space can hold up to eight Medium or smaller creatures."
+    },
+    {
+      "id": "r006",
+      "text": "Attacks, spells, and other effects can’t pass into or out of the space, but creatures inside it can see through the portal."
+    },
+    {
+      "id": "r007",
+      "text": "Anything inside the space drops out when the spell ends."
+    }
+  ],
+  "authored_operations": [
+    {
+      "operation": "create_extradimensional_space",
+      "parameters": {
+        "rope": "touched_rope_rises_until_perpendicular_or_ceiling",
+        "portal": {
+          "invisible": true,
+          "feet": [
+            3,
+            5
+          ]
+        },
+        "entry": "climb_rope",
+        "rope_control": "pull_in_or_drop_out",
+        "capacity": {
+          "creatures": 8,
+          "maximum_size": "medium"
+        },
+        "barrier": [
+          "attacks",
+          "spells",
+          "effects"
+        ],
+        "inside_can_see_through_portal": true,
+        "end": "drop_all_contents_out"
+      },
+      "status": "authoring_declaration_not_a_registered_opcode",
+      "required_source_rules": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006",
+        "r007"
+      ]
+    }
+  ],
+  "runtime_draft": {
+    "origin": "proposed_operations",
+    "definition": null,
+    "fragments": {},
+    "coverage": "Unverified. Neither a full definition nor a fragment certifies all source rules or controls. Required extensions are not silently waived."
+  },
+  "required_extensions": [
+    {
+      "group": "containment",
+      "requirement": "Retain entrance/rope/window, permitted occupants/capacity, actual internal targeting barrier and legal release of exact contents at ending.",
+      "spell_specific_intent": "Touch rope; create extradimensional entrance and space for eight Medium-or-smaller creatures; rope up/down, window vision, climbing access and combat/spell barrier; end safely releases occupants and contents.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006",
+        "r007"
+      ],
+      "existing_owner_to_reuse": "src/dungeon/containment_rules.gd",
+      "slice_references": "S-121/S-122/S-170/S-171/S-172",
+      "disposition": "requires_mapping_or_host_completion",
+      "note": "This is an authored handoff requirement, not a fresh runtime failure or claim that the whole referenced slice is missing."
+    }
+  ],
+  "audit": {
+    "source": "docs/audits/spells.md",
+    "batch": "088-6",
+    "production_definition_at_authoring": "res://data/core/spells/imported_spells.json#153",
+    "baseline_execution": "native",
+    "source_revision": "2a19eb1d",
+    "existing_conversion_label": "queued"
+  },
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile every source rule and required extension, then implement and verify through production paths before any deliberate promotion. Keep native behavior until covered."
+  }
+}

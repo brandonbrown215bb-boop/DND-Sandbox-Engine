@@ -1,0 +1,136 @@
+{
+  "format": "crown-spell-candidate/1",
+  "id": "prayer_of_healing",
+  "name": "Prayer of Healing",
+  "level": 2,
+  "status": "written_unverified_not_loaded",
+  "source": {
+    "authority": "SRD 5.2.1",
+    "url": "https://media.dndbeyond.com/compendium-images/srd/5.2/SRD_CC_v5.2.1.pdf",
+    "sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      154
+    ],
+    "header": {
+      "Casting Time": "10 minutes",
+      "Range": "30 feet",
+      "Components": "V",
+      "Duration": "Instantaneous"
+    },
+    "attribution": "System Reference Document 5.2.1, Wizards of the Coast LLC; CC BY 4.0."
+  },
+  "casting": {
+    "casting_time": "10 minutes",
+    "kind": "timed",
+    "seconds": 600,
+    "ritual_available": false,
+    "range": {
+      "source": "30 feet",
+      "kind": "distance",
+      "feet": 30
+    },
+    "components": [
+      "V"
+    ],
+    "material": null,
+    "duration": "Instantaneous",
+    "concentration": false,
+    "spell_lists": [
+      "cleric",
+      "paladin"
+    ]
+  },
+  "authored_intent": "Ten-minute casting with up to five creatures remaining in range throughout; recipients gain Short Rest benefits and 2d8 HP without falsely completing an elapsed rest; one benefit per recipient until Long Rest; higher slots add healing.",
+  "rules": [
+    {
+      "id": "r001",
+      "text": "Up to five creatures of your choice who remain within range for the spell’s entire casting gain the benefits of a Short Rest and also regain 2d8 Hit Points."
+    },
+    {
+      "id": "r002",
+      "text": "A creature can’t be affected by this spell again until that creature finishes a Long Rest."
+    },
+    {
+      "id": "r003",
+      "text": "Using a Higher-Level Spell Slot."
+    },
+    {
+      "id": "r004",
+      "text": "The healing increases by 1d8 for each spell slot level above 2."
+    }
+  ],
+  "authored_operations": [
+    {
+      "operation": "grant_rest_like_benefits",
+      "parameters": {
+        "recipients_max": 5,
+        "participants_remain_in_range_for_entire_cast": true,
+        "benefits": [
+          "short_rest",
+          "2d8_healing"
+        ],
+        "lockout": "each_recipient_until_own_long_rest",
+        "upcast_healing_per_slot": "1d8",
+        "emit_elapsed_rest_completion": false
+      },
+      "status": "authoring_declaration_not_a_registered_opcode",
+      "required_source_rules": [
+        "r001",
+        "r002",
+        "r003",
+        "r004"
+      ]
+    }
+  ],
+  "runtime_draft": {
+    "origin": "proposed_operations",
+    "definition": null,
+    "fragments": {},
+    "coverage": "Unverified. Neither a full definition nor a fragment certifies all source rules or controls. Required extensions are not silently waived."
+  },
+  "required_extensions": [
+    {
+      "group": "benefit_only_rest",
+      "requirement": "Apply the declared Short Rest benefits/Hit Dice opportunity and healing without elapsed/completed rest; enforce casting participants and each recipient Long Rest lockout.",
+      "spell_specific_intent": "Ten-minute casting with up to five creatures remaining in range throughout; recipients gain Short Rest benefits and 2d8 HP without falsely completing an elapsed rest; one benefit per recipient until Long Rest; higher slots add healing.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003",
+        "r004"
+      ],
+      "existing_owner_to_reuse": "src/characters/rest_rules.gd",
+      "slice_references": "S-014/S-066/S-067/S-071",
+      "disposition": "requires_mapping_or_host_completion",
+      "note": "This is an authored handoff requirement, not a fresh runtime failure or claim that the whole referenced slice is missing."
+    },
+    {
+      "group": "long_cast",
+      "requirement": "Preserve the source casting duration, participants, ritual extension, interruption and once-only payment; do not replace a timed cast with an Action.",
+      "spell_specific_intent": "Ten-minute casting with up to five creatures remaining in range throughout; recipients gain Short Rest benefits and 2d8 HP without falsely completing an elapsed rest; one benefit per recipient until Long Rest; higher slots add healing.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003",
+        "r004"
+      ],
+      "existing_owner_to_reuse": "src/spells/cast_interruption_rules.gd",
+      "slice_references": "S-066/S-067/S-134",
+      "disposition": "requires_mapping_or_host_completion",
+      "note": "This is an authored handoff requirement, not a fresh runtime failure or claim that the whole referenced slice is missing."
+    }
+  ],
+  "audit": {
+    "source": "docs/audits/spells.md",
+    "batch": "088-2",
+    "production_definition_at_authoring": "res://data/core/spells/imported_spells.json#140",
+    "baseline_execution": "native",
+    "source_revision": "2a19eb1d",
+    "existing_conversion_label": "queued"
+  },
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile every source rule and required extension, then implement and verify through production paths before any deliberate promotion. Keep native behavior until covered."
+  }
+}

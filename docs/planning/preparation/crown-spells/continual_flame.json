@@ -1,0 +1,137 @@
+{
+  "format": "crown-spell-candidate/1",
+  "id": "continual_flame",
+  "name": "Continual Flame",
+  "level": 2,
+  "status": "written_unverified_not_loaded",
+  "source": {
+    "authority": "SRD 5.2.1",
+    "url": "https://media.dndbeyond.com/compendium-images/srd/5.2/SRD_CC_v5.2.1.pdf",
+    "sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      119
+    ],
+    "header": {
+      "Casting Time": "Action",
+      "Range": "Touch",
+      "Components": "V, S, M (ruby dust worth 50+ GP, which the spell consumes)",
+      "Duration": "Until dispelled"
+    },
+    "attribution": "System Reference Document 5.2.1, Wizards of the Coast LLC; CC BY 4.0."
+  },
+  "casting": {
+    "casting_time": "Action",
+    "kind": "action",
+    "seconds": null,
+    "ritual_available": false,
+    "range": {
+      "source": "Touch",
+      "kind": "touch",
+      "feet": 5
+    },
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "ruby dust worth 50+ GP, which the spell consumes",
+    "duration": "Until dispelled",
+    "concentration": false,
+    "spell_lists": [
+      "cleric",
+      "druid",
+      "wizard"
+    ]
+  },
+  "authored_intent": "Consumed 50-GP ruby dust; exact touched object emits torch-equivalent light; no heat/oxygen consumption; can be covered/hidden but not ordinary smothered; until dispelled.",
+  "rules": [
+    {
+      "id": "r001",
+      "text": "A flame springs from an object that you touch."
+    },
+    {
+      "id": "r002",
+      "text": "The effect casts Bright Light in a 20-foot radius and Dim Light for an additional 20 feet."
+    },
+    {
+      "id": "r003",
+      "text": "It looks like a regular flame, but it creates no heat and consumes no fuel."
+    },
+    {
+      "id": "r004",
+      "text": "The flame can be covered or hidden but not smothered or quenched."
+    }
+  ],
+  "authored_operations": [
+    {
+      "operation": "attach_object_light",
+      "parameters": {
+        "target": "touched_object",
+        "bright_radius_feet": 20,
+        "additional_dim_feet": 20,
+        "heat": false,
+        "fuel_consumption": false,
+        "cover_or_hide": true,
+        "ordinary_smothers_or_quenches": false
+      },
+      "status": "authoring_declaration_not_a_registered_opcode",
+      "required_source_rules": [
+        "r001",
+        "r002",
+        "r003",
+        "r004"
+      ]
+    }
+  ],
+  "runtime_draft": {
+    "origin": "proposed_operations",
+    "definition": null,
+    "fragments": {},
+    "coverage": "Unverified. Neither a full definition nor a fragment certifies all source rules or controls. Required extensions are not silently waived."
+  },
+  "required_extensions": [
+    {
+      "group": "light_and_darkness",
+      "requirement": "Create/move/cover actual source-owned illumination and darkness, exact radii, sight exceptions and overlapping-spell ending; a marker alone is insufficient.",
+      "spell_specific_intent": "Consumed 50-GP ruby dust; exact touched object emits torch-equivalent light; no heat/oxygen consumption; can be covered/hidden but not ordinary smothered; until dispelled.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003",
+        "r004"
+      ],
+      "existing_owner_to_reuse": "src/combat/combat_perception.gd",
+      "slice_references": "S-190/S-191/S-274/S-276",
+      "disposition": "requires_mapping_or_host_completion",
+      "note": "This is an authored handoff requirement, not a fresh runtime failure or claim that the whole referenced slice is missing."
+    },
+    {
+      "group": "objects",
+      "requirement": "Use exact represented item/object copies, eligibility facts and quantities; retain real manipulation, drop, damage, access and ending outcomes.",
+      "spell_specific_intent": "Consumed 50-GP ruby dust; exact touched object emits torch-equivalent light; no heat/oxygen consumption; can be covered/hidden but not ordinary smothered; until dispelled.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003",
+        "r004"
+      ],
+      "existing_owner_to_reuse": "src/dungeon/local_room_rules.gd",
+      "slice_references": "S-032/S-164/S-212/S-213",
+      "disposition": "requires_mapping_or_host_completion",
+      "note": "This is an authored handoff requirement, not a fresh runtime failure or claim that the whole referenced slice is missing."
+    }
+  ],
+  "audit": {
+    "source": "docs/audits/spells.md",
+    "batch": "088-6",
+    "production_definition_at_authoring": "res://data/core/spells/imported_spells.json#39",
+    "baseline_execution": "native",
+    "source_revision": "2a19eb1d",
+    "existing_conversion_label": "queued"
+  },
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile every source rule and required extension, then implement and verify through production paths before any deliberate promotion. Keep native behavior until covered."
+  }
+}

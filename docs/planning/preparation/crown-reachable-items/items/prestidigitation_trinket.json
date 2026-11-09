@@ -1,0 +1,116 @@
+{
+  "schema": "crown-reachable-item-candidate/1",
+  "id": "prestidigitation_trinket",
+  "name": "Prestidigitation trinket",
+  "kind": "created_item",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring intent only; not registered engine syntax.",
+  "rules": {
+    "authority": "SRD 5.2.1",
+    "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      154
+    ],
+    "text": "You create a magical effect within range.\nChoose the effect from the options below.\nIf you cast this spell multiple times, you can have up to three of its non-instantaneous effects active at a time.\nSensory Effect.\nYou create an instantaneous, harmless sensory effect, such as a shower of sparks, a puff of wind, faint musical notes, or an odd odor.\nFire Play.\nYou instantaneously light or snuff out a candle, a torch, or a small campfire.\nClean or Soil.\nYou instantaneously clean or soil an object no larger than 1 cubic foot.\nMinor Sensation.\nYou chill, warm, or flavor up to 1 cubic foot of nonliving material for 1 hour.\nMagic Mark.\nYou make a color, a small mark, or a symbol appear on an object or a surface for 1 hour.\nMinor Creation.\nYou create a nonmagical trinket or an illusory image that can fit in your hand.\nIt lasts until the end of your next turn.\nA trinket can deal no damage and has no monetary worth.",
+    "source_context": "../source-pages.json"
+  },
+  "definition": {
+    "id": "prestidigitation_trinket",
+    "name": "Prestidigitation trinket",
+    "size_limit": "fits in caster hand",
+    "magical": false,
+    "damage": 0,
+    "monetary_worth_gp": 0,
+    "expiry": "end_of_caster_next_turn"
+  },
+  "authored_operations": [
+    "Minor Creation produces one hand-sized nonmagical trinket or an illusory image; only the actual trinket is an item.",
+    "Trinket deals no damage and has no monetary worth. End at end of next turn; respect the spell’s cap of three non-instantaneous effects and source identity. Do not use it as a costed component or sell it."
+  ],
+  "retained_runtime_seeds": [],
+  "manifest_overrides": [],
+  "required_mapping": [
+    "created_items"
+  ],
+  "rules_owner": {
+    "path": "docs/planning/preparation/crown-spells/prestidigitation.json",
+    "sha256": "cde1265c595370cf018486eaa092d7962012fa27fc1f1544130942126a48b719"
+  },
+  "retained_spell_draft": {
+    "authored_operations": [
+      {
+        "operation": "choose_utility_effect",
+        "parameters": {
+          "ongoing_maximum": 3,
+          "choices": {
+            "sensory": {
+              "instantaneous": true,
+              "harmless": true
+            },
+            "fire": [
+              "candle",
+              "torch",
+              "small_campfire"
+            ],
+            "clean_soil": {
+              "object_cubic_feet_max": 1,
+              "instantaneous": true
+            },
+            "warm_chill_flavor": {
+              "nonliving_cubic_feet_max": 1,
+              "seconds": 3600
+            },
+            "mark": {
+              "surface_or_object": true,
+              "seconds": 3600
+            },
+            "trinket_or_image": {
+              "fits_hand": true,
+              "until": "caster_next_turn_end",
+              "trinket_damage": 0,
+              "trinket_value": 0
+            }
+          }
+        },
+        "status": "authoring_declaration_not_a_registered_opcode",
+        "required_source_rules": [
+          "r001",
+          "r002",
+          "r003",
+          "r004",
+          "r005",
+          "r006",
+          "r007",
+          "r008",
+          "r009",
+          "r010",
+          "r011",
+          "r012",
+          "r013",
+          "r014",
+          "r015",
+          "r016",
+          "r017"
+        ]
+      }
+    ]
+  },
+  "consumers": [
+    {
+      "channel": "spell_created_output",
+      "path": "docs/planning/preparation/crown-spells/prestidigitation.json",
+      "sha256": "cde1265c595370cf018486eaa092d7962012fa27fc1f1544130942126a48b719",
+      "json_pointer": "/rules"
+    }
+  ],
+  "unsupported_behavior": [
+    {
+      "group": "created_items",
+      "requirement": "Map actual created copies/batches, source owner, portions, location, lifetime and exact ending/consumption without replay. Never replace transient magical output with a permanent tradeable catalog item."
+    },
+    {
+      "group": "definition",
+      "requirement": "No exact current loaded-source seed at this identity. This candidate needs deliberate contract mapping/promotion; it is not an installed item."
+    }
+  ]
+}

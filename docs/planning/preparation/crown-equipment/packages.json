@@ -1,0 +1,1192 @@
+{
+  "schema": "crown-equipment-packages/1",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "grant_policy": "Writing only. First total level class package plus background package; multiclass entry grants no starting equipment. Preserve original options/GP; never merge mutually exclusive options. Links to candidates do not resolve production acquisition.",
+  "packages": [
+    {
+      "package_id": "barbarian",
+      "kind": "class",
+      "source": "docs/planning/preparation/crown-characters/classes/barbarian.json",
+      "source_sha256": "4e9c8b6ec3a1035eea478296634564ec4fa7c9af989387e80430fc0e538e0ae6",
+      "source_rules": {
+        "authority": "SRD 5.2.1",
+        "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+        "pages": [
+          28
+        ],
+        "text": "Barbarian\nCore Barbarian Traits\nPrimary Ability Strength\nHit Point Die D12 per Barbarian level\nSaving Throw\nProficiencies\nStrength and Constitution\nSkill Proficiencies Choose 2: Animal Handling,\nAthletics, Intimidation, Nature, Perception, or Survival\nWeapon Proficiencies Simple and Martial weapons\nArmor Training Light and Medium armor and\nShields\nStarting Equipment Choose A or B: (A) Greataxe,\n4 Handaxes, Explorer’s Pack,\nand 15 GP; or (B) 75 GP\nBecoming a Barbarian …\nAs a Level 1 Character\n• Gain all the traits in the Core Barbarian Traits\ntable.\nBarbarian Features\nLevel\nProficiency\nBonus Class Features\n1 +2 Rage, Unarmored Defense, Wea\n2 +2 Danger Sense, Reckless Attack\n3 +2 Barbarian Subclass, Primal Know\n4 +2 Ability Score Improvement\n5 +3 Extra Attack, Fast Movement\n6 +3 Subclass feature\n7 +3 Feral Instinct, Instinctive Pounce\n8 +3 Ability Score Improvement\n9 +4 Brutal Strike\n10 +4 Subclass feature\n11 +4 Relentless Rage\n12 +4 Ability Score Improvement\n13 +5 Improved Brutal Strike\n14 +5 Subclass feature\n15 +5 Persistent Rage\n16 +5 Ability Score Improvement\n17 +6 Improved Brutal Strike\n18 +6 Indomitable Might\n19 +6 Epic Boon\n20 +6 Primal Champion\n• Gain the Barbarian’s level 1 features, which are\nlisted in the Barbarian Features table.\nAs a Multiclass Character\n• Gain the following traits from the Core Barbarian\nTraits table: Hit Point Die, proficiency with Martial weapons, and training with Shields.\n• Gain the Barbarian’s level 1 features, which are\nlisted in the Barbarian Features table.\nBarbarian Class Features\nAs a Barbarian, you gain the following class features\nwhen you reach the specified Barbarian levels.\nThese features are listed in the Barbarian Features\ntable."
+      },
+      "options": {
+        "A": {
+          "gp": 15,
+          "items": [
+            {
+              "candidate_id": "greataxe",
+              "quantity": 1,
+              "source_entry": {
+                "source_item_key": "greataxe",
+                "quantity": 1
+              }
+            },
+            {
+              "candidate_id": "handaxe",
+              "quantity": 4,
+              "source_entry": {
+                "source_item_key": "handaxe",
+                "quantity": 4
+              }
+            },
+            {
+              "candidate_id": "explorers_pack",
+              "quantity": 1,
+              "source_entry": {
+                "source_item_key": "explorers_pack",
+                "quantity": 1
+              }
+            }
+          ]
+        },
+        "B": {
+          "gp": 75,
+          "items": []
+        }
+      }
+    },
+    {
+      "package_id": "bard",
+      "kind": "class",
+      "source": "docs/planning/preparation/crown-characters/classes/bard.json",
+      "source_sha256": "4b420ac7a7484af0ba9d8f36318cc6a3bda0ee2382cd770b15895fbca6d077dd",
+      "source_rules": {
+        "authority": "SRD 5.2.1",
+        "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+        "pages": [
+          31
+        ],
+        "text": "Bard\nCore Bard Traits\nPrimary Ability Charisma\nHit Point Die D8 per Bard level\nSaving Throw\nProficiencies\nDexterity and Charisma\nSkill Proficiencies Choose any 3 skills (see “Playing\nthe Game”)\nWeapon Proficiencies Simple weapons\nTool Proficiencies Choose 3 Musical Instruments\n(see “Equipment”)\nArmor Training Light armor\nStarting Equipment Choose A or B: (A) Leather\nArmor, 2 Daggers, Musical\nInstrument of your choice, Entertainer’s Pack, and 19 GP; or\n(B) 90 GP\nBecoming a Bard …\nAs a Level 1 Character\n• Gain all the traits in the Core Bard Traits table.\nBard Features\nProficiency\nBonus\nBardic\nDie Level Class Features\n1 +2 Bardic Inspiration,\nSpellcasting\nD6\n2 +2 Expertise,\nJack of All Trades\nD6\n3 +2 Bard Subclass D6\n4 +2 Ability Score Improvement D6\n5 +3 Font of Inspiration D8\n6 +3 Subclass feature D8\n7 +3 Countercharm D8\n8 +3 Ability Score Improvement D8\n9 +4 Expertise D8\n10 +4 Magical Secrets D10\n11 +4 — D10\n12 +4 Ability Score Improvement D10\n13 +5 — D10\n14 +5 Subclass feature D10\n15 +5 — D12\n16 +5 Ability Score Improvement D12\n17 +6 — D12\n18 +6 Superior Inspiration D12\n19 +6 Epic Boon D12\n20 +6 Words of Creation D12\n• Gain the Bard’s level 1 features, which are listed\nin the Bard Features table.\nAs a Multiclass Character\n• Gain the following traits from the Core Bard\nTraits table: Hit Point Die, proficiency in one skill\nof your choice, proficiency with one Musical Instrument of your choice, and training with Light\narmor.\n• Gain the Bard’s level 1 features, which are listed\nin the Bard Features table. See the multiclassing\nrules in “Character Creation” to determine your\navailable spell slots.\nBard Class Features\nAs a Bard, you gain the following class features\nwhen you reach the specified Bard levels. These features are listed in the Bard Features table."
+      },
+      "options": {
+        "A": {
+          "gp": 19,
+          "items": [
+            {
+              "candidate_id": "leather_armor",
+              "quantity": 1,
+              "source_entry": {
+                "source_item_key": "leather_armor",
+                "quantity": 1
+              }
+            },
+            {
+              "candidate_id": "dagger",
+              "quantity": 2,
+              "source_entry": {
+                "source_item_key": "dagger",
+                "quantity": 2
+              }
+            },
+            {
+              "candidate_id": "chosen_musical_instrument",
+              "quantity": 1,
+              "source_entry": {
+                "source_item_key": "chosen_musical_instrument",
+                "quantity": 1
+              }
+            },
+            {
+              "candidate_id": "entertainers_pack",
+              "quantity": 1,
+              "source_entry": {
+                "source_item_key": "entertainers_pack",
+                "quantity": 1
+              }
+            }
+          ]
+        },
+        "B": {
+          "gp": 90,
+          "items": []
+        }
+      }
+    },
+    {
+      "package_id": "cleric",
+      "kind": "class",
+      "source": "docs/planning/preparation/crown-characters/classes/cleric.json",
+      "source_sha256": "62f60966d1be5650420cbf2f652310c3ccfeabcadbb80fc2cfe32e7cedc52742",
+      "source_rules": {
+        "authority": "SRD 5.2.1",
+        "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+        "pages": [
+          36
+        ],
+        "text": "Cleric\nCore Cleric Traits\nPrimary Ability Wisdom\nHit Point Die D8 per Cleric level\nSaving Throw\nProficiencies\nWisdom and Charisma\nSkill Proficiencies Choose 2: History, Insight,\nMedicine, Persuasion, or\nReligion\nWeapon Proficiencies Simple weapons\nArmor Training Light and Medium armor and\nShields\nStarting Equipment Choose A or B: (A) Chain Shirt,\nShield, Mace, Holy Symbol,\nPriest’s Pack, and 7 GP; or (B)\n110 GP\nBecoming a Cleric …\nAs a Level 1 Character\n• Gain all the traits in the Core Cleric Traits table.\n• Gain the Cleric’s level 1 features, which are listed\nin the Cleric Features table.\nCleric Features\nProficiency\nBonus\nChannel\nDivinity Level Class Features\n1 +2 Spellcasting, Divine Order —\n2 +2 Channel Divinity 2\n3 +2 Cleric Subclass 2\n4 +2 Ability Score Improvement 2\n5 +3 Sear Undead 2\n6 +3 Subclass feature 3\n7 +3 Blessed Strikes 3\n8 +3 Ability Score Improvement 3\n9 +4 — 3\n10 +4 Divine Intervention 3\n11 +4 — 3\n12 +4 Ability Score Improvement 3\n13 +5 — 3\n14 +5 Improved Blessed Strikes 3\n15 +5 — 3\n16 +5 Ability Score Improvement 3\n17 +6 Subclass feature 3\n18 +6 — 4\n19 +6 Epic Boon 4\n20 +6 Greater Divine Intervention 4\nAs a Multiclass Character\n• Gain the following traits from the Core Cleric\nTraits table: Hit Point Die and training with Light\nand Medium armor and Shields.\n• Gain the Cleric’s level 1 features, which are listed\nin the Cleric Features table. See the multiclassing\nrules in “Character Creation” to determine your\navailable spell slots.\nCleric Class Features\nAs a Cleric, you gain the following class features\nwhen you reach the specified Cleric levels. These\nfeatures are listed in the Cleric Features table."
+      },
+      "options": {
+        "A": {
+          "gp": 7,
+          "items": [
+            {
+              "candidate_id": "chain_shirt",
+              "quantity": 1,
+              "source_entry": {
+                "source_item_key": "chain_shirt",
+                "quantity": 1
+              }
+            },
+            {
+              "candidate_id": "shield",
+              "quantity": 1,
+              "source_entry": {
+                "source_item_key": "shield",
+                "quantity": 1
+              }
+            },
+            {
+              "candidate_id": "mace",
+              "quantity": 1,
+              "source_entry": {
+                "source_item_key": "mace",
+                "quantity": 1
+              }
+            },
+            {
+              "candidate_id": "holy_symbol",
+              "quantity": 1,
+              "source_entry": {
+                "source_item_key": "holy_symbol",
+                "quantity": 1
+              }
+            },
+            {
+              "candidate_id": "priests_pack",
+              "quantity": 1,
+              "source_entry": {
+                "source_item_key": "priests_pack",
+                "quantity": 1
+              }
+            }
+          ]
+        },
+        "B": {
+          "gp": 110,
+          "items": []
+        }
+      }
+    },
+    {
+      "package_id": "druid",
+      "kind": "class",
+      "source": "docs/planning/preparation/crown-characters/classes/druid.json",
+      "source_sha256": "11ea7a02c19569735e02535e0c6b66ff222c6536b436e70af5133937353c7561",
+      "source_rules": {
+        "authority": "SRD 5.2.1",
+        "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+        "pages": [
+          41
+        ],
+        "text": "Druid\nCore Druid Traits\nPrimary Ability Wisdom\nHit Point Die D8 per Druid level\nSaving Throw\nProficiencies\nIntelligence and Wisdom\nSkill Proficiencies Choose 2: Animal Handling,\nArcana, Insight, Medicine, Nature, Perception, Religion, or\nSurvival\nWeapon Proficiencies Simple weapons\nTool Proficiencies Herbalism Kit\nArmor Training Light armor and Shields\nStarting Equipment Choose A or B: (A) Leather Armor, Shield, Sickle, Druidic Focus (Quarterstaff), Explorer’s\nPack, Herbalism Kit, and 9 GP;\nor (B) 50 GP\nDruid Features\nProficiency\nBonus\nWild\nShape Level Class Features\n1 +2 Spellcasting, Druidic,\nPrimal Order\n—\n2 +2 Wild Shape,\nWild Companion\n2\n3 +2 Druid Subclass 2\n4 +2 Ability Score Improvement 2\n5 +3 Wild Resurgence 2\n6 +3 Subclass feature 3\n7 +3 Elemental Fury 3\n8 +3 Ability Score Improvement 3\n9 +4 — 3\n10 +4 Subclass feature 3\n11 +4 — 3\n12 +4 Ability Score Improvement 3\n13 +5 — 3\n14 +5 Subclass feature 3\n15 +5 Improved Elemental Fury 3\n16 +5 Ability Score Improvement 3\n17 +6 — 4\n18 +6 Beast Spells 4\n19 +6 Epic Boon 4\n20 +6 Archdruid 4\nBecoming a Druid …\nAs a Level 1 Character\n• Gain all the traits in the Core Druid Traits table.\n• Gain the Druid’s level 1 features, which are listed\nin the Druid Features table.\nAs a Multiclass Character\n• Gain the following traits from the Core Druid\nTraits table: Hit Point Die and training with Light\narmor and Shields.\n• Gain the Druid’s level 1 features, which are listed\nin the Druid Features table. See the multiclassing\nrules in “Character Creation” to determine your\navailable spell slots.\nDruid Class Features\nAs a Druid, you gain the following class features\nwhen you reach the specified Druid levels. These\nfeatures are listed in the Druid Features table."
+      },
+      "options": {
+        "A": {
+          "gp": 9,
+          "items": [
+            {
+              "candidate_id": "leather_armor",
+              "quantity": 1,
+              "source_entry": {
+                "source_item_key": "leather_armor",
+                "quantity": 1
+              }
+            },
+            {
+              "candidate_id": "shield",
+              "quantity": 1,
+              "source_entry": {
+                "source_item_key": "shield",
+                "quantity": 1
+              }
+            },
+            {
+              "candidate_id": "sickle",
+              "quantity": 1,
+              "source_entry": {
+                "source_item_key": "sickle",
+                "quantity": 1
+              }
+            },
+            {
+              "candidate_id": "druidic_focus_quarterstaff",
+              "quantity": 1,
+              "source_entry": {
+                "source_item_key": "druidic_focus_quarterstaff",
+                "quantity": 1
+              }
+            },
+            {
+              "candidate_id": "explorers_pack",
+              "quantity": 1,
+              "source_entry": {
+                "source_item_key": "explorers_pack",
+                "quantity": 1
+              }
+            },
+            {
+              "candidate_id": "herbalism_kit",
+              "quantity": 1,
+              "source_entry": {
+                "source_item_key": "herbalism_kit",
+                "quantity": 1
+              }
+            }
+          ]
+        },
+        "B": {
+          "gp": 50,
+          "items": []
+        }
+      }
+    },
+    {
+      "package_id": "fighter",
+      "kind": "class",
+      "source": "docs/planning/preparation/crown-characters/classes/fighter.json",
+      "source_sha256": "8c444ad7e1ffc950aa54d7bbf493e1dc6028743b6c78631ed71b072cca4266f9",
+      "source_rules": {
+        "authority": "SRD 5.2.1",
+        "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+        "pages": [
+          47
+        ],
+        "text": "Fighter\nCore Fighter Traits\nPrimary Ability Strength or Dexterity\nHit Point Die D10 per Fighter level\nSaving Throw\nProficiencies\nStrength and Constitution\nSkill Proficiencies Choose 2: Acrobatics, Animal\nHandling, Athletics, History,\nInsight, Intimidation, Persuasion, Perception, or Survival\nWeapon Proficiencies Simple and Martial weapons\nArmor Training Light, Medium, and Heavy armor and Shields\nStarting Equipment Choose A, B, or C: (A) Chain\nMail, Greatsword, Flail, 8 Javelins, Dungeoneer’s Pack, and\n4 GP; (B) Studded Leather\nArmor, Scimitar, Short sword,\nLongbow, 20 Arrows, Quiver,\nDungeoneer’s Pack, and 11\nGP; or (C) 155 GP\nFighter Features\nLevel\nProficiency\nBonus Class Features\n1 +2 Fighting Style, Second Wind, W\n2 +2 Action Surge (one use), Tactical\n3 +2 Fighter Subclass\n4 +2 Ability Score Improvement\n5 +3 Extra Attack, Tactical Shift\n6 +3 Ability Score Improvement\n7 +3 Subclass feature\n8 +3 Ability Score Improvement\n9 +4 Indomitable (one use), Tactical\n10 +4 Subclass feature\n11 +4 Two Extra Attacks\n12 +4 Ability Score Improvement\n13 +5 Indomitable (two uses), Studied\n14 +5 Ability Score Improvement\n15 +5 Subclass feature\n16 +5 Ability Score Improvement\n17 +6 Action Surge (two uses), Indom\n18 +6 Subclass feature\n19 +6 Epic Boon\n20 +6 Three Extra Attacks\nBecoming a Fighter …\nAs a Level 1 Character\n• Gain all the traits in the Core Fighter Traits table.\n• Gain the Fighter’s level 1 features, which are\nlisted in the Fighter Features table.\nAs a Multiclass Character\n• Gain the following traits from the Core Fighter\nTraits table: Hit Point Die, proficiency with Martial weapons, and training with Light and Medium\narmor and Shields.\n• Gain the Fighter’s level 1 features, which are\nlisted in the Fighter Features table.\nFighter Class Features\nAs a Fighter, you gain the following class features\nwhen you reach the specified Fighter levels. These\nfeatures are listed on the Fighter Features table."
+      },
+      "options": {
+        "A": {
+          "gp": 4,
+          "items": [
+            {
+              "candidate_id": "chain_mail",
+              "quantity": 1,
+              "source_entry": {
+                "source_item_key": "chain_mail",
+                "quantity": 1
+              }
+            },
+            {
+              "candidate_id": "greatsword",
+              "quantity": 1,
+              "source_entry": {
+                "source_item_key": "greatsword",
+                "quantity": 1
+              }
+            },
+            {
+              "candidate_id": "flail",
+              "quantity": 1,
+              "source_entry": {
+                "source_item_key": "flail",
+                "quantity": 1
+              }
+            },
+            {
+              "candidate_id": "javelin",
+              "quantity": 8,
+              "source_entry": {
+                "source_item_key": "javelin",
+                "quantity": 8
+              }
+            },
+            {
+              "candidate_id": "dungeoneers_pack",
+              "quantity": 1,
+              "source_entry": {
+                "source_item_key": "dungeoneers_pack",
+                "quantity": 1
+              }
+            }
+          ]
+        },
+        "B": {
+          "gp": 11,
+          "items": [
+            {
+              "candidate_id": "studded_leather_armor",
+              "quantity": 1,
+              "source_entry": {
+                "source_item_key": "studded_leather_armor",
+                "quantity": 1
+              }
+            },
+            {
+              "candidate_id": "scimitar",
+              "quantity": 1,
+              "source_entry": {
+                "source_item_key": "scimitar",
+                "quantity": 1
+              }
+            },
+            {
+              "candidate_id": "shortsword",
+              "quantity": 1,
+              "source_entry": {
+                "source_item_key": "shortsword",
+                "quantity": 1
+              }
+            },
+            {
+              "candidate_id": "longbow",
+              "quantity": 1,
+              "source_entry": {
+                "source_item_key": "longbow",
+                "quantity": 1
+              }
+            },
+            {
+              "candidate_id": "arrows",
+              "quantity": 20,
+              "source_entry": {
+                "source_item_key": "arrows",
+                "quantity": 20
+              }
+            },
+            {
+              "candidate_id": "quiver",
+              "quantity": 1,
+              "source_entry": {
+                "source_item_key": "quiver",
+                "quantity": 1
+              }
+            },
+            {
+              "candidate_id": "dungeoneers_pack",
+              "quantity": 1,
+              "source_entry": {
+                "source_item_key": "dungeoneers_pack",
+                "quantity": 1
+              }
+            }
+          ]
+        },
+        "C": {
+          "gp": 155,
+          "items": []
+        }
+      }
+    },
+    {
+      "package_id": "monk",
+      "kind": "class",
+      "source": "docs/planning/preparation/crown-characters/classes/monk.json",
+      "source_sha256": "da761877ad116ba060b7689f84f3a6b78875058c5677a9bace68211ec5d8a864",
+      "source_rules": {
+        "authority": "SRD 5.2.1",
+        "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+        "pages": [
+          49
+        ],
+        "text": "Monk\nCore Monk Traits\nPrimary Ability Dexterity and Wisdom\nHit Point Die D8 per Monk level\nSaving Throw\nProficiencies\nStrength and Dexterity\nSkill Proficiencies Choose 2: Acrobatics, Athletics, History, Insight, Religion,\nor Stealth\nWeapon Proficiencies Simple weapons and Martial\nweapons that have the Light\nproperty\nTool Proficiencies Choose one type of Artisan’s\nTools or Musical Instrument (see\n“Equipment”)\nArmor Training None\nStarting Equipment Choose A or B: (A) Spear, 5\nDaggers, Artisan’s Tools or\nMusical Instrument chosen\nfor the tool proficiency above,\nExplorer’s Pack, and 11 GP; or\n(B) 50 GP\nBecoming a Monk …\nAs a Level 1 Character\n• Gain all the traits in the Core Monk Traits table.\n• Gain the Monk’s level 1 features, which are listed\nin the Monk Features table.\nAs a Multiclass Character\n• Gain the Hit Point Die trait from the Core Monk\nTraits table.\n• Gain the Monk’s level 1 features, which are listed\nin the Monk Features table.\nMonk Class Features\nAs a Monk, you gain the following class features\nwhen you reach the specified Monk levels. These\nfeatures are listed in the Monk Features table."
+      },
+      "options": {
+        "A": {
+          "gp": 11,
+          "items": [
+            {
+              "candidate_id": "spear",
+              "quantity": 1,
+              "source_entry": {
+                "source_item_key": "spear",
+                "quantity": 1
+              }
+            },
+            {
+              "candidate_id": "dagger",
+              "quantity": 5,
+              "source_entry": {
+                "source_item_key": "dagger",
+                "quantity": 5
+              }
+            },
+            {
+              "candidate_id": "chosen_tool",
+              "quantity": 1,
+              "source_entry": {
+                "source_item_key": "chosen_tool",
+                "quantity": 1
+              }
+            },
+            {
+              "candidate_id": "explorers_pack",
+              "quantity": 1,
+              "source_entry": {
+                "source_item_key": "explorers_pack",
+                "quantity": 1
+              }
+            }
+          ]
+        },
+        "B": {
+          "gp": 50,
+          "items": []
+        }
+      }
+    },
+    {
+      "package_id": "paladin",
+      "kind": "class",
+      "source": "docs/planning/preparation/crown-characters/classes/paladin.json",
+      "source_sha256": "84cd175843b2b35b8acdaacb578ad2336801b8c84f478ac9be6b65ec55806d8e",
+      "source_rules": {
+        "authority": "SRD 5.2.1",
+        "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+        "pages": [
+          53
+        ],
+        "text": "Paladin\nCore Paladin Traits\nPrimary Ability Strength and Charisma\nHit Point Die D10 per Paladin level\nSaving Throw\nProficiencies\nWisdom and Charisma\nSkill Proficiencies Choose 2: Athletics, Insight,\nIntimidation, Medicine,\nPersuasion, or Religion\nWeapon Proficiencies Simple and Martial weapons\nArmor Training Light, Medium, and Heavy armor and Shields\nStarting Equipment Choose A or B: (A) Chain Mail,\nShield, Longsword, 6 Javelins,\nHoly Symbol, Priest’s Pack,\nand 9 GP; or (B) 150 GP\nBecoming a Paladin …\nAs a Level 1 Character\n• Gain all the traits in the Core Paladin Traits table.\nPaladin Features\nProficiency\nBonus Level Class Features\n1 +2 Lay On Hands, Spellcasting,\nWeapon Mastery\n2 +2 Fighting Style, Paladin’s Smite\n3 +2 Channel Divinity, Paladin Subclass\n4 +2 Ability Score Improvement\n5 +3 Extra Attack, Faithful Steed\n6 +3 Aura of Protection\n7 +3 Subclass feature\n8 +3 Ability Score Improvement\n9 +4 Abjure Foes\n10 +4 Aura of Courage\n11 +4 Radiant Strikes\n12 +4 Ability Score Improvement\n13 +5 —\n14 +5 Restoring Touch\n15 +5 Subclass feature\n16 +5 Ability Score Improvement\n17 +6 —\n18 +6 Aura Expansion\n19 +6 Epic Boon\n20 +6 Subclass feature\n• Gain the Paladin’s level 1 features, which are\nlisted in the Paladin Features table.\nAs a Multiclass Character\n• Gain the following traits from the Core Paladin\nTraits table: Hit Point Die, proficiency with Martial weapons, and training with Light and Medium\narmor and Shields.\n• Gain the Paladin’s level 1 features, which are\nlisted in the Paladin Features table. See the multiclassing rules in “Character Creation” to determine your available spell slots.\nPaladin Class Features\nAs a Paladin, you gain the following class features\nwhen you reach the specified Paladin levels. These\nfeatures are listed in the Paladin Features table."
+      },
+      "options": {
+        "A": {
+          "gp": 9,
+          "items": [
+            {
+              "candidate_id": "chain_mail",
+              "quantity": 1,
+              "source_entry": {
+                "source_item_key": "chain_mail",
+                "quantity": 1
+              }
+            },
+            {
+              "candidate_id": "shield",
+              "quantity": 1,
+              "source_entry": {
+                "source_item_key": "shield",
+                "quantity": 1
+              }
+            },
+            {
+              "candidate_id": "longsword",
+              "quantity": 1,
+              "source_entry": {
+                "source_item_key": "longsword",
+                "quantity": 1
+              }
+            },
+            {
+              "candidate_id": "javelin",
+              "quantity": 6,
+              "source_entry": {
+                "source_item_key": "javelin",
+                "quantity": 6
+              }
+            },
+            {
+              "candidate_id": "holy_symbol",
+              "quantity": 1,
+              "source_entry": {
+                "source_item_key": "holy_symbol",
+                "quantity": 1
+              }
+            },
+            {
+              "candidate_id": "priests_pack",
+              "quantity": 1,
+              "source_entry": {
+                "source_item_key": "priests_pack",
+                "quantity": 1
+              }
+            }
+          ]
+        },
+        "B": {
+          "gp": 150,
+          "items": []
+        }
+      }
+    },
+    {
+      "package_id": "ranger",
+      "kind": "class",
+      "source": "docs/planning/preparation/crown-characters/classes/ranger.json",
+      "source_sha256": "fef56777cb210465cf78ebe30a122c57c9142679622b9a516053d5a130ec4c64",
+      "source_rules": {
+        "authority": "SRD 5.2.1",
+        "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+        "pages": [
+          57
+        ],
+        "text": "Ranger\nCore Ranger Traits\nPrimary Ability Dexterity and Wisdom\nHit Point Die D10 per Ranger level\nSaving Throw\nProficiencies\nStrength and Dexterity\nSkill Proficiencies Choose 3: Animal Handling,\nAthletics, Insight, Investigation,\nNature, Perception, Stealth, or\nSurvival\nWeapon Proficiencies Simple and Martial weapons\nArmor Training Light and Medium armor and\nShields\nStarting Equipment Choose A or B: (A) Studded\nLeather Armor, Scimitar,\nShortsword, Longbow, 20 Arrows, Quiver, Druidic Focus\n(sprig of mistletoe), Explorer’s\nPack, and 7 GP; or (B) 150 GP\nBecoming a Ranger …\nAs a Level 1 Character\n• Gain all the traits in the Core Ranger Traits table.\n• Gain the Ranger’s level 1 features, which are\nlisted in the Ranger Features table.\nAs a Multiclass Character\n• Gain the following traits from the Core Ranger\nTraits table: Hit Point Die, proficiency with Martial weapons, proficiency in one skill of your\nchoice from the Ranger’s skill list, and training\nwith Light and Medium armor and Shields.\n• Gain the Ranger’s level 1 features, which are\nlisted in the Ranger Features table. See the multiclassing rules in “Character Creation” to determine your available spell slots.\nRanger Class Features\nAs a Ranger, you gain the following class features\nwhen you reach the specified Ranger levels. These\nfeatures are listed in the Ranger Features table."
+      },
+      "options": {
+        "A": {
+          "gp": 7,
+          "items": [
+            {
+              "candidate_id": "studded_leather_armor",
+              "quantity": 1,
+              "source_entry": {
+                "source_item_key": "studded_leather_armor",
+                "quantity": 1
+              }
+            },
+            {
+              "candidate_id": "scimitar",
+              "quantity": 1,
+              "source_entry": {
+                "source_item_key": "scimitar",
+                "quantity": 1
+              }
+            },
+            {
+              "candidate_id": "shortsword",
+              "quantity": 1,
+              "source_entry": {
+                "source_item_key": "shortsword",
+                "quantity": 1
+              }
+            },
+            {
+              "candidate_id": "longbow",
+              "quantity": 1,
+              "source_entry": {
+                "source_item_key": "longbow",
+                "quantity": 1
+              }
+            },
+            {
+              "candidate_id": "arrows",
+              "quantity": 20,
+              "source_entry": {
+                "source_item_key": "arrows",
+                "quantity": 20
+              }
+            },
+            {
+              "candidate_id": "quiver",
+              "quantity": 1,
+              "source_entry": {
+                "source_item_key": "quiver",
+                "quantity": 1
+              }
+            },
+            {
+              "candidate_id": "sprig_of_mistletoe",
+              "quantity": 1,
+              "source_entry": {
+                "source_item_key": "sprig_of_mistletoe",
+                "quantity": 1
+              }
+            },
+            {
+              "candidate_id": "explorers_pack",
+              "quantity": 1,
+              "source_entry": {
+                "source_item_key": "explorers_pack",
+                "quantity": 1
+              }
+            }
+          ]
+        },
+        "B": {
+          "gp": 150,
+          "items": []
+        }
+      }
+    },
+    {
+      "package_id": "rogue",
+      "kind": "class",
+      "source": "docs/planning/preparation/crown-characters/classes/rogue.json",
+      "source_sha256": "6dbfd59d97a2e7ba352534046f19982096fc3e91aca44724a9ecfd1791a67797",
+      "source_rules": {
+        "authority": "SRD 5.2.1",
+        "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+        "pages": [
+          61
+        ],
+        "text": "Rogue\nCore Rogue Traits\nPrimary Ability Dexterity\nHit Point Die D8 per Rogue level\nSaving Throw\nProficiencies\nDexterity and Intelligence\nSkill Proficiencies Choose 4: Acrobatics, Athletics, Deception, Insight,\nIntimidation, Investigation,\nPerception, Persuasion, Sleight\nof Hand, or Stealth\nWeapon Proficiencies Simple weapons and Martial\nweapons that have the Finesse\nor Light property\nTool Proficiencies Thieves’ Tools\nArmor Training Light armor\nStarting Equipment Choose A or B: (A) Leather Armor, 2 Daggers, Short sword,\nShortbow, 20 Arrows, Quiver,\nThieves’ Tools, Burglar’s Pack,\nand 8 GP; or (B) 100 GP\nBecoming a Rogue …\nAs a Level 1 Character\n• Gain all the traits in the Core Rogue Traits table.\n• Gain the Rogue’s level 1 features, which are listed\nin the Rogue Features table.\nAs a Multiclass Character\n• Gain the following traits from the Core Rogue\nTraits table: Hit Point Die, proficiency in one skill\nof your choice from the Rogue’s skill list, proficiency with Thieves’ Tools, and training with\nLight armor.\n• Gain the Rogue’s level 1 features, which are listed\nin the Rogue Features table.\nRogue Class Features\nAs a Rogue, you gain the following class features\nwhen you reach the specified Rogue levels. These\nfeatures are listed in the Rogue Features table."
+      },
+      "options": {
+        "A": {
+          "gp": 8,
+          "items": [
+            {
+              "candidate_id": "leather_armor",
+              "quantity": 1,
+              "source_entry": {
+                "source_item_key": "leather_armor",
+                "quantity": 1
+              }
+            },
+            {
+              "candidate_id": "dagger",
+              "quantity": 2,
+              "source_entry": {
+                "source_item_key": "dagger",
+                "quantity": 2
+              }
+            },
+            {
+              "candidate_id": "shortsword",
+              "quantity": 1,
+              "source_entry": {
+                "source_item_key": "shortsword",
+                "quantity": 1
+              }
+            },
+            {
+              "candidate_id": "shortbow",
+              "quantity": 1,
+              "source_entry": {
+                "source_item_key": "shortbow",
+                "quantity": 1
+              }
+            },
+            {
+              "candidate_id": "arrows",
+              "quantity": 20,
+              "source_entry": {
+                "source_item_key": "arrows",
+                "quantity": 20
+              }
+            },
+            {
+              "candidate_id": "quiver",
+              "quantity": 1,
+              "source_entry": {
+                "source_item_key": "quiver",
+                "quantity": 1
+              }
+            },
+            {
+              "candidate_id": "thieves_tools",
+              "quantity": 1,
+              "source_entry": {
+                "source_item_key": "thieves_tools",
+                "quantity": 1
+              }
+            },
+            {
+              "candidate_id": "burglars_pack",
+              "quantity": 1,
+              "source_entry": {
+                "source_item_key": "burglars_pack",
+                "quantity": 1
+              }
+            }
+          ]
+        },
+        "B": {
+          "gp": 100,
+          "items": []
+        }
+      }
+    },
+    {
+      "package_id": "sorcerer",
+      "kind": "class",
+      "source": "docs/planning/preparation/crown-characters/classes/sorcerer.json",
+      "source_sha256": "5690202ae0b7e97364ce29e37d61fab91be9206905cd6423de482db32fc93e80",
+      "source_rules": {
+        "authority": "SRD 5.2.1",
+        "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+        "pages": [
+          64
+        ],
+        "text": "Sorcerer\nCore Sorcerer Traits\nPrimary Ability Charisma\nHit Point Die D6 per Sorcerer level\nSaving Throw\nProficiencies\nConstitution and Charisma\nSkill Proficiencies Choose 2: Arcana, Deception,\nInsight, Intimidation, Persuasion, or Religion\nWeapon Proficiencies Simple weapons\nArmor Training None\nStarting Equipment Choose A or B: (A) Spear,\n2 Daggers, Arcane Focus\n(crystal), Dungeoneer’s Pack,\nand 28 GP; or (B) 50 GP\nBecoming a Sorcerer …\nAs a Level 1 Character\n• Gain all the traits in the Core Sorcerer Traits\ntable.\n• Gain the Sorcerer’s level 1 features, which are\nlisted in the Sorcerer Features table.\nAs a Multiclass Character\n• Gain the Hit Point Die from the Core Sorcerer\nTraits table.\n• Gain the Sorcerer’s level 1 features, which are\nlisted in the Sorcerer Features table. See the multiclassing rules in “Character Creation” to determine your available spell slots.\nSorcerer Class Features\nAs a Sorcerer, you gain the following class features\nwhen you reach the specified Sorcerer levels. These\nfeatures are listed in the Sorcerer Features table."
+      },
+      "options": {
+        "A": {
+          "gp": 28,
+          "items": [
+            {
+              "candidate_id": "spear",
+              "quantity": 1,
+              "source_entry": {
+                "source_item_key": "spear",
+                "quantity": 1
+              }
+            },
+            {
+              "candidate_id": "dagger",
+              "quantity": 2,
+              "source_entry": {
+                "source_item_key": "dagger",
+                "quantity": 2
+              }
+            },
+            {
+              "candidate_id": "arcane_crystal",
+              "quantity": 1,
+              "source_entry": {
+                "source_item_key": "arcane_crystal",
+                "quantity": 1
+              }
+            },
+            {
+              "candidate_id": "dungeoneers_pack",
+              "quantity": 1,
+              "source_entry": {
+                "source_item_key": "dungeoneers_pack",
+                "quantity": 1
+              }
+            }
+          ]
+        },
+        "B": {
+          "gp": 50,
+          "items": []
+        }
+      }
+    },
+    {
+      "package_id": "warlock",
+      "kind": "class",
+      "source": "docs/planning/preparation/crown-characters/classes/warlock.json",
+      "source_sha256": "a54acd8bd8a7ba6d28a346c6b655f27bb677b7b95e933942223d79f1ce8d0ab0",
+      "source_rules": {
+        "authority": "SRD 5.2.1",
+        "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+        "pages": [
+          70
+        ],
+        "text": "Warlock\nCore Warlock Traits\nPrimary Ability Charisma\nHit Point Die D8 per Warlock level\nSaving Throw\nProficiencies\nWisdom and Charisma\nSkill Proficiencies Choose 2: Arcana, Deception,\nHistory, Intimidation, Investigation, Nature, or Religion\nWeapon Proficiencies Simple weapons\nArmor Training Light armor\nStarting Equipment Choose A or B: (A) Leather\nArmor, Sickle, 2 Daggers, Arcane Focus (orb), Book (occult\nlore), Scholar’s Pack, and 15\nGP; or (B) 100 GP\nBecoming a Warlock …\nAs a Level 1 Character\n• Gain all the traits in the Core Warlock Traits table.\n• Gain the Warlock’s level 1 features, which are\nlisted in the Warlock Features table.\nAs a Multiclass Character\n• Gain the following traits from the Core Warlock\nTraits table: Hit Point Die and training with Light\narmor.\n• Gain the Warlock’s level 1 features, which are\nlisted in the Warlock Features table. See the multiclassing rules in “Character Creation” to determine your available spell slots.\nWarlock Class Features\nAs a Warlock, you gain the following class features\nwhen you reach the specified Warlock levels. These\nfeatures are listed in the Warlock Features table."
+      },
+      "options": {
+        "A": {
+          "gp": 15,
+          "items": [
+            {
+              "candidate_id": "leather_armor",
+              "quantity": 1,
+              "source_entry": {
+                "source_item_key": "leather_armor",
+                "quantity": 1
+              }
+            },
+            {
+              "candidate_id": "sickle",
+              "quantity": 1,
+              "source_entry": {
+                "source_item_key": "sickle",
+                "quantity": 1
+              }
+            },
+            {
+              "candidate_id": "dagger",
+              "quantity": 2,
+              "source_entry": {
+                "source_item_key": "dagger",
+                "quantity": 2
+              }
+            },
+            {
+              "candidate_id": "arcane_orb",
+              "quantity": 1,
+              "source_entry": {
+                "source_item_key": "arcane_orb",
+                "quantity": 1
+              }
+            },
+            {
+              "candidate_id": "book_occult_lore",
+              "quantity": 1,
+              "source_entry": {
+                "source_item_key": "book_occult_lore",
+                "quantity": 1
+              }
+            },
+            {
+              "candidate_id": "scholars_pack",
+              "quantity": 1,
+              "source_entry": {
+                "source_item_key": "scholars_pack",
+                "quantity": 1
+              }
+            }
+          ]
+        },
+        "B": {
+          "gp": 100,
+          "items": []
+        }
+      }
+    },
+    {
+      "package_id": "wizard",
+      "kind": "class",
+      "source": "docs/planning/preparation/crown-characters/classes/wizard.json",
+      "source_sha256": "25f32bf0e3c269dbbb1ee9253bfd0123c85257c042c83f702c500db928ea6b78",
+      "source_rules": {
+        "authority": "SRD 5.2.1",
+        "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+        "pages": [
+          77
+        ],
+        "text": "Wizard\nCore Wizard Traits\nPrimary Ability Intelligence\nHit Point Die D6 per Wizard level\nSaving Throw\nProficiencies\nIntelligence and Wisdom\nSkill Proficiencies Choose 2: Arcana, History, Insight, Investigation, Medicine,\nNature, or Religion\nWeapon Proficiencies Simple weapons\nArmor Training None\nStarting Equipment Choose A or B: (A) 2 Daggers,\nArcane Focus (Quarterstaff),\nRobe, Spellbook, Scholar’s\nPack, and 5 GP; or (B) 55 GP\nBecoming a Wizard …\nAs a Level 1 Character\n• Gain all the traits in the Core Wizard Traits table.\n• Gain the Wizard’s level 1 features, which are\nlisted in the Wizard Features table.\nWizard Features\nProficiency\nBonus Level Class Features Ca\n1 +2 Spellcasting, Ritual Adept,\nArcane Recovery\n2 +2 Scholar\n3 +2 Wizard Subclass\n4 +2 Ability Score Improvement\n5 +3 Memorize Spell\n6 +3 Subclass feature\n7 +3 —\n8 +3 Ability Score Improvement\n9 +4 —\n10 +4 Subclass feature\n11 +4 —\n12 +4 Ability Score Improvement\n13 +5 —\n14 +5 Subclass feature\n15 +5 —\n16 +5 Ability Score Improvement\n17 +6 —\n18 +6 Spell Mastery\n19 +6 Epic Boon\n20 +6 Signature Spells\nAs a Multiclass Character\n• Gain the Hit Point Die from the Core Wizard Traits\ntable.\n• Gain the Wizard’s level 1 features, which are\nlisted in the Wizard Features table. See the multiclassing rules in “Character Creation” to determine your available spell slots.\nWizard Class Features\nAs a Wizard, you gain the following class features\nwhen you reach the specified Wizard levels. These\nfeatures are listed in the Wizard Features table."
+      },
+      "options": {
+        "A": {
+          "gp": 5,
+          "items": [
+            {
+              "candidate_id": "dagger",
+              "quantity": 2,
+              "source_entry": {
+                "source_item_key": "dagger",
+                "quantity": 2
+              }
+            },
+            {
+              "candidate_id": "arcane_focus_quarterstaff",
+              "quantity": 1,
+              "source_entry": {
+                "source_item_key": "arcane_focus_quarterstaff",
+                "quantity": 1
+              }
+            },
+            {
+              "candidate_id": "robe",
+              "quantity": 1,
+              "source_entry": {
+                "source_item_key": "robe",
+                "quantity": 1
+              }
+            },
+            {
+              "candidate_id": "spellbook",
+              "quantity": 1,
+              "source_entry": {
+                "source_item_key": "spellbook",
+                "quantity": 1
+              }
+            },
+            {
+              "candidate_id": "scholars_pack",
+              "quantity": 1,
+              "source_entry": {
+                "source_item_key": "scholars_pack",
+                "quantity": 1
+              }
+            }
+          ]
+        },
+        "B": {
+          "gp": 55,
+          "items": []
+        }
+      }
+    },
+    {
+      "package_id": "acolyte",
+      "kind": "background",
+      "source": "docs/planning/preparation/crown-characters/backgrounds/acolyte.json",
+      "source_sha256": "2f4a46570728b9d66074fb4719266eb6040aebb56140f5b2820cd49de412d393",
+      "source_rules": {
+        "authority": "SRD 5.2.1",
+        "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+        "pages": [
+          83
+        ],
+        "text": "Acolyte\nAbility Scores: Intelligence, Wisdom, Charisma\nFeat: Magic Initiate (Cleric) (see “Feats”)\nSkill Proficiencies: Insight and Religion\nTool Proficiency: Calligrapher’s Supplies\nEquipment: Choose A or B: (A) Calligrapher’s Supplies, Book (prayers), Holy Symbol, Parchment (10 sheets), Robe, 8 GP; or (B) 50 GP"
+      },
+      "options": {
+        "A": {
+          "gp": 8,
+          "items": [
+            {
+              "candidate_id": "calligraphers_supplies",
+              "quantity": 1,
+              "source_entry": {
+                "source_text": "Calligrapher’s Supplies",
+                "quantity": 1,
+                "item_id": "calligraphers_supplies"
+              }
+            },
+            {
+              "candidate_id": "book_prayers",
+              "quantity": 1,
+              "source_entry": {
+                "source_text": "Book (prayers)",
+                "quantity": 1,
+                "item_id": null,
+                "note": "No loaded generic Book item; topic 'prayers' must be represented (SRD p.96 Book bonus depends on topic).",
+                "topic": "prayers"
+              }
+            },
+            {
+              "candidate_id": "holy_symbol",
+              "quantity": 1,
+              "source_entry": {
+                "source_text": "Holy Symbol",
+                "quantity": 1,
+                "item_id": "holy_symbol",
+                "note": "SRD p.97: a Holy Symbol takes one of the forms in the Holy Symbols table (Amulet, Emblem, Reliquary). Background does not name a form; loaded generic holy_symbol vs amulet/emblem/reliquary must be reconciled."
+              }
+            },
+            {
+              "candidate_id": "parchment",
+              "quantity": 10,
+              "source_entry": {
+                "source_text": "Parchment",
+                "quantity": 10,
+                "item_id": null,
+                "note": "No loaded Parchment item (SRD p.95/99, 1 SP per sheet)."
+              }
+            },
+            {
+              "candidate_id": "robe",
+              "quantity": 1,
+              "source_entry": {
+                "source_text": "Robe",
+                "quantity": 1,
+                "item_id": "robe"
+              }
+            }
+          ]
+        },
+        "B": {
+          "gp": 50,
+          "items": []
+        }
+      }
+    },
+    {
+      "package_id": "criminal",
+      "kind": "background",
+      "source": "docs/planning/preparation/crown-characters/backgrounds/criminal.json",
+      "source_sha256": "c94694e5cdf8d50cfd786a3e966111496b69921aa43ecf10298a59cbf1df702c",
+      "source_rules": {
+        "authority": "SRD 5.2.1",
+        "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+        "pages": [
+          83
+        ],
+        "text": "Criminal\nAbility Scores: Dexterity, Constitution, Intelligence\nFeat: Alert (see “Feats”)\nSkill Proficiencies: Sleight of Hand and Stealth\nTool Proficiency: Thieves’ Tools\nEquipment: Choose A or B: (A) 2 Daggers, Thieves’ Tools, Crowbar, 2 Pouches, Traveler’s Clothes, 16 GP; or (B) 50 GP"
+      },
+      "options": {
+        "A": {
+          "gp": 16,
+          "items": [
+            {
+              "candidate_id": "dagger",
+              "quantity": 2,
+              "source_entry": {
+                "source_text": "Dagger",
+                "quantity": 2,
+                "item_id": "dagger"
+              }
+            },
+            {
+              "candidate_id": "thieves_tools",
+              "quantity": 1,
+              "source_entry": {
+                "source_text": "Thieves’ Tools",
+                "quantity": 1,
+                "item_id": "thieves_tools"
+              }
+            },
+            {
+              "candidate_id": "crowbar",
+              "quantity": 1,
+              "source_entry": {
+                "source_text": "Crowbar",
+                "quantity": 1,
+                "item_id": "crowbar"
+              }
+            },
+            {
+              "candidate_id": "pouch",
+              "quantity": 2,
+              "source_entry": {
+                "source_text": "Pouch",
+                "quantity": 2,
+                "item_id": null,
+                "note": "No loaded generic Pouch item (component_pouch and gold_50 'Gold Pouch' are different items)."
+              }
+            },
+            {
+              "candidate_id": "travelers_clothes",
+              "quantity": 1,
+              "source_entry": {
+                "source_text": "Traveler’s Clothes",
+                "quantity": 1,
+                "item_id": null,
+                "note": "No loaded Traveler's Clothes item (SRD p.97)."
+              }
+            }
+          ]
+        },
+        "B": {
+          "gp": 50,
+          "items": []
+        }
+      }
+    },
+    {
+      "package_id": "sage",
+      "kind": "background",
+      "source": "docs/planning/preparation/crown-characters/backgrounds/sage.json",
+      "source_sha256": "b3387744e61f051d963317fcb0910ef31d6587129aeda1c9f08b5ab651a79490",
+      "source_rules": {
+        "authority": "SRD 5.2.1",
+        "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+        "pages": [
+          83
+        ],
+        "text": "Sage\nAbility Scores: Constitution, Intelligence, Wisdom\nFeat: Magic Initiate (Wizard) (see “Feats”)\nSkill Proficiencies: Arcana and History\nTool Proficiency: Calligrapher’s Supplies\nEquipment: Choose A or B: (A) Quarterstaff, Calligrapher’s Supplies, Book (history), Parchment (8 sheets), Robe, 8 GP; or (B) 50 GP"
+      },
+      "options": {
+        "A": {
+          "gp": 8,
+          "items": [
+            {
+              "candidate_id": "quarterstaff",
+              "quantity": 1,
+              "source_entry": {
+                "source_text": "Quarterstaff",
+                "quantity": 1,
+                "item_id": "quarterstaff"
+              }
+            },
+            {
+              "candidate_id": "calligraphers_supplies",
+              "quantity": 1,
+              "source_entry": {
+                "source_text": "Calligrapher’s Supplies",
+                "quantity": 1,
+                "item_id": "calligraphers_supplies"
+              }
+            },
+            {
+              "candidate_id": "book_history",
+              "quantity": 1,
+              "source_entry": {
+                "source_text": "Book (history)",
+                "quantity": 1,
+                "item_id": null,
+                "note": "No loaded generic Book item; topic 'history' must be represented.",
+                "topic": "history"
+              }
+            },
+            {
+              "candidate_id": "parchment",
+              "quantity": 8,
+              "source_entry": {
+                "source_text": "Parchment",
+                "quantity": 8,
+                "item_id": null,
+                "note": "No loaded Parchment item."
+              }
+            },
+            {
+              "candidate_id": "robe",
+              "quantity": 1,
+              "source_entry": {
+                "source_text": "Robe",
+                "quantity": 1,
+                "item_id": "robe"
+              }
+            }
+          ]
+        },
+        "B": {
+          "gp": 50,
+          "items": []
+        }
+      }
+    },
+    {
+      "package_id": "soldier",
+      "kind": "background",
+      "source": "docs/planning/preparation/crown-characters/backgrounds/soldier.json",
+      "source_sha256": "e23f3e648836c79b83e0e445f1ace65dff642b37b92a5ca79500c87bbfafb782",
+      "source_rules": {
+        "authority": "SRD 5.2.1",
+        "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+        "pages": [
+          83
+        ],
+        "text": "Soldier\nAbility Scores: Strength, Dexterity, Constitution\nFeat: Savage Attacker (see “Feats”)\nSkill Proficiencies: Athletics and Intimidation\nTool Proficiency: Choose one kind of Gaming Set (see “Equipment”)\nEquipment: Choose A or B: (A) Spear, Shortbow, 20 Arrows, Gaming Set (same as above), Healer’s Kit, Quiver, Traveler’s Clothes, 14 GP; or (B) 50 GP"
+      },
+      "options": {
+        "A": {
+          "gp": 14,
+          "items": [
+            {
+              "candidate_id": "spear",
+              "quantity": 1,
+              "source_entry": {
+                "source_text": "Spear",
+                "quantity": 1,
+                "item_id": "spear"
+              }
+            },
+            {
+              "candidate_id": "shortbow",
+              "quantity": 1,
+              "source_entry": {
+                "source_text": "Shortbow",
+                "quantity": 1,
+                "item_id": "shortbow"
+              }
+            },
+            {
+              "candidate_id": "arrows",
+              "quantity": 20,
+              "source_entry": {
+                "source_text": "Arrows",
+                "quantity": 20,
+                "item_id": null,
+                "note": "No loaded Arrow ammunition item (SRD p.96: Arrows, 20 per Quiver unit)."
+              }
+            },
+            {
+              "candidate_id": "chosen_gaming_set",
+              "quantity": 1,
+              "source_entry": {
+                "source_text": "Gaming Set (same as above)",
+                "quantity": 1,
+                "item_id": null,
+                "note": "Resolve item from chosen gaming_set; all four source item IDs now exist. Do not grant a separate arbitrary Gaming Set.",
+                "same_as_choice": "gaming_set"
+              }
+            },
+            {
+              "candidate_id": "healers_kit",
+              "quantity": 1,
+              "source_entry": {
+                "source_text": "Healer’s Kit",
+                "quantity": 1,
+                "item_id": "healers_kit"
+              }
+            },
+            {
+              "candidate_id": "quiver",
+              "quantity": 1,
+              "source_entry": {
+                "source_text": "Quiver",
+                "quantity": 1,
+                "item_id": null,
+                "note": "No loaded Quiver item."
+              }
+            },
+            {
+              "candidate_id": "travelers_clothes",
+              "quantity": 1,
+              "source_entry": {
+                "source_text": "Traveler’s Clothes",
+                "quantity": 1,
+                "item_id": null,
+                "note": "No loaded Traveler's Clothes item."
+              }
+            }
+          ]
+        },
+        "B": {
+          "gp": 50,
+          "items": []
+        }
+      }
+    }
+  ]
+}

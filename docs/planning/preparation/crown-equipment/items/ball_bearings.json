@@ -1,0 +1,64 @@
+{
+  "schema": "crown-equipment-candidate/1",
+  "id": "ball_bearings",
+  "name": "Ball Bearings",
+  "kind": "gear",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring intent only; not registered engine syntax.",
+  "rules": {
+    "authority": "SRD 5.2.1",
+    "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      95,
+      96
+    ],
+    "section": "Ball Bearings",
+    "text": "Utilize: spill the pouch onto a level 10-foot-square area within 10 feet. First entry on a turn: DC 10 Dexterity save or Prone. Recovery takes 10 minutes.",
+    "source_context": "../source-pages.json"
+  },
+  "definition": {
+    "id": "ball_bearings",
+    "name": "Ball Bearings",
+    "weight_lb": 2,
+    "cost_gp": 1,
+    "area_side_feet": 10,
+    "placement_range_feet": 10,
+    "save_dc": 10,
+    "recovery_minutes": 10
+  },
+  "authored_operations": [
+    "Utilize: spill the pouch onto a level 10-foot-square area within 10 feet. First entry on a turn: DC 10 Dexterity save or Prone. Recovery takes 10 minutes."
+  ],
+  "retained_runtime_seeds": [
+    {
+      "path": "data/core/items/artificer_tools.json",
+      "array_index": 0,
+      "file_sha256": "8f446ec02ee3da41735f437de30bea8b56f05cd5ae945b2c44bf1405bfccbdca",
+      "definition": {
+        "id": "ball_bearings",
+        "weight": 2,
+        "name": "Ball Bearings",
+        "description": "A pouch of small metal spheres created by Tinker's Magic.",
+        "type": "tool",
+        "effects": [],
+        "value": 1
+      }
+    }
+  ],
+  "manifest_overrides": [],
+  "required_mapping": [
+    "hazards"
+  ],
+  "consumers": [
+    {
+      "pack_id": "burglars_pack",
+      "quantity": 1
+    }
+  ],
+  "unsupported_behavior": [
+    {
+      "group": "hazards",
+      "requirement": "Map placement, level-ground eligibility, first-entry-per-turn save, exact damage/condition duration and ten-minute recoverable contents. Reuse spatial trigger owner."
+    }
+  ]
+}

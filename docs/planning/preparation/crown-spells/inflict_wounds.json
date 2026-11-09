@@ -1,0 +1,128 @@
+{
+  "format": "crown-spell-candidate/1",
+  "id": "inflict_wounds",
+  "name": "Inflict Wounds",
+  "level": 1,
+  "status": "written_unverified_not_loaded",
+  "source": {
+    "authority": "SRD 5.2.1",
+    "url": "https://media.dndbeyond.com/compendium-images/srd/5.2/SRD_CC_v5.2.1.pdf",
+    "sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      143
+    ],
+    "header": {
+      "Casting Time": "Action",
+      "Range": "Touch",
+      "Components": "V, S",
+      "Duration": "Instantaneous"
+    },
+    "attribution": "System Reference Document 5.2.1, Wizards of the Coast LLC; CC BY 4.0."
+  },
+  "casting": {
+    "casting_time": "Action",
+    "kind": "action",
+    "seconds": null,
+    "ritual_available": false,
+    "range": {
+      "source": "Touch",
+      "kind": "touch",
+      "feet": 5
+    },
+    "components": [
+      "V",
+      "S"
+    ],
+    "material": null,
+    "duration": "Instantaneous",
+    "concentration": false,
+    "spell_lists": [
+      "cleric"
+    ]
+  },
+  "authored_intent": "Touch creature; CON save for half 2d10 Necrotic; higher slots add 1d10; no obsolete melee attack.",
+  "rules": [
+    {
+      "id": "r001",
+      "text": "A creature you touch makes a Constitution saving throw, taking 2d10 Necrotic damage on a failed save or half as much damage on a successful one."
+    },
+    {
+      "id": "r002",
+      "text": "Using a Higher-Level Spell Slot."
+    },
+    {
+      "id": "r003",
+      "text": "The damage increases by 1d10 for each spell slot level above 1."
+    }
+  ],
+  "authored_operations": [
+    {
+      "operation": "save_damage",
+      "parameters": {
+        "target": "touched_creature",
+        "save": "CON",
+        "damage": "2d10",
+        "type": "necrotic",
+        "half_on_success": true,
+        "upcast_per_slot": "1d10"
+      },
+      "status": "authoring_declaration_not_a_registered_opcode",
+      "required_source_rules": [
+        "r001",
+        "r002",
+        "r003"
+      ]
+    }
+  ],
+  "runtime_draft": {
+    "origin": "existing_shared_definition",
+    "definition": {
+      "attack_type": "none",
+      "casting_time": "action",
+      "classes": [
+        "cleric"
+      ],
+      "components": [
+        "V",
+        "S"
+      ],
+      "concentration": false,
+      "damage": "2d10",
+      "damage_type": "necrotic",
+      "description": "A creature you touch makes a Constitution saving throw, taking 2d10 Necrotic damage on a failed save or half as much damage on a successful one. Using a Higher-Level Spell Slot. The damage increases by 1d10 for each spell slot level above 1.",
+      "duration": "Instantaneous",
+      "execution": "shared",
+      "half_on_save": true,
+      "id": "inflict_wounds",
+      "level": 1,
+      "name": "Inflict Wounds",
+      "range": 1,
+      "range_kind": "touch",
+      "save": "CON",
+      "school": "necromancy",
+      "target": "single",
+      "upcast": {
+        "damage_per_level": "1d10",
+        "starting_level": 1.0
+      },
+      "rules_source": "SRD 5.2.1",
+      "rules_status": "authoring-draft-unverified"
+    },
+    "fragments": {},
+    "coverage": "Unverified. Neither a full definition nor a fragment certifies all source rules or controls. Required extensions are not silently waived."
+  },
+  "required_extensions": [],
+  "audit": {
+    "source": "docs/audits/spells.md",
+    "batch": "088-2",
+    "production_definition_at_authoring": "res://data/core/spells/imported_spells.json#104",
+    "baseline_execution": "shared",
+    "source_revision": "2a19eb1d",
+    "existing_conversion_label": "already_shared_baseline"
+  },
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile every source rule and required extension, then implement and verify through production paths before any deliberate promotion. Keep native behavior until covered."
+  }
+}

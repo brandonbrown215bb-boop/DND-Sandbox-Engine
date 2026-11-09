@@ -1,0 +1,223 @@
+{
+  "schema": "crown-character-candidate/1",
+  "id": "fiend_patron",
+  "name": "Fiend Patron",
+  "kind": "subclass",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "scope": {
+    "total_character_level_maximum": 5
+  },
+  "operation_language": "authoring intent only; not registered engine syntax",
+  "runtime_support": "Retained definitions are reuse material, not proof of full rules. Every authored operation needs contract mapping and later production-path verification before promotion.",
+  "class_id": "warlock",
+  "class_level": 3,
+  "features": [
+    {
+      "id": "fiend_dark_ones_blessing",
+      "name": "Dark One’s Blessing",
+      "class_level": 3,
+      "rules": {
+        "authority": "SRD 5.2.1",
+        "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+        "pages": [
+          76
+        ],
+        "text": "Level 3: Dark One’s Blessing\nWhen you reduce an enemy to 0 Hit Points, you gain\nTemporary Hit Points equal to your Charisma modifier plus your Warlock level (minimum of 1 Temporary Hit Point). You also gain this benefit if someone\nelse reduces an enemy within 10 feet of you to 0 Hit\nPoints."
+      },
+      "revised_reference_entries": [
+        "When you reduce an enemy to 0 {@variantrule Hit Points|XPHB}, you gain {@variantrule Temporary Hit Points|XPHB} equal to your Charisma modifier plus your Warlock level (minimum of 1 {@variantrule Temporary Hit Points|XPHB|Temporary Hit Point}). You also gain this benefit if someone else reduces an enemy within 10 feet of you to 0 {@variantrule Hit Points|XPHB}."
+      ],
+      "authored_operations": [
+        {
+          "trigger": "Owner reduces enemy to0 HP OR someone else reduces enemy within10 feet to0",
+          "cost": "none",
+          "effects": [
+            "Temporary HP=max(1,CHA+Warlock level); use Temporary HP replacement rules"
+          ],
+          "ending_and_identity": "Exact source owns the grant/state; remove temporary effects at the declared ending; never replay acquisition on restore.",
+          "required_extension_groups": [
+            "rolls"
+          ]
+        }
+      ],
+      "unsupported_behavior": [
+        {
+          "groups": [
+            "rolls"
+          ],
+          "requirement": {
+            "trigger": "Owner reduces enemy to0 HP OR someone else reduces enemy within10 feet to0",
+            "cost": "none",
+            "effects": [
+              "Temporary HP=max(1,CHA+Warlock level); use Temporary HP replacement rules"
+            ],
+            "ending": "Exact source owns the grant/state; remove temporary effects at the declared ending; never replay acquisition on restore."
+          },
+          "mapping_boundary": "Map this complete sequence to shared contracts; retained native behavior and fragments do not certify it.",
+          "status": "unmapped_or_unverified_candidate"
+        }
+      ]
+    },
+    {
+      "id": "warlock_fiend_spells",
+      "name": "Fiend Spells",
+      "class_level": 3,
+      "rules": {
+        "authority": "SRD 5.2.1",
+        "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+        "pages": [
+          76
+        ],
+        "text": "Level 3: Fiend Spells\nThe magic of your patron ensures you always have\ncertain spells ready; when you reach a Warlock\nlevel specified in the Fiend Spells table, you thereafter always have the listed spells prepared.\nFiend Spells\nWarlock Level Spells\n3 Burning Hands, Command,\nScorching Ray, Suggestion\n5 Fireball, Stinking Cloud\n7 Fire Shield, Wall of Fire\n9 Geas, Insect Plague"
+      },
+      "revised_reference_entries": [
+        "The magic of your patron ensures you always have certain spells ready; when you reach a Warlock level specified in the Fiend Spells table, you thereafter always have the listed spells prepared.",
+        {
+          "type": "table",
+          "caption": "Fiend Spells",
+          "colLabels": [
+            "Warlock Level",
+            "Spells"
+          ],
+          "colStyles": [
+            "col-2 text-center",
+            "col-10"
+          ],
+          "rows": [
+            [
+              "3",
+              "{@spell Burning Hands|XPHB}, {@spell Command|XPHB}, {@spell Scorching Ray|XPHB}, {@spell Suggestion|XPHB}"
+            ],
+            [
+              "5",
+              "{@spell Fireball|XPHB}, {@spell Stinking Cloud|XPHB}"
+            ],
+            [
+              "7",
+              "{@spell Fire Shield|XPHB}, {@spell Wall of Fire|XPHB}"
+            ],
+            [
+              "9",
+              "{@spell Geas|XPHB}, {@spell Insect Plague|XPHB}"
+            ]
+          ]
+        }
+      ],
+      "authored_operations": [
+        {
+          "trigger": "Class level3 and5",
+          "cost": "Normal spell costs except explicit grant elsewhere",
+          "effects": [
+            "Always prepare exact in-band table spells without counting class limit; grant as own-class spells"
+          ],
+          "ending_and_identity": "Exact subclass ownership",
+          "required_extension_groups": [
+            "casting",
+            "choices"
+          ]
+        }
+      ],
+      "unsupported_behavior": [
+        {
+          "groups": [
+            "casting",
+            "choices"
+          ],
+          "requirement": {
+            "trigger": "Class level3 and5",
+            "cost": "Normal spell costs except explicit grant elsewhere",
+            "effects": [
+              "Always prepare exact in-band table spells without counting class limit; grant as own-class spells"
+            ],
+            "ending": "Exact subclass ownership"
+          },
+          "mapping_boundary": "Map this complete sequence to shared contracts; retained native behavior and fragments do not certify it.",
+          "status": "unmapped_or_unverified_candidate"
+        }
+      ]
+    }
+  ],
+  "reused_from": [
+    "data/core/subclasses/fiend_patron.json",
+    "reference/2024/classes/warlock.json"
+  ],
+  "retained_runtime_seed": {
+    "id": "fiend_patron",
+    "name": "Fiend Patron",
+    "class_id": "warlock",
+    "rules_status": "2024-supported",
+    "features_by_level": {
+      "3": [
+        {
+          "id": "fiend_dark_ones_blessing",
+          "name": "Dark One's Blessing",
+          "description": "When you or an ally within 10 feet of you reduces an enemy to 0 Hit Points, you gain temporary hit points equal to your Charisma modifier plus your Warlock level (minimum 1).",
+          "type": "passive",
+          "effects": [
+            {
+              "type": "dark_ones_blessing"
+            }
+          ],
+          "resolver": "warlock_rules",
+          "rules_source": "dnd-2024-srd-5.2.1",
+          "rules_status": "2024-supported"
+        },
+        {
+          "id": "fiend_spells_3",
+          "name": "Fiend Spells (Level 3)",
+          "description": "You always have Burning Hands, Command, Scorching Ray, and Suggestion prepared.",
+          "type": "passive",
+          "effects": [
+            {
+              "type": "always_prepared_spells",
+              "spells": [
+                "burning_hands",
+                "command",
+                "scorching_ray",
+                "suggestion"
+              ]
+            }
+          ],
+          "rules_source": "dnd-2024-srd-5.2.1",
+          "rules_status": "2024-supported"
+        }
+      ],
+      "5": [
+        {
+          "id": "fiend_spells_5",
+          "name": "Fiend Spells (Level 5)",
+          "description": "You always have Fireball and Stinking Cloud prepared.",
+          "type": "passive",
+          "effects": [
+            {
+              "type": "always_prepared_spells",
+              "spells": [
+                "fireball",
+                "stinking_cloud"
+              ]
+            }
+          ],
+          "rules_source": "dnd-2024-srd-5.2.1",
+          "rules_status": "2024-supported"
+        }
+      ]
+    }
+  },
+  "always_prepared_spells_by_class_level": {
+    "3": [
+      "burning_hands",
+      "command",
+      "scorching_ray",
+      "suggestion"
+    ],
+    "5": [
+      "fireball",
+      "stinking_cloud"
+    ]
+  },
+  "source_revision": "2a19eb1d (existing working-tree definitions and recovered drafts read on 2026-11-08)",
+  "reused_input_hashes": {
+    "data/core/subclasses/fiend_patron.json": "a5319f94120d1799405a91183248dc966600b055c8235a3ad7357308ecc0bdaf",
+    "reference/2024/classes/warlock.json": "8b2d281269e378ee997faeff12a43f92c9f47ec4447ad7c61bc2e2bc5460f86c"
+  }
+}

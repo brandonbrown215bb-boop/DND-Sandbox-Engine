@@ -1,0 +1,58 @@
+{
+  "schema": "crown-character-candidate/1",
+  "id": "investment_of_the_chain_master",
+  "name": "Investment of the Chain Master",
+  "kind": "invocation",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "scope": {
+    "total_character_level_maximum": 5
+  },
+  "operation_language": "authoring intent only; not registered engine syntax",
+  "runtime_support": "Retained definitions are reuse material, not proof of full rules. Every authored operation needs contract mapping and later production-path verification before promotion.",
+  "minimum_warlock_level": 5,
+  "rules": {
+    "authority": "SRD 5.2.1",
+    "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      73
+    ],
+    "text": "Investment of the Chain Master\nPrerequisite: Level 5+ Warlock, Pact of the Chain\nInvocation\nWhen you cast\nFind Familiar\n, you infuse the summoned familiar with a measure of your eldritch\npower, granting the creature the following benefits.\nAerial or Aquatic.\nThe familiar gains either a Fly\nSpeed or a Swim Speed (your choice) of 40 feet.\nQuick Attack.\nAs a Bonus Action, you can command the familiar to take the Attack action.\nNecrotic or Radiant Damage.\nWhenever the\nfamiliar deals Bludgeoning, Piercing, or Slashing\ndamage, you can make it deal Necrotic or Radiant\ndamage instead.\nYour Save DC.\nIf the familiar forces a creature to\nmake a saving throw, it uses your spell save DC.\nResistance.\nWhen the familiar takes damage, you\ncan take a Reaction to grant it Resistance against\nthat damage."
+  },
+  "prerequisites": {
+    "warlock_level": 5,
+    "invocations": [
+      "pact_of_the_chain"
+    ],
+    "cantrip_parameter": null
+  },
+  "repeatable": false,
+  "authored_operations": [
+    {
+      "trigger": "Warlock5 and Pact of Chain; Find Familiar creation and later commands",
+      "cost": "Bonus Action commands Attack; Reaction grants Resistance to familiar against triggering damage",
+      "effects": [
+        "Choose Fly or Swim Speed40 feet; replace familiar B/P/S damage with Necrotic or Radiant optionally; familiar saves use owner spell DC; exact actor/command/damage identity"
+      ],
+      "ending_and_identity": "Exact invocation source owns permission; normal spell endings still apply; remove only its grants when replaced.",
+      "required_extension_groups": [
+        "forms",
+        "reactions",
+        "attacks"
+      ]
+    }
+  ],
+  "retained_runtime_fragment": null,
+  "unsupported_behavior": [
+    {
+      "groups": [
+        "forms",
+        "reactions",
+        "attacks"
+      ],
+      "requirement": "Choose Fly or Swim Speed40 feet; replace familiar B/P/S damage with Necrotic or Radiant optionally; familiar saves use owner spell DC; exact actor/command/damage identity",
+      "status": "mapping_and_production_host_verification_required"
+    }
+  ],
+  "source_revision": "2a19eb1d (existing working-tree definitions and recovered drafts read on 2026-11-08)",
+  "reused_input_hashes": {}
+}

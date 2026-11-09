@@ -1,0 +1,189 @@
+{
+  "format": "crown-spell-candidate/1",
+  "id": "vampiric_touch",
+  "name": "Vampiric Touch",
+  "level": 3,
+  "status": "written_unverified_not_loaded",
+  "source": {
+    "authority": "SRD 5.2.1",
+    "url": "https://media.dndbeyond.com/compendium-images/srd/5.2/SRD_CC_v5.2.1.pdf",
+    "sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      171
+    ],
+    "header": {
+      "Casting Time": "Action",
+      "Range": "Self",
+      "Components": "V, S",
+      "Duration": "Concentration, up to 1 minute"
+    },
+    "attribution": "System Reference Document 5.2.1, Wizards of the Coast LLC; CC BY 4.0."
+  },
+  "casting": {
+    "casting_time": "Action",
+    "kind": "action",
+    "seconds": null,
+    "ritual_available": false,
+    "range": {
+      "source": "Self",
+      "kind": "self",
+      "feet": 0
+    },
+    "components": [
+      "V",
+      "S"
+    ],
+    "material": null,
+    "duration": "Concentration, up to 1 minute",
+    "concentration": true,
+    "spell_lists": [
+      "sorcerer",
+      "warlock",
+      "wizard"
+    ]
+  },
+  "authored_intent": "Melee spell attack Necrotic; regain HP equal half actual Necrotic damage dealt; Magic actions repeat during Concentration; higher slots scale damage; no healing from raw rolled amount.",
+  "rules": [
+    {
+      "id": "r001",
+      "text": "The touch of your shadow-wreathed hand can siphon life force from others to heal your wounds."
+    },
+    {
+      "id": "r002",
+      "text": "Make a melee spell attack against one creature within reach."
+    },
+    {
+      "id": "r003",
+      "text": "On a hit, the target takes 3d6 Necrotic damage, and you regain Hit Points equal to half the amount of Necrotic damage dealt."
+    },
+    {
+      "id": "r004",
+      "text": "Until the spell ends, you can make the attack again on each of your turns as a Magic action, targeting the same creature or a different one."
+    },
+    {
+      "id": "r005",
+      "text": "Using a Higher-Level Spell Slot."
+    },
+    {
+      "id": "r006",
+      "text": "The damage increases by 1d6 for each spell slot level above 3."
+    }
+  ],
+  "authored_operations": [
+    {
+      "operation": "attack_and_heal_from_damage",
+      "parameters": {
+        "target": "creature_within_reach",
+        "attack": "melee_spell",
+        "damage": "3d6",
+        "type": "necrotic",
+        "heal": {
+          "fraction": 0.5,
+          "basis": "actual_necrotic_damage_dealt"
+        },
+        "repeat": {
+          "action": "magic_action",
+          "each_caster_turn": true,
+          "may_retarget": true
+        },
+        "upcast_per_slot": "1d6"
+      },
+      "status": "authoring_declaration_not_a_registered_opcode",
+      "required_source_rules": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006"
+      ]
+    }
+  ],
+  "runtime_draft": {
+    "origin": "new_shared_draft",
+    "definition": {
+      "id": "vampiric_touch",
+      "name": "Vampiric Touch",
+      "execution": "shared",
+      "level": 3,
+      "school": "necromancy",
+      "classes": [
+        "sorcerer",
+        "warlock",
+        "wizard"
+      ],
+      "components": [
+        "V",
+        "S"
+      ],
+      "duration": "Concentration, up to 1 minute",
+      "concentration": true,
+      "rules_source": "SRD 5.2.1",
+      "rules_status": "authoring-draft-unverified",
+      "range": 0,
+      "range_kind": "self",
+      "casting_time": "action",
+      "duration_seconds": 60,
+      "description": "The touch of your shadow-wreathed hand can siphon life force from others to heal your wounds. Make a melee spell attack against one creature within reach. On a hit, the target takes 3d6 Necrotic damage, and you regain Hit Points equal to half the amount of Necrotic damage dealt. Until the spell ends, you can make the attack again on each of your turns as a Magic action, targeting the same creature or a different one. Using a Higher-Level Spell Slot. The damage increases by 1d6 for each spell slot level above 3.",
+      "target": "single",
+      "damage": "3d6",
+      "damage_type": "necrotic",
+      "upcast": {
+        "starting_level": 3,
+        "damage_per_level": "1d6"
+      },
+      "attack_type": "melee_spell"
+    },
+    "fragments": {},
+    "coverage": "Unverified. Neither a full definition nor a fragment certifies all source rules or controls. Required extensions are not silently waived."
+  },
+  "required_extensions": [
+    {
+      "group": "granted_actions",
+      "requirement": "Author the correct actor, action kind, budgets, choices, range and repeated effects; retain the parent cast/source and avoid a new named executor.",
+      "spell_specific_intent": "Melee spell attack Necrotic; regain HP equal half actual Necrotic damage dealt; Magic actions repeat during Concentration; higher slots scale damage; no healing from raw rolled amount.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006"
+      ],
+      "existing_owner_to_reuse": "src/combat/combat_child_actions.gd",
+      "slice_references": "S-134/S-135/S-146/S-148",
+      "disposition": "requires_mapping_or_host_completion",
+      "note": "This is an authored handoff requirement, not a fresh runtime failure or claim that the whole referenced slice is missing."
+    },
+    {
+      "group": "damage_to_healing",
+      "requirement": "Heal from the source-defined fraction of actual eligible damage dealt after defenses, not rolled or prevented damage, and settle once after continuations.",
+      "spell_specific_intent": "Melee spell attack Necrotic; regain HP equal half actual Necrotic damage dealt; Magic actions repeat during Concentration; higher slots scale damage; no healing from raw rolled amount.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006"
+      ],
+      "existing_owner_to_reuse": "src/spells/spell_damage_rolls.gd",
+      "slice_references": "S-017/S-034/S-098",
+      "disposition": "requires_mapping_or_host_completion",
+      "note": "This is an authored handoff requirement, not a fresh runtime failure or claim that the whole referenced slice is missing."
+    }
+  ],
+  "audit": {
+    "source": "docs/audits/spells.md",
+    "batch": "088-8",
+    "production_definition_at_authoring": "res://data/core/spells/imported_spells.json#189",
+    "baseline_execution": "native",
+    "source_revision": "2a19eb1d",
+    "existing_conversion_label": "queued"
+  },
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile every source rule and required extension, then implement and verify through production paths before any deliberate promotion. Keep native behavior until covered."
+  }
+}

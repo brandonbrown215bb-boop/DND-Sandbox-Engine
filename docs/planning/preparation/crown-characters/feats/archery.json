@@ -1,0 +1,54 @@
+{
+  "schema": "crown-character-candidate/1",
+  "id": "archery",
+  "name": "Archery",
+  "kind": "feat",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "scope": {
+    "total_character_level_maximum": 5
+  },
+  "operation_language": "authoring intent only; not registered engine syntax",
+  "runtime_support": "Retained definitions are reuse material, not proof of full rules. Every authored operation needs contract mapping and later production-path verification before promotion.",
+  "definition": {
+    "category": "Fighting Style",
+    "repeatable": false,
+    "prerequisites": {
+      "feature": "Fighting Style"
+    }
+  },
+  "rules": {
+    "authority": "SRD 5.2.1",
+    "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      87
+    ],
+    "text": "Archery\nFighting Style Feat (Prerequisite: Fighting Style\nFeature)\nYou gain a +2 bonus to attack rolls you make with\nRanged weapons."
+  },
+  "authored_operations": [
+    {
+      "trigger": "Attack roll with Ranged weapon",
+      "effects": [
+        "+2 attack roll; not every ranged spell or thrown Melee weapon"
+      ],
+      "required_extension_groups": [
+        "attacks",
+        "rolls"
+      ],
+      "ending_and_identity": "Exact acquired feat instance owns parameters, budgets and grants; once-only acquisition and per-turn receipts; no replay on restore."
+    }
+  ],
+  "reused_from": [],
+  "retained_runtime_seed": null,
+  "unsupported_behavior": [
+    {
+      "groups": [
+        "attacks",
+        "rolls"
+      ],
+      "requirement": "+2 attack roll; not every ranged spell or thrown Melee weapon",
+      "status": "candidate_mapping_and_full_host_verification_required"
+    }
+  ],
+  "source_revision": "2a19eb1d (existing working-tree definitions and recovered drafts read on 2026-11-08)",
+  "reused_input_hashes": {}
+}

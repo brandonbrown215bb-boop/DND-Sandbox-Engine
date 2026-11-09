@@ -7,6 +7,8 @@ extends RefCounted
 ## Encounter owner installs this transient hook so gaining Incapacitated can
 ## clean scene-owned concentration state without storing scene objects in saves.
 var condition_consequence_handler: Callable
+var ammunition_spent: Array = [] # Encounter-only; combat saves remain forbidden.
+var ammunition_recovery: Array = []
 
 static func saved_campaign_modifier_error(data: Dictionary, campaign_seconds: int) -> String:
 	var modifiers: Variant = data.get("modifiers", [])
@@ -2813,11 +2815,14 @@ func to_dict() -> Dictionary:
 		"roll_tokens": RollTokenRules.serialize_tokens(roll_tokens),
 		"roll_token_generation_serial": roll_token_generation_serial,
 		"damage_wards": WardRules.serialize_wards(damage_wards),
+		"ammunition_recovery": ammunition_recovery.duplicate(true),
 	}
 
 
 ## Deserialize character from dictionary.
 func from_dict(data: Dictionary) -> void:
+	ammunition_spent.clear()
+	ammunition_recovery = data.get("ammunition_recovery", []).duplicate(true)
 	familiar_senses = null
 	protection_grants.clear()
 	protection_selections.clear()

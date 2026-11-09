@@ -1,0 +1,177 @@
+{
+  "schema": "crown-character-candidate/1",
+  "id": "college_of_lore",
+  "name": "College of Lore",
+  "kind": "subclass",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "scope": {
+    "total_character_level_maximum": 5
+  },
+  "operation_language": "authoring intent only; not registered engine syntax",
+  "runtime_support": "Retained definitions are reuse material, not proof of full rules. Every authored operation needs contract mapping and later production-path verification before promotion.",
+  "class_id": "bard",
+  "class_level": 3,
+  "features": [
+    {
+      "id": "college_of_lore_bonus_proficiencies",
+      "name": "Bonus Proficiencies",
+      "class_level": 3,
+      "rules": {
+        "authority": "SRD 5.2.1",
+        "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+        "pages": [
+          35
+        ],
+        "text": "Level 3: Bonus Proficiencies\nYou gain proficiency with three skills of your choice."
+      },
+      "revised_reference_entries": [
+        "You gain proficiency with three skills of your choice."
+      ],
+      "authored_operations": [
+        {
+          "trigger": "Lore3 acquisition",
+          "cost": "none",
+          "effects": [
+            "Three chosen skill proficiencies"
+          ],
+          "ending_and_identity": "Exact source owns the grant/state; remove temporary effects at the declared ending; never replay acquisition on restore.",
+          "required_extension_groups": [
+            "choices"
+          ]
+        }
+      ],
+      "unsupported_behavior": [
+        {
+          "groups": [
+            "choices"
+          ],
+          "requirement": {
+            "trigger": "Lore3 acquisition",
+            "cost": "none",
+            "effects": [
+              "Three chosen skill proficiencies"
+            ],
+            "ending": "Exact source owns the grant/state; remove temporary effects at the declared ending; never replay acquisition on restore."
+          },
+          "mapping_boundary": "Map this complete sequence to shared contracts; retained native behavior and fragments do not certify it.",
+          "status": "unmapped_or_unverified_candidate"
+        }
+      ]
+    },
+    {
+      "id": "college_of_lore_cutting_words",
+      "name": "Cutting Words",
+      "class_level": 3,
+      "rules": {
+        "authority": "SRD 5.2.1",
+        "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+        "pages": [
+          35
+        ],
+        "text": "Level 3: Cutting Words\nYou learn to use your wit to supernaturally distract,\nconfuse, and otherwise sap the confidence and competence of others. When a creature that you can see\nwithin 60 feet of yourself makes a damage roll or\nsucceeds on an ability check or attack roll, you can\ntake a Reaction to expend one use of your Bardic\nInspiration; roll your Bardic Inspiration die, and\nsubtract the number rolled from the creature’s roll,\nreducing the damage or potentially turning the success into a failure."
+      },
+      "revised_reference_entries": [
+        "You learn to use your wit to supernaturally distract, confuse, and otherwise sap the confidence and competence of others. When a creature that you can see within 60 feet of yourself makes a damage roll or succeeds on an ability check or attack roll, you can take a {@variantrule Reaction|XPHB} to expend one use of your Bardic Inspiration; roll your Bardic Inspiration die, and subtract the number rolled from the creature's roll, reducing the damage or potentially turning the success into a failure."
+      ],
+      "authored_operations": [
+        {
+          "trigger": "Visible creature within60 feet makes damage roll OR succeeds on ability check or attack roll",
+          "cost": "Reaction + one Bardic Inspiration use",
+          "effects": [
+            "Roll Inspiration die and subtract from that exact roll; damage or success window captured before effects"
+          ],
+          "ending_and_identity": "Exact source owns the grant/state; remove temporary effects at the declared ending; never replay acquisition on restore.",
+          "required_extension_groups": [
+            "reactions",
+            "rolls",
+            "resources"
+          ]
+        }
+      ],
+      "unsupported_behavior": [
+        {
+          "groups": [
+            "reactions",
+            "rolls",
+            "resources"
+          ],
+          "requirement": {
+            "trigger": "Visible creature within60 feet makes damage roll OR succeeds on ability check or attack roll",
+            "cost": "Reaction + one Bardic Inspiration use",
+            "effects": [
+              "Roll Inspiration die and subtract from that exact roll; damage or success window captured before effects"
+            ],
+            "ending": "Exact source owns the grant/state; remove temporary effects at the declared ending; never replay acquisition on restore."
+          },
+          "mapping_boundary": "Map this complete sequence to shared contracts; retained native behavior and fragments do not certify it.",
+          "status": "unmapped_or_unverified_candidate"
+        }
+      ]
+    }
+  ],
+  "reused_from": [
+    "_staging/subclass-staging/staged/college_of_lore.json",
+    "reference/2024/classes/bard.json"
+  ],
+  "retained_runtime_seed": {
+    "id": "college_of_lore",
+    "name": "College of Lore",
+    "class_id": "bard",
+    "rights": "srd_ok",
+    "rules_status": "2024-partial",
+    "features_by_level": {
+      "3": [
+        {
+          "id": "college_of_lore_bonus_proficiencies",
+          "name": "Bonus Proficiencies",
+          "description": "You gain proficiency with three skills of your choice.",
+          "type": "passive",
+          "effects": [
+            {
+              "type": "skill_proficiency_choice",
+              "options": [
+                "Acrobatics",
+                "Animal Handling",
+                "Arcana",
+                "Athletics",
+                "Deception",
+                "History",
+                "Insight",
+                "Intimidation",
+                "Investigation",
+                "Medicine",
+                "Nature",
+                "Perception",
+                "Performance",
+                "Persuasion",
+                "Religion",
+                "Sleight of Hand",
+                "Stealth",
+                "Survival"
+              ],
+              "count": 3
+            }
+          ],
+          "rules_source": "dnd-2024-srd-5.2.1",
+          "rules_status": "2024-partial"
+        },
+        {
+          "id": "college_of_lore_cutting_words",
+          "name": "Cutting Words",
+          "description": "You learn to use your wit to supernaturally distract, confuse, and otherwise sap the confidence and competence of others. When a creature that you can see within 60 feet of yourself makes a damage roll or succeeds on…",
+          "type": "active",
+          "effects": [],
+          "rules_source": "dnd-2024-srd-5.2.1",
+          "rules_status": "reference-only",
+          "enabled": false,
+          "action_cost": "reaction"
+        }
+      ]
+    }
+  },
+  "source_revision": "2a19eb1d (existing working-tree definitions and recovered drafts read on 2026-11-08)",
+  "reused_input_hashes": {
+    "_staging/subclass-staging/staged/college_of_lore.json": "4dd161079409681814cd9b179eb4a09663a8abe97887401e5b0818ff78ad1ecc",
+    "reference/2024/classes/bard.json": "00f46a8a161a199515d40c58d185029747cf59cb0015ede12e16caeb91680d5b"
+  }
+}

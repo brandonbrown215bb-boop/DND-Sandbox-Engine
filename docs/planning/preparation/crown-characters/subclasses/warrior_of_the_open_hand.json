@@ -1,0 +1,149 @@
+{
+  "schema": "crown-character-candidate/1",
+  "id": "warrior_of_the_open_hand",
+  "name": "Warrior of the Open Hand",
+  "kind": "subclass",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "scope": {
+    "total_character_level_maximum": 5
+  },
+  "operation_language": "authoring intent only; not registered engine syntax",
+  "runtime_support": "Retained definitions are reuse material, not proof of full rules. Every authored operation needs contract mapping and later production-path verification before promotion.",
+  "class_id": "monk",
+  "class_level": 3,
+  "features": [
+    {
+      "id": "monk_open_hand_technique",
+      "name": "Open Hand Technique",
+      "class_level": 3,
+      "rules": {
+        "authority": "SRD 5.2.1",
+        "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+        "pages": [
+          52
+        ],
+        "text": "Level 3: Open Hand Technique\nWhenever you hit a creature with an attack granted\nby your Flurry of Blows, you can impose one of the\nfollowing effects on that target.\nAddle.\nThe target can’t make Opportunity Attacks\nuntil the start of its next turn.\nPush.\nThe target must succeed on a Strength saving throw or be pushed up to 15 feet away from you.\nTopple.\nThe target must succeed on a Dexterity\nsaving throw or have the Prone condition."
+      },
+      "revised_reference_entries": [
+        "Whenever you hit a creature with an attack granted by your Flurry of Blows, you can impose one of the following effects on that target.",
+        {
+          "type": "entries",
+          "name": "Addle",
+          "entries": [
+            "The target can't make {@action Opportunity Attack|XPHB|Opportunity Attacks} until the start of its next turn."
+          ]
+        },
+        {
+          "type": "entries",
+          "name": "Push",
+          "entries": [
+            "The target must succeed on a Strength saving throw or be pushed up to 15 feet away from you."
+          ]
+        },
+        {
+          "type": "entries",
+          "name": "Topple",
+          "entries": [
+            "The target must succeed on a Dexterity saving throw or have the {@condition Prone|XPHB} condition."
+          ]
+        }
+      ],
+      "authored_operations": [
+        {
+          "trigger": "Flurry of Blows hit",
+          "cost": "no additional cost",
+          "effects": [
+            "Choose Addle: no Opportunity Attacks until start of target’s next turn",
+            "Push: STR save or push up to15 feet away",
+            "Topple: DEX save or Prone; both saves DC8+WIS+PB"
+          ],
+          "ending_and_identity": "Exact source owns the grant/state; remove temporary effects at the declared ending; never replay acquisition on restore.",
+          "required_extension_groups": [
+            "attacks",
+            "conditions",
+            "movement"
+          ]
+        }
+      ],
+      "unsupported_behavior": [
+        {
+          "groups": [
+            "attacks",
+            "conditions",
+            "movement"
+          ],
+          "requirement": {
+            "trigger": "Flurry of Blows hit",
+            "cost": "no additional cost",
+            "effects": [
+              "Choose Addle: no Opportunity Attacks until start of target’s next turn",
+              "Push: STR save or push up to15 feet away",
+              "Topple: DEX save or Prone; both saves DC8+WIS+PB"
+            ],
+            "ending": "Exact source owns the grant/state; remove temporary effects at the declared ending; never replay acquisition on restore."
+          },
+          "mapping_boundary": "Map this complete sequence to shared contracts; retained native behavior and fragments do not certify it.",
+          "status": "unmapped_or_unverified_candidate"
+        }
+      ]
+    }
+  ],
+  "reused_from": [
+    "data/core/subclasses/warrior_of_the_open_hand.json",
+    "reference/2024/classes/monk.json"
+  ],
+  "retained_runtime_seed": {
+    "id": "warrior_of_the_open_hand",
+    "name": "Warrior of the Open Hand",
+    "class_id": "monk",
+    "rules_status": "2024-partial",
+    "features_by_level": {
+      "3": [
+        {
+          "id": "monk_open_hand_technique",
+          "name": "Open Hand Technique",
+          "description": "After each Flurry of Blows hit, optionally Addle (no Opportunity Attacks until target turn start), Push up to 15 ft on a failed STR save, or Topple on a failed DEX save.",
+          "type": "passive",
+          "effects": [
+            {
+              "type": "hit_options",
+              "attack_tag": "flurry",
+              "dc_ability": "WIS",
+              "options": [
+                {
+                  "id": "addle",
+                  "name": "Addle",
+                  "operation": "grant_condition",
+                  "condition": "opportunity_attack_blocked",
+                  "expiry": "target_start"
+                },
+                {
+                  "id": "push",
+                  "name": "Push",
+                  "save": "STR",
+                  "operation": "push",
+                  "max_distance_feet": 15
+                },
+                {
+                  "id": "topple",
+                  "name": "Topple",
+                  "save": "DEX",
+                  "operation": "grant_condition",
+                  "condition": "prone"
+                }
+              ]
+            }
+          ],
+          "rules_source": "dnd-2024-srd-5.2.1",
+          "rules_status": "2024-supported",
+          "enabled": true
+        }
+      ]
+    }
+  },
+  "source_revision": "2a19eb1d (existing working-tree definitions and recovered drafts read on 2026-11-08)",
+  "reused_input_hashes": {
+    "data/core/subclasses/warrior_of_the_open_hand.json": "03af75a3ed070443355ca4c2ba23777deb4d0d0fc857dff54681fb9c29472dbc",
+    "reference/2024/classes/monk.json": "ecf9ddd17f17a7f6dcb66521708aabf5cecaefe43a4e620b356d2edf2ee53f4a"
+  }
+}

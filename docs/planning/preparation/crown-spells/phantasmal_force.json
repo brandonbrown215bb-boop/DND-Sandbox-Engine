@@ -1,0 +1,176 @@
+{
+  "format": "crown-spell-candidate/1",
+  "id": "phantasmal_force",
+  "name": "Phantasmal Force",
+  "level": 2,
+  "status": "written_unverified_not_loaded",
+  "source": {
+    "authority": "SRD 5.2.1",
+    "url": "https://media.dndbeyond.com/compendium-images/srd/5.2/SRD_CC_v5.2.1.pdf",
+    "sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      151,
+      152
+    ],
+    "header": {
+      "Casting Time": "Action",
+      "Range": "60 feet",
+      "Components": "V, S, M (a bit of fleece)",
+      "Duration": "Concentration, up to 1 minute"
+    },
+    "attribution": "System Reference Document 5.2.1, Wizards of the Coast LLC; CC BY 4.0."
+  },
+  "casting": {
+    "casting_time": "Action",
+    "kind": "action",
+    "seconds": null,
+    "ritual_available": false,
+    "range": {
+      "source": "60 feet",
+      "kind": "distance",
+      "feet": 60
+    },
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "a bit of fleece",
+    "duration": "Concentration, up to 1 minute",
+    "concentration": true,
+    "spell_lists": [
+      "bard",
+      "sorcerer",
+      "wizard"
+    ]
+  },
+  "authored_intent": "Seen creature INT save; 10-foot-cube illusory phenomenon perceived by target; Study Investigation disbelief; target rationalizes, phantom sensory details, 2d8 Psychic damage in source reach once each turn; damage matches perceived cause.",
+  "rules": [
+    {
+      "id": "r001",
+      "text": "You attempt to craft an illusion in the mind of a creature you can see within range."
+    },
+    {
+      "id": "r002",
+      "text": "The target makes an Intelligence saving throw."
+    },
+    {
+      "id": "r003",
+      "text": "On a failed save, you create a phantasmal object, creature, or other phenomenon that is no larger than a 10-foot Cube and that is perceivable only to the target for the duration."
+    },
+    {
+      "id": "r004",
+      "text": "The phantasm includes sound, temperature, and other stimuli."
+    },
+    {
+      "id": "r005",
+      "text": "The target can take a Study action to examine the phantasm with an Intelligence (Investigation) check against your spell save DC."
+    },
+    {
+      "id": "r006",
+      "text": "If the check succeeds, the target realizes that the phantasm is an illusion, and the spell ends."
+    },
+    {
+      "id": "r007",
+      "text": "While affected by the spell, the target treats the phantasm as if it were real and rationalizes any illogical outcomes from interacting with it."
+    },
+    {
+      "id": "r008",
+      "text": "For example, if the target steps through a phantasmal bridge and survives the fall, it believes the bridge exists and something else caused it to fall."
+    },
+    {
+      "id": "r009",
+      "text": "An affected target can even take damage from the illusion if the phantasm represents a dangerous creature or hazard."
+    },
+    {
+      "id": "r010",
+      "text": "On each of your turns, such a phantasm can deal 2d8 Psychic damage to the target if it is in the phantasm’s area or within 5 feet of the phantasm."
+    },
+    {
+      "id": "r011",
+      "text": "The target perceives the damage as a type appropriate to the illusion."
+    }
+  ],
+  "authored_operations": [
+    {
+      "operation": "create_target_only_phantasm",
+      "parameters": {
+        "target": "seen_creature",
+        "save": "INT",
+        "cube_feet_max": 10,
+        "multisensory": true,
+        "knowledge": "target_rationalizes_as_real",
+        "study": {
+          "action": "study",
+          "check": "INT_Investigation",
+          "dc": "caster_spell_dc",
+          "success": "end_spell"
+        },
+        "damage": {
+          "boundary": "each_caster_turn",
+          "if": "dangerous_phantasm_and_target_inside_or_within_5_feet",
+          "dice": "2d8",
+          "type": "psychic",
+          "perceived_type": "matches_phantasm"
+        }
+      },
+      "status": "authoring_declaration_not_a_registered_opcode",
+      "required_source_rules": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006",
+        "r007",
+        "r008",
+        "r009",
+        "r010",
+        "r011"
+      ]
+    }
+  ],
+  "runtime_draft": {
+    "origin": "proposed_operations",
+    "definition": null,
+    "fragments": {},
+    "coverage": "Unverified. Neither a full definition nor a fragment certifies all source rules or controls. Required extensions are not silently waived."
+  },
+  "required_extensions": [
+    {
+      "group": "illusions",
+      "requirement": "Represent exact appearance/senses/location, interactions and Study checks; retain observer-specific disbelief, permitted changes and real consequences.",
+      "spell_specific_intent": "Seen creature INT save; 10-foot-cube illusory phenomenon perceived by target; Study Investigation disbelief; target rationalizes, phantom sensory details, 2d8 Psychic damage in source reach once each turn; damage matches perceived cause.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006",
+        "r007",
+        "r008",
+        "r009",
+        "r010",
+        "r011"
+      ],
+      "existing_owner_to_reuse": "src/combat/combat_perception.gd",
+      "slice_references": "S-187/S-188/S-189/S-195",
+      "disposition": "requires_mapping_or_host_completion",
+      "note": "This is an authored handoff requirement, not a fresh runtime failure or claim that the whole referenced slice is missing."
+    }
+  ],
+  "audit": {
+    "source": "docs/audits/spells.md",
+    "batch": "088-7",
+    "production_definition_at_authoring": "res://data/core/spells/imported_spells.json#136",
+    "baseline_execution": "native",
+    "source_revision": "2a19eb1d",
+    "existing_conversion_label": "queued"
+  },
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile every source rule and required extension, then implement and verify through production paths before any deliberate promotion. Keep native behavior until covered."
+  }
+}

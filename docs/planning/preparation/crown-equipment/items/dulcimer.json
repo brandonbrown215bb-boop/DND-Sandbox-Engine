@@ -1,0 +1,68 @@
+{
+  "schema": "crown-equipment-candidate/1",
+  "id": "dulcimer",
+  "name": "Dulcimer",
+  "kind": "musical_instrument",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring intent only; not registered engine syntax.",
+  "rules": {
+    "authority": "SRD 5.2.1",
+    "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      93,
+      94
+    ],
+    "section": "Dulcimer",
+    "text": "Each instrument variant needs separate proficiency. Ability Charisma. Utilize: play a known tune (DC 10), or improvise a song (DC 15). Tool proficiency adds PB; also having the used skill proficiency grants Advantage. A Bard can use a Musical Instrument as a focus for Bard spells (Bard candidate owns permission).",
+    "source_context": "../source-pages.json"
+  },
+  "definition": {
+    "id": "dulcimer",
+    "name": "Dulcimer",
+    "ability": "charisma",
+    "weight_lb": 10,
+    "cost_gp": 25
+  },
+  "authored_operations": [
+    "Each instrument variant needs separate proficiency. Ability Charisma. Utilize: play a known tune (DC 10), or improvise a song (DC 15). Tool proficiency adds PB; also having the used skill proficiency grants Advantage. A Bard can use a Musical Instrument as a focus for Bard spells (Bard candidate owns permission)."
+  ],
+  "retained_runtime_seeds": [
+    {
+      "path": "data/core/items/srd_gear.json",
+      "array_index": 36,
+      "file_sha256": "ed873f9a0967f5bb6e20241428e4f53b92c011fa547321af69798ece822b57d4",
+      "definition": {
+        "id": "dulcimer",
+        "weight": 10,
+        "name": "Dulcimer",
+        "description": "A musical instrument. Bards can use it as a spellcasting focus.",
+        "type": "tool",
+        "effects": [],
+        "value": 25
+      }
+    }
+  ],
+  "manifest_overrides": [],
+  "required_mapping": [
+    "tools",
+    "focuses"
+  ],
+  "consumers": [
+    {
+      "choice_id": "chosen_musical_instrument"
+    },
+    {
+      "choice_id": "chosen_tool"
+    }
+  ],
+  "unsupported_behavior": [
+    {
+      "group": "tools",
+      "requirement": "Map exact variant proficiency, declared tool ability/DC, PB plus applicable skill Advantage and actual Utilize task outcomes. Do not use a generic +PB check as every tool action."
+    },
+    {
+      "group": "focuses",
+      "requirement": "Map class-owned focus permission, free hands, Material costs/consumption and Holy Symbol held/worn/borne forms. Staff is one exact copy with both Quarterstaff and focus roles; existing tool-only staff seeds do not provide the weapon role."
+    }
+  ]
+}

@@ -1635,6 +1635,8 @@ static func resolve_weapon_attack(attacker: Character, target_entity, weapon_dat
 	if not item_bonus.is_empty():
 		weapon_data["_item_weapon_bonus"] = item_bonus
 		if not bool(item_bonus.magical) and magic_weapon_bonus <= 0: weapon_data["magical"] = false
+	var ammunition_error := AmmunitionRules.commit(attacker, weapon_data)
+	if not ammunition_error.is_empty(): return {"success":false, "hit":false, "damage":0, "refused":true, "message":ammunition_error}
 	if SpellEffects.has_spell(target_entity, "sanctuary"):
 		var sanctuary_dc := _spell_effect_save_dc(target_entity, "sanctuary", attacker.get_spell_save_dc())
 		var sanctuary_save := int(attacker.saving_throw_test_to_dc("WIS", sanctuary_dc, false, false, reaction_decisions).get("total", 0))

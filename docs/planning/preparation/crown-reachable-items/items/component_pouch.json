@@ -1,0 +1,530 @@
+{
+  "schema": "crown-reachable-item-candidate/1",
+  "id": "component_pouch",
+  "name": "Component Pouch",
+  "kind": "gear",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring intent only; not registered engine syntax.",
+  "rules": {
+    "authority": "SRD 5.2.1",
+    "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      95,
+      97,
+      105,
+      106
+    ],
+    "text": "Watertight, compartmented pouch containing all free Material components of your spells. Can substitute for materials only when the spell neither consumes them nor specifies a cost. A hand must be free to access it; that hand may also perform Somatic components. Otherwise provide the exact required materials.",
+    "source_context": "../source-pages.json"
+  },
+  "definition": {
+    "id": "component_pouch",
+    "name": "Component Pouch",
+    "weight_lb": 2,
+    "cost_gp": 25,
+    "material_substitution": "unpriced_and_not_consumed"
+  },
+  "authored_operations": [
+    "Watertight, compartmented pouch containing all free Material components of your spells. Can substitute for materials only when the spell neither consumes them nor specifies a cost. A hand must be free to access it; that hand may also perform Somatic components. Otherwise provide the exact required materials."
+  ],
+  "retained_runtime_seeds": [
+    {
+      "path": "data/core/items/consumables.json",
+      "array_index": 6,
+      "file_sha256": "045f413d89391312c1e3a175351f90427accde8f21b8d087abc1d6c5d9c3ec2d",
+      "definition": {
+        "id": "component_pouch",
+        "weight": 2,
+        "name": "Component Pouch",
+        "description": "A pouch containing material components for spellcasting.",
+        "type": "tool",
+        "effects": [
+          {
+            "type": "spellcasting_focus"
+          }
+        ],
+        "value": 25
+      }
+    }
+  ],
+  "manifest_overrides": [],
+  "required_mapping": [
+    "components"
+  ],
+  "consumers": [
+    {
+      "channel": "spell_material",
+      "path": "docs/planning/preparation/crown-spells/aid.json",
+      "sha256": "7bef83de3ef3e53908ed9ab7a99c9647607944b11ea9580de02d9bc006db03eb",
+      "json_pointer": "/casting/material"
+    },
+    {
+      "channel": "spell_material",
+      "path": "docs/planning/preparation/crown-spells/alarm.json",
+      "sha256": "b352e225ab1ca9ffae0277ba92fa5d556246f95e3940c4e1672f66349a2588a6",
+      "json_pointer": "/casting/material"
+    },
+    {
+      "channel": "spell_material",
+      "path": "docs/planning/preparation/crown-spells/animal_friendship.json",
+      "sha256": "266f06738d4515d17c1f4a28806352bb5cfdf1c0e75a84188493eca2e5f3eb15",
+      "json_pointer": "/casting/material"
+    },
+    {
+      "channel": "spell_material",
+      "path": "docs/planning/preparation/crown-spells/animal_messenger.json",
+      "sha256": "f0ee92d96fcdcf2865f0d4acc8f670232c111c5f11ea355dd9188a08be8eab7b",
+      "json_pointer": "/casting/material"
+    },
+    {
+      "channel": "spell_material",
+      "path": "docs/planning/preparation/crown-spells/animate_dead.json",
+      "sha256": "45ad4be01f071ea803bd21741e9c96beaff51d4494599fa5d99b2be13cfa2327",
+      "json_pointer": "/casting/material"
+    },
+    {
+      "channel": "spell_material",
+      "path": "docs/planning/preparation/crown-spells/bane.json",
+      "sha256": "2ac330a8e6955b7899b1f320c8a371e8c64968aec40d3f68da214deada060fcd",
+      "json_pointer": "/casting/material"
+    },
+    {
+      "channel": "spell_material",
+      "path": "docs/planning/preparation/crown-spells/barkskin.json",
+      "sha256": "4f71c86c519af084e9d641f31b89379e3cf8814d9a4ca0f51adc8404a2e73233",
+      "json_pointer": "/casting/material"
+    },
+    {
+      "channel": "spell_material",
+      "path": "docs/planning/preparation/crown-spells/color_spray.json",
+      "sha256": "b125941b6a93f5bb9176e5cd15d246353c5b63dd15d08cbe14dcd5ec1903d06c",
+      "json_pointer": "/casting/material"
+    },
+    {
+      "channel": "spell_material",
+      "path": "docs/planning/preparation/crown-spells/comprehend_languages.json",
+      "sha256": "14c367acc46404b7630023d6ff9c2e89642d2dd5202922fb41abaf9788fbad5e",
+      "json_pointer": "/casting/material"
+    },
+    {
+      "channel": "spell_material",
+      "path": "docs/planning/preparation/crown-spells/create_or_destroy_water.json",
+      "sha256": "b817d98f908ba8b602c23e3579ce55e40395853ad1c6901706a9b2e4e30d3300",
+      "json_pointer": "/casting/material"
+    },
+    {
+      "channel": "spell_material",
+      "path": "docs/planning/preparation/crown-spells/dancing_lights.json",
+      "sha256": "c671457cb332ccc4745515d3a9498d59b06ab5b79b5e1432be2ee9e1c4479d98",
+      "json_pointer": "/casting/material"
+    },
+    {
+      "channel": "spell_material",
+      "path": "docs/planning/preparation/crown-spells/darkness.json",
+      "sha256": "7d8766409d9d37870587a465bf9dfa33544663f1e43811556e2fc067a71059bd",
+      "json_pointer": "/casting/material"
+    },
+    {
+      "channel": "spell_material",
+      "path": "docs/planning/preparation/crown-spells/darkvision.json",
+      "sha256": "1a14634f79fcac218226528ffa03a9c8f2937a82949406821aed280d6871b680",
+      "json_pointer": "/casting/material"
+    },
+    {
+      "channel": "spell_material",
+      "path": "docs/planning/preparation/crown-spells/detect_poison_and_disease.json",
+      "sha256": "2a4fe489ebec8031494a7d2c8940678728b31795cb3df73983edfb54211cbf47",
+      "json_pointer": "/casting/material"
+    },
+    {
+      "channel": "spell_material",
+      "path": "docs/planning/preparation/crown-spells/dragons_breath.json",
+      "sha256": "1a8cda4e05f81088e7ec007e7d472a552ef249381c563469bfb0fbf8f46f6044",
+      "json_pointer": "/casting/material"
+    },
+    {
+      "channel": "spell_material",
+      "path": "docs/planning/preparation/crown-spells/enhance_ability.json",
+      "sha256": "6be34d2eede0054d3406d1c949bc683d89b95f5f148c05629c676b744c599a9f",
+      "json_pointer": "/casting/material"
+    },
+    {
+      "channel": "spell_material",
+      "path": "docs/planning/preparation/crown-spells/enlarge-reduce.json",
+      "sha256": "8a5fe95a10d354cf4d812830b65da15636e136440bae3e6b67fef7a071721420",
+      "json_pointer": "/casting/material"
+    },
+    {
+      "channel": "spell_material",
+      "path": "docs/planning/preparation/crown-spells/false_life.json",
+      "sha256": "9fa3b6a3388bc9d2c48ad451b20f6432e615f576dad9d44edbce345e83764ea0",
+      "json_pointer": "/casting/material"
+    },
+    {
+      "channel": "spell_material",
+      "path": "docs/planning/preparation/crown-spells/fear.json",
+      "sha256": "21b561c5be0c948bfc8fe28ee247335d52d4af2861c81ad832f160db6b9ee6ae",
+      "json_pointer": "/casting/material"
+    },
+    {
+      "channel": "spell_material",
+      "path": "docs/planning/preparation/crown-spells/feather_fall.json",
+      "sha256": "7b5dfdc0ebf0e99a461b01deb4f17fbf1a26df3ce9927c734ec9bbad9bf5a43d",
+      "json_pointer": "/casting/material"
+    },
+    {
+      "channel": "spell_material",
+      "path": "docs/planning/preparation/crown-spells/fireball.json",
+      "sha256": "4e6b0ddef1c94651a711e557c9f3af0f19808d82aa85c207c88201cbbdbc0ac6",
+      "json_pointer": "/casting/material"
+    },
+    {
+      "channel": "spell_material",
+      "path": "docs/planning/preparation/crown-spells/flame_blade.json",
+      "sha256": "3c7b316e8eda6f4ef2cc3a67f3abcee2aa04d731ad764879bf81c6d25bdffb0c",
+      "json_pointer": "/casting/material"
+    },
+    {
+      "channel": "spell_material",
+      "path": "docs/planning/preparation/crown-spells/flaming_sphere.json",
+      "sha256": "0aa85b8c9d73ba00251eb41e1878277a90e2705acb4d3fa811aed81e8ba21672",
+      "json_pointer": "/casting/material"
+    },
+    {
+      "channel": "spell_material",
+      "path": "docs/planning/preparation/crown-spells/fly.json",
+      "sha256": "e65c63dc983e0d269f3389ede026cab9da340165c36c445bf1f28966683dac66",
+      "json_pointer": "/casting/material"
+    },
+    {
+      "channel": "spell_material",
+      "path": "docs/planning/preparation/crown-spells/gaseous_form.json",
+      "sha256": "818740b1a8a835f3bc3e53ad645e0d0fbc82153f55f2971fa2d40c8554d406cb",
+      "json_pointer": "/casting/material"
+    },
+    {
+      "channel": "spell_material",
+      "path": "docs/planning/preparation/crown-spells/goodberry.json",
+      "sha256": "9da8a7f1b1c7873779e9f1628bd68db59a3632b94c2dc5fbf949a779f6af8973",
+      "json_pointer": "/casting/material"
+    },
+    {
+      "channel": "spell_material",
+      "path": "docs/planning/preparation/crown-spells/grease.json",
+      "sha256": "76272f46d92c2e7e46144bdd912c3eeade8b3044f764590ae99be8b028a2b57c",
+      "json_pointer": "/casting/material"
+    },
+    {
+      "channel": "spell_material",
+      "path": "docs/planning/preparation/crown-spells/gust_of_wind.json",
+      "sha256": "286a90c631bdd266b5d197aa10d50ac7c4c466f3ee799307796ee89dd84435f1",
+      "json_pointer": "/casting/material"
+    },
+    {
+      "channel": "spell_material",
+      "path": "docs/planning/preparation/crown-spells/haste.json",
+      "sha256": "7c3f55e01c5ffdedba5a87b1688d39a3771a27649af27f339b7a920aebc9b177",
+      "json_pointer": "/casting/material"
+    },
+    {
+      "channel": "spell_material",
+      "path": "docs/planning/preparation/crown-spells/heat_metal.json",
+      "sha256": "4779166d84da4bbc6e35f70843cee1bba97b52ca9328a870988b02e2c449be9e",
+      "json_pointer": "/casting/material"
+    },
+    {
+      "channel": "spell_material",
+      "path": "docs/planning/preparation/crown-spells/hex.json",
+      "sha256": "75e61e8ba1c489b1a5ca1df1e218f5a657417b256fbbfc79f3b96a1100bb6b5a",
+      "json_pointer": "/casting/material"
+    },
+    {
+      "channel": "spell_material",
+      "path": "docs/planning/preparation/crown-spells/hold_person.json",
+      "sha256": "c197646cb0315735d2bb0a1d46e0fbf456adc85a42871cedc9eb0cade04f30e3",
+      "json_pointer": "/casting/material"
+    },
+    {
+      "channel": "spell_material",
+      "path": "docs/planning/preparation/crown-spells/hypnotic_pattern.json",
+      "sha256": "d73c3a4ca9b8b52be6e64637a420f21c9f0a193f08ce9d82344721e559e67ed0",
+      "json_pointer": "/casting/material"
+    },
+    {
+      "channel": "spell_material",
+      "path": "docs/planning/preparation/crown-spells/ice_knife.json",
+      "sha256": "7fee275f594e309e1456548faaa688588e8885b32ece31ba2fe01913e29594b2",
+      "json_pointer": "/casting/material"
+    },
+    {
+      "channel": "spell_material",
+      "path": "docs/planning/preparation/crown-spells/invisibility.json",
+      "sha256": "15362a5d2d1082a215e7612bcda681b0f3e76a79803b92876441188ee3d8af26",
+      "json_pointer": "/casting/material"
+    },
+    {
+      "channel": "spell_material",
+      "path": "docs/planning/preparation/crown-spells/jump.json",
+      "sha256": "78cbdd2aa004895c289bb78ab3f620d98ab25ba3cf9aff0a6225ddbf2eb76dda",
+      "json_pointer": "/casting/material"
+    },
+    {
+      "channel": "spell_material",
+      "path": "docs/planning/preparation/crown-spells/leomunds_tiny_hut.json",
+      "sha256": "c353723d829d5d4a86bd6425c52e1b64551f515bca959b70008b05d3be75edc6",
+      "json_pointer": "/casting/material"
+    },
+    {
+      "channel": "spell_material",
+      "path": "docs/planning/preparation/crown-spells/levitate.json",
+      "sha256": "f0e71415ab21cf0f1622b64012da0e45188c16236b46baa433c787595c89e2f8",
+      "json_pointer": "/casting/material"
+    },
+    {
+      "channel": "spell_material",
+      "path": "docs/planning/preparation/crown-spells/light.json",
+      "sha256": "70015f6a197ec0547df10e1cc77651b8af5a0d70e5d05c38ffb757388b2d2ad4",
+      "json_pointer": "/casting/material"
+    },
+    {
+      "channel": "spell_material",
+      "path": "docs/planning/preparation/crown-spells/lightning_bolt.json",
+      "sha256": "f223fc4bd8f0b7414d7355f30dc6f4c00c20dec22825a1ef8afbe522dcd942e0",
+      "json_pointer": "/casting/material"
+    },
+    {
+      "channel": "spell_material",
+      "path": "docs/planning/preparation/crown-spells/locate_animals_or_plants.json",
+      "sha256": "f0b2446736c2ee0f61330e56f028331526fd377ff4bd538ab1a15fbd188be009",
+      "json_pointer": "/casting/material"
+    },
+    {
+      "channel": "spell_material",
+      "path": "docs/planning/preparation/crown-spells/locate_object.json",
+      "sha256": "a7bf2a7dae794a1439a201a45a81fce351ed1d8ce2fc9ceebbfc731a8a564f47",
+      "json_pointer": "/casting/material"
+    },
+    {
+      "channel": "spell_material",
+      "path": "docs/planning/preparation/crown-spells/longstrider.json",
+      "sha256": "1d96c18f2499694dd2acb1ac1888807e85cecc56ad2736db21543b96d7ebf838",
+      "json_pointer": "/casting/material"
+    },
+    {
+      "channel": "spell_material",
+      "path": "docs/planning/preparation/crown-spells/mage_armor.json",
+      "sha256": "7000dd0a693e85a85b89fce171a672d067c921745bc42be4af7961f13f2fb414",
+      "json_pointer": "/casting/material"
+    },
+    {
+      "channel": "spell_material",
+      "path": "docs/planning/preparation/crown-spells/major_image.json",
+      "sha256": "25657e5788c88de10c10d7b9c76197349e75128d78dabcf0b4db3983471463af",
+      "json_pointer": "/casting/material"
+    },
+    {
+      "channel": "spell_material",
+      "path": "docs/planning/preparation/crown-spells/melfs_acid_arrow.json",
+      "sha256": "dfda29f1c19d38aa6d00dc70b1b94bd0654b497710edf83d8696c4d24615b277",
+      "json_pointer": "/casting/material"
+    },
+    {
+      "channel": "spell_material",
+      "path": "docs/planning/preparation/crown-spells/mending.json",
+      "sha256": "5618d825311903bd83b05f686745e0f26ebb5a66498fe10a8e9189abb9f6fdb1",
+      "json_pointer": "/casting/material"
+    },
+    {
+      "channel": "spell_material",
+      "path": "docs/planning/preparation/crown-spells/message.json",
+      "sha256": "d3a52f6872b77acf4567f25e2c7087471c5e7b9ee85db210f4021725c58f48bc",
+      "json_pointer": "/casting/material"
+    },
+    {
+      "channel": "spell_material",
+      "path": "docs/planning/preparation/crown-spells/minor_illusion.json",
+      "sha256": "0e53cdf1e7738af8a620082fbf5bacea1b02f266d388e9b9902d30e119eb2d07",
+      "json_pointer": "/casting/material"
+    },
+    {
+      "channel": "spell_material",
+      "path": "docs/planning/preparation/crown-spells/moonbeam.json",
+      "sha256": "6c20e2d9c129fff88cd1875b9b8881bc6fb73ff14389228a09fe17df4ab97fcc",
+      "json_pointer": "/casting/material"
+    },
+    {
+      "channel": "spell_material",
+      "path": "docs/planning/preparation/crown-spells/nystuls_magic_aura.json",
+      "sha256": "1fd413d3a06d1c48a811249d7cf2c54c0157092896b042f2f642d14300f703eb",
+      "json_pointer": "/casting/material"
+    },
+    {
+      "channel": "spell_material",
+      "path": "docs/planning/preparation/crown-spells/pass_without_trace.json",
+      "sha256": "1786bdfb114f0035f75b3779ce9896cfec33103b63f54e976bad33e66483fdfb",
+      "json_pointer": "/casting/material"
+    },
+    {
+      "channel": "spell_material",
+      "path": "docs/planning/preparation/crown-spells/phantasmal_force.json",
+      "sha256": "c4ef12b50420d4c64fe1ac9061e79b0886d1dd58014fa5bc26accf334000189f",
+      "json_pointer": "/casting/material"
+    },
+    {
+      "channel": "spell_material",
+      "path": "docs/planning/preparation/crown-spells/rope_trick.json",
+      "sha256": "37ec73b5f015e4ff0674c727ff25fab249c85e34342a4b1a662ed6dd0b2ff995",
+      "json_pointer": "/casting/material"
+    },
+    {
+      "channel": "spell_material",
+      "path": "docs/planning/preparation/crown-spells/sanctuary.json",
+      "sha256": "5626562681a3e17af53df790ea2e54f8afc0d390dbea1bb4ca6f679c383f5c32",
+      "json_pointer": "/casting/material"
+    },
+    {
+      "channel": "spell_material",
+      "path": "docs/planning/preparation/crown-spells/see_invisibility.json",
+      "sha256": "1ca5b190438632018f3df5c4fdea7af66566da1ba411474db2419e864c67764f",
+      "json_pointer": "/casting/material"
+    },
+    {
+      "channel": "spell_material",
+      "path": "docs/planning/preparation/crown-spells/sending.json",
+      "sha256": "aee6e7ba45757fae2395532d708ab1b0abc03b24b7d09c530af92a71edd6704d",
+      "json_pointer": "/casting/material"
+    },
+    {
+      "channel": "spell_material",
+      "path": "docs/planning/preparation/crown-spells/shatter.json",
+      "sha256": "8e9a3ba4999f794eb4af66b7cfee9b1271dec6521512933f6050a7529ea27ca4",
+      "json_pointer": "/casting/material"
+    },
+    {
+      "channel": "spell_material",
+      "path": "docs/planning/preparation/crown-spells/shield_of_faith.json",
+      "sha256": "0e1867678dd5b3d0d77ac54d4d1f81ac05f386e77ba720328f53bef7731cdbdf",
+      "json_pointer": "/casting/material"
+    },
+    {
+      "channel": "spell_material",
+      "path": "docs/planning/preparation/crown-spells/shillelagh.json",
+      "sha256": "2b66d43cd3db7257272462e25abe0e7593c650a3750418bd9945abd6b7b96dbb",
+      "json_pointer": "/casting/material"
+    },
+    {
+      "channel": "spell_material",
+      "path": "docs/planning/preparation/crown-spells/silent_image.json",
+      "sha256": "859445bf1619aae8f3f1e95359a37823ac1e53e6f3a4a5af6feb66ccfdb77093",
+      "json_pointer": "/casting/material"
+    },
+    {
+      "channel": "spell_material",
+      "path": "docs/planning/preparation/crown-spells/sleep.json",
+      "sha256": "af1c8364ea3c7ef31773d5ff741b4125536f033bb1d762b69c28ce6e37ae9d37",
+      "json_pointer": "/casting/material"
+    },
+    {
+      "channel": "spell_material",
+      "path": "docs/planning/preparation/crown-spells/sleet_storm.json",
+      "sha256": "601668eec5f66791bf3ad1a9cbb4b78d264e96c4c76987757e5d754ab4bf6eb9",
+      "json_pointer": "/casting/material"
+    },
+    {
+      "channel": "spell_material",
+      "path": "docs/planning/preparation/crown-spells/slow.json",
+      "sha256": "7b1dee5080596484f0a68c396a48ef61eaef3333c413027a4bf702d57b795f4c",
+      "json_pointer": "/casting/material"
+    },
+    {
+      "channel": "spell_material",
+      "path": "docs/planning/preparation/crown-spells/speak_with_dead.json",
+      "sha256": "76e6b983ef71be1e5c160971332745757f5370cf6c5a04c4e742ef28890deca3",
+      "json_pointer": "/casting/material"
+    },
+    {
+      "channel": "spell_material",
+      "path": "docs/planning/preparation/crown-spells/spider_climb.json",
+      "sha256": "97fcced371226d8b2cf4cef59d2b8c52ae1edcbf6e32afdd363ee25b5d360d0b",
+      "json_pointer": "/casting/material"
+    },
+    {
+      "channel": "spell_material",
+      "path": "docs/planning/preparation/crown-spells/spike_growth.json",
+      "sha256": "2f532626c82d8459b613d79be67c6a22cdd0b8217ff731d937ecffc9c540f623",
+      "json_pointer": "/casting/material"
+    },
+    {
+      "channel": "spell_material",
+      "path": "docs/planning/preparation/crown-spells/spirit_guardians.json",
+      "sha256": "b28de2cc28a38bb4de9faeb8468888c9030abe2720b6a6bfd549354c6871ec61",
+      "json_pointer": "/casting/material"
+    },
+    {
+      "channel": "spell_material",
+      "path": "docs/planning/preparation/crown-spells/stinking_cloud.json",
+      "sha256": "3df8a846f3be3a39706781f6ac8183be13ff41cfbedd1cba02faedf375325b66",
+      "json_pointer": "/casting/material"
+    },
+    {
+      "channel": "spell_material",
+      "path": "docs/planning/preparation/crown-spells/suggestion.json",
+      "sha256": "d4e12f5f061059391a99bfc183d4db9097f07feafa3882392c297171ab8e7407",
+      "json_pointer": "/casting/material"
+    },
+    {
+      "channel": "spell_material",
+      "path": "docs/planning/preparation/crown-spells/tashas_hideous_laughter.json",
+      "sha256": "12ff91e91c886e7eb6c8b3ea4228669f946bffd8c074048a86ea13e8868ca45a",
+      "json_pointer": "/casting/material"
+    },
+    {
+      "channel": "spell_material",
+      "path": "docs/planning/preparation/crown-spells/tensers_floating_disk.json",
+      "sha256": "1da1b306e84110d1186fac4c4ca127fd3fb36a3d7d98eb14dc3e513a4ebf7ca3",
+      "json_pointer": "/casting/material"
+    },
+    {
+      "channel": "spell_material",
+      "path": "docs/planning/preparation/crown-spells/tongues.json",
+      "sha256": "bc9737770fcde559f51509d5bfff35e7bc33459be21c4f5d8841ef4c0e17f7ac",
+      "json_pointer": "/casting/material"
+    },
+    {
+      "channel": "spell_material",
+      "path": "docs/planning/preparation/crown-spells/unseen_servant.json",
+      "sha256": "9d06826f722ddaa4cb7addc33b79b513d17ccfee42ece996395fba84d81beb9d",
+      "json_pointer": "/casting/material"
+    },
+    {
+      "channel": "spell_material",
+      "path": "docs/planning/preparation/crown-spells/water_breathing.json",
+      "sha256": "4ac3c84e1820eb42f8f02c8f4f579b049747aeed43e6f224621b1622b3c97741",
+      "json_pointer": "/casting/material"
+    },
+    {
+      "channel": "spell_material",
+      "path": "docs/planning/preparation/crown-spells/water_walk.json",
+      "sha256": "4ba4e5abb2af3645f331cca151a3693af83ab37d16ac62b027f8f5fad0f9397f",
+      "json_pointer": "/casting/material"
+    },
+    {
+      "channel": "spell_material",
+      "path": "docs/planning/preparation/crown-spells/web.json",
+      "sha256": "b13df0249566d2abc8b8895dc9979e577810cb3ae2b719512c1008de6d9c44d2",
+      "json_pointer": "/casting/material"
+    },
+    {
+      "channel": "spell_material",
+      "path": "docs/planning/preparation/crown-spells/wind_wall.json",
+      "sha256": "cdc68a14191e01c2c1d91f76b9b29cceb2d05654910f28f26afa257f8dec8b1a",
+      "json_pointer": "/casting/material"
+    }
+  ],
+  "unsupported_behavior": [
+    {
+      "group": "components",
+      "requirement": "Map exact form, minimum worth and consumption per original cast, including rituals and paid/cancelled/Ready continuations. Do not equate shop price with component worth; consumed or priced components cannot be replaced with a generic focus/pouch."
+    }
+  ]
+}

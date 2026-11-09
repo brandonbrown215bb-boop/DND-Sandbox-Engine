@@ -386,6 +386,8 @@ func _validate_save_data(data: Dictionary) -> String:
 			if not familiar_error.is_empty(): return familiar_error
 			var steed_error := PaladinRules.saved_steed_error(character_data)
 			if not steed_error.is_empty(): return steed_error
+			var ammo_error := AmmunitionRules.saved_error(character_data, saved_campaign_seconds)
+			if not ammo_error.is_empty(): return ammo_error
 			var inventory_error := InventoryCopies.saved_error(character_data.get("inventory", {}))
 			if not inventory_error.is_empty(): return inventory_error
 			var fighter_error := FighterRules.saved_training_error(character_data)
@@ -592,6 +594,8 @@ func _validate_party_data(data: Dictionary, campaign_seconds: int = 0) -> String
 		if not familiar_error.is_empty(): return familiar_error
 		var steed_error := PaladinRules.saved_steed_error(character_data)
 		if not steed_error.is_empty(): return steed_error
+		var ammo_error := AmmunitionRules.saved_error(character_data, campaign_seconds)
+		if not ammo_error.is_empty(): return ammo_error
 		var inventory_error := InventoryCopies.saved_error(character_data.get("inventory", {}))
 		if not inventory_error.is_empty(): return inventory_error
 		var fighter_error := FighterRules.saved_training_error(character_data)

@@ -1,0 +1,157 @@
+{
+  "schema": "crown-character-candidate/1",
+  "id": "evoker",
+  "name": "Evoker",
+  "kind": "subclass",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "scope": {
+    "total_character_level_maximum": 5
+  },
+  "operation_language": "authoring intent only; not registered engine syntax",
+  "runtime_support": "Retained definitions are reuse material, not proof of full rules. Every authored operation needs contract mapping and later production-path verification before promotion.",
+  "class_id": "wizard",
+  "class_level": 3,
+  "features": [
+    {
+      "id": "evoker_evocation_savant",
+      "name": "Evocation Savant",
+      "class_level": 3,
+      "rules": {
+        "authority": "SRD 5.2.1",
+        "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+        "pages": [
+          82
+        ],
+        "text": "Level 3: Evocation Savant\nChoose two Wizard spells from the Evocation\nschool, each of which must be no higher than level 2,\nand add them to your spellbook for free.\nIn addition, whenever you gain access to a new\nlevel of spell slots in this class, you can add one Wizard spell from the Evocation school to your spellbook for free. The chosen spell must be of a level for\nwhich you have spell slots."
+      },
+      "revised_reference_entries": [
+        "Choose two {@filter Wizard spells from the Evocation school|spells|level=0;1;2|class=Wizard|school=V}, each of which must be no higher than level 2, and add them to your spellbook for free.",
+        "In addition, whenever you gain access to a new level of spell slots in this class, you can add one Wizard spell from the Evocation school to your spellbook for free. The chosen spell must be of a level for which you have spell slots."
+      ],
+      "authored_operations": [
+        {
+          "trigger": "Evoker3; later new Wizard slot-level access",
+          "cost": "none",
+          "effects": [
+            "At3 add two Wizard Evocation spells level<=2 to book free",
+            "On later new Wizard slot level add one eligible Wizard Evocation spell free; Crown level5 unlocks level3",
+            "Separate from two normal level-up book additions"
+          ],
+          "ending_and_identity": "Exact source owns the grant/state; remove temporary effects at the declared ending; never replay acquisition on restore.",
+          "required_extension_groups": [
+            "choices",
+            "casting"
+          ]
+        }
+      ],
+      "unsupported_behavior": [
+        {
+          "groups": [
+            "choices",
+            "casting"
+          ],
+          "requirement": {
+            "trigger": "Evoker3; later new Wizard slot-level access",
+            "cost": "none",
+            "effects": [
+              "At3 add two Wizard Evocation spells level<=2 to book free",
+              "On later new Wizard slot level add one eligible Wizard Evocation spell free; Crown level5 unlocks level3",
+              "Separate from two normal level-up book additions"
+            ],
+            "ending": "Exact source owns the grant/state; remove temporary effects at the declared ending; never replay acquisition on restore."
+          },
+          "mapping_boundary": "Map this complete sequence to shared contracts; retained native behavior and fragments do not certify it.",
+          "status": "unmapped_or_unverified_candidate"
+        }
+      ]
+    },
+    {
+      "id": "evoker_potent_cantrip",
+      "name": "Potent Cantrip",
+      "class_level": 3,
+      "rules": {
+        "authority": "SRD 5.2.1",
+        "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+        "pages": [
+          82
+        ],
+        "text": "Level 3: Potent Cantrip\nYour damaging cantrips affect even creatures that\navoid the brunt of the effect. When you cast a cantrip at a creature and you miss with the attack roll\nor the target succeeds on a saving throw against the\ncantrip, the target takes half the cantrip’s damage\n(if any) but suffers no additional effect from the\ncantrip."
+      },
+      "revised_reference_entries": [
+        "Your damaging cantrips affect even creatures that avoid the brunt of the effect. When you cast a cantrip at a creature and you miss with the attack roll or the target succeeds on a saving throw against the cantrip, the target takes half the cantrip's damage (if any) but suffers no additional effect from the cantrip."
+      ],
+      "authored_operations": [
+        {
+          "trigger": "Damaging cantrip misses creature OR creature succeeds save",
+          "cost": "none",
+          "effects": [
+            "Deal half cantrip damage if any; no additional cantrip effect; preserve exact damage roll, target and settlement"
+          ],
+          "ending_and_identity": "Exact source owns the grant/state; remove temporary effects at the declared ending; never replay acquisition on restore.",
+          "required_extension_groups": [
+            "casting",
+            "rolls"
+          ]
+        }
+      ],
+      "unsupported_behavior": [
+        {
+          "groups": [
+            "casting",
+            "rolls"
+          ],
+          "requirement": {
+            "trigger": "Damaging cantrip misses creature OR creature succeeds save",
+            "cost": "none",
+            "effects": [
+              "Deal half cantrip damage if any; no additional cantrip effect; preserve exact damage roll, target and settlement"
+            ],
+            "ending": "Exact source owns the grant/state; remove temporary effects at the declared ending; never replay acquisition on restore."
+          },
+          "mapping_boundary": "Map this complete sequence to shared contracts; retained native behavior and fragments do not certify it.",
+          "status": "unmapped_or_unverified_candidate"
+        }
+      ]
+    }
+  ],
+  "reused_from": [
+    "_staging/subclass-staging/staged/evoker.json",
+    "reference/2024/classes/wizard.json"
+  ],
+  "retained_runtime_seed": {
+    "id": "evoker",
+    "name": "Evoker",
+    "class_id": "wizard",
+    "rights": "srd_ok",
+    "rules_status": "2024-partial",
+    "features_by_level": {
+      "3": [
+        {
+          "id": "evoker_evocation_savant",
+          "name": "Evocation Savant",
+          "description": "Choose two school, each of which must be no higher than level 2, and add them to your spellbook for free. In addition, whenever you gain access to a new level of spell slots in this class, you can add one Wizard spell from the Evocation school to your spellbook for free. The cho…",
+          "type": "passive",
+          "effects": [],
+          "rules_source": "dnd-2024-srd-5.2.1",
+          "rules_status": "reference-only",
+          "enabled": false
+        },
+        {
+          "id": "evoker_potent_cantrip",
+          "name": "Potent Cantrip",
+          "description": "Your damaging cantrips affect even creatures that avoid the brunt of the effect. When you cast a cantrip at a creature and you miss with the attack roll or the target succeeds on a saving throw against the cantrip, the…",
+          "type": "passive",
+          "effects": [],
+          "rules_source": "dnd-2024-srd-5.2.1",
+          "rules_status": "reference-only",
+          "enabled": false
+        }
+      ]
+    }
+  },
+  "source_revision": "2a19eb1d (existing working-tree definitions and recovered drafts read on 2026-11-08)",
+  "reused_input_hashes": {
+    "_staging/subclass-staging/staged/evoker.json": "483e50a3d9d1457e5fdf5314fc01fff2ff62878a3c4e6063f995c2d604170bcb",
+    "reference/2024/classes/wizard.json": "36656050434de5afb28f57ac3c0c75f6710034230368ab8b37109983b588aa31"
+  }
+}

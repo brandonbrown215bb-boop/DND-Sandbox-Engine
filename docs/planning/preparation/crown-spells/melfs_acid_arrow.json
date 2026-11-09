@@ -1,0 +1,147 @@
+{
+  "format": "crown-spell-candidate/1",
+  "id": "melfs_acid_arrow",
+  "name": "Acid Arrow",
+  "level": 2,
+  "status": "written_unverified_not_loaded",
+  "source": {
+    "authority": "SRD 5.2.1",
+    "url": "https://media.dndbeyond.com/compendium-images/srd/5.2/SRD_CC_v5.2.1.pdf",
+    "sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      107
+    ],
+    "header": {
+      "Casting Time": "Action",
+      "Range": "90 feet",
+      "Components": "V, S, M (powdered rhubarb leaf)",
+      "Duration": "Instantaneous"
+    },
+    "attribution": "System Reference Document 5.2.1, Wizards of the Coast LLC; CC BY 4.0."
+  },
+  "casting": {
+    "casting_time": "Action",
+    "kind": "action",
+    "seconds": null,
+    "ritual_available": false,
+    "range": {
+      "source": "90 feet",
+      "kind": "distance",
+      "feet": 90
+    },
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "powdered rhubarb leaf",
+    "duration": "Instantaneous",
+    "concentration": false,
+    "spell_lists": [
+      "wizard"
+    ]
+  },
+  "authored_intent": "Ranged spell attack; initial Acid and target-next-turn-end Acid on hit; miss only half initial; higher slots scale both amounts; delayed component cannot repeat initial payment.",
+  "rules": [
+    {
+      "id": "r001",
+      "text": "A shimmering green arrow streaks toward a target within range and bursts in a spray of acid."
+    },
+    {
+      "id": "r002",
+      "text": "Make a ranged spell attack against the target."
+    },
+    {
+      "id": "r003",
+      "text": "On a hit, the target takes 4d4 Acid damage and 2d4 Acid damage at the end of its next turn."
+    },
+    {
+      "id": "r004",
+      "text": "On a miss, the arrow splashes the target with acid for half as much of the initial damage only."
+    },
+    {
+      "id": "r005",
+      "text": "Using a Higher-Level Spell Slot."
+    },
+    {
+      "id": "r006",
+      "text": "The damage (both initial and later) increases by 1d4 for each spell slot level above 2."
+    }
+  ],
+  "authored_operations": [
+    {
+      "operation": "shared_definition_reference",
+      "parameters": {
+        "definition": "runtime_draft.definition"
+      },
+      "status": "shared_definition_reference_unverified",
+      "required_source_rules": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006"
+      ]
+    }
+  ],
+  "runtime_draft": {
+    "origin": "existing_shared_definition",
+    "definition": {
+      "attack_type": "ranged_spell",
+      "casting_time": "action",
+      "classes": [
+        "wizard"
+      ],
+      "components": [
+        "V",
+        "S",
+        "M"
+      ],
+      "concentration": false,
+      "damage": "4d4",
+      "damage_scale_by_outcome": {
+        "hit": 1.0,
+        "miss": 0.5
+      },
+      "damage_type": "acid",
+      "delayed_damage": {
+        "damage": "2d4",
+        "damage_type": "acid",
+        "trigger": "end_of_target_next_turn"
+      },
+      "description": "A shimmering green arrow streaks toward a target within range and bursts in a spray of acid. Make a ranged spell attack against the target. On a hit, the target takes 4d4 Acid damage and 2d4 Acid damage at the end of its next turn. On a miss, the arrow splashes the target with acid for half as much of the initial damage only. Using a Higher-Level Spell Slot. The damage (both initial and later) increases by 1d4 for each spell slot level above 2.",
+      "duration": "Instantaneous",
+      "execution": "shared",
+      "id": "melfs_acid_arrow",
+      "level": 2,
+      "material": "powdered rhubarb leaf",
+      "name": "Acid Arrow",
+      "range": 18,
+      "rules_source": "SRD 5.2.1",
+      "rules_status": "authoring-draft-unverified",
+      "school": "evocation",
+      "target": "single",
+      "upcast": {
+        "damage_per_level": "1d4",
+        "starting_level": 2.0
+      }
+    },
+    "fragments": {},
+    "coverage": "Unverified. Neither a full definition nor a fragment certifies all source rules or controls. Required extensions are not silently waived."
+  },
+  "required_extensions": [],
+  "audit": {
+    "source": "docs/audits/spells.md",
+    "batch": "088-2",
+    "production_definition_at_authoring": "res://data/core/spells/crown_sc_03_support_04.json#1",
+    "baseline_execution": "shared",
+    "source_revision": "2a19eb1d",
+    "existing_conversion_label": "converted"
+  },
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile every source rule and required extension, then implement and verify through production paths before any deliberate promotion. Keep native behavior until covered."
+  }
+}

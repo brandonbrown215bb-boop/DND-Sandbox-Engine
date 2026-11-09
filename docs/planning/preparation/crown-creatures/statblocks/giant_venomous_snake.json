@@ -1,0 +1,148 @@
+{
+  "schema": "crown-creature-candidate/1",
+  "id": "srd_giant_venomous_snake",
+  "name": "Giant Venomous Snake",
+  "kind": "srd_statblock",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring intent only; not registered engine syntax. Mapping requirements do not assert the whole referenced engine slice is absent.",
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile all source clauses, mappings and source differences before later production-path verification. Keep native paths until replacements cover them."
+  },
+  "source": {
+    "authority": "SRD 5.2.1",
+    "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      354
+    ],
+    "text": "Giant Venomous Snake\nMedium Beast, Unaligned\nAC 14 Initiative +4 (14)\nHP 11 (2d8 + 2)\nSpeed 40 ft., Swim 40 ft.\nMOD SAVE MOD SAVE MOD SAVE\nStr 10 +0 +0 Dex 18 +4 +4 Con 13 +1 +1\nInt 2 −4 −4 WIS 10 +0 +0 Cha 3 −4 −4\nSkills Perception +2\nSenses Blindsight 10 ft.; Passive Perception 12\nLanguages None\nCR 1/4 (XP 50; PB +2)\nActions\nBite. Melee Attack Roll: +6, reach 10 ft. Hit: 6 (1d4 + 4)\nPiercing damage plus 4 (1d8) Poison damage.",
+    "transcription": "Two-column extraction; line breaks retained. Whole selected page context is in source-pages.json. No stat correction inferred from donor data."
+  },
+  "statistics": {
+    "identity_line": "Medium Beast, Unaligned",
+    "AC": "14 Initiative +4 (14)",
+    "HP": "11 (2d8 + 2)",
+    "Speed": "40 ft., Swim 40 ft.",
+    "Skills": "Perception +2",
+    "Senses": "Blindsight 10 ft.; Passive Perception 12",
+    "Languages": "None",
+    "CR": "1/4 (XP 50; PB +2)",
+    "ability_scores": {
+      "STR": 10,
+      "DEX": 18,
+      "CON": 13,
+      "INT": 2,
+      "WIS": 10,
+      "CHA": 3
+    },
+    "saving_throw_modifiers": {
+      "STR": 0,
+      "DEX": 4,
+      "CON": 1,
+      "INT": -4,
+      "WIS": 0,
+      "CHA": -4
+    },
+    "initiative_modifier": 4,
+    "initiative_score_printed": 14,
+    "armor_class": 14,
+    "movement_feet": {
+      "walk": 40,
+      "swim": 40
+    }
+  },
+  "authored_operations": [
+    {
+      "key": "b001",
+      "name": "Bite",
+      "source_section": "Actions",
+      "full_rule": "Bite. Melee Attack Roll: +6, reach 10 ft. Hit: 6 (1d4 + 4)\nPiercing damage plus 4 (1d8) Poison damage.",
+      "budget": "action",
+      "steps": [
+        {
+          "intent": "Resolve declared roll or save, targets, range/reach, damage packets, multiattack choice, riders and exact action budget. A save-only action is not a weapon hit rider.",
+          "mapping_group": "attacks"
+        }
+      ],
+      "parameters_from_rule": {
+        "attack_bonus": [
+          6
+        ],
+        "save_dc": [],
+        "distances_feet": [
+          10
+        ],
+        "dice": [
+          "1d4 + 4",
+          "1d8"
+        ]
+      },
+      "blockers": [
+        "map_attacks"
+      ],
+      "ending_and_identity": "Exact actor/action/target/source instance; use every qualifier and ending in full_rule, not only extracted parameters.",
+      "behavior_plan": {
+        "budget": "action",
+        "source_outcomes": {
+          "hit": "6 (1d4 + 4) Piercing damage plus 4 (1d8) Poison damage."
+        },
+        "resolution": "attack_roll",
+        "attack_kind": "melee",
+        "damage_and_riders": "6 (1d4 + 4) Piercing damage plus 4 (1d8) Poison damage.",
+        "permission": "ordinary familiar cannot attack; invocation exceptions must grant this exact attack or Attack action, not every Actions entry"
+      }
+    }
+  ],
+  "retained_definitions": [
+    {
+      "path": "data/core/monsters/imported_monsters.json",
+      "sha256": "f57bee1e93f185a89575bed3d8b2b610b53cfd3b7f2eb56448d1dd64a0126c5f",
+      "pointer": "/174",
+      "payload": {
+        "id": "giant_poisonous_snake",
+        "name": "Giant Poisonous Snake",
+        "hit_points": "2d8 + 2",
+        "armor_class": 14,
+        "speed": 6,
+        "ability_scores": {
+          "STR": 10,
+          "DEX": 18,
+          "CON": 13,
+          "INT": 2,
+          "WIS": 10,
+          "CHA": 3
+        },
+        "attacks": [
+          {
+            "name": "Claws",
+            "ability": "STR",
+            "damage": "1d6",
+            "range": 1,
+            "damage_type": "slashing"
+          }
+        ],
+        "ai_behavior": "aggressive"
+      },
+      "manifest_declarations": []
+    }
+  ],
+  "selection": {
+    "wild_shape_druid_levels_2_3": true,
+    "wild_shape_druid_levels_4_5": true,
+    "normal_familiar": false,
+    "pact_of_chain_special": false,
+    "animate_dead_output": false,
+    "held_swarm": false,
+    "encounter_comparison_only": false
+  },
+  "acquisition_links": [
+    "selection-links.json"
+  ],
+  "blockers": [
+    "map_statistics",
+    "map_attacks"
+  ],
+  "source_reconciliation": "Official body is authoritative for this SRD candidate. Retained donor payloads are comparison/reuse seeds, including legacy values and manifest winners; do not merge their statistics or traits by ID. Direct Crown encounters retain separate candidates.",
+  "equipment_links": []
+}

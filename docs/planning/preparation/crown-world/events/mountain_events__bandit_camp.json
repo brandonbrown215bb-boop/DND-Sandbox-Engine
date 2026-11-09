@@ -1,0 +1,111 @@
+{
+  "schema": "crown-world-candidate/1",
+  "id": "mountain_events__bandit_camp",
+  "name": "Bandit Camp",
+  "kind": "events",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring declarations only; not registered engine opcodes.",
+  "required_extensions": [
+    "discovery",
+    "objectives_rewards"
+  ],
+  "authored_operations": [
+    {
+      "operation": "settle_ordered_branch",
+      "seed_pointer": "/choices/0/effects",
+      "effects": [
+        {
+          "type": "start_combat",
+          "monsters": [
+            "bandit",
+            "bandit",
+            "bandit"
+          ]
+        }
+      ],
+      "condition": null,
+      "requirement": "Retain order, exact quantities/formulas, recipient, costs, branch descriptions and occurrence identity; no repeated payment when a child resumes."
+    },
+    {
+      "operation": "resolve_authored_check",
+      "seed_pointer": "/choices/1/check",
+      "check": {
+        "ability": "DEX",
+        "skill": "Stealth",
+        "familiar_help_allowed": true,
+        "dc": 12
+      },
+      "requirement": "Keep ability, skill/context, DC and optional familiar Help exactly. Choose actor and actual context; settle one branch once; never silently convert an ability check into a saving throw."
+    },
+    {
+      "operation": "settle_ordered_branch",
+      "seed_pointer": "/choices/1/failure/effects",
+      "effects": [
+        {
+          "type": "start_combat",
+          "monsters": [
+            "bandit",
+            "bandit"
+          ]
+        }
+      ],
+      "condition": null,
+      "requirement": "Retain order, exact quantities/formulas, recipient, costs, branch descriptions and occurrence identity; no repeated payment when a child resumes."
+    }
+  ],
+  "blockers": [],
+  "retained_input": {
+    "path": "data/core/events/mountain_events.json",
+    "sha256": "28c24bea91c714a4c49e7c7b6358adf5dea15b8f06d69dca29ef79542f0a6fd3",
+    "pointer": "/events/3",
+    "payload": {
+      "id": "bandit_camp",
+      "name": "Bandit Camp",
+      "weight": 20,
+      "description": "Smoke rises from behind a rocky outcrop. You've stumbled upon a bandit hideout!",
+      "type": "choice",
+      "choices": [
+        {
+          "text": "Attack the camp",
+          "effects": [
+            {
+              "type": "start_combat",
+              "monsters": [
+                "bandit",
+                "bandit",
+                "bandit"
+              ]
+            }
+          ]
+        },
+        {
+          "text": "Sneak around",
+          "check": {
+            "ability": "DEX",
+            "skill": "Stealth",
+            "familiar_help_allowed": true,
+            "dc": 12
+          },
+          "success": {
+            "description": "You slip past undetected."
+          },
+          "failure": {
+            "description": "A bandit spots you! 'Intruder!' they cry.",
+            "effects": [
+              {
+                "type": "start_combat",
+                "monsters": [
+                  "bandit",
+                  "bandit"
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "authority": "Custom Crown campaign event, not an SRD trap/NPC/spell replacement",
+  "table_id": "mountain_events",
+  "occurrence_policy": "Table may roll again; same in-flight occurrence must not reroll/reapply on reopen. Campaign-specific uniqueness beyond generated room claims is unresolved, not silently global once-per-event-ID."
+}

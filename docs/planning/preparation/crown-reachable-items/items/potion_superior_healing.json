@@ -1,0 +1,109 @@
+{
+  "schema": "crown-reachable-item-candidate/1",
+  "id": "potion_superior_healing",
+  "name": "Potion of Superior Healing",
+  "kind": "potion",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring intent only; not registered engine syntax.",
+  "rules": {
+    "authority": "SRD 5.2.1",
+    "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      99,
+      204,
+      206,
+      236
+    ],
+    "text": "Regain 8d4 + 8 Hit Points when drinking. Rarity rare; red liquid glimmers when agitated. A typical potion is 1 ounce in a vial. Drinking or administering requires a Bonus Action; immediate effect uses up the potion. Potion-mixing rules/table on p.204 apply when selected.",
+    "source_context": "../source-pages.json"
+  },
+  "definition": {
+    "id": "potion_superior_healing",
+    "name": "Potion of Superior Healing",
+    "healing": "8d4 + 8",
+    "rarity": "rare",
+    "typical_liquid_ounces": 1,
+    "source_rarity_value_gp": 2000,
+    "source_weight_lb": null
+  },
+  "authored_operations": [
+    "Choose self drink or actual eligible recipient administration; spend one Bonus Action and one exact potion copy once, restoring 8d4 + 8 HP subject to current healing rules.",
+    "The basic Healing potion explicitly allows administering to another creature within 5 feet (p.99). General potion category allows administration but does not supply a separate reach distance for higher potions; map the actual interaction host without inventing ranged use.",
+    "Map p.204 mixing/miscibility separately, preserving exact potions and source effects; a supported heal effect does not implement that procedure."
+  ],
+  "retained_runtime_seeds": [
+    {
+      "path": "data/core/items/imported_magic_consumables.json",
+      "array_index": 77,
+      "file_sha256": "7f3c9209d3a996aa3658277b50ccaa96eaa0a4764f65ef3eed5b905c79dab580",
+      "definition": {
+        "id": "potion_superior_healing",
+        "name": "Potion of Superior Healing",
+        "description": "You regain 8d4 + 8 hit points when you drink this potion. The potion's red liquid glimmers when agitated.",
+        "type": "consumable",
+        "action_cost": "action",
+        "effects": [
+          {
+            "type": "heal",
+            "value": "8d4+8"
+          }
+        ],
+        "value": 500
+      }
+    },
+    {
+      "path": "data/core/items/imported_magic_consumables.json",
+      "array_index": 78,
+      "file_sha256": "7f3c9209d3a996aa3658277b50ccaa96eaa0a4764f65ef3eed5b905c79dab580",
+      "definition": {
+        "id": "potion_superior_healing",
+        "name": "Potion of Superior Healing",
+        "description": "You regain 8d4 + 8 Hit Points when you drink this potion. The potion's red liquid glimmers when agitated.",
+        "type": "consumable",
+        "action_cost": "bonus_action",
+        "effects": [
+          {
+            "type": "heal",
+            "value": "8d4+8"
+          }
+        ],
+        "value": 500
+      }
+    }
+  ],
+  "manifest_overrides": [
+    {
+      "type": "item",
+      "id": "potion_superior_healing",
+      "winner": "res://data/core/items/imported_magic_consumables.json#79",
+      "replaces": [
+        "res://data/core/items/imported_magic_consumables.json#78"
+      ]
+    }
+  ],
+  "required_mapping": [
+    "potions"
+  ],
+  "pricing_reconciliation": "Source rarity value is reference valuation, not a command to change Crown shop prices. Retained seed shop values remain unchanged; reconcile campaign pricing before promotion.",
+  "consumers": [
+    {
+      "channel": "historical_shop_inventory",
+      "path": "docs/planning/crown-content-scope.md",
+      "sha256": "3bcb9799865f1779aa7da1c1b041a6ac938c33491dfd502641593bf767a8528e",
+      "details": "Pinned 64-ID Windows export inventory; retained below, not rerun here."
+    },
+    {
+      "channel": "source_shop_candidate",
+      "path": "data/core/items/imported_magic_consumables.json",
+      "sha256": "7f3c9209d3a996aa3658277b50ccaa96eaa0a4764f65ef3eed5b905c79dab580",
+      "json_pointer": "/77",
+      "details": "Positive shop type/value and, for consumables, declared supported effect names. This is a source selection lead, not a loaded availability certification; manifest wins remain authoritative."
+    }
+  ],
+  "unsupported_behavior": [
+    {
+      "group": "potions",
+      "requirement": "Drink or administer as a Bonus Action, consume exact copy once, settle real healing and preserve actual target/range/quantity. Retain potion mixing source/table as an explicit unmapped procedure; do not imply generic heal supports it."
+    }
+  ]
+}

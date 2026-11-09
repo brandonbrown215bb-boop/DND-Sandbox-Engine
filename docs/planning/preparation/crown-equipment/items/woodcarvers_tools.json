@@ -1,0 +1,89 @@
+{
+  "schema": "crown-equipment-candidate/1",
+  "id": "woodcarvers_tools",
+  "name": "Woodcarver's Tools",
+  "kind": "tool",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring intent only; not registered engine syntax.",
+  "rules": {
+    "authority": "SRD 5.2.1",
+    "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      93,
+      94
+    ],
+    "section": "Woodcarver's Tools",
+    "text": "Ability: dexterity. Utilize: Carve a pattern in wood (DC 10). Craft: Club, Greatclub, Quarterstaff, Ranged weapons except Pistol, Musket and Sling; Arcane Focus, Arrows, Bolts, Druidic Focus, Ink Pen, Needles. Tool proficiency adds PB to ability checks using the tool; if also proficient in a skill used with the check, gain Advantage. Each Artisan tool needs its own proficiency.",
+    "source_context": "../source-pages.json"
+  },
+  "definition": {
+    "id": "woodcarvers_tools",
+    "name": "Woodcarver's Tools",
+    "ability": "dexterity",
+    "weight_lb": 5,
+    "cost_gp": 1,
+    "utilize": "Carve a pattern in wood (DC 10)",
+    "craft_source_list": "Club, Greatclub, Quarterstaff, Ranged weapons except Pistol, Musket and Sling; Arcane Focus, Arrows, Bolts, Druidic Focus, Ink Pen, Needles"
+  },
+  "authored_operations": [
+    "Utilize chooses one task: Carve a pattern in wood (DC 10). Use dexterity, the declared DC and actual tool copy; apply PB for the matching proficiency and Advantage when the applicable skill is also proficient.",
+    "Crafting needs the source procedure, materials, time, proficiency and legal result definition; this list grants no products. Keep unavailable craft consumers explicit rather than synthesizing items."
+  ],
+  "retained_runtime_seeds": [
+    {
+      "path": "data/core/items/imported_magic_tools.json",
+      "array_index": 59,
+      "file_sha256": "7403cb6637b668bbfd13787473f467f618af88874c60c0a696adad165255caca",
+      "definition": {
+        "id": "woodcarvers_tools",
+        "name": "Woodcarver's Tools",
+        "description": "",
+        "type": "tool",
+        "effects": [],
+        "value": 1
+      }
+    },
+    {
+      "path": "data/core/items/imported_magic_tools.json",
+      "array_index": 60,
+      "file_sha256": "7403cb6637b668bbfd13787473f467f618af88874c60c0a696adad165255caca",
+      "definition": {
+        "id": "woodcarvers_tools",
+        "name": "Woodcarver's Tools",
+        "description": "{'type': 'list', 'style': 'list-hang-notitle', 'items': [{'name': 'Ability:', 'type': 'item', 'entries': ['Dexterity']}, {'name': 'Utilize:', 'type': 'item', 'entries': ['Carve a pattern in wood (10)']}, {'name': 'Craft:', 'type': 'item', 'entries': ['Club, Greatclub, Quarterstaff, Ranged weapons (except Pistol, Musket, and  Sling), Arcane Focus, Arrows (20), Bolts (20), Druidic Focus, Ink Pen, Needles (50)']}]}",
+        "type": "tool",
+        "effects": [],
+        "value": 1
+      }
+    }
+  ],
+  "manifest_overrides": [
+    {
+      "type": "item",
+      "id": "woodcarvers_tools",
+      "winner": "res://data/core/items/imported_magic_tools.json#61",
+      "replaces": [
+        "res://data/core/items/imported_magic_tools.json#60"
+      ]
+    }
+  ],
+  "required_mapping": [
+    "tools",
+    "crafting"
+  ],
+  "consumers": [
+    {
+      "choice_id": "chosen_tool"
+    }
+  ],
+  "unsupported_behavior": [
+    {
+      "group": "tools",
+      "requirement": "Map exact variant proficiency, declared tool ability/DC, PB plus applicable skill Advantage and actual Utilize task outcomes. Do not use a generic +PB check as every tool action."
+    },
+    {
+      "group": "crafting",
+      "requirement": "Craft source lists are preserved, not executable recipes or item grants. Reconcile the official crafting procedures and result definitions later; absent result definitions remain dependencies, not reasons to expand this package pass."
+    }
+  ]
+}

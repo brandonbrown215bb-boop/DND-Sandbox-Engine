@@ -1,0 +1,113 @@
+{
+  "schema": "crown-created-item-boundaries/1",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "physical_candidates": [
+    {
+      "candidate_id": "goodberry_batch",
+      "path": "items/goodberry_batch.json"
+    },
+    {
+      "candidate_id": "created_food",
+      "path": "items/created_food.json"
+    },
+    {
+      "candidate_id": "clean_water",
+      "path": "items/clean_water.json"
+    },
+    {
+      "candidate_id": "prestidigitation_trinket",
+      "path": "items/prestidigitation_trinket.json"
+    },
+    {
+      "candidate_id": "rock_gnome_clockwork",
+      "path": "items/rock_gnome_clockwork.json"
+    },
+    {
+      "candidate_id": "book_of_shadows",
+      "path": "items/book_of_shadows.json"
+    },
+    {
+      "candidate_id": "pact_weapon",
+      "path": "items/pact_weapon.json"
+    },
+    {
+      "candidate_id": "tinker_scrap_item",
+      "path": "items/tinker_scrap_item.json"
+    }
+  ],
+  "existing_item_changes": [
+    {
+      "spell_id": "continual_flame",
+      "source": "docs/planning/preparation/crown-spells/continual_flame.json",
+      "sha256": "8d4cba7f52cfff5539a2e16425ff7bd6a36387eb7e54d166e58cca8339a1396e",
+      "boundary": "Creates a flame on an existing touched object; no heat, oxygen use or fuel consumption. Existing object/source-owned light effect, not a newly granted Torch or tradeable magic item."
+    },
+    {
+      "spell_id": "magic_weapon",
+      "source": "docs/planning/preparation/crown-spells/magic_weapon.json",
+      "sha256": "b8d5e676a5ebe313414864cf262508ed6b12c6fa1b8cc3a894cc4d1015f8b77d",
+      "boundary": "Changes one actual touched nonmagical weapon; no new weapon copy. Recast ends previous exact source."
+    },
+    {
+      "spell_id": "shillelagh",
+      "source": "docs/planning/preparation/crown-spells/shillelagh.json",
+      "sha256": "2b66d43cd3db7257272462e25abe0e7593c650a3750418bd9945abd6b7b96dbb",
+      "boundary": "Changes one held Club/Quarterstaff; no item grant. Source ends on recast or letting go."
+    },
+    {
+      "spell_id": "mending",
+      "source": "docs/planning/preparation/crown-spells/mending.json",
+      "sha256": "5618d825311903bd83b05f686745e0f26ebb5a66498fe10a8e9189abb9f6fdb1",
+      "boundary": "Repairs an existing object with source limits; no replacement item grant."
+    },
+    {
+      "spell_id": "rope_trick",
+      "source": "docs/planning/preparation/crown-spells/rope_trick.json",
+      "sha256": "37ec73b5f015e4ff0674c727ff25fab249c85e34342a4b1a662ed6dd0b2ff995",
+      "boundary": "Touches an actual Rope and opens a portal at its upper end; the substitutable Material segment is not the required target Rope. Retain existing Rope and the separate spatial effect."
+    },
+    {
+      "spell_id": "purify_food_and_drink",
+      "source": "docs/planning/preparation/crown-spells/purify_food_and_drink.json",
+      "sha256": "49d64a4223810acfb20fe4debbd1526b35d99592f6441dc4c8adfdadbfdada78",
+      "boundary": "Purifies actual existing food/drink; does not refill containers or create portions."
+    },
+    {
+      "spell_id": "druidcraft",
+      "source": "docs/planning/preparation/crown-spells/druidcraft.json",
+      "sha256": "0a5323c5007e0afe3f3435e2230fa938504b37fa27e1fd2850568d310adc8afa",
+      "boundary": "Bloom changes existing plant parts; sensory and fire effects are world procedures, not arbitrary harvestable supplies."
+    },
+    {
+      "spell_id": "flame_blade",
+      "source": "docs/planning/preparation/crown-spells/flame_blade.json",
+      "sha256": "3c7b316e8eda6f4ef2cc3a67f3abcee2aa04d731ad764879bf81c6d25bdffb0c",
+      "boundary": "Fiery blade uses melee spell attack as Magic action, vanishes on release and can be evoked again; retain spell-owned force/weapon representation rather than grant a mundane Scimitar."
+    },
+    {
+      "spell_id": "spiritual_weapon",
+      "source": "docs/planning/preparation/crown-spells/spiritual_weapon.json",
+      "sha256": "b4286c303634e7d80439a313b0c5e34a4614b6fbd00355f52e797cfdfb084b58",
+      "boundary": "Floating spectral force with spell-owned attack/movement; not inventory equipment."
+    },
+    {
+      "spell_id": "minor_illusion",
+      "source": "docs/planning/preparation/crown-spells/minor_illusion.json",
+      "sha256": "0e53cdf1e7738af8a620082fbf5bacea1b02f266d388e9b9902d30e119eb2d07",
+      "boundary": "Image/sound has no physical object contents or trade value."
+    },
+    {
+      "spell_id": "web",
+      "source": "docs/planning/preparation/crown-spells/web.json",
+      "sha256": "b13df0249566d2abc8b8895dc9979e577810cb3ae2b719512c1008de6d9c44d2",
+      "boundary": "Source-owned spatial web mass/flammability is a world effect, not reusable Rope or inventory cloth."
+    },
+    {
+      "spell_id": "unseen_servant",
+      "source": "docs/planning/preparation/crown-spells/unseen_servant.json",
+      "sha256": "9d06826f722ddaa4cb7addc33b79b513d17ccfee42ece996395fba84d81beb9d",
+      "boundary": "Created force actor interacts with real objects; does not grant the tools/items it handles."
+    }
+  ],
+  "creature_and_force_sets": "Find Familiar/Steed, Animate Dead, Phantom Steed and other actor/form/force selectors remain creature candidates; their stat blocks are not item definitions."
+}

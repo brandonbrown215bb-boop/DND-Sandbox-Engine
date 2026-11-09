@@ -1,0 +1,266 @@
+{
+  "format": "crown-spell-candidate/1",
+  "id": "detect_thoughts",
+  "name": "Detect Thoughts",
+  "level": 2,
+  "status": "written_unverified_not_loaded",
+  "source": {
+    "authority": "SRD 5.2.1",
+    "url": "https://media.dndbeyond.com/compendium-images/srd/5.2/SRD_CC_v5.2.1.pdf",
+    "sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      123
+    ],
+    "header": {
+      "Casting Time": "Action",
+      "Range": "Self",
+      "Components": "V, S, M (1 Copper Piece)",
+      "Duration": "Concentration, up to 1 minute"
+    },
+    "attribution": "System Reference Document 5.2.1, Wizards of the Coast LLC; CC BY 4.0."
+  },
+  "casting": {
+    "casting_time": "Action",
+    "kind": "action",
+    "seconds": null,
+    "ritual_available": false,
+    "range": {
+      "source": "Self",
+      "kind": "self",
+      "feet": 0
+    },
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "1 Copper Piece",
+    "duration": "Concentration, up to 1 minute",
+    "concentration": true,
+    "spell_lists": [
+      "bard",
+      "sorcerer",
+      "wizard"
+    ]
+  },
+  "authored_intent": "Choose Sense Thoughts or Read Thoughts; Magic action changes/uses option; speech-language eligibility, surface thoughts, probing WIS save and detected intrusion; target action INT Arcana check ends; exact line/material barriers.",
+  "rules": [
+    {
+      "id": "r001",
+      "text": "You activate one of the effects below."
+    },
+    {
+      "id": "r002",
+      "text": "Until the spell ends, you can activate either effect as a Magic action on your later turns."
+    },
+    {
+      "id": "r003",
+      "text": "Sense Thoughts."
+    },
+    {
+      "id": "r004",
+      "text": "You sense the presence of thoughts within 30 feet of yourself that belong to creatures that know languages or are telepathic."
+    },
+    {
+      "id": "r005",
+      "text": "You don’t read the thoughts, but you know that a thinking creature is present."
+    },
+    {
+      "id": "r006",
+      "text": "The spell is blocked by 1 foot of stone, dirt, or wood; 1 inch of metal; or a thin sheet of lead."
+    },
+    {
+      "id": "r007",
+      "text": "Read Thoughts."
+    },
+    {
+      "id": "r008",
+      "text": "Target one creature you can see within 30 feet of yourself or one creature within 30 feet of yourself that you detected with the Sense Thoughts option."
+    },
+    {
+      "id": "r009",
+      "text": "You learn what is most on the target’s mind right now."
+    },
+    {
+      "id": "r010",
+      "text": "If the target doesn’t know any languages and isn’t telepathic, you learn nothing."
+    },
+    {
+      "id": "r011",
+      "text": "As a Magic action on your next turn, you can try to probe deeper into the target’s mind."
+    },
+    {
+      "id": "r012",
+      "text": "If you probe deeper, the target makes a Wisdom saving throw."
+    },
+    {
+      "id": "r013",
+      "text": "On a failed save, you discern the target’s reasoning, emotions, and something that looms large in its mind (such as a worry, love, or hate)."
+    },
+    {
+      "id": "r014",
+      "text": "On a successful save, the spell ends."
+    },
+    {
+      "id": "r015",
+      "text": "Either way, the target knows that you are probing into its mind, and until you shift your attention away from the target’s mind, the target can take an action on its turn to make an Intelligence (Arcana) check against your spell save DC, ending the spell on a success."
+    }
+  ],
+  "authored_operations": [
+    {
+      "operation": "choose_thought_sense",
+      "parameters": {
+        "later_action": "magic_action",
+        "sense": {
+          "range_feet": 30,
+          "eligible": "knows_language_or_telepathic",
+          "disclose": "presence_not_contents",
+          "barriers": {
+            "stone_dirt_wood_feet": 1,
+            "metal_inches": 1,
+            "lead": "any_sheet"
+          }
+        },
+        "read": {
+          "range_feet": 30,
+          "eligible": "seen_or_previously_sensed",
+          "initial": "surface_thoughts",
+          "deeper_next_turn": {
+            "action": "magic_action",
+            "save": "WIS",
+            "failure": [
+              "reasoning",
+              "emotions",
+              "looming_concern"
+            ],
+            "success": "end_spell",
+            "target_knows_probe": true
+          },
+          "target_escape": {
+            "action": "action",
+            "check": "INT_Arcana",
+            "dc": "caster_spell_dc",
+            "ends_spell_on_success": true
+          }
+        }
+      },
+      "status": "authoring_declaration_not_a_registered_opcode",
+      "required_source_rules": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006",
+        "r007",
+        "r008",
+        "r009",
+        "r010",
+        "r011",
+        "r012",
+        "r013",
+        "r014",
+        "r015"
+      ]
+    }
+  ],
+  "runtime_draft": {
+    "origin": "proposed_operations",
+    "definition": null,
+    "fragments": {},
+    "coverage": "Unverified. Neither a full definition nor a fragment certifies all source rules or controls. Required extensions are not silently waived."
+  },
+  "required_extensions": [
+    {
+      "group": "detection",
+      "requirement": "Read actual eligible facts with source-defined range, material barriers, actions and disclosure; preserve unknown facts and observer-specific knowledge.",
+      "spell_specific_intent": "Choose Sense Thoughts or Read Thoughts; Magic action changes/uses option; speech-language eligibility, surface thoughts, probing WIS save and detected intrusion; target action INT Arcana check ends; exact line/material barriers.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006",
+        "r007",
+        "r008",
+        "r009",
+        "r010",
+        "r011",
+        "r012",
+        "r013",
+        "r014",
+        "r015"
+      ],
+      "existing_owner_to_reuse": "src/combat/study_rules.gd",
+      "slice_references": "S-190/S-191/S-194/S-195/S-219",
+      "disposition": "requires_mapping_or_host_completion",
+      "note": "This is an authored handoff requirement, not a fresh runtime failure or claim that the whole referenced slice is missing."
+    },
+    {
+      "group": "communication",
+      "requirement": "Reuse represented language/hearing where applicable, then implement the spell-specific recipients, range, content, answers, secrecy and source lifetime.",
+      "spell_specific_intent": "Choose Sense Thoughts or Read Thoughts; Magic action changes/uses option; speech-language eligibility, surface thoughts, probing WIS save and detected intrusion; target action INT Arcana check ends; exact line/material barriers.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006",
+        "r007",
+        "r008",
+        "r009",
+        "r010",
+        "r011",
+        "r012",
+        "r013",
+        "r014",
+        "r015"
+      ],
+      "existing_owner_to_reuse": "src/combat/communication_rules.gd",
+      "slice_references": "S-194/S-218/S-219",
+      "disposition": "requires_mapping_or_host_completion",
+      "note": "This is an authored handoff requirement, not a fresh runtime failure or claim that the whole referenced slice is missing."
+    },
+    {
+      "group": "granted_actions",
+      "requirement": "Author the correct actor, action kind, budgets, choices, range and repeated effects; retain the parent cast/source and avoid a new named executor.",
+      "spell_specific_intent": "Choose Sense Thoughts or Read Thoughts; Magic action changes/uses option; speech-language eligibility, surface thoughts, probing WIS save and detected intrusion; target action INT Arcana check ends; exact line/material barriers.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006",
+        "r007",
+        "r008",
+        "r009",
+        "r010",
+        "r011",
+        "r012",
+        "r013",
+        "r014",
+        "r015"
+      ],
+      "existing_owner_to_reuse": "src/combat/combat_child_actions.gd",
+      "slice_references": "S-134/S-135/S-146/S-148",
+      "disposition": "requires_mapping_or_host_completion",
+      "note": "This is an authored handoff requirement, not a fresh runtime failure or claim that the whole referenced slice is missing."
+    }
+  ],
+  "audit": {
+    "source": "docs/audits/spells.md",
+    "batch": "088-8",
+    "production_definition_at_authoring": "res://data/core/spells/imported_spells.json#54",
+    "baseline_execution": "native",
+    "source_revision": "2a19eb1d",
+    "existing_conversion_label": "queued"
+  },
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile every source rule and required extension, then implement and verify through production paths before any deliberate promotion. Keep native behavior until covered."
+  }
+}

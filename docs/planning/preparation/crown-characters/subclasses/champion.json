@@ -1,0 +1,159 @@
+{
+  "schema": "crown-character-candidate/1",
+  "id": "champion",
+  "name": "Champion",
+  "kind": "subclass",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "scope": {
+    "total_character_level_maximum": 5
+  },
+  "operation_language": "authoring intent only; not registered engine syntax",
+  "runtime_support": "Retained definitions are reuse material, not proof of full rules. Every authored operation needs contract mapping and later production-path verification before promotion.",
+  "class_id": "fighter",
+  "class_level": 3,
+  "features": [
+    {
+      "id": "champion_improved_critical",
+      "name": "Improved Critical",
+      "class_level": 3,
+      "rules": {
+        "authority": "SRD 5.2.1",
+        "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+        "pages": [
+          49
+        ],
+        "text": "Level 3: Improved Critical\nYour attack rolls with weapons and Unarmed\nStrikes can score a Critical Hit on a roll of 19 or 20\non the d20."
+      },
+      "revised_reference_entries": [
+        "Your attack rolls with weapons and Unarmed Strikes can score a {@variantrule Critical Hit|XPHB} on a roll of 19 or 20 on the {@dice d20}."
+      ],
+      "authored_operations": [
+        {
+          "trigger": "Weapon or Unarmed attack roll",
+          "cost": "none",
+          "effects": [
+            "Critical hit on natural19 or20"
+          ],
+          "ending_and_identity": "Exact source owns the grant/state; remove temporary effects at the declared ending; never replay acquisition on restore.",
+          "required_extension_groups": [
+            "attacks",
+            "rolls"
+          ]
+        }
+      ],
+      "unsupported_behavior": [
+        {
+          "groups": [
+            "attacks",
+            "rolls"
+          ],
+          "requirement": {
+            "trigger": "Weapon or Unarmed attack roll",
+            "cost": "none",
+            "effects": [
+              "Critical hit on natural19 or20"
+            ],
+            "ending": "Exact source owns the grant/state; remove temporary effects at the declared ending; never replay acquisition on restore."
+          },
+          "mapping_boundary": "Map this complete sequence to shared contracts; retained native behavior and fragments do not certify it.",
+          "status": "unmapped_or_unverified_candidate"
+        }
+      ]
+    },
+    {
+      "id": "champion_remarkable_athlete",
+      "name": "Remarkable Athlete",
+      "class_level": 3,
+      "rules": {
+        "authority": "SRD 5.2.1",
+        "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+        "pages": [
+          49
+        ],
+        "text": "Level 3: Remarkable Athlete\nThanks to your athleticism, you have Advantage on\nInitiative rolls and Strength (Athletics) checks.\nIn addition, immediately after you score a Critical\nHit, you can move up to half your Speed without\nprovoking Opportunity Attacks."
+      },
+      "revised_reference_entries": [
+        "Thanks to your athleticism, you have {@variantrule Advantage|XPHB} on {@variantrule Initiative|XPHB} rolls and Strength ({@skill Athletics|XPHB}) checks.",
+        "In addition, immediately after you score a {@variantrule Critical Hit|XPHB}, you can move up to half your {@variantrule Speed|XPHB} without provoking {@action Opportunity Attack|XPHB|Opportunity Attacks}."
+      ],
+      "authored_operations": [
+        {
+          "trigger": "Initiative/STR Athletics roll; immediately after scoring Critical Hit",
+          "cost": "none",
+          "effects": [
+            "Advantage Initiative and STR Athletics",
+            "After Critical Hit may move half Speed without Opportunity Attacks"
+          ],
+          "ending_and_identity": "Exact source owns the grant/state; remove temporary effects at the declared ending; never replay acquisition on restore.",
+          "required_extension_groups": [
+            "rolls",
+            "movement"
+          ]
+        }
+      ],
+      "unsupported_behavior": [
+        {
+          "groups": [
+            "rolls",
+            "movement"
+          ],
+          "requirement": {
+            "trigger": "Initiative/STR Athletics roll; immediately after scoring Critical Hit",
+            "cost": "none",
+            "effects": [
+              "Advantage Initiative and STR Athletics",
+              "After Critical Hit may move half Speed without Opportunity Attacks"
+            ],
+            "ending": "Exact source owns the grant/state; remove temporary effects at the declared ending; never replay acquisition on restore."
+          },
+          "mapping_boundary": "Map this complete sequence to shared contracts; retained native behavior and fragments do not certify it.",
+          "status": "unmapped_or_unverified_candidate"
+        }
+      ]
+    }
+  ],
+  "reused_from": [
+    "data/core/subclasses/champion.json",
+    "reference/2024/classes/fighter.json"
+  ],
+  "retained_runtime_seed": {
+    "id": "champion",
+    "name": "Champion",
+    "class_id": "fighter",
+    "rules_status": "2024-supported",
+    "features_by_level": {
+      "3": [
+        {
+          "id": "champion_improved_critical",
+          "name": "Improved Critical",
+          "description": "Weapon and Unarmed Strike critical hits on 19 or 20.",
+          "type": "passive",
+          "effects": [
+            {
+              "type": "modify_crit_range",
+              "value": 19
+            }
+          ],
+          "resolver": "fighter_rules",
+          "rules_source": "dnd-2024-srd-5.2.1",
+          "rules_status": "2024-supported"
+        },
+        {
+          "id": "champion_remarkable_athlete",
+          "name": "Remarkable Athlete",
+          "description": "Advantage on Initiative and Strength (Athletics). After a critical hit, move up to half Speed without Opportunity Attacks.",
+          "type": "passive",
+          "effects": [],
+          "resolver": "fighter_rules",
+          "rules_source": "dnd-2024-srd-5.2.1",
+          "rules_status": "2024-supported"
+        }
+      ]
+    }
+  },
+  "source_revision": "2a19eb1d (existing working-tree definitions and recovered drafts read on 2026-11-08)",
+  "reused_input_hashes": {
+    "data/core/subclasses/champion.json": "55489dd74f8e3f4d4ed80bc7771d6b588e1d65ebab2b50227508751ebccfa657",
+    "reference/2024/classes/fighter.json": "80a5d86e1772beb7a7f80a894152e0415994a48bd6803e562ab596a8548adddf"
+  }
+}

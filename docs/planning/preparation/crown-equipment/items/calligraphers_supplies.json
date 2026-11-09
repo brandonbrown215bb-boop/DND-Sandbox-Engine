@@ -1,0 +1,100 @@
+{
+  "schema": "crown-equipment-candidate/1",
+  "id": "calligraphers_supplies",
+  "name": "Calligrapher's Supplies",
+  "kind": "tool",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring intent only; not registered engine syntax.",
+  "rules": {
+    "authority": "SRD 5.2.1",
+    "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      93
+    ],
+    "section": "Calligrapher's Supplies",
+    "text": "Ability: dexterity. Utilize: Write text with impressive flourishes that guard against forgery (DC 15). Craft: Ink, Spell Scroll. Tool proficiency adds PB to ability checks using the tool; if also proficient in a skill used with the check, gain Advantage. Each Artisan tool needs its own proficiency.",
+    "source_context": "../source-pages.json"
+  },
+  "definition": {
+    "id": "calligraphers_supplies",
+    "name": "Calligrapher's Supplies",
+    "ability": "dexterity",
+    "weight_lb": 5,
+    "cost_gp": 10,
+    "utilize": "Write text with impressive flourishes that guard against forgery (DC 15)",
+    "craft_source_list": "Ink, Spell Scroll"
+  },
+  "authored_operations": [
+    "Utilize chooses one task: Write text with impressive flourishes that guard against forgery (DC 15). Use dexterity, the declared DC and actual tool copy; apply PB for the matching proficiency and Advantage when the applicable skill is also proficient.",
+    "Crafting needs the source procedure, materials, time, proficiency and legal result definition; this list grants no products. Keep unavailable craft consumers explicit rather than synthesizing items."
+  ],
+  "retained_runtime_seeds": [
+    {
+      "path": "data/core/items/imported_magic_tools.json",
+      "array_index": 6,
+      "file_sha256": "7403cb6637b668bbfd13787473f467f618af88874c60c0a696adad165255caca",
+      "definition": {
+        "id": "calligraphers_supplies",
+        "name": "Calligrapher's Supplies",
+        "description": "",
+        "type": "tool",
+        "effects": [],
+        "value": 10
+      }
+    },
+    {
+      "path": "data/core/items/imported_magic_tools.json",
+      "array_index": 7,
+      "file_sha256": "7403cb6637b668bbfd13787473f467f618af88874c60c0a696adad165255caca",
+      "definition": {
+        "id": "calligraphers_supplies",
+        "name": "Calligrapher's Supplies",
+        "description": "{'type': 'list', 'style': 'list-hang-notitle', 'items': [{'name': 'Ability:', 'type': 'item', 'entries': ['Dexterity']}, {'name': 'Utilize:', 'type': 'item', 'entries': ['Write text with impressive flourishes that guard against forgery (15)']}, {'name': 'Craft:', 'type': 'item', 'entries': ['Ink, Spell Scroll']}]}",
+        "type": "tool",
+        "effects": [],
+        "value": 10
+      }
+    }
+  ],
+  "manifest_overrides": [
+    {
+      "type": "item",
+      "id": "calligraphers_supplies",
+      "winner": "res://data/core/items/imported_magic_tools.json#8",
+      "replaces": [
+        "res://data/core/items/imported_magic_tools.json#7"
+      ]
+    }
+  ],
+  "required_mapping": [
+    "tools",
+    "crafting"
+  ],
+  "consumers": [
+    {
+      "package_id": "acolyte",
+      "option": "A",
+      "quantity": 1,
+      "source": "docs/planning/preparation/crown-characters/backgrounds/acolyte.json"
+    },
+    {
+      "package_id": "sage",
+      "option": "A",
+      "quantity": 1,
+      "source": "docs/planning/preparation/crown-characters/backgrounds/sage.json"
+    },
+    {
+      "choice_id": "chosen_tool"
+    }
+  ],
+  "unsupported_behavior": [
+    {
+      "group": "tools",
+      "requirement": "Map exact variant proficiency, declared tool ability/DC, PB plus applicable skill Advantage and actual Utilize task outcomes. Do not use a generic +PB check as every tool action."
+    },
+    {
+      "group": "crafting",
+      "requirement": "Craft source lists are preserved, not executable recipes or item grants. Reconcile the official crafting procedures and result definitions later; absent result definitions remain dependencies, not reasons to expand this package pass."
+    }
+  ]
+}

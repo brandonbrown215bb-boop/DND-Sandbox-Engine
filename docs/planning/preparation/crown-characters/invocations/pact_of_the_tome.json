@@ -1,0 +1,123 @@
+{
+  "schema": "crown-character-candidate/1",
+  "id": "pact_of_the_tome",
+  "name": "Pact of the Tome",
+  "kind": "invocation",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "scope": {
+    "total_character_level_maximum": 5
+  },
+  "operation_language": "authoring intent only; not registered engine syntax",
+  "runtime_support": "Retained definitions are reuse material, not proof of full rules. Every authored operation needs contract mapping and later production-path verification before promotion.",
+  "minimum_warlock_level": 1,
+  "rules": {
+    "authority": "SRD 5.2.1",
+    "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      74
+    ],
+    "text": "Pact of the Tome\nStitching together strands of shadow, you conjure\nforth a book in your hand at the end of a Short or\nLong Rest. This\nBook of Shadows\n(you determine its\nappearance) contains eldritch magic that only you\ncan access, granting you the benefits below. The\nbook disappears if you conjure another book with\nthis feature or if you die.\nCantrips and Rituals.\nWhen the book appears,\nchoose three cantrips, and choose two level 1 spells\nthat have the Ritual tag. The spells can be from any\nclass’s spell list, and they must be spells you don’t\nalready have prepared. While the book is on your\nperson, you have the chosen spells prepared, and\nthey function as Warlock spells for you.\nSpellcasting Focus.\nYou can use the book as a\nSpellcasting Focus."
+  },
+  "prerequisites": {
+    "warlock_level": 1,
+    "invocations": [],
+    "cantrip_parameter": null
+  },
+  "repeatable": false,
+  "authored_operations": [
+    {
+      "trigger": "Conjure book in hand at end of Short or Long Rest",
+      "cost": "none",
+      "effects": [
+        "Choose3 cantrips and2 level1 Ritual spells from any class list, none already prepared; while book on person prepare these as Warlock spells; book is focus; Ritual tag does not prohibit slot casting"
+      ],
+      "ending_and_identity": "Book disappears on owner death or conjuring another; remove only its grants when not carried or ended.",
+      "required_extension_groups": [
+        "items",
+        "casting",
+        "choices"
+      ]
+    }
+  ],
+  "retained_runtime_fragment": {
+    "id": "pact_of_the_tome",
+    "name": "Pact of the Tome",
+    "minimum_level": 1,
+    "effects": [
+      {
+        "type": "spellcasting_capacity_bonus",
+        "kind": "cantrips",
+        "amount": 3
+      },
+      {
+        "type": "spell_list_expansion",
+        "spell_lists": [
+          "bard",
+          "cleric",
+          "druid",
+          "sorcerer",
+          "warlock",
+          "wizard"
+        ]
+      }
+    ]
+  },
+  "unsupported_behavior": [
+    {
+      "groups": [
+        "items",
+        "casting",
+        "choices"
+      ],
+      "requirement": "Choose3 cantrips and2 level1 Ritual spells from any class list, none already prepared; while book on person prepare these as Warlock spells; book is focus; Ritual tag does not prohibit slot casting",
+      "status": "mapping_and_production_host_verification_required"
+    }
+  ],
+  "spell_choices": {
+    "cantrips": [
+      "acid_splash",
+      "chill_touch",
+      "dancing_lights",
+      "druidcraft",
+      "eldritch_blast",
+      "elementalism",
+      "fire_bolt",
+      "guidance",
+      "light",
+      "mage_hand",
+      "mending",
+      "message",
+      "minor_illusion",
+      "poison_spray",
+      "prestidigitation",
+      "produce_flame",
+      "ray_of_frost",
+      "resistance",
+      "sacred_flame",
+      "shillelagh",
+      "shocking_grasp",
+      "sorcerous_burst",
+      "spare_the_dying",
+      "starry_wisp",
+      "thaumaturgy",
+      "true_strike",
+      "vicious_mockery"
+    ],
+    "level1_rituals": [
+      "alarm",
+      "comprehend_languages",
+      "detect_magic",
+      "detect_poison_and_disease",
+      "find_familiar",
+      "identify",
+      "illusory_script",
+      "purify_food_and_drink",
+      "speak_with_animals",
+      "tensers_floating_disk",
+      "unseen_servant"
+    ],
+    "selection": "Three cantrips plus two level1 Rituals not already prepared when book appears; any class list; prepared as Warlock spells while book on person."
+  },
+  "source_revision": "2a19eb1d (existing working-tree definitions and recovered drafts read on 2026-11-08)",
+  "reused_input_hashes": {}
+}

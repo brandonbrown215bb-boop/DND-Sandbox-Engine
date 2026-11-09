@@ -1,0 +1,163 @@
+{
+  "format": "crown-spell-candidate/1",
+  "id": "phantom_steed",
+  "name": "Phantom Steed",
+  "level": 3,
+  "status": "written_unverified_not_loaded",
+  "source": {
+    "authority": "SRD 5.2.1",
+    "url": "https://media.dndbeyond.com/compendium-images/srd/5.2/SRD_CC_v5.2.1.pdf",
+    "sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      152
+    ],
+    "header": {
+      "Casting Time": "1 minute or Ritual",
+      "Range": "30 feet",
+      "Components": "V, S",
+      "Duration": "1 hour"
+    },
+    "attribution": "System Reference Document 5.2.1, Wizards of the Coast LLC; CC BY 4.0."
+  },
+  "casting": {
+    "casting_time": "1 minute or Ritual",
+    "kind": "timed",
+    "seconds": 60,
+    "ritual_available": true,
+    "range": {
+      "source": "30 feet",
+      "kind": "distance",
+      "feet": 30
+    },
+    "components": [
+      "V",
+      "S"
+    ],
+    "material": null,
+    "duration": "1 hour",
+    "concentration": false,
+    "spell_lists": [
+      "wizard"
+    ]
+  },
+  "authored_intent": "One-minute ritual/cast; Large quasi-real horse-shaped creature; chosen appearance, Riding Horse stats with Speed 100, rider/equipment and ending; damage ends spell and one-minute fade permits dismount.",
+  "rules": [
+    {
+      "id": "r001",
+      "text": "A Large, quasi-real, horselike creature appears on the ground in an unoccupied space of your choice within range."
+    },
+    {
+      "id": "r002",
+      "text": "You decide the creature’s appearance, and it is equipped with a saddle, bit, and bridle."
+    },
+    {
+      "id": "r003",
+      "text": "Any of the equipment created by the spell vanishes in a puff of smoke if it is carried more than 10 feet away from the steed."
+    },
+    {
+      "id": "r004",
+      "text": "For the duration, you or a creature you choose can ride the steed."
+    },
+    {
+      "id": "r005",
+      "text": "The steed uses the Riding Horse stat block (see “Monsters”), except it has a Speed of 100 feet and can travel 13 miles in an hour."
+    },
+    {
+      "id": "r006",
+      "text": "When the spell ends, the steed gradually fades, giving the rider 1 minute to dismount."
+    },
+    {
+      "id": "r007",
+      "text": "The spell ends early if the steed takes any damage."
+    }
+  ],
+  "authored_operations": [
+    {
+      "operation": "create_temporary_mount",
+      "parameters": {
+        "template": "riding_horse",
+        "size": "large",
+        "speed_feet": 100,
+        "travel_miles_per_hour": 13,
+        "appearance_choice": true,
+        "created_gear": [
+          "saddle",
+          "bit",
+          "bridle"
+        ],
+        "gear_separation_feet": 10,
+        "gear_separation": "vanish",
+        "rider": "caster_or_chosen_creature",
+        "ending_fade_seconds": 60,
+        "early_end": "takes_any_damage"
+      },
+      "status": "authoring_declaration_not_a_registered_opcode",
+      "required_source_rules": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006",
+        "r007"
+      ]
+    }
+  ],
+  "runtime_draft": {
+    "origin": "proposed_operations",
+    "definition": null,
+    "fragments": {},
+    "coverage": "Unverified. Neither a full definition nor a fragment certifies all source rules or controls. Required extensions are not silently waived."
+  },
+  "required_extensions": [
+    {
+      "group": "created_actors",
+      "requirement": "Supply the complete eligible statblocks/templates and exact placement, command, turn, type, resource, inventory and ending policies; retain all source-specific subclauses.",
+      "spell_specific_intent": "One-minute ritual/cast; Large quasi-real horse-shaped creature; chosen appearance, Riding Horse stats with Speed 100, rider/equipment and ending; damage ends spell and one-minute fade permits dismount.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006",
+        "r007"
+      ],
+      "existing_owner_to_reuse": "src/characters/created_actor_rules.gd",
+      "slice_references": "S-154/S-155/S-156/S-157/S-158/S-164",
+      "disposition": "requires_mapping_or_host_completion",
+      "note": "This is an authored handoff requirement, not a fresh runtime failure or claim that the whole referenced slice is missing."
+    },
+    {
+      "group": "long_cast",
+      "requirement": "Preserve the source casting duration, participants, ritual extension, interruption and once-only payment; do not replace a timed cast with an Action.",
+      "spell_specific_intent": "One-minute ritual/cast; Large quasi-real horse-shaped creature; chosen appearance, Riding Horse stats with Speed 100, rider/equipment and ending; damage ends spell and one-minute fade permits dismount.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006",
+        "r007"
+      ],
+      "existing_owner_to_reuse": "src/spells/cast_interruption_rules.gd",
+      "slice_references": "S-066/S-067/S-134",
+      "disposition": "requires_mapping_or_host_completion",
+      "note": "This is an authored handoff requirement, not a fresh runtime failure or claim that the whole referenced slice is missing."
+    }
+  ],
+  "audit": {
+    "source": "docs/audits/spells.md",
+    "batch": "088-8",
+    "production_definition_at_authoring": "res://data/core/spells/imported_spells.json#137",
+    "baseline_execution": "native",
+    "source_revision": "2a19eb1d",
+    "existing_conversion_label": "queued"
+  },
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile every source rule and required extension, then implement and verify through production paths before any deliberate promotion. Keep native behavior until covered."
+  }
+}

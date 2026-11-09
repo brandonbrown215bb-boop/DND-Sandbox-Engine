@@ -1,0 +1,1172 @@
+{
+  "schema": "crown-character-candidate/1",
+  "id": "cleric",
+  "name": "Cleric",
+  "kind": "class",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "scope": {
+    "total_character_level_maximum": 5
+  },
+  "operation_language": "authoring intent only; not registered engine syntax",
+  "runtime_support": "Retained definitions are reuse material, not proof of full rules. Every authored operation needs contract mapping and later production-path verification before promotion.",
+  "source": {
+    "authority": "SRD 5.2.1",
+    "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      36
+    ],
+    "text": "Cleric\nCore Cleric Traits\nPrimary Ability Wisdom\nHit Point Die D8 per Cleric level\nSaving Throw\nProficiencies\nWisdom and Charisma\nSkill Proficiencies Choose 2: History, Insight,\nMedicine, Persuasion, or\nReligion\nWeapon Proficiencies Simple weapons\nArmor Training Light and Medium armor and\nShields\nStarting Equipment Choose A or B: (A) Chain Shirt,\nShield, Mace, Holy Symbol,\nPriest’s Pack, and 7 GP; or (B)\n110 GP\nBecoming a Cleric …\nAs a Level 1 Character\n• Gain all the traits in the Core Cleric Traits table.\n• Gain the Cleric’s level 1 features, which are listed\nin the Cleric Features table.\nCleric Features\nProficiency\nBonus\nChannel\nDivinity Level Class Features\n1 +2 Spellcasting, Divine Order —\n2 +2 Channel Divinity 2\n3 +2 Cleric Subclass 2\n4 +2 Ability Score Improvement 2\n5 +3 Sear Undead 2\n6 +3 Subclass feature 3\n7 +3 Blessed Strikes 3\n8 +3 Ability Score Improvement 3\n9 +4 — 3\n10 +4 Divine Intervention 3\n11 +4 — 3\n12 +4 Ability Score Improvement 3\n13 +5 — 3\n14 +5 Improved Blessed Strikes 3\n15 +5 — 3\n16 +5 Ability Score Improvement 3\n17 +6 Subclass feature 3\n18 +6 — 4\n19 +6 Epic Boon 4\n20 +6 Greater Divine Intervention 4\nAs a Multiclass Character\n• Gain the following traits from the Core Cleric\nTraits table: Hit Point Die and training with Light\nand Medium armor and Shields.\n• Gain the Cleric’s level 1 features, which are listed\nin the Cleric Features table. See the multiclassing\nrules in “Character Creation” to determine your\navailable spell slots.\nCleric Class Features\nAs a Cleric, you gain the following class features\nwhen you reach the specified Cleric levels. These\nfeatures are listed in the Cleric Features table."
+  },
+  "reused_from": [
+    "data/core/classes/cleric.json",
+    "reference/2024/classes/cleric.json",
+    "docs/mechanics/cleric-2024.md"
+  ],
+  "acquisition": {
+    "starting_traits": {
+      "armor": [
+        "light",
+        "medium",
+        "shield"
+      ],
+      "weapons": [
+        "simple"
+      ],
+      "skills": [
+        {
+          "choose": {
+            "from": [
+              "history",
+              "insight",
+              "medicine",
+              "persuasion",
+              "religion"
+            ],
+            "count": 2
+          }
+        }
+      ]
+    },
+    "multiclass_donor": {
+      "proficienciesGained": {
+        "armor": [
+          "light",
+          "medium",
+          "shield"
+        ]
+      }
+    },
+    "hit_die": {
+      "number": 1,
+      "faces": 8
+    },
+    "primary_ability": [
+      {
+        "wis": true
+      }
+    ],
+    "saving_throws": [
+      "wis",
+      "cha"
+    ],
+    "grant_policy": "First total level: full Core Traits and level1 features. Later class entry: only source multiclass traits plus all class level1 features; no starting gear or saving throws. Explicit resolved grants in multiclass.json.",
+    "starting_equipment_donor": {
+      "additionalFromBackground": true,
+      "defaultData": [
+        {
+          "A": [
+            {
+              "item": "chain shirt|xphb"
+            },
+            {
+              "item": "shield|xphb"
+            },
+            {
+              "item": "mace|xphb"
+            },
+            {
+              "item": "holy symbol|xphb"
+            },
+            {
+              "item": "priest's pack|xphb"
+            },
+            {
+              "value": 7000
+            }
+          ],
+          "B": [
+            {
+              "value": 11000
+            }
+          ]
+        }
+      ],
+      "entries": [
+        "{@i Choose A or B:} (A) {@item Chain Shirt|XPHB}, {@item Shield|XPHB}, {@item Mace|XPHB}, {@item Holy Symbol|XPHB}, {@item Priest's Pack|XPHB}, 7 GP; or (B) 110 GP"
+      ]
+    },
+    "starting_equipment": {
+      "A": {
+        "gp": 7,
+        "items": [
+          {
+            "source_item_key": "chain_shirt",
+            "quantity": 1
+          },
+          {
+            "source_item_key": "shield",
+            "quantity": 1
+          },
+          {
+            "source_item_key": "mace",
+            "quantity": 1
+          },
+          {
+            "source_item_key": "holy_symbol",
+            "quantity": 1
+          },
+          {
+            "source_item_key": "priests_pack",
+            "quantity": 1
+          }
+        ]
+      },
+      "B": {
+        "gp": 110,
+        "items": []
+      }
+    },
+    "equipment_mapping_notes": [
+      "source_item_key is an authoring identity, not automatically a resolved loaded item. Later inventory reconciliation records missing/choice links.",
+      "Monk chosen_tool is the same single Artisan’s Tool OR Musical Instrument chosen for proficiency. Bard instrument is a separate equipment choice.",
+      "Holy Symbol form is a choice or unresolved generic mapping; no silent form substitution."
+    ],
+    "source_conflicts": [
+      "Revised donor defaultData.value=7000 copper implies70 GP; official SRD Core Traits says7 GP. Authored option A uses7 GP."
+    ],
+    "multiclass_grants": {
+      "all": [
+        "WIS"
+      ],
+      "armor": [
+        "light",
+        "medium",
+        "shields"
+      ],
+      "score_minimum": 13,
+      "hit_die": "d8",
+      "features": "All own-class level1 features plus later features at own-class thresholds; subclass at class3, feat entitlement at class4. See class candidate.",
+      "starting_equipment": [],
+      "saving_throws": []
+    }
+  },
+  "level_hit_points": {
+    "first_total_level": "maximum class Hit Die + permanent CON modifier",
+    "later_levels": "roll class Hit Die OR use fixed average rounded up; add permanent CON modifier; minimum1 HP",
+    "fixed_average": 5,
+    "hit_dice": "Add one Hit Die of this class type; preserve separate types",
+    "project_policy": "Current bounded permanent progression uses fixed level_hit_points and existing level-up living-character heal; rolled advancement is unsupported there, not silently removed from source."
+  },
+  "features": [
+    {
+      "id": "cleric_spellcasting",
+      "name": "Spellcasting",
+      "class_level": 1,
+      "rules": {
+        "authority": "SRD 5.2.1",
+        "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+        "pages": [
+          36,
+          37
+        ],
+        "text": "Level 1: Spellcasting\nYou have learned to cast spells through prayer and\nmeditation. See “Spells” for the rules on spellcasting. The information below details how you use\nthose rules with Cleric spells, which appear on the\nCleric spell list later in the class’s description.\nCantrips.\nYou know three cantrips of your choice\nfrom the Cleric spell list.\nGuidance\n,\nSacred Flame\n,\nand\nThaumaturgy\nare recommended.\nWhenever you gain a Cleric level, you can replace\none of your cantrips with another cantrip of your\nchoice from the Cleric spell list.\nPrepared\nSpells\n——Spell Slots per Spell Level——\nCantrips 1 2 3 4 5 6 7 8 9\n3 4 2 — — — — — — — —\n3 5 3 — — — — — — — —\n3 6 4 2 — — — — — — —\n4 7 4 3 — — — — — — —\n4 9 4 3 2 — — — — — —\n4 10 4 3 3 — — — — — —\n4 11 4 3 3 1 — — — — —\n4 12 4 3 3 2 — — — — —\n4 14 4 3 3 3 1 — — — —\n5 15 4 3 3 3 2 — — — —\n5 16 4 3 3 3 2 1 — — —\n5 16 4 3 3 3 2 1 — — —\n5 17 4 3 3 3 2 1 1 — —\n5 17 4 3 3 3 2 1 1 — —\n5 18 4 3 3 3 2 1 1 1 —\n5 18 4 3 3 3 2 1 1 1 —\n5 19 4 3 3 3 2 1 1 1 1\n5 20 4 3 3 3 3 1 1 1 1\n5 21 4 3 3 3 3 2 1 1 1\n5 22 4 3 3 3 3 2 2 1 1\nWhen you reach Cleric levels 4 and 10, you learn\nanother cantrip of your choice from the Cleric spell\nlist, as shown in the Cantrips column of the Cleric\nFeatures table.\nSpell Slots.\nThe Cleric Features table shows how\nmany spell slots you have to cast your level 1+\nspells. You regain all expended slots when you finish a Long Rest.\nPrepared Spells of Level 1+.\nYou prepare the list\nof level 1+ spells that are available for you to cast\nwith this feature. To start, choose four level 1 spells\nfrom the Cleric spell list.\nBless\n,\nCure Wounds\n,\nGuiding\nBolt\n, and\nShield of Faith\nare recommended.\nThe number of spells on your list increases as you\ngain Cleric levels, as shown in the Prepared Spells\ncolumn of the Cleric Features table. Whenever that\nnumber increases, choose additional spells from the\nCleric spell list until the number of spells on your\nlist matches the number on the table. The chosen\nspells must be of a level for which you have spell\nslots. For example, if you’re a level 3 Cleric, your list\nof prepared spells can include six spells of levels 1\nand 2 in any combination.\nIf another Cleric feature gives you spells that\nyou always have prepared, those spells don’t count\nagainst the number of spells you can prepare with\nthis feature, but those spells otherwise count as\nCleric spells for you.\nChanging Your Prepared Spells.\nWhenever you\nfinish a Long Rest, you can change your list of prepared spells, replacing any of the spells there with\nother Cleric spells for which you have spell slots.\nSpellcasting Ability.\nWisdom is your spellcasting\nability for your Cleric spells.\nSpellcasting Focus.\nYou can use a Holy Symbol as\na Spellcasting Focus for your Cleric spells."
+      },
+      "revised_reference_entries": [
+        "You have learned to cast spells through prayer and meditation. See {@book chapter 7|XPHB|7} for the rules on spellcasting. The information below details how you use those rules with Cleric spells, which appear on the {@filter Cleric spell list|spells|class=Cleric} later in the class's description.",
+        {
+          "type": "entries",
+          "entries": [
+            {
+              "type": "entries",
+              "name": "Cantrips",
+              "entries": [
+                "You know three cantrips of your choice from the {@filter Cleric spell list|spells|class=Cleric}. {@spell Guidance|XPHB}, {@spell Sacred Flame|XPHB}, and {@spell Thaumaturgy|XPHB} are recommended.",
+                "Whenever you gain a Cleric level, you can replace one of your cantrips with another cantrip of your choice from the {@filter Cleric spell list|spells|class=Cleric}.",
+                "When you reach Cleric levels 4 and 10, you learn another cantrip of your choice from the {@filter Cleric spell list|spells|class=Cleric}, as shown in the Cantrips column of the Cleric Features table."
+              ]
+            },
+            {
+              "type": "entries",
+              "name": "Spell Slots",
+              "entries": [
+                "The Cleric Features table shows how many spell slots you have to cast your level 1+ spells. You regain all expended slots when you finish a {@variantrule Long Rest|XPHB}."
+              ]
+            },
+            {
+              "type": "entries",
+              "name": "Prepared Spells of Level 1+",
+              "entries": [
+                "You prepare the list of level 1+ spells that are available for you to cast with this feature. To start, choose four level 1 spells from the {@filter Cleric spell list|spells|class=Cleric}. {@spell Bless|XPHB}, {@spell Cure Wounds|XPHB}, {@spell Guiding Bolt|XPHB}, and {@spell Shield of Faith|XPHB} are recommended.",
+                "The number of spells on your list increases as you gain Cleric levels, as shown in the Prepared Spells column of the Cleric Features table. Whenever that number increases, choose additional spells from the {@filter Cleric spell list|spells|class=Cleric} until the number of spells on your list matches the number on the table. The chosen spells must be of a level for which you have spell slots. For example, if you're a level 3 Cleric, your list of prepared spells can include six spells of levels 1 and 2 in any combination.",
+                "If another Cleric feature gives you spells that you always have prepared, those spells don't count against the number of spells you can prepare with this feature, but those spells otherwise count as Cleric spells for you."
+              ]
+            },
+            {
+              "type": "entries",
+              "name": "Changing Your Prepared Spells",
+              "entries": [
+                "Whenever you finish a {@variantrule Long Rest|XPHB}, you can change your list of prepared spells, replacing any of the spells there with other Cleric spells for which you have spell slots."
+              ]
+            },
+            {
+              "type": "entries",
+              "name": "Spellcasting Ability",
+              "entries": [
+                "Wisdom is your spellcasting ability for your Cleric spells."
+              ]
+            },
+            {
+              "type": "entries",
+              "name": "Spellcasting Focus",
+              "entries": [
+                "You can use a {@item Holy Symbol|XPHB} as a {@variantrule Spellcasting Focus|XPHB} for your Cleric spells."
+              ]
+            }
+          ]
+        }
+      ],
+      "authored_operations": [
+        {
+          "trigger": "Acquire class; class-level advancement; legal preparation/replacement window",
+          "cost": "Actual action, slot, components and source permission for each cast",
+          "effects": [
+            "Use class casting package in this candidate; own-class preparation eligibility even with higher multiclass slots",
+            "Preserve source cantrip replacement and preparation rules, chosen ability, focus and always-prepared exclusions"
+          ],
+          "ending_and_identity": "Distinct class source, ordinary/Pact/free/created slots and cast identities; rests recover declared pools once",
+          "required_extension_groups": [
+            "casting",
+            "choices",
+            "resources"
+          ]
+        }
+      ],
+      "unsupported_behavior": [
+        {
+          "groups": [
+            "casting",
+            "choices",
+            "resources"
+          ],
+          "requirement": {
+            "trigger": "Acquire class; class-level advancement; legal preparation/replacement window",
+            "cost": "Actual action, slot, components and source permission for each cast",
+            "effects": [
+              "Use class casting package in this candidate; own-class preparation eligibility even with higher multiclass slots",
+              "Preserve source cantrip replacement and preparation rules, chosen ability, focus and always-prepared exclusions"
+            ],
+            "ending": "Distinct class source, ordinary/Pact/free/created slots and cast identities; rests recover declared pools once"
+          },
+          "mapping_boundary": "Map this complete sequence to shared contracts; retained native behavior and fragments do not certify it.",
+          "status": "unmapped_or_unverified_candidate"
+        }
+      ]
+    },
+    {
+      "id": "cleric_divine_order",
+      "name": "Divine Order",
+      "class_level": 1,
+      "rules": {
+        "authority": "SRD 5.2.1",
+        "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+        "pages": [
+          37
+        ],
+        "text": "Level 1: Divine Order\nYou have dedicated yourself to one of the following\nsacred roles of your choice.\nProtector.\nTrained for battle, you gain proficiency\nwith Martial weapons and training with Heavy\narmor.\nThaumaturge.\nYou know one extra cantrip from\nthe Cleric spell list. In addition, your mystical connection to the divine gives you a bonus to your\nIntelligence (Arcana or Religion) checks. The bonus\nequals your Wisdom modifier (minimum of +1)."
+      },
+      "revised_reference_entries": [
+        "You have dedicated yourself to one of the following sacred roles of your choice.",
+        {
+          "type": "entries",
+          "entries": [
+            {
+              "type": "options",
+              "count": 1,
+              "entries": [
+                {
+                  "type": "refClassFeature",
+                  "classFeature": "Protector|Cleric|XPHB|1|XPHB"
+                },
+                {
+                  "type": "refClassFeature",
+                  "classFeature": "Thaumaturge|Cleric|XPHB|1|XPHB"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "authored_operations": [
+        {
+          "trigger": "Choose at Cleric 1",
+          "cost": "none",
+          "effects": [
+            "Protector: Martial weapons and Heavy armor",
+            "Thaumaturge: extra Cleric cantrip; INT Arcana/Religion checks +max(1,WIS)"
+          ],
+          "ending_and_identity": "Exact source owns the grant/state; remove temporary effects at the declared ending; never replay acquisition on restore.",
+          "required_extension_groups": [
+            "choices",
+            "rolls",
+            "casting"
+          ]
+        }
+      ],
+      "unsupported_behavior": [
+        {
+          "groups": [
+            "choices",
+            "rolls",
+            "casting"
+          ],
+          "requirement": {
+            "trigger": "Choose at Cleric 1",
+            "cost": "none",
+            "effects": [
+              "Protector: Martial weapons and Heavy armor",
+              "Thaumaturge: extra Cleric cantrip; INT Arcana/Religion checks +max(1,WIS)"
+            ],
+            "ending": "Exact source owns the grant/state; remove temporary effects at the declared ending; never replay acquisition on restore."
+          },
+          "mapping_boundary": "Map this complete sequence to shared contracts; retained native behavior and fragments do not certify it.",
+          "status": "unmapped_or_unverified_candidate"
+        }
+      ]
+    },
+    {
+      "id": "cleric_channel_divinity",
+      "name": "Channel Divinity",
+      "class_level": 2,
+      "rules": {
+        "authority": "SRD 5.2.1",
+        "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+        "pages": [
+          37
+        ],
+        "text": "Level 2: Channel Divinity\nYou can channel divine energy directly from the\nOuter Planes to fuel magical effects. You start with\ntwo such effects: Divine Spark and Turn Undead,\neach of which is described below. Each time you use\nthis class’s Channel Divinity, choose which Channel\nDivinity effect from this class to create. You gain additional effect options at higher Cleric levels.\nYou can use this class’s Channel Divinity twice.\nYou regain one of its expended uses when you finish\na Short Rest, and you regain all expended uses when\nyou finish a Long Rest. You gain additional uses\nwhen you reach certain Cleric levels, as shown in\nthe Channel Divinity column of the Cleric Features\ntable.\nIf a Channel Divinity effect requires a saving\nthrow, the DC equals the spell save DC from this\nclass’s Spellcasting feature.\nDivine Spark.\nAs a Magic action, you point your\nHoly Symbol at another creature you can see within\n30 feet of yourself and focus divine energy at it.\nRoll 1d8 and add your Wisdom modifier. You either\nrestore Hit Points to the creature equal to that total\nor force the creature to make a Constitution saving\nthrow. On a failed save, the creature takes Necrotic\nor Radiant damage (your choice) equal to that total. On a successful save, the creature takes half as\nmuch damage (round down).\nYou roll an additional d8 when you reach Cleric\nlevels 7 (2d8), 13 (3d8), and 18 (4d8).\nTurn Undead.\nAs a Magic action, you present your\nHoly Symbol and censure Undead creatures. Each\nUndead of your choice within 30 feet of you must\nmake a Wisdom saving throw. If the creature fails\nits save, it has the Frightened and Incapacitated\nconditions for 1 minute. For that duration, it tries\nto move as far from you as it can on its turns. This\neffect ends early on the creature if it takes any damage, if you have the Incapacitated condition, or if\nyou die."
+      },
+      "revised_reference_entries": [
+        "You can channel divine energy directly from the Outer Planes to fuel magical effects. You start with two such effects: Divine Spark and Turn Undead, each of which is described below. Each time you use this class's Channel Divinity, choose which Channel Divinity effect from this class to create. You gain additional effect options at higher Cleric levels.",
+        "You can use this class's Channel Divinity twice. You regain one of its expended uses when you finish a {@variantrule Short Rest|XPHB}, and you regain all expended uses when you finish a {@variantrule Long Rest|XPHB}. You gain additional uses when you reach certain Cleric levels, as shown in the Channel Divinity column of the Cleric Features table.",
+        "If a Channel Divinity effect requires a saving throw, the DC equals the spell save DC from this class's Spellcasting feature.",
+        {
+          "type": "entries",
+          "entries": [
+            {
+              "type": "refClassFeature",
+              "classFeature": "Divine Spark|Cleric|XPHB|2|XPHB"
+            },
+            {
+              "type": "refClassFeature",
+              "classFeature": "Turn Undead|Cleric|XPHB|2|XPHB"
+            }
+          ]
+        }
+      ],
+      "authored_operations": [
+        {
+          "trigger": "Choose Divine Spark or Turn Undead; Magic action",
+          "cost": "one Cleric Channel Divinity; capacity 2; Short Rest +1; Long Rest all",
+          "effects": [
+            "Divine Spark: Holy Symbol; another visible creature within 30 feet; 1d8+WIS healing OR CON save for Necrotic/Radiant damage, half on success",
+            "Turn Undead: chosen Undead within 30 feet; WIS save; failure Frightened+Incapacitated 1 minute and flee as far as possible on turns"
+          ],
+          "ending_and_identity": "Turn ends on damage, owner Incapacitated or owner death; Sear damage exception; exact recipients and shared resource.",
+          "required_extension_groups": [
+            "resources",
+            "rolls",
+            "conditions",
+            "movement"
+          ]
+        }
+      ],
+      "unsupported_behavior": [
+        {
+          "groups": [
+            "resources",
+            "rolls",
+            "conditions",
+            "movement"
+          ],
+          "requirement": {
+            "trigger": "Choose Divine Spark or Turn Undead; Magic action",
+            "cost": "one Cleric Channel Divinity; capacity 2; Short Rest +1; Long Rest all",
+            "effects": [
+              "Divine Spark: Holy Symbol; another visible creature within 30 feet; 1d8+WIS healing OR CON save for Necrotic/Radiant damage, half on success",
+              "Turn Undead: chosen Undead within 30 feet; WIS save; failure Frightened+Incapacitated 1 minute and flee as far as possible on turns"
+            ],
+            "ending": "Turn ends on damage, owner Incapacitated or owner death; Sear damage exception; exact recipients and shared resource."
+          },
+          "mapping_boundary": "Map this complete sequence to shared contracts; retained native behavior and fragments do not certify it.",
+          "status": "unmapped_or_unverified_candidate"
+        }
+      ]
+    },
+    {
+      "id": "cleric_cleric_subclass",
+      "name": "Cleric Subclass",
+      "class_level": 3,
+      "rules": {
+        "authority": "SRD 5.2.1",
+        "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+        "pages": [
+          37
+        ],
+        "text": "Level 3: Cleric Subclass\nYou gain a Cleric subclass of your choice. The Life\nDomain subclass is detailed after this class’s description. A subclass is a specialization that grants\nyou features at certain Cleric levels. For the rest of\nyour career, you gain each of your subclass’s features that are of your Cleric level or lower."
+      },
+      "revised_reference_entries": [
+        "You gain a Cleric subclass of your choice. A subclass is a specialization that grants you features at certain Cleric levels. For the rest of your career, you gain each of your subclass's features that are of your Cleric level or lower."
+      ],
+      "authored_operations": [
+        {
+          "trigger": "Class level3",
+          "cost": "one subclass choice",
+          "effects": [
+            "Grant selected SRD subclass in-band features at actual class thresholds; no level6+ grants"
+          ],
+          "ending_and_identity": "Permanent exact subclass ownership; acquisition once",
+          "required_extension_groups": [
+            "progression",
+            "choices"
+          ]
+        }
+      ],
+      "unsupported_behavior": [
+        {
+          "groups": [
+            "progression",
+            "choices"
+          ],
+          "requirement": {
+            "trigger": "Class level3",
+            "cost": "one subclass choice",
+            "effects": [
+              "Grant selected SRD subclass in-band features at actual class thresholds; no level6+ grants"
+            ],
+            "ending": "Permanent exact subclass ownership; acquisition once"
+          },
+          "mapping_boundary": "Map this complete sequence to shared contracts; retained native behavior and fragments do not certify it.",
+          "status": "unmapped_or_unverified_candidate"
+        }
+      ]
+    },
+    {
+      "id": "cleric_ability_score_improvement",
+      "name": "Ability Score Improvement",
+      "class_level": 4,
+      "rules": {
+        "authority": "SRD 5.2.1",
+        "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+        "pages": [
+          37
+        ],
+        "text": "Level 4: Ability Score Improvement\nYou gain the Ability Score Improvement feat (see\n“Feats”) or another feat of your choice for which you\nqualify. You gain this feature again at Cleric levels 8,\n12, and 16."
+      },
+      "revised_reference_entries": [
+        "You gain the {@feat Ability Score Improvement|XPHB} feat or another {@5etools feat|feats.html} of your choice for which you qualify. You gain this feature again at Cleric levels 8, 12, and 16."
+      ],
+      "authored_operations": [
+        {
+          "trigger": "Class level 4 entitlement",
+          "cost": "one entitlement",
+          "effects": [
+            "Choose ASI or another qualifying feat; validate chosen feat category/prerequisites; source owns grant once"
+          ],
+          "ending_and_identity": "Exact source owns the grant/state; remove temporary effects at the declared ending; never replay acquisition on restore.",
+          "required_extension_groups": [
+            "choices",
+            "progression"
+          ]
+        }
+      ],
+      "unsupported_behavior": [
+        {
+          "groups": [
+            "choices",
+            "progression"
+          ],
+          "requirement": {
+            "trigger": "Class level 4 entitlement",
+            "cost": "one entitlement",
+            "effects": [
+              "Choose ASI or another qualifying feat; validate chosen feat category/prerequisites; source owns grant once"
+            ],
+            "ending": "Exact source owns the grant/state; remove temporary effects at the declared ending; never replay acquisition on restore."
+          },
+          "mapping_boundary": "Map this complete sequence to shared contracts; retained native behavior and fragments do not certify it.",
+          "status": "unmapped_or_unverified_candidate"
+        }
+      ]
+    },
+    {
+      "id": "cleric_sear_undead",
+      "name": "Sear Undead",
+      "class_level": 5,
+      "rules": {
+        "authority": "SRD 5.2.1",
+        "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+        "pages": [
+          37
+        ],
+        "text": "Level 5: Sear Undead\nWhenever you use Turn Undead, you can roll a\nnumber of d8s equal to your Wisdom modifier\n(minimum of 1d8) and add the rolls together. Each\nUndead that fails its saving throw against that use\nof Turn Undead takes Radiant damage equal to the\nroll’s total. This damage doesn’t end the turn effect."
+      },
+      "revised_reference_entries": [
+        "Whenever you use Turn Undead, you can roll a number of d8s equal to your Wisdom modifier (minimum of {@dice 1d8}) and add the rolls together. Each Undead that fails its saving throw against that use of Turn Undead takes Radiant damage equal to the roll's total. This damage doesn't end the turn effect."
+      ],
+      "authored_operations": [
+        {
+          "trigger": "On Turn Undead at Cleric 5",
+          "cost": "no extra cost",
+          "effects": [
+            "Optionally roll max(1,WIS)d8 once; each failing Undead takes that Radiant damage",
+            "This damage does not end the turn effect"
+          ],
+          "ending_and_identity": "Exact source owns the grant/state; remove temporary effects at the declared ending; never replay acquisition on restore.",
+          "required_extension_groups": [
+            "rolls",
+            "conditions"
+          ]
+        }
+      ],
+      "unsupported_behavior": [
+        {
+          "groups": [
+            "rolls",
+            "conditions"
+          ],
+          "requirement": {
+            "trigger": "On Turn Undead at Cleric 5",
+            "cost": "no extra cost",
+            "effects": [
+              "Optionally roll max(1,WIS)d8 once; each failing Undead takes that Radiant damage",
+              "This damage does not end the turn effect"
+            ],
+            "ending": "Exact source owns the grant/state; remove temporary effects at the declared ending; never replay acquisition on restore."
+          },
+          "mapping_boundary": "Map this complete sequence to shared contracts; retained native behavior and fragments do not certify it.",
+          "status": "unmapped_or_unverified_candidate"
+        }
+      ]
+    }
+  ],
+  "casting": {
+    "ability": "wis",
+    "prepared_counts_by_class_level": [
+      4,
+      5,
+      6,
+      7,
+      9
+    ],
+    "cantrips_by_class_level": [
+      3,
+      3,
+      3,
+      4,
+      4
+    ],
+    "ordinary_slots_by_class_level": [
+      [
+        2,
+        0,
+        0
+      ],
+      [
+        3,
+        0,
+        0
+      ],
+      [
+        4,
+        2,
+        0
+      ],
+      [
+        4,
+        3,
+        0
+      ],
+      [
+        4,
+        3,
+        2
+      ]
+    ],
+    "pact_slots_by_class_level": [],
+    "pact_slot_tuple": "[number of slots, slot level]",
+    "prepared_change": "any after Long Rest",
+    "cantrip_change": "one on own-class level gain",
+    "spell_list": "SRD own-class list at spell levels0–3; spell-candidates index retains exact authoritative lists",
+    "spellbook": null,
+    "spell_choices": {
+      "0": [
+        "guidance",
+        "light",
+        "mending",
+        "resistance",
+        "sacred_flame",
+        "spare_the_dying",
+        "thaumaturgy"
+      ],
+      "1": [
+        "bane",
+        "bless",
+        "command",
+        "create_or_destroy_water",
+        "cure_wounds",
+        "detect_evil_and_good",
+        "detect_magic",
+        "detect_poison_and_disease",
+        "guiding_bolt",
+        "healing_word",
+        "inflict_wounds",
+        "protection_from_evil_and_good",
+        "purify_food_and_drink",
+        "sanctuary",
+        "shield_of_faith"
+      ],
+      "2": [
+        "aid",
+        "augury",
+        "blindness/deafness",
+        "calm_emotions",
+        "continual_flame",
+        "enhance_ability",
+        "find_traps",
+        "gentle_repose",
+        "hold_person",
+        "lesser_restoration",
+        "locate_object",
+        "prayer_of_healing",
+        "protection_from_poison",
+        "silence",
+        "spiritual_weapon",
+        "warding_bond",
+        "zone_of_truth"
+      ],
+      "3": [
+        "animate_dead",
+        "beacon_of_hope",
+        "bestow_curse",
+        "clairvoyance",
+        "create_food_and_water",
+        "daylight",
+        "dispel_magic",
+        "glyph_of_warding",
+        "magic_circle",
+        "mass_healing_word",
+        "meld_into_stone",
+        "protection_from_energy",
+        "remove_curse",
+        "revivify",
+        "sending",
+        "speak_with_dead",
+        "spirit_guardians",
+        "tongues",
+        "water_walk"
+      ]
+    },
+    "spell_choice_policy": "These are SRD list memberships through spell level3, not permission to prepare above own-class slot progression; always-prepared and feat/species permissions are additional source grants."
+  },
+  "retained_runtime_seed": {
+    "id": "cleric",
+    "name": "Cleric",
+    "description": "A divine spellcaster using Wisdom. Base-class rules follow SRD 5.2.1; supported spell and feat choices remain curated.",
+    "hit_die": "d8",
+    "primary_ability": "WIS",
+    "subclass_level": 3,
+    "saving_throw_proficiencies": [
+      "WIS",
+      "CHA"
+    ],
+    "armor_proficiencies": [
+      "light",
+      "medium",
+      "shields"
+    ],
+    "weapon_proficiencies": [
+      "simple"
+    ],
+    "creation_proficiency_choices": true,
+    "skill_choices": {
+      "pick": 2,
+      "from": [
+        "History",
+        "Insight",
+        "Medicine",
+        "Persuasion",
+        "Religion"
+      ]
+    },
+    "starting_equipment": [
+      "chain_shirt",
+      "shield",
+      "mace",
+      "holy_symbol",
+      "priests_pack"
+    ],
+    "spell_slots_by_level": {
+      "1": [
+        2
+      ],
+      "2": [
+        3
+      ],
+      "3": [
+        4,
+        2
+      ],
+      "4": [
+        4,
+        3
+      ],
+      "5": [
+        4,
+        3,
+        2
+      ]
+    },
+    "cantrips_known": [],
+    "spell_list_ids": [
+      "aid",
+      "animate_dead",
+      "antimagic_field",
+      "astral_projection",
+      "augury",
+      "aura_of_life",
+      "bane",
+      "banishment",
+      "beacon_of_hope",
+      "bestow_curse",
+      "blade_barrier",
+      "bless",
+      "blindness/deafness",
+      "calm_emotions",
+      "clairvoyance",
+      "command",
+      "commune",
+      "conjure_celestial",
+      "contagion",
+      "continual_flame",
+      "control_water",
+      "control_weather",
+      "create_food_and_water",
+      "create_or_destroy_water",
+      "create_undead",
+      "cure_wounds",
+      "daylight",
+      "death_ward",
+      "detect_evil_and_good",
+      "detect_magic",
+      "detect_poison_and_disease",
+      "dispel_evil_and_good",
+      "dispel_magic",
+      "divination",
+      "divine_word",
+      "earthquake",
+      "enhance_ability",
+      "etherealness",
+      "find_the_path",
+      "find_traps",
+      "fire_storm",
+      "flame_strike",
+      "forbiddance",
+      "freedom_of_movement",
+      "gate",
+      "geas",
+      "gentle_repose",
+      "glyph_of_warding",
+      "greater_restoration",
+      "guardian_of_faith",
+      "guidance",
+      "guiding_bolt",
+      "hallow",
+      "harm",
+      "heal",
+      "healing_word",
+      "heroes_feast",
+      "hold_person",
+      "holy_aura",
+      "inflict_wounds",
+      "insect_plague",
+      "legend_lore",
+      "lesser_restoration",
+      "light",
+      "locate_creature",
+      "locate_object",
+      "magic_circle",
+      "mass_cure_wounds",
+      "mass_heal",
+      "mass_healing_word",
+      "meld_into_stone",
+      "mending",
+      "planar_ally",
+      "planar_binding",
+      "plane_shift",
+      "power_word_heal",
+      "prayer_of_healing",
+      "protection_from_energy",
+      "protection_from_evil_and_good",
+      "protection_from_poison",
+      "purify_food_and_drink",
+      "raise_dead",
+      "regenerate",
+      "remove_curse",
+      "resistance",
+      "resurrection",
+      "revivify",
+      "sacred_flame",
+      "sanctuary",
+      "scrying",
+      "sending",
+      "shield_of_faith",
+      "silence",
+      "spare_the_dying",
+      "speak_with_dead",
+      "spirit_guardians",
+      "spiritual_weapon",
+      "stone_shape",
+      "sunbeam",
+      "sunburst",
+      "symbol",
+      "thaumaturgy",
+      "tongues",
+      "true_resurrection",
+      "true_seeing",
+      "warding_bond",
+      "water_walk",
+      "word_of_recall",
+      "zone_of_truth"
+    ],
+    "spells_known_by_level": {
+      "1": [],
+      "2": [],
+      "3": []
+    },
+    "features_by_level": {
+      "1": [
+        {
+          "id": "cleric_spellcasting",
+          "name": "Spellcasting",
+          "description": "You prepare Cleric spells using Wisdom. You can use a Holy Symbol as a Spellcasting Focus.",
+          "type": "passive",
+          "effects": [
+            {
+              "type": "spellcasting",
+              "ability": "WIS",
+              "spell_lists": [
+                "cleric"
+              ],
+              "default_cantrips": [
+                "guidance",
+                "sacred_flame",
+                "thaumaturgy"
+              ],
+              "default_prepared_spells": [
+                "bless",
+                "cure_wounds",
+                "guiding_bolt",
+                "shield_of_faith"
+              ],
+              "capacity_by_level": {
+                "1": {
+                  "cantrips": 3,
+                  "prepared_spells": 4
+                },
+                "2": {
+                  "cantrips": 3,
+                  "prepared_spells": 5
+                },
+                "3": {
+                  "cantrips": 3,
+                  "prepared_spells": 6
+                },
+                "4": {
+                  "cantrips": 4,
+                  "prepared_spells": 7
+                },
+                "5": {
+                  "cantrips": 4,
+                  "prepared_spells": 9
+                },
+                "6": {
+                  "cantrips": 4,
+                  "prepared_spells": 10
+                },
+                "7": {
+                  "cantrips": 4,
+                  "prepared_spells": 11
+                },
+                "8": {
+                  "cantrips": 4,
+                  "prepared_spells": 12
+                },
+                "9": {
+                  "cantrips": 4,
+                  "prepared_spells": 14
+                },
+                "10": {
+                  "cantrips": 5,
+                  "prepared_spells": 15
+                },
+                "11": {
+                  "cantrips": 5,
+                  "prepared_spells": 16
+                },
+                "12": {
+                  "cantrips": 5,
+                  "prepared_spells": 16
+                },
+                "13": {
+                  "cantrips": 5,
+                  "prepared_spells": 17
+                },
+                "14": {
+                  "cantrips": 5,
+                  "prepared_spells": 17
+                },
+                "15": {
+                  "cantrips": 5,
+                  "prepared_spells": 18
+                },
+                "16": {
+                  "cantrips": 5,
+                  "prepared_spells": 18
+                },
+                "17": {
+                  "cantrips": 5,
+                  "prepared_spells": 19
+                },
+                "18": {
+                  "cantrips": 5,
+                  "prepared_spells": 20
+                },
+                "19": {
+                  "cantrips": 5,
+                  "prepared_spells": 21
+                },
+                "20": {
+                  "cantrips": 5,
+                  "prepared_spells": 22
+                }
+              }
+            }
+          ]
+        },
+        {
+          "id": "cleric_divine_order",
+          "name": "Divine Order",
+          "description": "Choose Protector or Thaumaturge. Protector grants Martial weapon proficiency and Heavy Armor training. Thaumaturge grants one additional Cleric cantrip and a Wisdom-based bonus on Arcana and Religion checks.",
+          "type": "passive",
+          "effects": [
+            {
+              "type": "feature_choice",
+              "options": [
+                {
+                  "id": "protector",
+                  "name": "Protector",
+                  "effects": [
+                    {
+                      "type": "proficiency_grant",
+                      "weapon_proficiencies": [
+                        "martial"
+                      ],
+                      "armor_proficiencies": [
+                        "heavy"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "id": "thaumaturge",
+                  "name": "Thaumaturge",
+                  "effects": [
+                    {
+                      "type": "spellcasting_capacity_bonus",
+                      "kind": "cantrips",
+                      "amount": 1
+                    },
+                    {
+                      "type": "ability_check_bonus",
+                      "skills": [
+                        "Arcana",
+                        "Religion"
+                      ],
+                      "ability": "WIS",
+                      "minimum_bonus": 1,
+                      "check_ability": "INT"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "2": [
+        {
+          "id": "cleric_channel_divinity",
+          "name": "Channel Divinity",
+          "description": "You have two uses of Channel Divinity, regain one expended use on a Short Rest, and regain all uses on a Long Rest.",
+          "type": "resource",
+          "uses": 2,
+          "uses_by_level": {
+            "6": 3,
+            "18": 4
+          },
+          "uses_per": "long_rest",
+          "short_rest_recovery": 1
+        },
+        {
+          "id": "cleric_divine_spark",
+          "name": "Divine Spark",
+          "description": "As a Magic action, point your Holy Symbol at another creature you can see within 30 feet. Roll 1d8 plus your Wisdom modifier. Restore that many Hit Points, or force a Constitution save: on a failure the creature takes that much Radiant or Necrotic damage; on a success it takes half. The dice increase to 2d8 at level 7, 3d8 at level 13, and 4d8 at level 18.",
+          "type": "active",
+          "effects": [],
+          "action_cost": "magic_action",
+          "resource_id": "cleric_channel_divinity",
+          "resolver": "cleric_rules"
+        },
+        {
+          "id": "cleric_turn_undead",
+          "name": "Turn Undead",
+          "description": "As a Magic action, present your Holy Symbol. Each Undead of your choice within 30 feet makes a Wisdom saving throw against your spell save DC. On a failure it is Frightened and Incapacitated for 1 minute and tries to move as far from you as it can on its turns. The effect ends early if it takes damage, you become Incapacitated, or you die.",
+          "type": "active",
+          "effects": [],
+          "action_cost": "magic_action",
+          "resource_id": "cleric_channel_divinity",
+          "resolver": "cleric_rules"
+        }
+      ],
+      "3": [
+        {
+          "id": "cleric_cleric_subclass",
+          "name": "Cleric Subclass",
+          "description": "You gain a Cleric subclass of your choice. A subclass is a specialization that grants you features at certain Cleric levels. For the rest of your career, you gain each of your subclass's features that are of your Cleric level or lower.",
+          "type": "passive",
+          "effects": []
+        }
+      ],
+      "4": [
+        {
+          "id": "cleric_ability_score_improvement",
+          "name": "Ability Score Improvement",
+          "description": "When you reach 4th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature. If your DM allows the use of feats, you may instead take a {@5etools feat.html}.",
+          "type": "passive",
+          "effects": [
+            {
+              "type": "asi"
+            }
+          ],
+          "rules_status": "2024-supported",
+          "rules_source": "dnd-2024-srd-5.2.1"
+        }
+      ],
+      "5": [
+        {
+          "id": "cleric_sear_undead",
+          "name": "Sear Undead",
+          "description": "Whenever you use Turn Undead, you can roll a number of d8s equal to your Wisdom modifier (minimum of 1d8) and add the rolls together. Each Undead that fails its saving throw against that use of Turn Undead takes Radiant damage equal to the roll's total. This damage doesn't end the turn effect.",
+          "type": "passive",
+          "effects": [],
+          "resolver": "cleric_rules"
+        }
+      ]
+    },
+    "spell_slots_by_character_level": {
+      "1": [
+        2
+      ],
+      "2": [
+        3
+      ],
+      "3": [
+        4,
+        2
+      ],
+      "4": [
+        4,
+        3
+      ],
+      "5": [
+        4,
+        3,
+        2
+      ]
+    },
+    "starting_gold": 7,
+    "starting_gold_alternative": 110
+  },
+  "required_extensions": [
+    "progression",
+    "choices",
+    "casting"
+  ],
+  "equipment_resolution": [
+    {
+      "option": "A",
+      "source_item_key": "chain_shirt",
+      "quantity": 1,
+      "runtime_item_id": "chain_shirt",
+      "status": "source_definition_exists_not_gameplay_verified",
+      "requirement": "Preserve quantity, exact source item facts and complete pack contents"
+    },
+    {
+      "option": "A",
+      "source_item_key": "shield",
+      "quantity": 1,
+      "runtime_item_id": "shield",
+      "status": "source_definition_exists_not_gameplay_verified",
+      "requirement": "Preserve quantity, exact source item facts and complete pack contents"
+    },
+    {
+      "option": "A",
+      "source_item_key": "mace",
+      "quantity": 1,
+      "runtime_item_id": "mace",
+      "status": "source_definition_exists_not_gameplay_verified",
+      "requirement": "Preserve quantity, exact source item facts and complete pack contents"
+    },
+    {
+      "option": "A",
+      "source_item_key": "holy_symbol",
+      "quantity": 1,
+      "runtime_item_id": "holy_symbol",
+      "status": "source_definition_exists_not_gameplay_verified",
+      "requirement": "Preserve quantity, exact source item facts and complete pack contents"
+    },
+    {
+      "option": "A",
+      "source_item_key": "priests_pack",
+      "quantity": 1,
+      "runtime_item_id": "priests_pack",
+      "status": "source_definition_exists_not_gameplay_verified",
+      "requirement": "Preserve quantity, exact source item facts and complete pack contents"
+    }
+  ],
+  "unsupported_behavior": [
+    {
+      "groups": [
+        "progression",
+        "items"
+      ],
+      "requirement": "Complete starting/multiclass acquisition, choices and equipment quantities/GP; candidate equipment_resolution retains every unresolved item or choice. No opt-in or native-path replacement is authorized by this candidate."
+    }
+  ],
+  "source_revision": "2a19eb1d (existing working-tree definitions and recovered drafts read on 2026-11-08)",
+  "reused_input_hashes": {
+    "data/core/classes/cleric.json": "370d2a37dcbf5b78b5289873c8a42e000bedeb5383b3cebafb3c2f10f7450620",
+    "reference/2024/classes/cleric.json": "8a038c2223661e1497739924ebe7c2dbb814e9b7eac248e9fe31e62b1d6cac9b",
+    "docs/mechanics/cleric-2024.md": "eb0994205c3de6c90d702569a4c1f18bfcc406516d97efdab41c97aca699a67c"
+  }
+}

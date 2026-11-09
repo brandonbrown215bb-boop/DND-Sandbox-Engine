@@ -1,0 +1,154 @@
+{
+  "schema": "crown-reachable-item-candidate/1",
+  "id": "gold_100",
+  "name": "Gold reward: 100 GP",
+  "kind": "currency_reward",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring intent only; not registered engine syntax.",
+  "rules": {
+    "authority": "Crown reward wrapper, with SRD 5.2.1 p.89 coin units",
+    "pdf_sha256": null,
+    "pages": [
+      89
+    ],
+    "text": "Existing Crown reward wrapper grants 100 Gold Pieces. GP is currency; fifty coins weigh one pound. A named pouch/sack in the legacy label does not separately grant an ordinary Pouch/Sack item.",
+    "source_context": "../source-pages.json"
+  },
+  "definition": {
+    "id": "gold_100",
+    "name": "Gold reward: 100 GP",
+    "currency": "gp",
+    "amount": 100,
+    "coin_count": 100,
+    "coin_weight_lb": 2.0
+  },
+  "authored_operations": [
+    "Existing Crown reward wrapper grants 100 Gold Pieces. GP is currency; fifty coins weigh one pound. A named pouch/sack in the legacy label does not separately grant an ordinary Pouch/Sack item."
+  ],
+  "retained_runtime_seeds": [
+    {
+      "path": "data/core/items/consumables.json",
+      "array_index": 10,
+      "file_sha256": "045f413d89391312c1e3a175351f90427accde8f21b8d087abc1d6c5d9c3ec2d",
+      "definition": {
+        "id": "gold_100",
+        "name": "Gold Sack",
+        "description": "A hefty sack of 100 gold coins.",
+        "type": "currency",
+        "effects": [
+          {
+            "type": "gold",
+            "value": 100
+          }
+        ],
+        "value": 100
+      }
+    }
+  ],
+  "manifest_overrides": [],
+  "required_mapping": [
+    "currency_rewards"
+  ],
+  "consumers": [
+    {
+      "channel": "campaign_goal_loot_or_tactical_object",
+      "path": "data/core/campaigns/the_lost_crown.json",
+      "sha256": "3352b2d22be36e68591bfdf4ec73b8201f2bec6c69a3a60b0c8beb7d5074db44",
+      "json_pointer": "/dungeons/ruins_of_ashvale/loot/1/item_id"
+    },
+    {
+      "channel": "campaign_goal_loot_or_tactical_object",
+      "path": "data/core/campaigns/the_lost_crown.json",
+      "sha256": "3352b2d22be36e68591bfdf4ec73b8201f2bec6c69a3a60b0c8beb7d5074db44",
+      "json_pointer": "/dungeons/caverns_of_gloom/loot/1/item_id"
+    },
+    {
+      "channel": "event_grant",
+      "path": "data/core/events/dungeon_events.json",
+      "sha256": "db368f21178462a95f0bb78028ec8e10441f6467e4a6bb7b3843d6ecaeb20d35",
+      "json_pointer": "/events/0/choices/0/success/effects/0/item_id"
+    },
+    {
+      "channel": "event_grant",
+      "path": "data/core/events/dungeon_events.json",
+      "sha256": "db368f21178462a95f0bb78028ec8e10441f6467e4a6bb7b3843d6ecaeb20d35",
+      "json_pointer": "/events/0/choices/1/effects/2/item_id"
+    },
+    {
+      "channel": "event_grant",
+      "path": "data/core/events/dungeon_events.json",
+      "sha256": "db368f21178462a95f0bb78028ec8e10441f6467e4a6bb7b3843d6ecaeb20d35",
+      "json_pointer": "/events/5/effects/0/item_id"
+    },
+    {
+      "channel": "event_grant",
+      "path": "data/core/events/dungeon_events.json",
+      "sha256": "db368f21178462a95f0bb78028ec8e10441f6467e4a6bb7b3843d6ecaeb20d35",
+      "json_pointer": "/events/5/effects/1/item_id"
+    },
+    {
+      "channel": "event_grant",
+      "path": "data/core/events/forest_events.json",
+      "sha256": "d4510f0da5ad26db2611a506fb58c79c35247610ac61ea39be48d30824feac09",
+      "json_pointer": "/events/5/chain_event/choices/2/success/effects/0/item_id"
+    },
+    {
+      "channel": "event_grant",
+      "path": "data/core/events/mountain_events.json",
+      "sha256": "28c24bea91c714a4c49e7c7b6358adf5dea15b8f06d69dca29ef79542f0a6fd3",
+      "json_pointer": "/events/2/success/effects/0/item_id"
+    },
+    {
+      "channel": "event_grant",
+      "path": "data/core/events/mountain_events.json",
+      "sha256": "28c24bea91c714a4c49e7c7b6358adf5dea15b8f06d69dca29ef79542f0a6fd3",
+      "json_pointer": "/events/5/success/effects/0/item_id"
+    },
+    {
+      "channel": "event_grant",
+      "path": "data/core/events/town_events.json",
+      "sha256": "cc2833d086c100b57a67f114d11888312e7074fdebe601d94151d17e9c310098",
+      "json_pointer": "/events/4/choices/0/reward/item_id"
+    },
+    {
+      "channel": "generated_dungeon_loot",
+      "path": "src/dungeon/dungeon_generator.gd",
+      "sha256": "88af7259bb15ebdba9e864b6fc59468d6a262946f7bde20ac33d8cb64921ca7e",
+      "details": "generate_dungeon intermediate LOOT branch: gold_100, optional potion_healing; tactical override clears these."
+    },
+    {
+      "channel": "monster_reward_metadata",
+      "path": "data/core/monsters/core_monsters.json",
+      "sha256": "33bf505c91476b32f7dd2887dd0caa19521e4a9e206392b8d803090b105eb8c2",
+      "json_pointer": "/1/loot_table/0/item_id",
+      "details": "Loot-table metadata retained; combat currently copies it into entities. This is not proof that a post-combat roll/grant host executes it."
+    },
+    {
+      "channel": "monster_reward_metadata",
+      "path": "data/core/monsters/core_monsters.json",
+      "sha256": "33bf505c91476b32f7dd2887dd0caa19521e4a9e206392b8d803090b105eb8c2",
+      "json_pointer": "/8/loot_table/1/item_id",
+      "details": "Loot-table metadata retained; combat currently copies it into entities. This is not proof that a post-combat roll/grant host executes it."
+    },
+    {
+      "channel": "monster_reward_metadata",
+      "path": "data/core/monsters/core_monsters.json",
+      "sha256": "33bf505c91476b32f7dd2887dd0caa19521e4a9e206392b8d803090b105eb8c2",
+      "json_pointer": "/9/loot_table/1/item_id",
+      "details": "Loot-table metadata retained; combat currently copies it into entities. This is not proof that a post-combat roll/grant host executes it."
+    },
+    {
+      "channel": "monster_reward_metadata",
+      "path": "data/core/monsters/core_monsters.json",
+      "sha256": "33bf505c91476b32f7dd2887dd0caa19521e4a9e206392b8d803090b105eb8c2",
+      "json_pointer": "/9/loot_table/2/item_id",
+      "details": "Loot-table metadata retained; combat currently copies it into entities. This is not proof that a post-combat roll/grant host executes it."
+    }
+  ],
+  "unsupported_behavior": [
+    {
+      "group": "currency_rewards",
+      "requirement": "Keep currency amounts distinct from inventory items; route actual once-only rewards without replay, source-ID gold special cases or duplicate campaign/monster rewards. Source trace is not a claim that all reward hosts currently settle metadata."
+    }
+  ]
+}

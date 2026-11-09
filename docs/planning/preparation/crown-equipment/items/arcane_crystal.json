@@ -1,0 +1,75 @@
+{
+  "schema": "crown-equipment-candidate/1",
+  "id": "arcane_crystal",
+  "name": "Crystal (Arcane Focus)",
+  "kind": "focus",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring intent only; not registered engine syntax.",
+  "rules": {
+    "authority": "SRD 5.2.1",
+    "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      96,
+      105,
+      106
+    ],
+    "section": "Crystal (Arcane Focus)",
+    "text": "Crystal (Arcane Focus) is a focus for sorcerer, warlock, wizard spells, subject to the class casting permission and Material-component rules. Form: held.",
+    "source_context": "../source-pages.json"
+  },
+  "definition": {
+    "id": "arcane_crystal",
+    "name": "Crystal (Arcane Focus)",
+    "weight_lb": 1,
+    "cost_gp": 10,
+    "class_permissions": [
+      "sorcerer",
+      "warlock",
+      "wizard"
+    ],
+    "form": "held",
+    "base_weapon_candidate_id": null
+  },
+  "authored_operations": [
+    "A focus can replace Material components only if the spell neither consumes them nor specifies their cost, and a feature permits that focus. Hold the focus unless its item description permits another form; accessing materials needs a free hand, which can also perform Somatic components. Check actual class permission, hands and Holy Symbol worn/borne/held form (SRD pp.105–106).",
+    "Retain one exact item copy with both weapon and focus roles for staff forms; do not substitute a plain Quarterstaff, or grant a second free weapon."
+  ],
+  "retained_runtime_seeds": [
+    {
+      "path": "data/core/items/srd_gear.json",
+      "array_index": 13,
+      "file_sha256": "ed873f9a0967f5bb6e20241428e4f53b92c011fa547321af69798ece822b57d4",
+      "definition": {
+        "id": "arcane_crystal",
+        "weight": 1,
+        "name": "Crystal (Arcane Focus)",
+        "description": "A crystal used to channel arcane spells. Can replace material components without a listed cost.",
+        "type": "tool",
+        "effects": [
+          {
+            "type": "spellcasting_focus"
+          }
+        ],
+        "value": 10
+      }
+    }
+  ],
+  "manifest_overrides": [],
+  "required_mapping": [
+    "focuses"
+  ],
+  "consumers": [
+    {
+      "package_id": "sorcerer",
+      "option": "A",
+      "quantity": 1,
+      "source": "docs/planning/preparation/crown-characters/classes/sorcerer.json"
+    }
+  ],
+  "unsupported_behavior": [
+    {
+      "group": "focuses",
+      "requirement": "Map class-owned focus permission, free hands, Material costs/consumption and Holy Symbol held/worn/borne forms. Staff is one exact copy with both Quarterstaff and focus roles; existing tool-only staff seeds do not provide the weapon role."
+    }
+  ]
+}

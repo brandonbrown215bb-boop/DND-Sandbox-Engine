@@ -1,5 +1,13 @@
 # Crown spell conversion: Grokbot stacking queue
 
+**Current Crown handoff:** catalog writing and the
+[cross-set engine mapping](crown-engine-mapping/README.md) are complete as planning.
+Use the [bounded cross-set queue](crown-engine-mapping/assignments.md), starting
+with **CXM-01/S-249 ammunition**, for the next implementation. Reuse this dated
+spell dispatch's accepted work, CSV limits and support-10 repair; do not restart
+SC-01 or treat its historical next-action prose as the new cross-set order.
+Mapping itself changed no runtime or gameplay acceptance.
+
 Owner direction: **2026-11-04**. This is the complete remaining **169-spell**
 conversion queue at dispatch for Crown's pinned 183 SRD level-0-3 spells, divided
 into **46 ordered PR assignments**. Its original inventory was 81 refused spells

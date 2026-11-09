@@ -1,0 +1,94 @@
+{
+  "schema": "crown-character-candidate/1",
+  "id": "path_of_the_berserker",
+  "name": "Path of the Berserker",
+  "kind": "subclass",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "scope": {
+    "total_character_level_maximum": 5
+  },
+  "operation_language": "authoring intent only; not registered engine syntax",
+  "runtime_support": "Retained definitions are reuse material, not proof of full rules. Every authored operation needs contract mapping and later production-path verification before promotion.",
+  "class_id": "barbarian",
+  "class_level": 3,
+  "features": [
+    {
+      "id": "path_of_the_berserker_frenzy",
+      "name": "Frenzy",
+      "class_level": 3,
+      "rules": {
+        "authority": "SRD 5.2.1",
+        "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+        "pages": [
+          30
+        ],
+        "text": "Level 3: Frenzy\nIf you use Reckless Attack while your Rage is active,\nyou deal extra damage to the first target you hit on\nyour turn with a Strength-based attack. To determine the extra damage, roll a number of d6s equal\nto your Rage Damage bonus, and add them together.\nThe damage has the same type as the weapon or\nUnarmed Strike used for the attack."
+      },
+      "revised_reference_entries": [
+        "If you use Reckless Attack while your Rage is active, you deal extra damage to the first target you hit on your turn with a Strength-based attack. To determine the extra damage, roll a number of d6s equal to your Rage Damage bonus, and add them together. The damage has the same type as the weapon or {@variantrule Unarmed Strike|XPHB} used for the attack."
+      ],
+      "authored_operations": [
+        {
+          "trigger": "First target hit by Strength attack each own turn while Rage active and Reckless Attack used",
+          "cost": "none",
+          "effects": [
+            "Extra d6 count equals Rage damage bonus (2 in Crown); damage same type as weapon or Unarmed Strike"
+          ],
+          "ending_and_identity": "Exact source owns the grant/state; remove temporary effects at the declared ending; never replay acquisition on restore.",
+          "required_extension_groups": [
+            "attacks",
+            "rolls"
+          ]
+        }
+      ],
+      "unsupported_behavior": [
+        {
+          "groups": [
+            "attacks",
+            "rolls"
+          ],
+          "requirement": {
+            "trigger": "First target hit by Strength attack each own turn while Rage active and Reckless Attack used",
+            "cost": "none",
+            "effects": [
+              "Extra d6 count equals Rage damage bonus (2 in Crown); damage same type as weapon or Unarmed Strike"
+            ],
+            "ending": "Exact source owns the grant/state; remove temporary effects at the declared ending; never replay acquisition on restore."
+          },
+          "mapping_boundary": "Map this complete sequence to shared contracts; retained native behavior and fragments do not certify it.",
+          "status": "unmapped_or_unverified_candidate"
+        }
+      ]
+    }
+  ],
+  "reused_from": [
+    "_staging/subclass-staging/staged/path_of_the_berserker.json",
+    "reference/2024/classes/barbarian.json"
+  ],
+  "retained_runtime_seed": {
+    "id": "path_of_the_berserker",
+    "name": "Path of the Berserker",
+    "class_id": "barbarian",
+    "rights": "srd_ok",
+    "rules_status": "2024-partial",
+    "features_by_level": {
+      "3": [
+        {
+          "id": "path_of_the_berserker_frenzy",
+          "name": "Frenzy",
+          "description": "If you use Reckless Attack while your Rage is active, you deal extra damage to the first target you hit on your turn with a Strength-based attack. To determine the extra damage, roll a number of d6s equal to your Rage…",
+          "type": "passive",
+          "effects": [],
+          "rules_source": "dnd-2024-srd-5.2.1",
+          "rules_status": "reference-only",
+          "enabled": false
+        }
+      ]
+    }
+  },
+  "source_revision": "2a19eb1d (existing working-tree definitions and recovered drafts read on 2026-11-08)",
+  "reused_input_hashes": {
+    "_staging/subclass-staging/staged/path_of_the_berserker.json": "08bca9476d1ce83f0e501da31e225b3c978d9694194781ef445e7fd729c60d7d",
+    "reference/2024/classes/barbarian.json": "0fc825afb9e3b2489300fc6fb2a0e9c19dae06742137beb2f70ba3ce07dacf03"
+  }
+}

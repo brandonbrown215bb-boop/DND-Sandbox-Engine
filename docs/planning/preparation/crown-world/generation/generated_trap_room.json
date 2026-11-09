@@ -1,0 +1,22 @@
+{
+  "schema": "crown-world-candidate/1",
+  "id": "generated_trap_room",
+  "name": "Generated trapped chest room",
+  "kind": "generation",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring declarations only; not registered engine opcodes.",
+  "required_extensions": [
+    "locks_traps",
+    "objectives_rewards"
+  ],
+  "authored_operations": [
+    {
+      "operation": "resolve_event_once",
+      "event_candidate": "../events/dungeon_events__trapped_chest.json",
+      "requirement": "Find the exact event in dungeon_events; retain chosen branch and actual effects. Current room clears when event resolves without child combat; child combat must win before clear. Missing event currently clears the room; record this behavior, do not endorse it as a supported trap."
+    }
+  ],
+  "blockers": [
+    "Not an actual spatial chest/trap instance. Leaving the event clears the generated room under the current host. No once-only reward or trap reset can be inferred for a freshly rolled separate event occurrence."
+  ]
+}

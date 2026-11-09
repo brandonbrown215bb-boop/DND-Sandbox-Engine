@@ -1,0 +1,130 @@
+{
+  "schema": "crown-reachable-item-candidate/1",
+  "id": "gold_50",
+  "name": "Gold reward: 50 GP",
+  "kind": "currency_reward",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring intent only; not registered engine syntax.",
+  "rules": {
+    "authority": "Crown reward wrapper, with SRD 5.2.1 p.89 coin units",
+    "pdf_sha256": null,
+    "pages": [
+      89
+    ],
+    "text": "Existing Crown reward wrapper grants 50 Gold Pieces. GP is currency; fifty coins weigh one pound. A named pouch/sack in the legacy label does not separately grant an ordinary Pouch/Sack item.",
+    "source_context": "../source-pages.json"
+  },
+  "definition": {
+    "id": "gold_50",
+    "name": "Gold reward: 50 GP",
+    "currency": "gp",
+    "amount": 50,
+    "coin_count": 50,
+    "coin_weight_lb": 1.0
+  },
+  "authored_operations": [
+    "Existing Crown reward wrapper grants 50 Gold Pieces. GP is currency; fifty coins weigh one pound. A named pouch/sack in the legacy label does not separately grant an ordinary Pouch/Sack item."
+  ],
+  "retained_runtime_seeds": [
+    {
+      "path": "data/core/items/consumables.json",
+      "array_index": 9,
+      "file_sha256": "045f413d89391312c1e3a175351f90427accde8f21b8d087abc1d6c5d9c3ec2d",
+      "definition": {
+        "id": "gold_50",
+        "name": "Gold Pouch",
+        "description": "A small pouch containing 50 gold coins.",
+        "type": "currency",
+        "effects": [
+          {
+            "type": "gold",
+            "value": 50
+          }
+        ],
+        "value": 50
+      }
+    }
+  ],
+  "manifest_overrides": [],
+  "required_mapping": [
+    "currency_rewards"
+  ],
+  "consumers": [
+    {
+      "channel": "event_grant",
+      "path": "data/core/events/dungeon_events.json",
+      "sha256": "db368f21178462a95f0bb78028ec8e10441f6467e4a6bb7b3843d6ecaeb20d35",
+      "json_pointer": "/events/0/choices/0/failure/effects/2/item_id"
+    },
+    {
+      "channel": "event_grant",
+      "path": "data/core/events/dungeon_events.json",
+      "sha256": "db368f21178462a95f0bb78028ec8e10441f6467e4a6bb7b3843d6ecaeb20d35",
+      "json_pointer": "/events/4/choices/1/success/effects/0/item_id"
+    },
+    {
+      "channel": "event_grant",
+      "path": "data/core/events/forest_events.json",
+      "sha256": "d4510f0da5ad26db2611a506fb58c79c35247610ac61ea39be48d30824feac09",
+      "json_pointer": "/events/2/choices/1/success/effects/1/item_id"
+    },
+    {
+      "channel": "event_grant",
+      "path": "data/core/events/forest_events.json",
+      "sha256": "d4510f0da5ad26db2611a506fb58c79c35247610ac61ea39be48d30824feac09",
+      "json_pointer": "/events/3/success/effects/0/item_id"
+    },
+    {
+      "channel": "event_grant",
+      "path": "data/core/events/forest_events.json",
+      "sha256": "d4510f0da5ad26db2611a506fb58c79c35247610ac61ea39be48d30824feac09",
+      "json_pointer": "/events/6/choices/0/success/effects/0/item_id"
+    },
+    {
+      "channel": "event_grant",
+      "path": "data/core/events/forest_events.json",
+      "sha256": "d4510f0da5ad26db2611a506fb58c79c35247610ac61ea39be48d30824feac09",
+      "json_pointer": "/events/6/choices/1/effects/0/item_id"
+    },
+    {
+      "channel": "event_grant",
+      "path": "data/core/events/town_events.json",
+      "sha256": "cc2833d086c100b57a67f114d11888312e7074fdebe601d94151d17e9c310098",
+      "json_pointer": "/events/0/choices/0/success/effects/1/item_id"
+    },
+    {
+      "channel": "monster_reward_metadata",
+      "path": "data/core/monsters/core_monsters.json",
+      "sha256": "33bf505c91476b32f7dd2887dd0caa19521e4a9e206392b8d803090b105eb8c2",
+      "json_pointer": "/0/loot_table/0/item_id",
+      "details": "Loot-table metadata retained; combat currently copies it into entities. This is not proof that a post-combat roll/grant host executes it."
+    },
+    {
+      "channel": "monster_reward_metadata",
+      "path": "data/core/monsters/core_monsters.json",
+      "sha256": "33bf505c91476b32f7dd2887dd0caa19521e4a9e206392b8d803090b105eb8c2",
+      "json_pointer": "/2/loot_table/0/item_id",
+      "details": "Loot-table metadata retained; combat currently copies it into entities. This is not proof that a post-combat roll/grant host executes it."
+    },
+    {
+      "channel": "monster_reward_metadata",
+      "path": "data/core/monsters/core_monsters.json",
+      "sha256": "33bf505c91476b32f7dd2887dd0caa19521e4a9e206392b8d803090b105eb8c2",
+      "json_pointer": "/5/loot_table/0/item_id",
+      "details": "Loot-table metadata retained; combat currently copies it into entities. This is not proof that a post-combat roll/grant host executes it."
+    },
+    {
+      "channel": "monster_reward_metadata",
+      "path": "data/core/monsters/core_monsters.json",
+      "sha256": "33bf505c91476b32f7dd2887dd0caa19521e4a9e206392b8d803090b105eb8c2",
+      "json_pointer": "/6/loot_table/0/item_id",
+      "details": "Loot-table metadata retained; combat currently copies it into entities. This is not proof that a post-combat roll/grant host executes it."
+    }
+  ],
+  "unsupported_behavior": [
+    {
+      "group": "currency_rewards",
+      "requirement": "Keep currency amounts distinct from inventory items; route actual once-only rewards without replay, source-ID gold special cases or duplicate campaign/monster rewards. Source trace is not a claim that all reward hosts currently settle metadata."
+    }
+  ]
+}

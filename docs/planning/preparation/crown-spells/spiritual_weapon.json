@@ -1,0 +1,165 @@
+{
+  "format": "crown-spell-candidate/1",
+  "id": "spiritual_weapon",
+  "name": "Spiritual Weapon",
+  "level": 2,
+  "status": "written_unverified_not_loaded",
+  "source": {
+    "authority": "SRD 5.2.1",
+    "url": "https://media.dndbeyond.com/compendium-images/srd/5.2/SRD_CC_v5.2.1.pdf",
+    "sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      165
+    ],
+    "header": {
+      "Casting Time": "Bonus Action",
+      "Range": "60 feet",
+      "Components": "V, S",
+      "Duration": "Concentration, up to 1 minute"
+    },
+    "attribution": "System Reference Document 5.2.1, Wizards of the Coast LLC; CC BY 4.0."
+  },
+  "casting": {
+    "casting_time": "Bonus Action",
+    "kind": "bonus_action",
+    "seconds": null,
+    "ritual_available": false,
+    "range": {
+      "source": "60 feet",
+      "kind": "distance",
+      "feet": 60
+    },
+    "components": [
+      "V",
+      "S"
+    ],
+    "material": null,
+    "duration": "Concentration, up to 1 minute",
+    "concentration": true,
+    "spell_lists": [
+      "cleric"
+    ]
+  },
+  "authored_intent": "Bonus Action creates spectral weapon; initial and later Bonus Action melee spell attacks within 5 feet of weapon; move up to 20 feet before attack; Force 1d8+ability, +1d8 per slot; Concentration.",
+  "rules": [
+    {
+      "id": "r001",
+      "text": "You create a floating, spectral force that resembles a weapon of your choice and lasts for the duration."
+    },
+    {
+      "id": "r002",
+      "text": "The force appears within range in a space of your choice, and you can immediately make one melee spell attack against one creature within 5 feet of the force."
+    },
+    {
+      "id": "r003",
+      "text": "On a hit, the target takes Force damage equal to 1d8 plus your spellcasting ability modifier."
+    },
+    {
+      "id": "r004",
+      "text": "As a Bonus Action on your later turns, you can move the force up to 20 feet and repeat the attack against a creature within 5 feet of it."
+    },
+    {
+      "id": "r005",
+      "text": "Using a Higher-Level Spell Slot."
+    },
+    {
+      "id": "r006",
+      "text": "The damage increases by 1d8 for every slot level above 2."
+    }
+  ],
+  "authored_operations": [
+    {
+      "operation": "create_action_origin_force",
+      "parameters": {
+        "appearance": "chosen_weapon",
+        "initial_attack": true,
+        "attack": {
+          "kind": "melee_spell",
+          "target": "creature_within_5_feet_of_force",
+          "damage": "1d8+selected_casting_modifier",
+          "type": "force",
+          "upcast_per_slot": "1d8"
+        },
+        "later": {
+          "action": "bonus_action",
+          "move_feet": 20,
+          "then_attack": true
+        }
+      },
+      "status": "authoring_declaration_not_a_registered_opcode",
+      "required_source_rules": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006"
+      ]
+    }
+  ],
+  "runtime_draft": {
+    "origin": "fragments_only",
+    "definition": null,
+    "fragments": {
+      "bonus_action_attack": {
+        "damage": "1d8",
+        "damage_type": "force",
+        "upcast": {
+          "starting_level": 2,
+          "damage_per_level": "1d8"
+        },
+        "attack_type": "melee_spell"
+      }
+    },
+    "coverage": "Unverified. Neither a full definition nor a fragment certifies all source rules or controls. Required extensions are not silently waived."
+  },
+  "required_extensions": [
+    {
+      "group": "granted_actions",
+      "requirement": "Author the correct actor, action kind, budgets, choices, range and repeated effects; retain the parent cast/source and avoid a new named executor.",
+      "spell_specific_intent": "Bonus Action creates spectral weapon; initial and later Bonus Action melee spell attacks within 5 feet of weapon; move up to 20 feet before attack; Force 1d8+ability, +1d8 per slot; Concentration.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006"
+      ],
+      "existing_owner_to_reuse": "src/combat/combat_child_actions.gd",
+      "slice_references": "S-134/S-135/S-146/S-148",
+      "disposition": "requires_mapping_or_host_completion",
+      "note": "This is an authored handoff requirement, not a fresh runtime failure or claim that the whole referenced slice is missing."
+    },
+    {
+      "group": "created_objects",
+      "requirement": "Create exact located object/force identities with source-defined control, capacity, following, contents, ending and legal release.",
+      "spell_specific_intent": "Bonus Action creates spectral weapon; initial and later Bonus Action melee spell attacks within 5 feet of weapon; move up to 20 feet before attack; Force 1d8+ability, +1d8 per slot; Concentration.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006"
+      ],
+      "existing_owner_to_reuse": "src/dungeon/local_room_rules.gd",
+      "slice_references": "S-121/S-122/S-166/S-167/S-196",
+      "disposition": "requires_mapping_or_host_completion",
+      "note": "This is an authored handoff requirement, not a fresh runtime failure or claim that the whole referenced slice is missing."
+    }
+  ],
+  "audit": {
+    "source": "docs/audits/spells.md",
+    "batch": "088-8",
+    "production_definition_at_authoring": "res://data/core/spells/imported_spells.json#177",
+    "baseline_execution": "native",
+    "source_revision": "2a19eb1d",
+    "existing_conversion_label": "queued"
+  },
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile every source rule and required extension, then implement and verify through production paths before any deliberate promotion. Keep native behavior until covered."
+  }
+}

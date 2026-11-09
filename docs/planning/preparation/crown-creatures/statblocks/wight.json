@@ -1,0 +1,429 @@
+{
+  "schema": "crown-creature-candidate/1",
+  "id": "srd_wight",
+  "name": "Wight",
+  "kind": "srd_statblock",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring intent only; not registered engine syntax. Mapping requirements do not assert the whole referenced engine slice is absent.",
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile all source clauses, mappings and source differences before later production-path verification. Keep native paths until replacements cover them."
+  },
+  "source": {
+    "authority": "SRD 5.2.1",
+    "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      341
+    ],
+    "text": "Wight\nMedium Undead, Neutral Evil\nAC 14 Initiative +4 (14)\nHP 82 (11d8 + 33)\nSpeed 30 ft.\nMOD SAVE MOD SAVE MOD SAVE\nStr 15 +2 +2 Dex 14 +2 +2 Con 16 +3 +3\nInt 10 +0 +0 WIS 13 +1 +1 Cha 15 +2 +2\nSkills Perception +3, Stealth +4\nResistances Necrotic\nImmunities Poison; Exhaustion, Poisoned\nGear Studded Leather Armor\nSenses Darkvision 60 ft.; Passive Perception 13\nLanguages Common plus one other language\nCR 3 (XP 700; PB +2)\nTraits\nSunlight Sensitivity. While in sunlight, the wight has\nDisadvantage on ability checks and attack rolls.\nActions\nMultiattack. The wight makes two attacks, using Ne-\ncrotic Sword or Necrotic Bow in any combination. It\ncan replace one attack with a use of Life Drain.\nNecrotic Sword. Melee Attack Roll: +4, reach 5 ft.\nHit: 6 (1d8 + 2) Slashing damage plus 4 (1d8) Ne-\ncrotic damage.\nNecrotic Bow. Ranged Attack Roll: +4, range\n150/600 ft. Hit: 6 (1d8 + 2) Piercing damage plus 4\n(1d8) Necrotic damage.\nLife Drain. Constitution Saving Throw: DC 13, one\ncreature within 5 feet. Failure: 6 (1d8 + 2) Necrotic\ndamage, and the target’s Hit Point maximum decreases\nby an amount equal to the damage taken.\nA Humanoid slain by this attack rises 24 hours later\nas a Zombie under the wight’s control, unless the Hu-\nmanoid is restored to life or its body is destroyed. The\nwight can have no more than twelve zombies under its\ncontrol at a time.",
+    "transcription": "Two-column extraction; line breaks retained. Whole selected page context is in source-pages.json. No stat correction inferred from donor data."
+  },
+  "statistics": {
+    "identity_line": "Medium Undead, Neutral Evil",
+    "AC": "14 Initiative +4 (14)",
+    "HP": "82 (11d8 + 33)",
+    "Speed": "30 ft.",
+    "Skills": "Perception +3, Stealth +4",
+    "Resistances": "Necrotic",
+    "Immunities": "Poison; Exhaustion, Poisoned",
+    "Gear": "Studded Leather Armor",
+    "Senses": "Darkvision 60 ft.; Passive Perception 13",
+    "Languages": "Common plus one other language",
+    "CR": "3 (XP 700; PB +2)",
+    "ability_scores": {
+      "STR": 15,
+      "DEX": 14,
+      "CON": 16,
+      "INT": 10,
+      "WIS": 13,
+      "CHA": 15
+    },
+    "saving_throw_modifiers": {
+      "STR": 2,
+      "DEX": 2,
+      "CON": 3,
+      "INT": 0,
+      "WIS": 1,
+      "CHA": 2
+    },
+    "initiative_modifier": 4,
+    "initiative_score_printed": 14,
+    "armor_class": 14,
+    "movement_feet": {
+      "walk": 30
+    }
+  },
+  "authored_operations": [
+    {
+      "key": "b001",
+      "name": "Sunlight Sensitivity",
+      "source_section": "Traits",
+      "full_rule": "Sunlight Sensitivity. While in sunlight, the wight has\nDisadvantage on ability checks and attack rolls.",
+      "budget": "passive_or_declared_trigger",
+      "steps": [
+        {
+          "intent": "Apply conditional Advantage/Disadvantage or roll adjustment only to the qualifying exact check/save/attack and its declared window.",
+          "mapping_group": "rolls"
+        }
+      ],
+      "parameters_from_rule": {
+        "attack_bonus": [],
+        "save_dc": [],
+        "distances_feet": [],
+        "dice": []
+      },
+      "blockers": [
+        "map_rolls"
+      ],
+      "ending_and_identity": "Exact actor/action/target/source instance; use every qualifier and ending in full_rule, not only extracted parameters.",
+      "behavior_plan": {
+        "budget": "passive_or_declared_trigger",
+        "source_outcomes": {},
+        "requires": "In sunlight",
+        "roll_adjustment": "Disadvantage on ability checks and attack rolls"
+      }
+    },
+    {
+      "key": "b002",
+      "name": "Multiattack",
+      "source_section": "Actions",
+      "full_rule": "Multiattack. The wight makes two attacks, using Necrotic Sword or Necrotic Bow in any combination. It\ncan replace one attack with a use of Life Drain.",
+      "budget": "action",
+      "steps": [
+        {
+          "intent": "Resolve declared roll or save, targets, range/reach, damage packets, multiattack choice, riders and exact action budget. A save-only action is not a weapon hit rider.",
+          "mapping_group": "attacks"
+        }
+      ],
+      "parameters_from_rule": {
+        "attack_bonus": [],
+        "save_dc": [],
+        "distances_feet": [],
+        "dice": []
+      },
+      "blockers": [
+        "map_attacks"
+      ],
+      "ending_and_identity": "Exact actor/action/target/source instance; use every qualifier and ending in full_rule, not only extracted parameters.",
+      "behavior_plan": {
+        "budget": "action",
+        "source_outcomes": {},
+        "resolution": "authored_attack_sequence",
+        "steps": [
+          "Necrotic Sword or Necrotic Bow",
+          "Necrotic Sword or Necrotic Bow; optionally replace one with Life Drain"
+        ],
+        "permission": "Multiattack is its own action, not Attack action; do not allow it for a one-attack Pact Reaction."
+      }
+    },
+    {
+      "key": "b003",
+      "name": "Necrotic Sword",
+      "source_section": "Actions",
+      "full_rule": "Necrotic Sword. Melee Attack Roll: +4, reach 5 ft.\nHit: 6 (1d8 + 2) Slashing damage plus 4 (1d8) Necrotic damage.",
+      "budget": "action",
+      "steps": [
+        {
+          "intent": "Resolve declared roll or save, targets, range/reach, damage packets, multiattack choice, riders and exact action budget. A save-only action is not a weapon hit rider.",
+          "mapping_group": "attacks"
+        }
+      ],
+      "parameters_from_rule": {
+        "attack_bonus": [
+          4
+        ],
+        "save_dc": [],
+        "distances_feet": [
+          5
+        ],
+        "dice": [
+          "1d8 + 2",
+          "1d8"
+        ]
+      },
+      "blockers": [
+        "map_attacks"
+      ],
+      "ending_and_identity": "Exact actor/action/target/source instance; use every qualifier and ending in full_rule, not only extracted parameters.",
+      "behavior_plan": {
+        "budget": "action",
+        "source_outcomes": {
+          "hit": "6 (1d8 + 2) Slashing damage plus 4 (1d8) Necrotic damage."
+        },
+        "resolution": "attack_roll",
+        "attack_kind": "melee",
+        "damage_and_riders": "6 (1d8 + 2) Slashing damage plus 4 (1d8) Necrotic damage.",
+        "permission": "ordinary familiar cannot attack; invocation exceptions must grant this exact attack or Attack action, not every Actions entry"
+      }
+    },
+    {
+      "key": "b004",
+      "name": "Necrotic Bow",
+      "source_section": "Actions",
+      "full_rule": "Necrotic Bow. Ranged Attack Roll: +4, range\n150/600 ft. Hit: 6 (1d8 + 2) Piercing damage plus 4\n(1d8) Necrotic damage.",
+      "budget": "action",
+      "steps": [
+        {
+          "intent": "Resolve declared roll or save, targets, range/reach, damage packets, multiattack choice, riders and exact action budget. A save-only action is not a weapon hit rider.",
+          "mapping_group": "attacks"
+        }
+      ],
+      "parameters_from_rule": {
+        "attack_bonus": [
+          4
+        ],
+        "save_dc": [],
+        "distances_feet": [
+          600
+        ],
+        "dice": [
+          "1d8 + 2",
+          "1d8"
+        ]
+      },
+      "blockers": [
+        "map_attacks"
+      ],
+      "ending_and_identity": "Exact actor/action/target/source instance; use every qualifier and ending in full_rule, not only extracted parameters.",
+      "behavior_plan": {
+        "budget": "action",
+        "source_outcomes": {
+          "hit": "6 (1d8 + 2) Piercing damage plus 4 (1d8) Necrotic damage."
+        },
+        "resolution": "attack_roll",
+        "attack_kind": "ranged",
+        "damage_and_riders": "6 (1d8 + 2) Piercing damage plus 4 (1d8) Necrotic damage.",
+        "permission": "ordinary familiar cannot attack; invocation exceptions must grant this exact attack or Attack action, not every Actions entry"
+      }
+    },
+    {
+      "key": "b005",
+      "name": "Life Drain",
+      "source_section": "Actions",
+      "full_rule": "Life Drain. Constitution Saving Throw: DC 13, one\ncreature within 5 feet. Failure: 6 (1d8 + 2) Necrotic\ndamage, and the target’s Hit Point maximum decreases\nby an amount equal to the damage taken.\nA Humanoid slain by this attack rises 24 hours later\nas a Zombie under the wight’s control, unless the Humanoid is restored to life or its body is destroyed. The\nwight can have no more than twelve zombies under its\ncontrol at a time.",
+      "budget": "action",
+      "steps": [
+        {
+          "intent": "Retain death/max-HP/corpse identity, delayed creation/control and cancellation; no untracked zombie creation or automatic finale revival.",
+          "mapping_group": "aftermath"
+        },
+        {
+          "intent": "Resolve declared roll or save, targets, range/reach, damage packets, multiattack choice, riders and exact action budget. A save-only action is not a weapon hit rider.",
+          "mapping_group": "attacks"
+        }
+      ],
+      "parameters_from_rule": {
+        "attack_bonus": [],
+        "save_dc": [
+          13
+        ],
+        "distances_feet": [
+          5
+        ],
+        "dice": [
+          "1d8 + 2"
+        ]
+      },
+      "blockers": [
+        "map_aftermath",
+        "map_attacks"
+      ],
+      "ending_and_identity": "Exact actor/action/target/source instance; use every qualifier and ending in full_rule, not only extracted parameters.",
+      "behavior_plan": {
+        "budget": "action",
+        "source_outcomes": {
+          "failure": "6 (1d8 + 2) Necrotic damage, and the target’s Hit Point maximum decreases by an amount equal to the damage taken. A Humanoid slain by this attack rises 24 hours later as a Zombie under the wight’s control, unless the Humanoid is restored to life or its body is destroyed. The wight can have no more than twelve zombies under its control at a time."
+        },
+        "target": "Creature within5 feet",
+        "save": {
+          "ability": "CON",
+          "dc": 13
+        },
+        "failure": {
+          "damage": "1d8+2 Necrotic",
+          "max_hp_loss": "Actual damage taken"
+        },
+        "death_followup": {
+          "eligible": "Humanoid slain by this attack",
+          "delay_hours": 24,
+          "create": "srd_zombie",
+          "controller": "exact Wight",
+          "controlled_cap": 12,
+          "cancel": [
+            "Restored to life",
+            "Body destroyed"
+          ]
+        },
+        "resolution": "save_only_action; no preliminary attack roll"
+      }
+    }
+  ],
+  "retained_definitions": [
+    {
+      "path": "data/core/monsters/core_monsters.json",
+      "sha256": "33bf505c91476b32f7dd2887dd0caa19521e4a9e206392b8d803090b105eb8c2",
+      "pointer": "/8",
+      "payload": {
+        "id": "wight",
+        "name": "Wight",
+        "description": "An undead warrior possessed by a malevolent spirit.",
+        "size": "medium",
+        "challenge_rating": 3,
+        "hit_points": "6d8 + 18",
+        "armor_class": 14,
+        "speed": 6,
+        "ability_scores": {
+          "STR": 15,
+          "DEX": 14,
+          "CON": 16,
+          "INT": 10,
+          "WIS": 13,
+          "CHA": 15
+        },
+        "damage_immunities": [
+          "poison"
+        ],
+        "condition_immunities": [
+          "exhaustion",
+          "poisoned"
+        ],
+        "attacks": [
+          {
+            "name": "Life Drain",
+            "ability": "STR",
+            "damage": "1d6 + 2",
+            "damage_type": "necrotic",
+            "range": 1,
+            "extra_effects": [
+              {
+                "type": "reduce_max_hp",
+                "value": "damage_dealt"
+              }
+            ]
+          },
+          {
+            "name": "Longsword",
+            "ability": "STR",
+            "damage": "1d8 + 2",
+            "damage_type": "slashing",
+            "range": 1
+          },
+          {
+            "name": "Longbow",
+            "ability": "DEX",
+            "damage": "1d8 + 2",
+            "damage_type": "piercing",
+            "range": 8
+          }
+        ],
+        "ai_behavior": "aggressive",
+        "special_abilities": [
+          {
+            "id": "multiattack",
+            "name": "Multiattack",
+            "description": "Makes two longsword attacks or two longbow attacks."
+          },
+          {
+            "id": "sunlight_sensitivity",
+            "name": "Sunlight Sensitivity",
+            "description": "Disadvantage on attack rolls in sunlight."
+          }
+        ],
+        "loot_table": [
+          {
+            "item_id": "longsword",
+            "chance": 0.3
+          },
+          {
+            "item_id": "gold_100",
+            "chance": 0.5
+          }
+        ],
+        "xp": 700
+      },
+      "manifest_declarations": [
+        {
+          "type": "monster",
+          "id": "wight",
+          "winner": "res://data/core/monsters/core_monsters.json#9",
+          "replaces": [
+            "res://data/core/monsters/imported_monsters.json#422"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "data/core/monsters/imported_monsters.json",
+      "sha256": "f57bee1e93f185a89575bed3d8b2b610b53cfd3b7f2eb56448d1dd64a0126c5f",
+      "pointer": "/421",
+      "payload": {
+        "id": "wight",
+        "name": "Wight",
+        "hit_points": "6d8 + 18",
+        "armor_class": 14,
+        "speed": 6,
+        "ability_scores": {
+          "STR": 15,
+          "DEX": 14,
+          "CON": 16,
+          "INT": 10,
+          "WIS": 13,
+          "CHA": 15
+        },
+        "attacks": [
+          {
+            "name": "Claws",
+            "ability": "STR",
+            "damage": "1d6",
+            "range": 1,
+            "damage_type": "slashing"
+          }
+        ],
+        "ai_behavior": "aggressive"
+      },
+      "manifest_declarations": [
+        {
+          "type": "monster",
+          "id": "wight",
+          "winner": "res://data/core/monsters/core_monsters.json#9",
+          "replaces": [
+            "res://data/core/monsters/imported_monsters.json#422"
+          ]
+        }
+      ]
+    }
+  ],
+  "selection": {
+    "wild_shape_druid_levels_2_3": false,
+    "wild_shape_druid_levels_4_5": false,
+    "normal_familiar": false,
+    "pact_of_chain_special": false,
+    "animate_dead_output": false,
+    "held_swarm": false,
+    "encounter_comparison_only": true
+  },
+  "acquisition_links": [
+    "selection-links.json"
+  ],
+  "blockers": [
+    "map_statistics",
+    "map_aftermath",
+    "map_attacks",
+    "map_rolls"
+  ],
+  "source_reconciliation": "Official body is authoritative for this SRD candidate. Retained donor payloads are comparison/reuse seeds, including legacy values and manifest winners; do not merge their statistics or traits by ID. Direct Crown encounters retain separate candidates.",
+  "created_actor_dependencies": {
+    "candidate": "statblocks/zombie.json",
+    "trigger": "Humanoid slain by Life Drain; rises 24 hours later unless restored to life or body destroyed",
+    "maximum_controlled": 12,
+    "blocker": "map_aftermath"
+  },
+  "equipment_links": [
+    {
+      "source_name": "Studded Leather Armor",
+      "candidate": "../crown-equipment/items/studded_leather_armor.json",
+      "blocker": "Stat-block Gear is not an award. Reconcile actual carried copies, ammunition, corpse gear and form merging; do not create free gear on recast."
+    }
+  ]
+}

@@ -1,0 +1,274 @@
+{
+  "format": "crown-spell-candidate/1",
+  "id": "find_steed",
+  "name": "Find Steed",
+  "level": 2,
+  "status": "written_unverified_not_loaded",
+  "source": {
+    "authority": "SRD 5.2.1",
+    "url": "https://media.dndbeyond.com/compendium-images/srd/5.2/SRD_CC_v5.2.1.pdf",
+    "sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      130,
+      131
+    ],
+    "header": {
+      "Casting Time": "Action",
+      "Range": "30 feet",
+      "Components": "V, S",
+      "Duration": "Instantaneous"
+    },
+    "attribution": "System Reference Document 5.2.1, Wizards of the Coast LLC; CC BY 4.0."
+  },
+  "casting": {
+    "casting_time": "Action",
+    "kind": "action",
+    "seconds": null,
+    "ritual_available": false,
+    "range": {
+      "source": "30 feet",
+      "kind": "distance",
+      "feet": 30
+    },
+    "components": [
+      "V",
+      "S"
+    ],
+    "material": null,
+    "duration": "Instantaneous",
+    "concentration": false,
+    "spell_lists": [
+      "paladin"
+    ]
+  },
+  "authored_intent": "Summon Large rideable Otherworldly Steed with chosen Celestial/Fey/Fiend type; full slot-shaped statblock, controlled-mount/shared-initiative and incapacitated-owner policies, Life Bond, telepathy, exact gear drop/death/replacement; type-specific Bonus Action recharges after Long Rest, not an arbitrary daily timer.",
+  "rules": [
+    {
+      "id": "r001",
+      "text": "You summon an otherworldly being that appears as a loyal steed in an unoccupied space of your choice within range."
+    },
+    {
+      "id": "r002",
+      "text": "This creature uses the Otherworldly Steed stat block."
+    },
+    {
+      "id": "r003",
+      "text": "If you already have a steed from this spell, the steed is replaced by the new one."
+    },
+    {
+      "id": "r004",
+      "text": "The steed resembles a Large, rideable animal of your choice, such as a horse, a camel, a dire wolf, or an elk."
+    },
+    {
+      "id": "r005",
+      "text": "Whenever you cast the spell, choose the steed’s creature type—Celestial, Fey, or Fiend— which determines certain traits in the stat block."
+    },
+    {
+      "id": "r006",
+      "text": "Combat."
+    },
+    {
+      "id": "r007",
+      "text": "The steed is an ally to you and your allies."
+    },
+    {
+      "id": "r008",
+      "text": "In combat, it shares your Initiative count, and it functions as a controlled mount while you ride it (as defined in the rules on mounted combat)."
+    },
+    {
+      "id": "r009",
+      "text": "If you have the Incapacitated condition, the steed takes its turn immediately after yours and acts independently, focusing on protecting you."
+    },
+    {
+      "id": "r010",
+      "text": "Disappearance of the Steed."
+    },
+    {
+      "id": "r011",
+      "text": "The steed disappears if it drops to 0 Hit Points or if you die."
+    },
+    {
+      "id": "r012",
+      "text": "When it disappears, it leaves behind anything it was wearing or carrying."
+    },
+    {
+      "id": "r013",
+      "text": "If you cast this spell again, you decide whether you summon the steed that disappeared or a different one."
+    },
+    {
+      "id": "r014",
+      "text": "Using a Higher-Level Spell Slot."
+    },
+    {
+      "id": "r015",
+      "text": "Use the spell slot’s level for the spell’s level in the stat block."
+    },
+    {
+      "id": "r016",
+      "text": "Otherworldly Steed Large Celestial, Fey, or Fiend (Your Choice), Neutral AC 10 + 1 per spell level HP 5 + 10 per spell level (the steed has a number of Hit Dice [d10s] equal to the spell’s level) Speed 60 ft., Fly 60 ft."
+    },
+    {
+      "id": "r017",
+      "text": "(requires level 4+ spell) MOD SAVE MOD SAVE MOD SAVE Str 18 +4 +4 dex 12 +1 +1 con 14 +2 +2 int 6 −2 −2 WiS 12 +1 +1 chA 8 −1 −1 Senses Passive Perception 11 Languages Telepathy 1 mile (works only with you) CR None (XP 0; PB equals your Proficiency Bonus) Traits Life Bond."
+    },
+    {
+      "id": "r018",
+      "text": "When you regain Hit Points from a level 1+ spell, the steed regains the same number of Hit Points if you’re within 5 feet of it."
+    },
+    {
+      "id": "r019",
+      "text": "Actions Otherworldly Slam."
+    },
+    {
+      "id": "r020",
+      "text": "Melee Attack Roll: Bonus equals your spell attack modifier, reach 5 ft."
+    },
+    {
+      "id": "r021",
+      "text": "Hit: 1d8 plus the spell’s level of Radiant (Celestial), Psychic (Fey), or Necrotic (Fiend) damage."
+    },
+    {
+      "id": "r022",
+      "text": "Bonus Actions Fell Glare (Fiend Only; Recharges after a Long Rest)."
+    },
+    {
+      "id": "r023",
+      "text": "Wisdom Saving Throw: DC equals your spell save DC, one creature within 60 feet the steed can see."
+    },
+    {
+      "id": "r024",
+      "text": "Failure: The target has the Frightened condition until the end of your next turn."
+    },
+    {
+      "id": "r025",
+      "text": "Fey Step (Fey Only; Recharges after a Long Rest)."
+    },
+    {
+      "id": "r026",
+      "text": "The steed teleports, along with its rider, to an unoccupied space of your choice up to 60 feet away from itself."
+    },
+    {
+      "id": "r027",
+      "text": "Healing Touch (Celestial Only; Recharges after a Long Rest)."
+    },
+    {
+      "id": "r028",
+      "text": "One creature within 5 feet of the steed regains a number of Hit Points equal to 2d8 plus the spell’s level."
+    }
+  ],
+  "authored_operations": [
+    {
+      "operation": "create_bound_mount",
+      "parameters": {
+        "template": "Otherworldly Steed stat block retained in rules",
+        "type_choices": [
+          "celestial",
+          "fey",
+          "fiend"
+        ],
+        "appearance": "large_rideable_animal",
+        "formula_basis": "paid_slot_level",
+        "initiative": "owner_count",
+        "ridden_policy": "controlled_mount",
+        "incapacitated_owner": "independent_immediately_after_owner_protect_owner",
+        "end": [
+          "zero_hp",
+          "owner_death"
+        ],
+        "drop_exact_gear": true,
+        "recast": "replace_choose_same_or_new_steed"
+      },
+      "status": "authoring_declaration_not_a_registered_opcode",
+      "required_source_rules": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006",
+        "r007",
+        "r008",
+        "r009",
+        "r010",
+        "r011",
+        "r012",
+        "r013",
+        "r014",
+        "r015",
+        "r016",
+        "r017",
+        "r018",
+        "r019",
+        "r020",
+        "r021",
+        "r022",
+        "r023",
+        "r024",
+        "r025",
+        "r026",
+        "r027",
+        "r028"
+      ]
+    }
+  ],
+  "runtime_draft": {
+    "origin": "proposed_operations",
+    "definition": null,
+    "fragments": {},
+    "coverage": "Unverified. Neither a full definition nor a fragment certifies all source rules or controls. Required extensions are not silently waived."
+  },
+  "required_extensions": [
+    {
+      "group": "created_actors",
+      "requirement": "Supply the complete eligible statblocks/templates and exact placement, command, turn, type, resource, inventory and ending policies; retain all source-specific subclauses.",
+      "spell_specific_intent": "Summon Large rideable Otherworldly Steed with chosen Celestial/Fey/Fiend type; full slot-shaped statblock, controlled-mount/shared-initiative and incapacitated-owner policies, Life Bond, telepathy, exact gear drop/death/replacement; type-specific Bonus Action recharges after Long Rest, not an arbitrary daily timer.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006",
+        "r007",
+        "r008",
+        "r009",
+        "r010",
+        "r011",
+        "r012",
+        "r013",
+        "r014",
+        "r015",
+        "r016",
+        "r017",
+        "r018",
+        "r019",
+        "r020",
+        "r021",
+        "r022",
+        "r023",
+        "r024",
+        "r025",
+        "r026",
+        "r027",
+        "r028"
+      ],
+      "existing_owner_to_reuse": "src/characters/created_actor_rules.gd",
+      "slice_references": "S-154/S-155/S-156/S-157/S-158/S-164",
+      "disposition": "requires_mapping_or_host_completion",
+      "note": "This is an authored handoff requirement, not a fresh runtime failure or claim that the whole referenced slice is missing."
+    }
+  ],
+  "audit": {
+    "source": "docs/audits/spells.md",
+    "batch": "088-8",
+    "production_definition_at_authoring": "res://data/core/spells/core_spells.json#15",
+    "baseline_execution": "native",
+    "source_revision": "2a19eb1d",
+    "existing_conversion_label": "queued"
+  },
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile every source rule and required extension, then implement and verify through production paths before any deliberate promotion. Keep native behavior until covered."
+  }
+}

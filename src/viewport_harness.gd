@@ -452,6 +452,8 @@ func _run_scenario(scenario: String) -> void:
 		"crown_condition_finish_flow": await CrownConditionFinishFlow.run(self)
 		"crown_condition_finish_reload": await CrownConditionFinishFlow.reload(self)
 		"condition_recovery_reload": await ConditionRecoveryFlow.reload(self)
+		"ammunition_flow": await AmmunitionFlow.run(self)
+		"ammunition_reload": await AmmunitionFlow.run_reload(self)
 		"quick_wins_flow": await QuickWinsFlow.run(self)
 		"quick_wins_reload": await QuickWinsFlow.run_reload(self)
 		"spatial_trigger_flow": await SpatialTriggerFlow.run(self)

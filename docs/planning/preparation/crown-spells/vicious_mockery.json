@@ -1,0 +1,178 @@
+{
+  "format": "crown-spell-candidate/1",
+  "id": "vicious_mockery",
+  "name": "Vicious Mockery",
+  "level": 0,
+  "status": "written_unverified_not_loaded",
+  "source": {
+    "authority": "SRD 5.2.1",
+    "url": "https://media.dndbeyond.com/compendium-images/srd/5.2/SRD_CC_v5.2.1.pdf",
+    "sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      171,
+      172
+    ],
+    "header": {
+      "Casting Time": "Action",
+      "Range": "60 feet",
+      "Components": "V",
+      "Duration": "Instantaneous"
+    },
+    "attribution": "System Reference Document 5.2.1, Wizards of the Coast LLC; CC BY 4.0."
+  },
+  "casting": {
+    "casting_time": "Action",
+    "kind": "action",
+    "seconds": null,
+    "ritual_available": false,
+    "range": {
+      "source": "60 feet",
+      "kind": "distance",
+      "feet": 60
+    },
+    "components": [
+      "V"
+    ],
+    "material": null,
+    "duration": "Instantaneous",
+    "concentration": false,
+    "spell_lists": [
+      "bard"
+    ]
+  },
+  "authored_intent": "Creature seen or heard makes WIS save; failure Psychic and Disadvantage on next attack through end of target next turn; hearing-only target eligibility and character scaling.",
+  "rules": [
+    {
+      "id": "r001",
+      "text": "You unleash a string of insults laced with subtle enchantments at one creature you can see or hear within range."
+    },
+    {
+      "id": "r002",
+      "text": "The target must succeed on a Wisdom saving throw or take 1d6 Psychic damage and have Disadvantage on the next attack roll it makes before the end of its next turn."
+    },
+    {
+      "id": "r003",
+      "text": "Cantrip Upgrade."
+    },
+    {
+      "id": "r004",
+      "text": "The damage increases by 1d6 when you reach levels 5 (2d6), 11 (3d6), and 17 (4d6)."
+    }
+  ],
+  "authored_operations": [
+    {
+      "operation": "save_damage_and_next_attack_penalty",
+      "parameters": {
+        "target": "seen_or_heard_creature",
+        "save": "WIS",
+        "failure_damage": "1d6",
+        "type": "psychic",
+        "scaling": {
+          "5": "2d6",
+          "11": "3d6",
+          "17": "4d6"
+        },
+        "failure_next_attack": {
+          "disadvantage": true,
+          "expires": "target_next_turn_end"
+        }
+      },
+      "status": "authoring_declaration_not_a_registered_opcode",
+      "required_source_rules": [
+        "r001",
+        "r002",
+        "r003",
+        "r004"
+      ]
+    }
+  ],
+  "runtime_draft": {
+    "origin": "existing_shared_definition",
+    "definition": {
+      "casting_time": "action",
+      "classes": [
+        "bard"
+      ],
+      "components": [
+        "V"
+      ],
+      "concentration": false,
+      "damage": "1d6",
+      "damage_type": "psychic",
+      "description": "You unleash a string of insults laced with subtle enchantments at one creature you can see or hear within range. The target must succeed on a Wisdom saving throw or take 1d6 Psychic damage and have Disadvantage on the next attack roll it makes before the end of its next turn. Cantrip Upgrade. The damage increases by 1d6 when you reach levels 5 (2d6), 11 (3d6), and 17 (4d6).",
+      "duration": "Instantaneous",
+      "duration_seconds": 6.0,
+      "effects": [
+        {
+          "condition": "next_attack_disadvantage",
+          "expiry": {
+            "boundary": "target_turn_end",
+            "turns": 1.0
+          },
+          "on_failed_save": true,
+          "type": "grant_condition"
+        }
+      ],
+      "execution": "shared",
+      "half_on_save": false,
+      "id": "vicious_mockery",
+      "level": 0,
+      "name": "Vicious Mockery",
+      "range": 12,
+      "rules_source": "SRD 5.2.1",
+      "rules_status": "authoring-draft-unverified",
+      "save": "WIS",
+      "scaling": {
+        "11": "3d6",
+        "17": "4d6",
+        "5": "2d6"
+      },
+      "school": "enchantment",
+      "target": "single"
+    },
+    "fragments": {},
+    "coverage": "Unverified. Neither a full definition nor a fragment certifies all source rules or controls. Required extensions are not silently waived."
+  },
+  "required_extensions": [
+    {
+      "group": "heard_targeting",
+      "requirement": "Allow the exact heard creature through represented perception without requiring sight, while preserving location, range, plane and sound-route guards.",
+      "spell_specific_intent": "Creature seen or heard makes WIS save; failure Psychic and Disadvantage on next attack through end of target next turn; hearing-only target eligibility and character scaling.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003",
+        "r004"
+      ],
+      "existing_owner_to_reuse": "src/spells/spell_cast_targeting.gd",
+      "slice_references": "S-190/S-191/S-218",
+      "disposition": "requires_mapping_or_host_completion",
+      "note": "This is an authored handoff requirement, not a fresh runtime failure or claim that the whole referenced slice is missing."
+    },
+    {
+      "group": "retained_conversion_limit",
+      "requirement": "Permit a creature the caster can see OR hear; preserve represented sound, concealment and no-payment refusal.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003",
+        "r004"
+      ],
+      "disposition": "recorded_partial_or_blocked_consumer",
+      "queue_status": "blocked: shared save and next-attack consequence exist; hear-only targeting remains missing"
+    }
+  ],
+  "audit": {
+    "source": "docs/audits/spells.md",
+    "batch": "088-3",
+    "production_definition_at_authoring": "res://data/core/spells/crown_sc_01_support_01.json#4",
+    "baseline_execution": "shared",
+    "source_revision": "2a19eb1d",
+    "existing_conversion_label": "blocked: shared save and next-attack consequence exist; hear-only targeting remains missing"
+  },
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile every source rule and required extension, then implement and verify through production paths before any deliberate promotion. Keep native behavior until covered."
+  }
+}

@@ -1,0 +1,136 @@
+{
+  "schema": "crown-character-candidate/1",
+  "id": "skilled",
+  "name": "Skilled",
+  "kind": "feat",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "scope": {
+    "total_character_level_maximum": 5
+  },
+  "operation_language": "authoring intent only; not registered engine syntax",
+  "runtime_support": "Retained definitions are reuse material, not proof of full rules. Every authored operation needs contract mapping and later production-path verification before promotion.",
+  "definition": {
+    "category": "Origin",
+    "repeatable": true,
+    "prerequisites": {},
+    "parameters": {
+      "proficiencies": {
+        "pick": 3,
+        "from": "any combination of skills or tools",
+        "distinct": true
+      }
+    }
+  },
+  "rules": {
+    "authority": "SRD 5.2.1",
+    "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      87
+    ],
+    "text": "Skilled\nOrigin Feat\nYou gain proficiency in any combination of three\nskills or tools of your choice.\nRepeatable.\nYou can take this feat more than\nonce."
+  },
+  "authored_operations": [
+    {
+      "trigger": "Acquisition",
+      "effects": [
+        "Grant three chosen skill/tool proficiencies under exact feat source; owning tool item is separate; overlap retains independent source"
+      ],
+      "required_extension_groups": [
+        "choices",
+        "progression"
+      ],
+      "ending_and_identity": "Exact acquired feat instance owns parameters, budgets and grants; once-only acquisition and per-turn receipts; no replay on restore."
+    }
+  ],
+  "reused_from": [
+    "data/core/feats/skilled.json"
+  ],
+  "retained_runtime_seed": [
+    {
+      "id": "skilled",
+      "name": "Skilled",
+      "category": "origin",
+      "repeatable": true,
+      "description": "You gain proficiency in any combination of three skills or tools of your choice. Repeatable: you can take this feat more than once.",
+      "source": "SRD 5.2.1 p.87 Origin Feats: Skilled",
+      "source_note": "Tools are the SRD 5.2.1 Artisan's Tools, Other Tools (including each Gaming Set variant: dice, dragonchess, playing cards, three-dragon ante) and Musical Instruments.",
+      "proficiency_choices": {
+        "pick": 3,
+        "skills": [
+          "Acrobatics",
+          "Animal Handling",
+          "Arcana",
+          "Athletics",
+          "Deception",
+          "History",
+          "Insight",
+          "Intimidation",
+          "Investigation",
+          "Medicine",
+          "Nature",
+          "Perception",
+          "Performance",
+          "Persuasion",
+          "Religion",
+          "Sleight of Hand",
+          "Stealth",
+          "Survival"
+        ],
+        "tools": [
+          "alchemists_supplies",
+          "brewers_supplies",
+          "calligraphers_supplies",
+          "carpenters_tools",
+          "cartographers_tools",
+          "cobblers_tools",
+          "cooks_utensils",
+          "glassblowers_tools",
+          "jewelers_tools",
+          "leatherworkers_tools",
+          "masons_tools",
+          "painters_supplies",
+          "potters_tools",
+          "smiths_tools",
+          "tinkers_tools",
+          "weavers_tools",
+          "woodcarvers_tools",
+          "disguise_kit",
+          "forgery_kit",
+          "herbalism_kit",
+          "navigators_tools",
+          "poisoners_kit",
+          "thieves_tools",
+          "bagpipes",
+          "drum",
+          "dulcimer",
+          "flute",
+          "horn",
+          "lute",
+          "lyre",
+          "pan_flute",
+          "shawm",
+          "viol",
+          "dice_set",
+          "dragonchess_set",
+          "playing_card_set",
+          "three_dragon_ante_set"
+        ]
+      },
+      "features": []
+    }
+  ],
+  "unsupported_behavior": [
+    {
+      "groups": [
+        "choices",
+        "progression"
+      ],
+      "requirement": "Grant three chosen skill/tool proficiencies under exact feat source; owning tool item is separate; overlap retains independent source",
+      "status": "candidate_mapping_and_full_host_verification_required"
+    }
+  ],
+  "source_revision": "2a19eb1d (existing working-tree definitions and recovered drafts read on 2026-11-08)",
+  "reused_input_hashes": {
+    "data/core/feats/skilled.json": "3790b497de218ebca0ce35b6631f3a3902d3d88d29d1b9de879b521457e49abf"
+  }
+}

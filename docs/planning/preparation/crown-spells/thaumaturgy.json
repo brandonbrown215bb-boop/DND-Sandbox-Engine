@@ -1,0 +1,242 @@
+{
+  "format": "crown-spell-candidate/1",
+  "id": "thaumaturgy",
+  "name": "Thaumaturgy",
+  "level": 0,
+  "status": "written_unverified_not_loaded",
+  "source": {
+    "authority": "SRD 5.2.1",
+    "url": "https://media.dndbeyond.com/compendium-images/srd/5.2/SRD_CC_v5.2.1.pdf",
+    "sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      169
+    ],
+    "header": {
+      "Casting Time": "Action",
+      "Range": "30 feet",
+      "Components": "V",
+      "Duration": "Up to 1 minute"
+    },
+    "attribution": "System Reference Document 5.2.1, Wizards of the Coast LLC; CC BY 4.0."
+  },
+  "casting": {
+    "casting_time": "Action",
+    "kind": "action",
+    "seconds": null,
+    "ritual_available": false,
+    "range": {
+      "source": "30 feet",
+      "kind": "distance",
+      "feet": 30
+    },
+    "components": [
+      "V"
+    ],
+    "material": null,
+    "duration": "Up to 1 minute",
+    "concentration": false,
+    "spell_lists": [
+      "cleric"
+    ]
+  },
+  "authored_intent": "Choose voice amplification with Intimidation Advantage, flame alteration, tremors, instantaneous sound, unlocked door/window opening/closing, or eye alteration; one-minute effects and at-most-three ongoing effects; no invented damage.",
+  "rules": [
+    {
+      "id": "r001",
+      "text": "You manifest a minor wonder within range."
+    },
+    {
+      "id": "r002",
+      "text": "You create one of the effects below within range."
+    },
+    {
+      "id": "r003",
+      "text": "If you cast this spell multiple times, you can have up to three of its 1-minute effects active at a time."
+    },
+    {
+      "id": "r004",
+      "text": "Altered Eyes."
+    },
+    {
+      "id": "r005",
+      "text": "You alter the appearance of your eyes for 1 minute."
+    },
+    {
+      "id": "r006",
+      "text": "Booming Voice."
+    },
+    {
+      "id": "r007",
+      "text": "Your voice booms up to three times as loud as normal for 1 minute."
+    },
+    {
+      "id": "r008",
+      "text": "For the duration, you have Advantage on Charisma (Intimidation) checks."
+    },
+    {
+      "id": "r009",
+      "text": "Fire Play."
+    },
+    {
+      "id": "r010",
+      "text": "You cause flames to flicker, brighten, dim, or change color for 1 minute."
+    },
+    {
+      "id": "r011",
+      "text": "Invisible Hand."
+    },
+    {
+      "id": "r012",
+      "text": "You instantaneously cause an unlocked door or window to fly open or slam shut."
+    },
+    {
+      "id": "r013",
+      "text": "Phantom Sound."
+    },
+    {
+      "id": "r014",
+      "text": "You create an instantaneous sound that originates from a point of your choice within range, such as a rumble of thunder, the cry of a raven, or ominous whispers."
+    },
+    {
+      "id": "r015",
+      "text": "Tremors."
+    },
+    {
+      "id": "r016",
+      "text": "You cause harmless tremors in the ground for 1 minute."
+    }
+  ],
+  "authored_operations": [
+    {
+      "operation": "choose_utility_effect",
+      "parameters": {
+        "concurrent_one_minute_max": 3,
+        "choices": {
+          "eyes": {
+            "seconds": 60
+          },
+          "voice": {
+            "volume_multiplier": 3,
+            "seconds": 60,
+            "CHA_Intimidation": "advantage"
+          },
+          "flames": {
+            "alter": [
+              "flicker",
+              "brightness",
+              "color"
+            ],
+            "seconds": 60
+          },
+          "door_window": {
+            "unlocked": true,
+            "open_or_slam": true,
+            "instantaneous": true
+          },
+          "sound": {
+            "origin": "chosen_point",
+            "instantaneous": true
+          },
+          "tremors": {
+            "harmless": true,
+            "seconds": 60
+          }
+        }
+      },
+      "status": "authoring_declaration_not_a_registered_opcode",
+      "required_source_rules": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006",
+        "r007",
+        "r008",
+        "r009",
+        "r010",
+        "r011",
+        "r012",
+        "r013",
+        "r014",
+        "r015",
+        "r016"
+      ]
+    }
+  ],
+  "runtime_draft": {
+    "origin": "proposed_operations",
+    "definition": null,
+    "fragments": {},
+    "coverage": "Unverified. Neither a full definition nor a fragment certifies all source rules or controls. Required extensions are not silently waived."
+  },
+  "required_extensions": [
+    {
+      "group": "utility_world",
+      "requirement": "Author every source-listed utility choice, size, duration, concurrency and actual effect against represented world facts; no free-text universal GM.",
+      "spell_specific_intent": "Choose voice amplification with Intimidation Advantage, flame alteration, tremors, instantaneous sound, unlocked door/window opening/closing, or eye alteration; one-minute effects and at-most-three ongoing effects; no invented damage.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006",
+        "r007",
+        "r008",
+        "r009",
+        "r010",
+        "r011",
+        "r012",
+        "r013",
+        "r014",
+        "r015",
+        "r016"
+      ],
+      "existing_owner_to_reuse": "src/dungeon/local_room_rules.gd",
+      "slice_references": "S-197/S-212/S-218/S-219",
+      "disposition": "requires_mapping_or_host_completion",
+      "note": "This is an authored handoff requirement, not a fresh runtime failure or claim that the whole referenced slice is missing."
+    },
+    {
+      "group": "roll_hosts",
+      "requirement": "Apply the exact modifier/choice to its eligible roll or settled packet, with once-per-turn/source rules and no payment/roll replay.",
+      "spell_specific_intent": "Choose voice amplification with Intimidation Advantage, flame alteration, tremors, instantaneous sound, unlocked door/window opening/closing, or eye alteration; one-minute effects and at-most-three ongoing effects; no invented damage.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006",
+        "r007",
+        "r008",
+        "r009",
+        "r010",
+        "r011",
+        "r012",
+        "r013",
+        "r014",
+        "r015",
+        "r016"
+      ],
+      "existing_owner_to_reuse": "src/combat/combat_action.gd",
+      "slice_references": "S-076/S-077/S-091/S-094/S-096/S-109",
+      "disposition": "requires_mapping_or_host_completion",
+      "note": "This is an authored handoff requirement, not a fresh runtime failure or claim that the whole referenced slice is missing."
+    }
+  ],
+  "audit": {
+    "source": "docs/audits/spells.md",
+    "batch": "088-7",
+    "production_definition_at_authoring": "res://data/core/spells/imported_spells.json#182",
+    "baseline_execution": "native",
+    "source_revision": "2a19eb1d",
+    "existing_conversion_label": "queued"
+  },
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile every source rule and required extension, then implement and verify through production paths before any deliberate promotion. Keep native behavior until covered."
+  }
+}

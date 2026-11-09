@@ -1,0 +1,51 @@
+{
+  "schema": "crown-world-candidate/1",
+  "id": "senses",
+  "name": "Senses",
+  "kind": "procedures",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring declarations only; not registered engine opcodes.",
+  "required_extensions": [
+    "senses"
+  ],
+  "authored_operations": [
+    {
+      "operation": "resolve_senses",
+      "requirement": "Query actual observer/source positions, light, occlusion, range, hearing/noise, planes and borrowed senses. Own light emitters/fuel and magical darkness sources; perception and detection expose only eligible facts. Remote sensors retain their specific origin, control cost, movement, sense choice and limits."
+    }
+  ],
+  "blockers": [
+    "Map reveal is not sight, detection, object discovery or knowledge. Existing senses and room noise hosts do not supply all remote-sensor/spell consumers; do not invent ambient light or weather from a dungeon description."
+  ],
+  "slices": "S-178/S-190/S-191/S-192/S-193/S-274",
+  "source_context_pages": [
+    11,
+    178,
+    184,
+    190
+  ],
+  "source_context": "../source-pages.json",
+  "current_owner_pins": [
+    {
+      "path": "src/dungeon/local_room_areas.gd",
+      "sha256": "bdbed96a41046f7ca92f22feba94013291d86ce0d6d50e446f1c2c9814ff92fd"
+    },
+    {
+      "path": "src/dungeon/local_room_familiars.gd",
+      "sha256": "d8a06fbb02f21a148ab553466920f905e765c7e85f48ea8f71451a16e7b55e79"
+    }
+  ],
+  "reuse_boundary": "Existing accepted pieces remain accepted at their documented limits; these requirements do not mark the entire slices missing.",
+  "reused_equipment_rules": [
+    {
+      "path": "docs/planning/preparation/crown-equipment/items/torch.json",
+      "sha256": "6395fbadeb291313de4e300c9b11116a2d769912e59e49d2a7956cdcc71e6311",
+      "full_rules_pointer": "/rules"
+    },
+    {
+      "path": "docs/planning/preparation/crown-equipment/items/tinderbox.json",
+      "sha256": "439440f8a3d02c2d4cd529a3239f51610e62cb269ce848aded3b5eae85a30ba2",
+      "full_rules_pointer": "/rules"
+    }
+  ]
+}

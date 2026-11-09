@@ -1,0 +1,254 @@
+{
+  "schema": "crown-creature-candidate/1",
+  "id": "srd_wolf",
+  "name": "Wolf",
+  "kind": "srd_statblock",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring intent only; not registered engine syntax. Mapping requirements do not assert the whole referenced engine slice is absent.",
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile all source clauses, mappings and source differences before later production-path verification. Keep native paths until replacements cover them."
+  },
+  "source": {
+    "authority": "SRD 5.2.1",
+    "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      364
+    ],
+    "text": "Wolf\nMedium Beast, Unaligned\nAC 12 Initiative +2 (12)\nHP 11 (2d8 + 2)\nSpeed 40 ft.\nMOD SAVE MOD SAVE MOD SAVE\nStr 14 +2 +2 Dex 15 +2 +2 Con 12 +1 +1\nInt 3 −4 −4 WIS 12 +1 +1 Cha 6 −2 −2\nSkills Perception +5, Stealth +4\nSenses Darkvision 60 ft.; Passive Perception 15\nLanguages None\nCR 1/4 (XP 50; PB +2)\nTraits\nPack Tactics. The wolf has Advantage on attack rolls\nagainst a creature if at least one of the wolf’s allies is\nwithin 5 feet of the creature and the ally doesn’t have\nthe Incapacitated condition.\nActions\nBite. Melee Attack Roll: +4, reach 5 ft. Hit: 5 (1d6 + 2)\nPiercing damage. If the target is a Medium or smaller\ncreature, it has the Prone condition.",
+    "transcription": "Two-column extraction; line breaks retained. Whole selected page context is in source-pages.json. No stat correction inferred from donor data."
+  },
+  "statistics": {
+    "identity_line": "Medium Beast, Unaligned",
+    "AC": "12 Initiative +2 (12)",
+    "HP": "11 (2d8 + 2)",
+    "Speed": "40 ft.",
+    "Skills": "Perception +5, Stealth +4",
+    "Senses": "Darkvision 60 ft.; Passive Perception 15",
+    "Languages": "None",
+    "CR": "1/4 (XP 50; PB +2)",
+    "ability_scores": {
+      "STR": 14,
+      "DEX": 15,
+      "CON": 12,
+      "INT": 3,
+      "WIS": 12,
+      "CHA": 6
+    },
+    "saving_throw_modifiers": {
+      "STR": 2,
+      "DEX": 2,
+      "CON": 1,
+      "INT": -4,
+      "WIS": 1,
+      "CHA": -2
+    },
+    "initiative_modifier": 2,
+    "initiative_score_printed": 12,
+    "armor_class": 12,
+    "movement_feet": {
+      "walk": 40
+    }
+  },
+  "authored_operations": [
+    {
+      "key": "b001",
+      "name": "Pack Tactics",
+      "source_section": "Traits",
+      "full_rule": "Pack Tactics. The wolf has Advantage on attack rolls\nagainst a creature if at least one of the wolf’s allies is\nwithin 5 feet of the creature and the ally doesn’t have\nthe Incapacitated condition.",
+      "budget": "passive_or_declared_trigger",
+      "steps": [
+        {
+          "intent": "Preserve immunity, source identity, thresholds, repeat saves, explicit ending events and target-relative deadlines.",
+          "mapping_group": "conditions"
+        },
+        {
+          "intent": "Apply conditional Advantage/Disadvantage or roll adjustment only to the qualifying exact check/save/attack and its declared window.",
+          "mapping_group": "rolls"
+        }
+      ],
+      "parameters_from_rule": {
+        "attack_bonus": [],
+        "save_dc": [],
+        "distances_feet": [
+          5
+        ],
+        "dice": []
+      },
+      "blockers": [
+        "map_conditions",
+        "map_rolls"
+      ],
+      "ending_and_identity": "Exact actor/action/target/source instance; use every qualifier and ending in full_rule, not only extracted parameters.",
+      "behavior_plan": {
+        "budget": "passive_or_declared_trigger",
+        "source_outcomes": {},
+        "trigger": "Attack roll",
+        "requires": {
+          "ally_within_target_feet": 5,
+          "ally_not_incapacitated": true
+        },
+        "roll_adjustment": "advantage"
+      }
+    },
+    {
+      "key": "b002",
+      "name": "Bite",
+      "source_section": "Actions",
+      "full_rule": "Bite. Melee Attack Roll: +4, reach 5 ft. Hit: 5 (1d6 + 2)\nPiercing damage. If the target is a Medium or smaller\ncreature, it has the Prone condition.",
+      "budget": "action",
+      "steps": [
+        {
+          "intent": "Resolve declared roll or save, targets, range/reach, damage packets, multiattack choice, riders and exact action budget. A save-only action is not a weapon hit rider.",
+          "mapping_group": "attacks"
+        },
+        {
+          "intent": "Preserve immunity, source identity, thresholds, repeat saves, explicit ending events and target-relative deadlines.",
+          "mapping_group": "conditions"
+        }
+      ],
+      "parameters_from_rule": {
+        "attack_bonus": [
+          4
+        ],
+        "save_dc": [],
+        "distances_feet": [
+          5
+        ],
+        "dice": [
+          "1d6 + 2"
+        ]
+      },
+      "blockers": [
+        "map_attacks",
+        "map_conditions"
+      ],
+      "ending_and_identity": "Exact actor/action/target/source instance; use every qualifier and ending in full_rule, not only extracted parameters.",
+      "behavior_plan": {
+        "budget": "action",
+        "source_outcomes": {
+          "hit": "5 (1d6 + 2) Piercing damage. If the target is a Medium or smaller creature, it has the Prone condition."
+        },
+        "resolution": "attack_roll",
+        "attack_kind": "melee",
+        "damage_and_riders": "5 (1d6 + 2) Piercing damage. If the target is a Medium or smaller creature, it has the Prone condition.",
+        "permission": "ordinary familiar cannot attack; invocation exceptions must grant this exact attack or Attack action, not every Actions entry"
+      }
+    }
+  ],
+  "retained_definitions": [
+    {
+      "path": "data/core/monsters/core_monsters.json",
+      "sha256": "33bf505c91476b32f7dd2887dd0caa19521e4a9e206392b8d803090b105eb8c2",
+      "pointer": "/4",
+      "payload": {
+        "id": "wolf",
+        "name": "Wolf",
+        "description": "A fierce predator that hunts in packs.",
+        "size": "medium",
+        "challenge_rating": 0.25,
+        "hit_points": "2d8 + 2",
+        "armor_class": 13,
+        "speed": 8,
+        "ability_scores": {
+          "STR": 12,
+          "DEX": 15,
+          "CON": 12,
+          "INT": 3,
+          "WIS": 12,
+          "CHA": 6
+        },
+        "attacks": [
+          {
+            "name": "Bite",
+            "ability": "STR",
+            "damage": "2d4 + 1",
+            "damage_type": "piercing",
+            "range": 1
+          }
+        ],
+        "ai_behavior": "aggressive",
+        "special_abilities": [
+          {
+            "id": "pack_tactics",
+            "name": "Pack Tactics",
+            "description": "Has advantage on attack rolls against a creature if at least one ally is within 1 hex of the target."
+          }
+        ],
+        "loot_table": [],
+        "xp": 50
+      },
+      "manifest_declarations": [
+        {
+          "type": "monster",
+          "id": "wolf",
+          "winner": "res://data/core/monsters/core_monsters.json#5",
+          "replaces": [
+            "res://data/core/monsters/imported_monsters.json#426"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "data/core/monsters/imported_monsters.json",
+      "sha256": "f57bee1e93f185a89575bed3d8b2b610b53cfd3b7f2eb56448d1dd64a0126c5f",
+      "pointer": "/425",
+      "payload": {
+        "id": "wolf",
+        "name": "Wolf",
+        "hit_points": "2d8 + 2",
+        "armor_class": 13,
+        "speed": 8,
+        "ability_scores": {
+          "STR": 12,
+          "DEX": 15,
+          "CON": 12,
+          "INT": 3,
+          "WIS": 12,
+          "CHA": 6
+        },
+        "attacks": [
+          {
+            "name": "Claws",
+            "ability": "STR",
+            "damage": "1d6",
+            "range": 1,
+            "damage_type": "slashing"
+          }
+        ],
+        "ai_behavior": "aggressive"
+      },
+      "manifest_declarations": [
+        {
+          "type": "monster",
+          "id": "wolf",
+          "winner": "res://data/core/monsters/core_monsters.json#5",
+          "replaces": [
+            "res://data/core/monsters/imported_monsters.json#426"
+          ]
+        }
+      ]
+    }
+  ],
+  "selection": {
+    "wild_shape_druid_levels_2_3": true,
+    "wild_shape_druid_levels_4_5": true,
+    "normal_familiar": false,
+    "pact_of_chain_special": false,
+    "animate_dead_output": false,
+    "held_swarm": false,
+    "encounter_comparison_only": false
+  },
+  "acquisition_links": [
+    "selection-links.json"
+  ],
+  "blockers": [
+    "map_statistics",
+    "map_attacks",
+    "map_conditions",
+    "map_rolls"
+  ],
+  "source_reconciliation": "Official body is authoritative for this SRD candidate. Retained donor payloads are comparison/reuse seeds, including legacy values and manifest winners; do not merge their statistics or traits by ID. Direct Crown encounters retain separate candidates.",
+  "equipment_links": []
+}

@@ -1,0 +1,184 @@
+{
+  "format": "crown-spell-candidate/1",
+  "id": "magic_circle",
+  "name": "Magic Circle",
+  "level": 3,
+  "status": "written_unverified_not_loaded",
+  "source": {
+    "authority": "SRD 5.2.1",
+    "url": "https://media.dndbeyond.com/compendium-images/srd/5.2/SRD_CC_v5.2.1.pdf",
+    "sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      145,
+      146
+    ],
+    "header": {
+      "Casting Time": "1 minute",
+      "Range": "10 feet",
+      "Components": "V, S, M (salt and powdered silver worth 100+ GP, which the spell consumes)",
+      "Duration": "1 hour"
+    },
+    "attribution": "System Reference Document 5.2.1, Wizards of the Coast LLC; CC BY 4.0."
+  },
+  "casting": {
+    "casting_time": "1 minute",
+    "kind": "timed",
+    "seconds": 60,
+    "ritual_available": false,
+    "range": {
+      "source": "10 feet",
+      "kind": "distance",
+      "feet": 10
+    },
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "salt and powdered silver worth 100+ GP, which the spell consumes",
+    "duration": "1 hour",
+    "concentration": false,
+    "spell_lists": [
+      "cleric",
+      "paladin",
+      "warlock",
+      "wizard"
+    ]
+  },
+  "authored_intent": "One-minute cast and consumed 100-GP materials; 10-foot-radius/20-foot-tall cylinder; selected creature types cannot willingly enter by nonmagical means; attacks/charm/fear protections, teleport CHA save; reverse circle option and duration scaling.",
+  "rules": [
+    {
+      "id": "r001",
+      "text": "You create a 10-foot-radius, 20-foot-tall Cylinder of magical energy centered on a point on the ground that you can see within range."
+    },
+    {
+      "id": "r002",
+      "text": "Glowing runes appear wherever the Cylinder intersects with the floor or other surface."
+    },
+    {
+      "id": "r003",
+      "text": "Choose one or more of the following types of creatures: Celestials, Elementals, Fey, Fiends, or Undead."
+    },
+    {
+      "id": "r004",
+      "text": "The circle affects a creature of the chosen type in the following ways: • The creature can’t willingly enter the Cylinder by nonmagical means."
+    },
+    {
+      "id": "r005",
+      "text": "If the creature tries to use teleportation or interplanar travel to do so, it must first succeed on a Charisma saving throw. • The creature has Disadvantage on attack rolls against targets within the Cylinder. • Targets within the Cylinder can’t be possessed by or gain the Charmed or Frightened condition from the creature."
+    },
+    {
+      "id": "r006",
+      "text": "Each time you cast this spell, you can cause its magic to operate in the reverse direction, preventing a creature of the specified type from leaving the Cylinder and protecting targets outside it."
+    },
+    {
+      "id": "r007",
+      "text": "Using a Higher-Level Spell Slot."
+    },
+    {
+      "id": "r008",
+      "text": "The duration increases by 1 hour for each spell slot level above 3."
+    }
+  ],
+  "authored_operations": [
+    {
+      "operation": "create_selective_volume",
+      "parameters": {
+        "cylinder": {
+          "radius_feet": 10,
+          "height_feet": 20,
+          "point": "seen_ground"
+        },
+        "choose_types": [
+          "celestial",
+          "elemental",
+          "fey",
+          "fiend",
+          "undead"
+        ],
+        "entry": {
+          "nonmagical_willing": "blocked",
+          "teleport_or_interplanar": "CHA_save_required"
+        },
+        "attack_disadvantage": "affected_type_attacks_inside_targets",
+        "protect_inside": [
+          "possession",
+          "charmed",
+          "frightened"
+        ],
+        "reverse_option": true,
+        "upcast_duration_hours_per_slot": 1
+      },
+      "status": "authoring_declaration_not_a_registered_opcode",
+      "required_source_rules": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006",
+        "r007",
+        "r008"
+      ]
+    }
+  ],
+  "runtime_draft": {
+    "origin": "proposed_operations",
+    "definition": null,
+    "fragments": {},
+    "coverage": "Unverified. Neither a full definition nor a fragment certifies all source rules or controls. Required extensions are not silently waived."
+  },
+  "required_extensions": [
+    {
+      "group": "barriers",
+      "requirement": "Supply exact occupied volume, permitted creatures/objects/spells/projectiles, movement/admission and ending/release; do not substitute general impassable terrain.",
+      "spell_specific_intent": "One-minute cast and consumed 100-GP materials; 10-foot-radius/20-foot-tall cylinder; selected creature types cannot willingly enter by nonmagical means; attacks/charm/fear protections, teleport CHA save; reverse circle option and duration scaling.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006",
+        "r007",
+        "r008"
+      ],
+      "existing_owner_to_reuse": "src/dungeon/local_room_rules.gd",
+      "slice_references": "S-170/S-172/S-184/S-186",
+      "disposition": "requires_mapping_or_host_completion",
+      "note": "This is an authored handoff requirement, not a fresh runtime failure or claim that the whole referenced slice is missing."
+    },
+    {
+      "group": "long_cast",
+      "requirement": "Preserve the source casting duration, participants, ritual extension, interruption and once-only payment; do not replace a timed cast with an Action.",
+      "spell_specific_intent": "One-minute cast and consumed 100-GP materials; 10-foot-radius/20-foot-tall cylinder; selected creature types cannot willingly enter by nonmagical means; attacks/charm/fear protections, teleport CHA save; reverse circle option and duration scaling.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006",
+        "r007",
+        "r008"
+      ],
+      "existing_owner_to_reuse": "src/spells/cast_interruption_rules.gd",
+      "slice_references": "S-066/S-067/S-134",
+      "disposition": "requires_mapping_or_host_completion",
+      "note": "This is an authored handoff requirement, not a fresh runtime failure or claim that the whole referenced slice is missing."
+    }
+  ],
+  "audit": {
+    "source": "docs/audits/spells.md",
+    "batch": "088-5",
+    "production_definition_at_authoring": "res://data/core/spells/imported_spells.json#119",
+    "baseline_execution": "native",
+    "source_revision": "2a19eb1d",
+    "existing_conversion_label": "queued"
+  },
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile every source rule and required extension, then implement and verify through production paths before any deliberate promotion. Keep native behavior until covered."
+  }
+}

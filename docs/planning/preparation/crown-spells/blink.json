@@ -1,0 +1,155 @@
+{
+  "format": "crown-spell-candidate/1",
+  "id": "blink",
+  "name": "Blink",
+  "level": 3,
+  "status": "written_unverified_not_loaded",
+  "source": {
+    "authority": "SRD 5.2.1",
+    "url": "https://media.dndbeyond.com/compendium-images/srd/5.2/SRD_CC_v5.2.1.pdf",
+    "sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      113,
+      114
+    ],
+    "header": {
+      "Casting Time": "Action",
+      "Range": "Self",
+      "Components": "V, S",
+      "Duration": "1 minute"
+    },
+    "attribution": "System Reference Document 5.2.1, Wizards of the Coast LLC; CC BY 4.0."
+  },
+  "casting": {
+    "casting_time": "Action",
+    "kind": "action",
+    "seconds": null,
+    "ritual_available": false,
+    "range": {
+      "source": "Self",
+      "kind": "self",
+      "feet": 0
+    },
+    "components": [
+      "V",
+      "S"
+    ],
+    "material": null,
+    "duration": "1 minute",
+    "concentration": false,
+    "spell_lists": [
+      "sorcerer",
+      "wizard"
+    ]
+  },
+  "authored_intent": "Roll 1d6 at each caster turn end; 4–6 moves to Ethereal Plane, and already being there ends spell; retain 60-foot perception/interaction limits, next-turn-start/end return and seen unoccupied destination within 10 feet with nearest-space fallback.",
+  "rules": [
+    {
+      "id": "r001",
+      "text": "Roll 1d6 at the end of each of your turns for the duration."
+    },
+    {
+      "id": "r002",
+      "text": "On a roll of 4–6, you vanish from your current plane of existence and appear in the Ethereal Plane (the spell ends instantly if you are already on that plane)."
+    },
+    {
+      "id": "r003",
+      "text": "While on the Ethereal Plane, you can perceive the plane you left, which is cast in shades of gray, but you can’t see anything there more than 60 feet away."
+    },
+    {
+      "id": "r004",
+      "text": "You can affect and be affected only by other creatures on the Ethereal Plane, and creatures on the other plane can’t perceive you unless they have a special ability that lets them perceive things on the Ethereal Plane."
+    },
+    {
+      "id": "r005",
+      "text": "You return to the other plane at the start of your next turn and when the spell ends if you are on the Ethereal Plane."
+    },
+    {
+      "id": "r006",
+      "text": "You return to an unoccupied space of your choice that you can see within 10 feet of the space you left."
+    },
+    {
+      "id": "r007",
+      "text": "If no unoccupied space is available within that range, you appear in the nearest unoccupied space."
+    }
+  ],
+  "authored_operations": [
+    {
+      "operation": "alternate_plane_by_turn",
+      "parameters": {
+        "roll": {
+          "die": "1d6",
+          "boundary": "caster_turn_end",
+          "depart_on": [
+            4,
+            5,
+            6
+          ]
+        },
+        "destination_plane": "ethereal",
+        "already_ethereal": "end_spell",
+        "perception_back_feet": 60,
+        "interaction": "ethereal_only",
+        "return_on": [
+          "caster_next_turn_start",
+          "spell_end"
+        ],
+        "return_choice": {
+          "visible": true,
+          "unoccupied": true,
+          "within_departure_feet": 10,
+          "fallback": "nearest_unoccupied"
+        }
+      },
+      "status": "authoring_declaration_not_a_registered_opcode",
+      "required_source_rules": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006",
+        "r007"
+      ]
+    }
+  ],
+  "runtime_draft": {
+    "origin": "proposed_operations",
+    "definition": null,
+    "fragments": {},
+    "coverage": "Unverified. Neither a full definition nor a fragment certifies all source rules or controls. Required extensions are not silently waived."
+  },
+  "required_extensions": [
+    {
+      "group": "phasing",
+      "requirement": "Execute actual plane membership, per-turn roll, observation/interaction limits and chosen/nearest legal return; retain original actor and gear.",
+      "spell_specific_intent": "Roll 1d6 at each caster turn end; 4–6 moves to Ethereal Plane, and already being there ends spell; retain 60-foot perception/interaction limits, next-turn-start/end return and seen unoccupied destination within 10 feet with nearest-space fallback.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006",
+        "r007"
+      ],
+      "existing_owner_to_reuse": "src/combat/placement_rules.gd",
+      "slice_references": "S-121/S-122/S-178",
+      "disposition": "requires_mapping_or_host_completion",
+      "note": "This is an authored handoff requirement, not a fresh runtime failure or claim that the whole referenced slice is missing."
+    }
+  ],
+  "audit": {
+    "source": "docs/audits/spells.md",
+    "batch": "088-6",
+    "production_definition_at_authoring": "res://data/core/spells/imported_spells.json#22",
+    "baseline_execution": "native",
+    "source_revision": "2a19eb1d",
+    "existing_conversion_label": "queued"
+  },
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile every source rule and required extension, then implement and verify through production paths before any deliberate promotion. Keep native behavior until covered."
+  }
+}

@@ -1,0 +1,462 @@
+{
+  "schema": "crown-character-index/1",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "candidates": [
+    {
+      "kind": "class",
+      "id": "barbarian",
+      "path": "classes/barbarian.json",
+      "features": 10
+    },
+    {
+      "kind": "subclass",
+      "id": "path_of_the_berserker",
+      "path": "subclasses/path_of_the_berserker.json",
+      "features": 1
+    },
+    {
+      "kind": "class",
+      "id": "bard",
+      "path": "classes/bard.json",
+      "features": 7
+    },
+    {
+      "kind": "subclass",
+      "id": "college_of_lore",
+      "path": "subclasses/college_of_lore.json",
+      "features": 2
+    },
+    {
+      "kind": "class",
+      "id": "cleric",
+      "path": "classes/cleric.json",
+      "features": 6
+    },
+    {
+      "kind": "subclass",
+      "id": "life_domain",
+      "path": "subclasses/life_domain.json",
+      "features": 3
+    },
+    {
+      "kind": "class",
+      "id": "druid",
+      "path": "classes/druid.json",
+      "features": 8
+    },
+    {
+      "kind": "subclass",
+      "id": "circle_of_the_land",
+      "path": "subclasses/circle_of_the_land.json",
+      "features": 2
+    },
+    {
+      "kind": "class",
+      "id": "fighter",
+      "path": "classes/fighter.json",
+      "features": 9
+    },
+    {
+      "kind": "subclass",
+      "id": "champion",
+      "path": "subclasses/champion.json",
+      "features": 2
+    },
+    {
+      "kind": "class",
+      "id": "monk",
+      "path": "classes/monk.json",
+      "features": 11
+    },
+    {
+      "kind": "subclass",
+      "id": "warrior_of_the_open_hand",
+      "path": "subclasses/warrior_of_the_open_hand.json",
+      "features": 1
+    },
+    {
+      "kind": "class",
+      "id": "paladin",
+      "path": "classes/paladin.json",
+      "features": 10
+    },
+    {
+      "kind": "subclass",
+      "id": "oath_of_devotion",
+      "path": "subclasses/oath_of_devotion.json",
+      "features": 2
+    },
+    {
+      "kind": "class",
+      "id": "ranger",
+      "path": "classes/ranger.json",
+      "features": 8
+    },
+    {
+      "kind": "subclass",
+      "id": "hunter",
+      "path": "subclasses/hunter.json",
+      "features": 2
+    },
+    {
+      "kind": "class",
+      "id": "rogue",
+      "path": "classes/rogue.json",
+      "features": 10
+    },
+    {
+      "kind": "subclass",
+      "id": "thief",
+      "path": "subclasses/thief.json",
+      "features": 2
+    },
+    {
+      "kind": "class",
+      "id": "sorcerer",
+      "path": "classes/sorcerer.json",
+      "features": 7
+    },
+    {
+      "kind": "subclass",
+      "id": "draconic_sorcery",
+      "path": "subclasses/draconic_sorcery.json",
+      "features": 2
+    },
+    {
+      "kind": "class",
+      "id": "warlock",
+      "path": "classes/warlock.json",
+      "features": 5
+    },
+    {
+      "kind": "subclass",
+      "id": "fiend_patron",
+      "path": "subclasses/fiend_patron.json",
+      "features": 2
+    },
+    {
+      "kind": "class",
+      "id": "wizard",
+      "path": "classes/wizard.json",
+      "features": 7
+    },
+    {
+      "kind": "subclass",
+      "id": "evoker",
+      "path": "subclasses/evoker.json",
+      "features": 2
+    },
+    {
+      "kind": "invocation",
+      "id": "agonizing_blast",
+      "path": "invocations/agonizing_blast.json"
+    },
+    {
+      "kind": "invocation",
+      "id": "armor_of_shadows",
+      "path": "invocations/armor_of_shadows.json"
+    },
+    {
+      "kind": "invocation",
+      "id": "ascendant_step",
+      "path": "invocations/ascendant_step.json"
+    },
+    {
+      "kind": "invocation",
+      "id": "devils_sight",
+      "path": "invocations/devils_sight.json"
+    },
+    {
+      "kind": "invocation",
+      "id": "eldritch_mind",
+      "path": "invocations/eldritch_mind.json"
+    },
+    {
+      "kind": "invocation",
+      "id": "eldritch_smite",
+      "path": "invocations/eldritch_smite.json"
+    },
+    {
+      "kind": "invocation",
+      "id": "eldritch_spear",
+      "path": "invocations/eldritch_spear.json"
+    },
+    {
+      "kind": "invocation",
+      "id": "fiendish_vigor",
+      "path": "invocations/fiendish_vigor.json"
+    },
+    {
+      "kind": "invocation",
+      "id": "gaze_of_two_minds",
+      "path": "invocations/gaze_of_two_minds.json"
+    },
+    {
+      "kind": "invocation",
+      "id": "gift_of_the_depths",
+      "path": "invocations/gift_of_the_depths.json"
+    },
+    {
+      "kind": "invocation",
+      "id": "investment_of_the_chain_master",
+      "path": "invocations/investment_of_the_chain_master.json"
+    },
+    {
+      "kind": "invocation",
+      "id": "lessons_of_the_first_ones",
+      "path": "invocations/lessons_of_the_first_ones.json"
+    },
+    {
+      "kind": "invocation",
+      "id": "mask_of_many_faces",
+      "path": "invocations/mask_of_many_faces.json"
+    },
+    {
+      "kind": "invocation",
+      "id": "master_of_myriad_forms",
+      "path": "invocations/master_of_myriad_forms.json"
+    },
+    {
+      "kind": "invocation",
+      "id": "misty_visions",
+      "path": "invocations/misty_visions.json"
+    },
+    {
+      "kind": "invocation",
+      "id": "one_with_shadows",
+      "path": "invocations/one_with_shadows.json"
+    },
+    {
+      "kind": "invocation",
+      "id": "otherworldly_leap",
+      "path": "invocations/otherworldly_leap.json"
+    },
+    {
+      "kind": "invocation",
+      "id": "pact_of_the_blade",
+      "path": "invocations/pact_of_the_blade.json"
+    },
+    {
+      "kind": "invocation",
+      "id": "pact_of_the_chain",
+      "path": "invocations/pact_of_the_chain.json"
+    },
+    {
+      "kind": "invocation",
+      "id": "pact_of_the_tome",
+      "path": "invocations/pact_of_the_tome.json"
+    },
+    {
+      "kind": "invocation",
+      "id": "repelling_blast",
+      "path": "invocations/repelling_blast.json"
+    },
+    {
+      "kind": "invocation",
+      "id": "thirsting_blade",
+      "path": "invocations/thirsting_blade.json"
+    },
+    {
+      "kind": "metamagic",
+      "id": "careful_spell",
+      "path": "metamagic/careful_spell.json"
+    },
+    {
+      "kind": "metamagic",
+      "id": "distant_spell",
+      "path": "metamagic/distant_spell.json"
+    },
+    {
+      "kind": "metamagic",
+      "id": "empowered_spell",
+      "path": "metamagic/empowered_spell.json"
+    },
+    {
+      "kind": "metamagic",
+      "id": "extended_spell",
+      "path": "metamagic/extended_spell.json"
+    },
+    {
+      "kind": "metamagic",
+      "id": "heightened_spell",
+      "path": "metamagic/heightened_spell.json"
+    },
+    {
+      "kind": "metamagic",
+      "id": "quickened_spell",
+      "path": "metamagic/quickened_spell.json"
+    },
+    {
+      "kind": "metamagic",
+      "id": "seeking_spell",
+      "path": "metamagic/seeking_spell.json"
+    },
+    {
+      "kind": "metamagic",
+      "id": "subtle_spell",
+      "path": "metamagic/subtle_spell.json"
+    },
+    {
+      "kind": "metamagic",
+      "id": "transmuted_spell",
+      "path": "metamagic/transmuted_spell.json"
+    },
+    {
+      "kind": "metamagic",
+      "id": "twinned_spell",
+      "path": "metamagic/twinned_spell.json"
+    },
+    {
+      "kind": "species",
+      "id": "dragonborn",
+      "path": "species/dragonborn.json"
+    },
+    {
+      "kind": "species",
+      "id": "dwarf",
+      "path": "species/dwarf.json"
+    },
+    {
+      "kind": "species",
+      "id": "elf",
+      "path": "species/elf.json"
+    },
+    {
+      "kind": "species",
+      "id": "gnome",
+      "path": "species/gnome.json"
+    },
+    {
+      "kind": "species",
+      "id": "goliath",
+      "path": "species/goliath.json"
+    },
+    {
+      "kind": "species",
+      "id": "halfling",
+      "path": "species/halfling.json"
+    },
+    {
+      "kind": "species",
+      "id": "human",
+      "path": "species/human.json"
+    },
+    {
+      "kind": "species",
+      "id": "orc",
+      "path": "species/orc.json"
+    },
+    {
+      "kind": "species",
+      "id": "tiefling",
+      "path": "species/tiefling.json"
+    },
+    {
+      "kind": "feat",
+      "id": "alert",
+      "path": "feats/alert.json"
+    },
+    {
+      "kind": "feat",
+      "id": "magic_initiate",
+      "path": "feats/magic_initiate.json"
+    },
+    {
+      "kind": "feat",
+      "id": "savage_attacker",
+      "path": "feats/savage_attacker.json"
+    },
+    {
+      "kind": "feat",
+      "id": "skilled",
+      "path": "feats/skilled.json"
+    },
+    {
+      "kind": "feat",
+      "id": "ability_score_improvement",
+      "path": "feats/ability_score_improvement.json"
+    },
+    {
+      "kind": "feat",
+      "id": "grappler",
+      "path": "feats/grappler.json"
+    },
+    {
+      "kind": "feat",
+      "id": "archery",
+      "path": "feats/archery.json"
+    },
+    {
+      "kind": "feat",
+      "id": "defense",
+      "path": "feats/defense.json"
+    },
+    {
+      "kind": "feat",
+      "id": "great_weapon_fighting",
+      "path": "feats/great_weapon_fighting.json"
+    },
+    {
+      "kind": "feat",
+      "id": "two_weapon_fighting",
+      "path": "feats/two_weapon_fighting.json"
+    },
+    {
+      "kind": "background",
+      "id": "acolyte",
+      "path": "backgrounds/acolyte.json"
+    },
+    {
+      "kind": "background",
+      "id": "criminal",
+      "path": "backgrounds/criminal.json"
+    },
+    {
+      "kind": "background",
+      "id": "sage",
+      "path": "backgrounds/sage.json"
+    },
+    {
+      "kind": "background",
+      "id": "soldier",
+      "path": "backgrounds/soldier.json"
+    }
+  ],
+  "counts": {
+    "class": 12,
+    "subclass": 12,
+    "invocation": 22,
+    "metamagic": 10,
+    "species": 9,
+    "background": 4,
+    "feat": 10
+  },
+  "excluded_invocations": [
+    {
+      "id": "devouring_blade",
+      "minimum_warlock_level": 12
+    },
+    {
+      "id": "gift_of_the_protectors",
+      "minimum_warlock_level": 9
+    },
+    {
+      "id": "lifedrinker",
+      "minimum_warlock_level": 9
+    },
+    {
+      "id": "visions_of_distant_realms",
+      "minimum_warlock_level": 9
+    },
+    {
+      "id": "whispers_of_the_grave",
+      "minimum_warlock_level": 7
+    },
+    {
+      "id": "witch_sight",
+      "minimum_warlock_level": 15
+    }
+  ],
+  "multiclass_rules": "multiclass.json",
+  "source_context": "source-pages.json"
+}

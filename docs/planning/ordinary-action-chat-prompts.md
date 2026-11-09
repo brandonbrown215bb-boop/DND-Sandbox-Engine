@@ -5,15 +5,22 @@ The [registry](vocabulary-slices.md#ordinary-action-work-packages) owns their
 status and the requirements left outside them. This split accepts no additional
 behavior and does not change the 163/276 count or Crown's content scope.
 
-Start with OA-01. After that, select the capability needed next; the list is not
-a gate before movement, Hit Dice, character acquisition or content work. OA-09
-and OA-11 depend on OA-08. Run these sequentially when they touch shared files.
+**Dispatch history, not the current queue:** OA-01–OA-13 now have verified bounded
+implementations in the registry. Do not start OA-01 or replay these prompts merely
+because S-237/S-238 remain open. Select new consumers from the registry's retained
+requirements; reuse completed packages and their evidence. The original OA-09/
+OA-11 dependency on OA-08 and shared-file sequencing below describe dispatch.
+
+Current Crown work follows the [cross-set engine mapping](crown-engine-mapping/README.md)
+and its [bounded queue](crown-engine-mapping/assignments.md), starting with
+**CXM-01/S-249 ammunition**. The delivered OA controls are reuse points for the
+named later consumers; their whole parent slices are not prerequisites.
 
 ## Instructions shared by every prompt
 
 Read AGENTS.md, roadmap.md, the registry's ordinary-action work packages and the
-selected prompt below. Use current source and documented evidence; the working
-tree already contains substantial uncommitted ordinary-action work. Preserve it.
+selected prompt below. Use current source and documented evidence; the original
+uncommitted ordinary-action work has since integrated. Preserve unrelated work.
 Read the relevant section of [ordinary-actions.md](../mechanics/ordinary-actions.md)
 and source-pin the selected SRD 5.2.1 clauses before implementing them. For class
 source work, start at [reference/2024](../../reference/2024/README.md).

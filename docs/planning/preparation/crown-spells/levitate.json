@@ -1,0 +1,166 @@
+{
+  "format": "crown-spell-candidate/1",
+  "id": "levitate",
+  "name": "Levitate",
+  "level": 2,
+  "status": "written_unverified_not_loaded",
+  "source": {
+    "authority": "SRD 5.2.1",
+    "url": "https://media.dndbeyond.com/compendium-images/srd/5.2/SRD_CC_v5.2.1.pdf",
+    "sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      144
+    ],
+    "header": {
+      "Casting Time": "Action",
+      "Range": "60 feet",
+      "Components": "V, S, M (a metal spring)",
+      "Duration": "Concentration, up to 10 minutes"
+    },
+    "attribution": "System Reference Document 5.2.1, Wizards of the Coast LLC; CC BY 4.0."
+  },
+  "casting": {
+    "casting_time": "Action",
+    "kind": "action",
+    "seconds": null,
+    "ritual_available": false,
+    "range": {
+      "source": "60 feet",
+      "kind": "distance",
+      "feet": 60
+    },
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "a metal spring",
+    "duration": "Concentration, up to 10 minutes",
+    "concentration": true,
+    "spell_lists": [
+      "sorcerer",
+      "wizard"
+    ]
+  },
+  "authored_intent": "Seen creature/object at most 500 pounds; unwilling creature CON save; suspend up to 20 feet; action vertical adjustments within range, self movement alternative, push/pull locomotion and gentle descent when ending.",
+  "rules": [
+    {
+      "id": "r001",
+      "text": "One creature or loose object of your choice that you can see within range rises vertically up to 20 feet and remains suspended there for the duration."
+    },
+    {
+      "id": "r002",
+      "text": "The spell can levitate an object that weighs up to 500 pounds."
+    },
+    {
+      "id": "r003",
+      "text": "An unwilling creature that succeeds on a Constitution saving throw is unaffected."
+    },
+    {
+      "id": "r004",
+      "text": "The target can move only by pushing or pulling against a fixed object or surface within reach (such as a wall or a ceiling), which allows it to move as if it were climbing."
+    },
+    {
+      "id": "r005",
+      "text": "You can change the target’s altitude by up to 20 feet in either direction on your turn."
+    },
+    {
+      "id": "r006",
+      "text": "If you are the target, you can move up or down as part of your move."
+    },
+    {
+      "id": "r007",
+      "text": "Otherwise, you can take a Magic action to move the target, which must remain within the spell’s range."
+    },
+    {
+      "id": "r008",
+      "text": "When the spell ends, the target floats gently to the ground if it is still aloft."
+    }
+  ],
+  "authored_operations": [
+    {
+      "operation": "suspend_target",
+      "parameters": {
+        "target": "seen_creature_or_loose_object",
+        "object_weight_pounds_max": 500,
+        "unwilling_creature_save": "CON",
+        "initial_height_feet_max": 20,
+        "locomotion": "push_or_pull_fixed_surface_as_climbing",
+        "height_adjustment_feet": 20,
+        "self_adjustment": "during_movement",
+        "other_adjustment": "magic_action_within_range",
+        "ending": "float_gently_to_ground"
+      },
+      "status": "authoring_declaration_not_a_registered_opcode",
+      "required_source_rules": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006",
+        "r007",
+        "r008"
+      ]
+    }
+  ],
+  "runtime_draft": {
+    "origin": "proposed_operations",
+    "definition": null,
+    "fragments": {},
+    "coverage": "Unverified. Neither a full definition nor a fragment certifies all source rules or controls. Required extensions are not silently waived."
+  },
+  "required_extensions": [
+    {
+      "group": "flight",
+      "requirement": "Supply actual three-dimensional occupancy/movement, hover or attachment limits, source ending and legal fall/landing; a Speed bonus alone is not flight.",
+      "spell_specific_intent": "Seen creature/object at most 500 pounds; unwilling creature CON save; suspend up to 20 feet; action vertical adjustments within range, self movement alternative, push/pull locomotion and gentle descent when ending.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006",
+        "r007",
+        "r008"
+      ],
+      "existing_owner_to_reuse": "src/combat/combat_child_actions.gd",
+      "slice_references": "S-180/S-181/S-185",
+      "disposition": "requires_mapping_or_host_completion",
+      "note": "This is an authored handoff requirement, not a fresh runtime failure or claim that the whole referenced slice is missing."
+    },
+    {
+      "group": "objects",
+      "requirement": "Use exact represented item/object copies, eligibility facts and quantities; retain real manipulation, drop, damage, access and ending outcomes.",
+      "spell_specific_intent": "Seen creature/object at most 500 pounds; unwilling creature CON save; suspend up to 20 feet; action vertical adjustments within range, self movement alternative, push/pull locomotion and gentle descent when ending.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006",
+        "r007",
+        "r008"
+      ],
+      "existing_owner_to_reuse": "src/dungeon/local_room_rules.gd",
+      "slice_references": "S-032/S-164/S-212/S-213",
+      "disposition": "requires_mapping_or_host_completion",
+      "note": "This is an authored handoff requirement, not a fresh runtime failure or claim that the whole referenced slice is missing."
+    }
+  ],
+  "audit": {
+    "source": "docs/audits/spells.md",
+    "batch": "088-6",
+    "production_definition_at_authoring": "res://data/core/spells/imported_spells.json#110",
+    "baseline_execution": "native",
+    "source_revision": "2a19eb1d",
+    "existing_conversion_label": "queued"
+  },
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile every source rule and required extension, then implement and verify through production paths before any deliberate promotion. Keep native behavior until covered."
+  }
+}

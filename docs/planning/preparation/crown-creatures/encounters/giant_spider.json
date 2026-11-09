@@ -1,0 +1,408 @@
+{
+  "schema": "crown-creature-candidate/1",
+  "id": "crown_giant_spider",
+  "name": "Giant Spider",
+  "kind": "campaign_encounter",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring intent only; not registered engine syntax. Mapping requirements do not assert the whole referenced engine slice is absent.",
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile all source clauses, mappings and source differences before later production-path verification. Keep native paths until replacements cover them."
+  },
+  "source": {
+    "path": "data/core/monsters/core_monsters.json",
+    "sha256": "33bf505c91476b32f7dd2887dd0caa19521e4a9e206392b8d803090b105eb8c2",
+    "pointer": "/6",
+    "payload": {
+      "id": "giant_spider",
+      "name": "Giant Spider",
+      "description": "A monstrous arachnid that lurks in dark places.",
+      "size": "large",
+      "challenge_rating": 1,
+      "hit_points": "4d10 + 4",
+      "armor_class": 14,
+      "speed": 6,
+      "ability_scores": {
+        "STR": 14,
+        "DEX": 16,
+        "CON": 12,
+        "INT": 2,
+        "WIS": 11,
+        "CHA": 4
+      },
+      "attacks": [
+        {
+          "name": "Bite",
+          "ability": "DEX",
+          "damage": "1d8 + 2",
+          "damage_type": "piercing",
+          "range": 1,
+          "extra_effects": [
+            {
+              "type": "poison_save",
+              "dc": 11,
+              "damage": "2d8",
+              "damage_type": "poison"
+            }
+          ]
+        },
+        {
+          "name": "Web",
+          "ability": "DEX",
+          "damage": "0",
+          "damage_type": "none",
+          "range": 4,
+          "extra_effects": [
+            {
+              "type": "restrain",
+              "save": "STR",
+              "dc": 12
+            }
+          ]
+        }
+      ],
+      "ai_behavior": "aggressive",
+      "special_abilities": [
+        {
+          "id": "spider_climb",
+          "name": "Spider Climb",
+          "description": "Can climb difficult surfaces without needing to make an ability check."
+        },
+        {
+          "id": "web_sense",
+          "name": "Web Sense",
+          "description": "Knows the location of any creature in contact with the same web."
+        }
+      ],
+      "loot_table": [
+        {
+          "item_id": "gold_50",
+          "chance": 0.3
+        },
+        {
+          "item_id": "antidote",
+          "chance": 0.2
+        }
+      ],
+      "xp": 200
+    },
+    "authority": "Existing Crown authored creature; not asserted SRD 5.2.1 compliance"
+  },
+  "retained_definitions": [
+    {
+      "path": "data/core/monsters/core_monsters.json",
+      "sha256": "33bf505c91476b32f7dd2887dd0caa19521e4a9e206392b8d803090b105eb8c2",
+      "pointer": "/6",
+      "payload": {
+        "id": "giant_spider",
+        "name": "Giant Spider",
+        "description": "A monstrous arachnid that lurks in dark places.",
+        "size": "large",
+        "challenge_rating": 1,
+        "hit_points": "4d10 + 4",
+        "armor_class": 14,
+        "speed": 6,
+        "ability_scores": {
+          "STR": 14,
+          "DEX": 16,
+          "CON": 12,
+          "INT": 2,
+          "WIS": 11,
+          "CHA": 4
+        },
+        "attacks": [
+          {
+            "name": "Bite",
+            "ability": "DEX",
+            "damage": "1d8 + 2",
+            "damage_type": "piercing",
+            "range": 1,
+            "extra_effects": [
+              {
+                "type": "poison_save",
+                "dc": 11,
+                "damage": "2d8",
+                "damage_type": "poison"
+              }
+            ]
+          },
+          {
+            "name": "Web",
+            "ability": "DEX",
+            "damage": "0",
+            "damage_type": "none",
+            "range": 4,
+            "extra_effects": [
+              {
+                "type": "restrain",
+                "save": "STR",
+                "dc": 12
+              }
+            ]
+          }
+        ],
+        "ai_behavior": "aggressive",
+        "special_abilities": [
+          {
+            "id": "spider_climb",
+            "name": "Spider Climb",
+            "description": "Can climb difficult surfaces without needing to make an ability check."
+          },
+          {
+            "id": "web_sense",
+            "name": "Web Sense",
+            "description": "Knows the location of any creature in contact with the same web."
+          }
+        ],
+        "loot_table": [
+          {
+            "item_id": "gold_50",
+            "chance": 0.3
+          },
+          {
+            "item_id": "antidote",
+            "chance": 0.2
+          }
+        ],
+        "xp": 200
+      },
+      "manifest_declarations": [
+        {
+          "type": "monster",
+          "id": "giant_spider",
+          "winner": "res://data/core/monsters/core_monsters.json#7",
+          "replaces": [
+            "res://data/core/monsters/imported_monsters.json#180"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "data/core/monsters/imported_monsters.json",
+      "sha256": "f57bee1e93f185a89575bed3d8b2b610b53cfd3b7f2eb56448d1dd64a0126c5f",
+      "pointer": "/179",
+      "payload": {
+        "id": "giant_spider",
+        "name": "Giant Spider",
+        "hit_points": "4d10 + 4",
+        "armor_class": 14,
+        "speed": 6,
+        "ability_scores": {
+          "STR": 14,
+          "DEX": 16,
+          "CON": 12,
+          "INT": 2,
+          "WIS": 11,
+          "CHA": 4
+        },
+        "attacks": [
+          {
+            "name": "Claws",
+            "ability": "STR",
+            "damage": "1d6",
+            "range": 1,
+            "damage_type": "slashing"
+          }
+        ],
+        "ai_behavior": "aggressive"
+      },
+      "manifest_declarations": [
+        {
+          "type": "monster",
+          "id": "giant_spider",
+          "winner": "res://data/core/monsters/core_monsters.json#7",
+          "replaces": [
+            "res://data/core/monsters/imported_monsters.json#180"
+          ]
+        }
+      ]
+    }
+  ],
+  "campaign_monster_id": "giant_spider",
+  "srd_comparison_candidate": "statblocks/giant_spider.json",
+  "conversion_policy": "Preserve campaign identity and all existing custom rules. Source-reconcile overlapping SRD creatures explicitly; candidate authoring does not replace a campaign definition. Goblin Chief and Lich King have no automatic official replacement.",
+  "authored_operations": [
+    {
+      "key": "attack_0",
+      "trigger": "Selected action attack",
+      "budget": "action; multiattack only if explicitly granted",
+      "full_rule_payload": {
+        "name": "Bite",
+        "ability": "DEX",
+        "damage": "1d8 + 2",
+        "damage_type": "piercing",
+        "range": 1,
+        "extra_effects": [
+          {
+            "type": "poison_save",
+            "dc": 11,
+            "damage": "2d8",
+            "damage_type": "poison"
+          }
+        ]
+      },
+      "steps": [
+        "Resolve authored range/ability/damage and each declared extra effect in order through shared operations.",
+        "Retain separate save-only, after-hit, max-HP, corrosion and condition outcomes; native effect-name recognition is not complete behavior."
+      ],
+      "blockers": [
+        "map_attacks",
+        "map_conditions"
+      ],
+      "behavior_plan": {
+        "budget": "action or member of source-declared Multiattack",
+        "resolution": "Printed campaign attack with native ability/cell range; source conversion must settle feet and explicit final attack modifiers",
+        "hit_damage": {
+          "formula": "1d8 + 2",
+          "type": "piercing"
+        },
+        "after_hit_in_order": [
+          {
+            "type": "poison_save",
+            "dc": 11,
+            "damage": "2d8",
+            "damage_type": "poison"
+          }
+        ],
+        "source_boundary": "Keep current custom attack separate from official comparison; map every save, defense, condition ending, max-HP or exact-item effect explicitly."
+      }
+    },
+    {
+      "key": "attack_1",
+      "trigger": "Selected action attack",
+      "budget": "action; multiattack only if explicitly granted",
+      "full_rule_payload": {
+        "name": "Web",
+        "ability": "DEX",
+        "damage": "0",
+        "damage_type": "none",
+        "range": 4,
+        "extra_effects": [
+          {
+            "type": "restrain",
+            "save": "STR",
+            "dc": 12
+          }
+        ]
+      },
+      "steps": [
+        "Resolve authored range/ability/damage and each declared extra effect in order through shared operations.",
+        "Retain separate save-only, after-hit, max-HP, corrosion and condition outcomes; native effect-name recognition is not complete behavior."
+      ],
+      "blockers": [
+        "map_attacks",
+        "map_conditions"
+      ],
+      "behavior_plan": {
+        "budget": "action or member of source-declared Multiattack",
+        "resolution": "Printed campaign attack with native ability/cell range; source conversion must settle feet and explicit final attack modifiers",
+        "hit_damage": {
+          "formula": "0",
+          "type": "none"
+        },
+        "after_hit_in_order": [
+          {
+            "type": "restrain",
+            "save": "STR",
+            "dc": 12
+          }
+        ],
+        "source_boundary": "Keep current custom attack separate from official comparison; map every save, defense, condition ending, max-HP or exact-item effect explicitly."
+      }
+    },
+    {
+      "key": "trait_0",
+      "full_rule_payload": {
+        "id": "spider_climb",
+        "name": "Spider Climb",
+        "description": "Can climb difficult surfaces without needing to make an ability check."
+      },
+      "steps": [
+        {
+          "intent": "Represent actual size/space, climb/swim/fly and breathing, jumps, straight-line charge history, opportunity exceptions, web surfaces and legal release.",
+          "mapping_group": "movement"
+        }
+      ],
+      "blockers": [
+        "source_reconciliation"
+      ],
+      "behavior_plan": {
+        "trigger": "Climb difficult surface",
+        "effect": "No ability check required",
+        "blocker": "Actual surface/ceiling and movement hosts still need mapping"
+      }
+    },
+    {
+      "key": "trait_1",
+      "full_rule_payload": {
+        "id": "web_sense",
+        "name": "Web Sense",
+        "description": "Knows the location of any creature in contact with the same web."
+      },
+      "steps": [
+        {
+          "intent": "Use observer-relative senses, exact origin, real language/hearing/knowledge and distance. Do not grant global sight or invented NPC information.",
+          "mapping_group": "senses"
+        }
+      ],
+      "blockers": [
+        "source_reconciliation"
+      ],
+      "behavior_plan": {
+        "gate": "Other creature in contact with same actual web",
+        "effect": "Know its location",
+        "blocker": "Real connected web scope and observer-origin knowledge"
+      }
+    }
+  ],
+  "blockers": [
+    "map_statistics",
+    "source_reconciliation",
+    "map_attacks",
+    "map_items"
+  ],
+  "selection_links": [
+    "selection-links.json"
+  ],
+  "loot": {
+    "metadata": [
+      {
+        "item_id": "gold_50",
+        "chance": 0.3
+      },
+      {
+        "item_id": "antidote",
+        "chance": 0.2
+      }
+    ],
+    "item_pass": {
+      "path": "docs/planning/preparation/crown-reachable-items/reachability.json",
+      "sha256": "060c7989394a5dd9f9079bca55527b5a22dcb3d7c4e7d0568f3ae784c472220c"
+    },
+    "candidate_index": "../crown-reachable-items/index.json",
+    "settlement": "No generic post-combat payment established by the reachable-item trace. Do not duplicate campaign boss/room rewards.",
+    "candidate_links": [
+      {
+        "item_id": "gold_50",
+        "candidate": "../crown-reachable-items/items/gold_50.json"
+      },
+      {
+        "item_id": "antidote",
+        "candidate": "../crown-reachable-items/items/antidote.json"
+      }
+    ]
+  },
+  "spell_candidates": [],
+  "source_differences": [
+    "SRD Web is DEX saveDC13, Recharge5–6 and an actual AC10/HP5 destructible web; Crown Web is a native hit attack plus STR restraintDC12, and Bite uses a separate poison save."
+  ],
+  "retained_runtime_observations": {
+    "source": {
+      "path": "src/combat/combat_action.gd",
+      "sha256": "2833d2c8b3f6b2fd5a6b0acf97a927d8b5299362d9e5db8517ff5506d53892f8"
+    },
+    "function": "resolve_monster_attack_effects",
+    "boundary": "Read-only code observation, not gameplay verification: after a hit poison_save/restrain/paralyze_save call saving_throw_to_dc and add_condition with max(1,duration) turn count; corrode_armor adds AC-1 modifier for duration default10 rather than damaging a carried armor copy. reduce_max_hp uses existing damage receipt and direct maxHP mutation. Do not treat these simplified interpretations as source rules or replace them here."
+  }
+}

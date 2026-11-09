@@ -1,0 +1,52 @@
+{
+  "schema": "crown-world-candidate/1",
+  "id": "cistern",
+  "name": "Temple cistern",
+  "kind": "objects",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring declarations only; not registered engine opcodes.",
+  "required_extensions": [
+    "objects",
+    "supplies"
+  ],
+  "authored_operations": [
+    {
+      "operation": "instantiate_exact_room_object",
+      "requirement": "Preserve all retained facts and exact room/object identity; mutations and contents persist with the room. Do not respawn removed/destroyed objects on revisit."
+    },
+    {
+      "operation": "use_physical_stock",
+      "requirement": "Change actual authored water/food and contamination once; respect capacity and actual recipient intake; purification removes eligible contamination without minting supplies."
+    }
+  ],
+  "blockers": [],
+  "retained_input": {
+    "path": "data/core/campaigns/the_lost_crown.json",
+    "sha256": "3352b2d22be36e68591bfdf4ec73b8201f2bec6c69a3a60b0c8beb7d5074db44",
+    "pointer": "/dungeons/ruins_of_ashvale/tactical_rooms/1/objects/3",
+    "payload": {
+      "id": "cistern",
+      "kind": "container",
+      "name": "Temple cistern",
+      "position": [
+        3,
+        1
+      ],
+      "material": "stone",
+      "size": "Large",
+      "weight_lb": 500,
+      "fixed": true,
+      "hp": 40,
+      "max_hp": 40,
+      "open": true,
+      "water_gallons": 10,
+      "capacity_gallons": 40,
+      "contents": [],
+      "food_or_drink": true,
+      "contamination": [
+        "poison",
+        "disease"
+      ]
+    }
+  }
+}

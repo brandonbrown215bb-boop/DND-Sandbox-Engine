@@ -1,0 +1,114 @@
+{
+  "format": "crown-spell-candidate/1",
+  "id": "mage_armor",
+  "name": "Mage Armor",
+  "level": 1,
+  "status": "written_unverified_not_loaded",
+  "source": {
+    "authority": "SRD 5.2.1",
+    "url": "https://media.dndbeyond.com/compendium-images/srd/5.2/SRD_CC_v5.2.1.pdf",
+    "sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      145
+    ],
+    "header": {
+      "Casting Time": "Action",
+      "Range": "Touch",
+      "Components": "V, S, M (a piece of cured leather)",
+      "Duration": "8 hours"
+    },
+    "attribution": "System Reference Document 5.2.1, Wizards of the Coast LLC; CC BY 4.0."
+  },
+  "casting": {
+    "casting_time": "Action",
+    "kind": "action",
+    "seconds": null,
+    "ritual_available": false,
+    "range": {
+      "source": "Touch",
+      "kind": "touch",
+      "feet": 5
+    },
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "a piece of cured leather",
+    "duration": "8 hours",
+    "concentration": false,
+    "spell_lists": [
+      "sorcerer",
+      "wizard"
+    ]
+  },
+  "authored_intent": "Touch willing unarmored creature; base AC option 13+DEX; ends if recipient dons armor; eight hours, no Concentration; retain other legal base-AC choices.",
+  "rules": [
+    {
+      "id": "r001",
+      "text": "You touch a willing creature who isn’t wearing armor."
+    },
+    {
+      "id": "r002",
+      "text": "Until the spell ends, the target’s base AC becomes 13 plus its Dexterity modifier."
+    },
+    {
+      "id": "r003",
+      "text": "The spell ends early if the target dons armor."
+    }
+  ],
+  "authored_operations": [
+    {
+      "operation": "grant_base_ac_option",
+      "parameters": {
+        "target": "willing_touched_unarmored_creature",
+        "formula": {
+          "base": 13,
+          "ability_modifier": "recipient_DEX"
+        },
+        "ends_on": "recipient_dons_armor"
+      },
+      "status": "authoring_declaration_not_a_registered_opcode",
+      "required_source_rules": [
+        "r001",
+        "r002",
+        "r003"
+      ]
+    }
+  ],
+  "runtime_draft": {
+    "origin": "proposed_operations",
+    "definition": null,
+    "fragments": {},
+    "coverage": "Unverified. Neither a full definition nor a fragment certifies all source rules or controls. Required extensions are not silently waived."
+  },
+  "required_extensions": [
+    {
+      "group": "benefit_recipients",
+      "requirement": "Bind each chosen recipient, formula, recurring benefit and ending to the exact cast; self-only source carriers do not supply arbitrary recipients or every benefit kind.",
+      "spell_specific_intent": "Touch willing unarmored creature; base AC option 13+DEX; ends if recipient dons armor; eight hours, no Concentration; retain other legal base-AC choices.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003"
+      ],
+      "existing_owner_to_reuse": "src/characters/source_benefit_rules.gd",
+      "slice_references": "S-080/S-084/S-085/S-086/S-141",
+      "disposition": "requires_mapping_or_host_completion",
+      "note": "This is an authored handoff requirement, not a fresh runtime failure or claim that the whole referenced slice is missing."
+    }
+  ],
+  "audit": {
+    "source": "docs/audits/spells.md",
+    "batch": "088-4",
+    "production_definition_at_authoring": "res://data/core/spells/core_spells.json#6",
+    "baseline_execution": "native",
+    "source_revision": "2a19eb1d",
+    "existing_conversion_label": "queued"
+  },
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile every source rule and required extension, then implement and verify through production paths before any deliberate promotion. Keep native behavior until covered."
+  }
+}

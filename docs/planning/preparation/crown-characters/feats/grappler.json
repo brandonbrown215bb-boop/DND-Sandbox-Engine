@@ -1,0 +1,141 @@
+{
+  "schema": "crown-character-candidate/1",
+  "id": "grappler",
+  "name": "Grappler",
+  "kind": "feat",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "scope": {
+    "total_character_level_maximum": 5
+  },
+  "operation_language": "authoring intent only; not registered engine syntax",
+  "runtime_support": "Retained definitions are reuse material, not proof of full rules. Every authored operation needs contract mapping and later production-path verification before promotion.",
+  "definition": {
+    "category": "General",
+    "repeatable": false,
+    "prerequisites": {
+      "character_level": 4,
+      "ability_any": {
+        "STR": 13,
+        "DEX": 13
+      }
+    },
+    "parameters": {
+      "ability_increase": {
+        "choose": [
+          "STR",
+          "DEX"
+        ],
+        "amount": 1,
+        "maximum": 20
+      }
+    }
+  },
+  "rules": {
+    "authority": "SRD 5.2.1",
+    "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      87
+    ],
+    "text": "Grappler\nGeneral Feat (Prerequisite: Level 4+, Strength or\nDexterity 13+)\nYou gain the following benefits.\nAbility Score Increase.\nIncrease your Strength or\nDexterity score by 1, to a maximum of 20.\nPunch and Grab.\nWhen you hit a creature with an\nUnarmed Strike as part of the Attack action on your\nturn, you can use both the Damage and the Grapple\noption. You can use this benefit only once per turn.\nAttack Advantage.\nYou have Advantage on attack\nrolls against a creature Grappled by you.\nFast Wrestler.\nYou don’t have to spend extra\nmovement to move a creature Grappled by you if the\ncreature is your size or smaller."
+  },
+  "authored_operations": [
+    {
+      "trigger": "Acquisition",
+      "effects": [
+        "Permanent chosen STR/DEX+1 cap20"
+      ],
+      "required_extension_groups": [
+        "progression",
+        "attacks",
+        "movement",
+        "conditions"
+      ],
+      "ending_and_identity": "Exact acquired feat instance owns parameters, budgets and grants; once-only acquisition and per-turn receipts; no replay on restore."
+    },
+    {
+      "trigger": "Once per turn; own Attack action Unarmed Strike hits creature",
+      "effects": [
+        "Use both Damage and Grapple options; retain normal target size, free hand, grapple DC/save and reach eligibility"
+      ],
+      "required_extension_groups": [
+        "progression",
+        "attacks",
+        "movement",
+        "conditions"
+      ],
+      "ending_and_identity": "Exact acquired feat instance owns parameters, budgets and grants; once-only acquisition and per-turn receipts; no replay on restore."
+    },
+    {
+      "trigger": "Attack against creature Grappled by owner",
+      "effects": [
+        "Advantage attack rolls"
+      ],
+      "required_extension_groups": [
+        "progression",
+        "attacks",
+        "movement",
+        "conditions"
+      ],
+      "ending_and_identity": "Exact acquired feat instance owns parameters, budgets and grants; once-only acquisition and per-turn receipts; no replay on restore."
+    },
+    {
+      "trigger": "Move creature Grappled by owner",
+      "effects": [
+        "No extra movement if creature size is owner size or smaller; normal extra cost for larger eligible creature"
+      ],
+      "required_extension_groups": [
+        "progression",
+        "attacks",
+        "movement",
+        "conditions"
+      ],
+      "ending_and_identity": "Exact acquired feat instance owns parameters, budgets and grants; once-only acquisition and per-turn receipts; no replay on restore."
+    }
+  ],
+  "reused_from": [],
+  "retained_runtime_seed": null,
+  "unsupported_behavior": [
+    {
+      "groups": [
+        "progression",
+        "attacks",
+        "movement",
+        "conditions"
+      ],
+      "requirement": "Permanent chosen STR/DEX+1 cap20",
+      "status": "candidate_mapping_and_full_host_verification_required"
+    },
+    {
+      "groups": [
+        "progression",
+        "attacks",
+        "movement",
+        "conditions"
+      ],
+      "requirement": "Use both Damage and Grapple options; retain normal target size, free hand, grapple DC/save and reach eligibility",
+      "status": "candidate_mapping_and_full_host_verification_required"
+    },
+    {
+      "groups": [
+        "progression",
+        "attacks",
+        "movement",
+        "conditions"
+      ],
+      "requirement": "Advantage attack rolls",
+      "status": "candidate_mapping_and_full_host_verification_required"
+    },
+    {
+      "groups": [
+        "progression",
+        "attacks",
+        "movement",
+        "conditions"
+      ],
+      "requirement": "No extra movement if creature size is owner size or smaller; normal extra cost for larger eligible creature",
+      "status": "candidate_mapping_and_full_host_verification_required"
+    }
+  ],
+  "source_revision": "2a19eb1d (existing working-tree definitions and recovered drafts read on 2026-11-08)",
+  "reused_input_hashes": {}
+}

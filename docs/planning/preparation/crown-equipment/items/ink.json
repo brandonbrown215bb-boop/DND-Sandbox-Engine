@@ -1,0 +1,51 @@
+{
+  "schema": "crown-equipment-candidate/1",
+  "id": "ink",
+  "name": "Ink",
+  "kind": "gear",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring intent only; not registered engine syntax.",
+  "rules": {
+    "authority": "SRD 5.2.1",
+    "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      95,
+      98
+    ],
+    "section": "Ink",
+    "text": "A 1-ounce bottle provides enough ink to write about 500 pages.",
+    "source_context": "../source-pages.json"
+  },
+  "definition": {
+    "id": "ink",
+    "name": "Ink",
+    "weight_lb": null,
+    "cost_gp": 10,
+    "capacity_ounces": 1,
+    "approximate_pages": 500
+  },
+  "authored_operations": [
+    "A 1-ounce bottle provides enough ink to write about 500 pages."
+  ],
+  "retained_runtime_seeds": [],
+  "manifest_overrides": [],
+  "required_mapping": [
+    "containers"
+  ],
+  "consumers": [
+    {
+      "pack_id": "scholars_pack",
+      "quantity": 1
+    }
+  ],
+  "unsupported_behavior": [
+    {
+      "group": "containers",
+      "requirement": "Map actual capacity, contents and transfer units; retain unknown empty weights and full-versus-empty weight facts. Reuse bounded container owners rather than declaring all capacity absent."
+    },
+    {
+      "group": "definition",
+      "requirement": "No exact current item seed at this candidate identity. This authored record is not a loaded definition; map or promote deliberately later."
+    }
+  ]
+}

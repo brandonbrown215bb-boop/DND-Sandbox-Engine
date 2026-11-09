@@ -1,0 +1,1326 @@
+{
+  "schema": "crown-character-candidate/1",
+  "id": "wizard",
+  "name": "Wizard",
+  "kind": "class",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "scope": {
+    "total_character_level_maximum": 5
+  },
+  "operation_language": "authoring intent only; not registered engine syntax",
+  "runtime_support": "Retained definitions are reuse material, not proof of full rules. Every authored operation needs contract mapping and later production-path verification before promotion.",
+  "source": {
+    "authority": "SRD 5.2.1",
+    "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      77
+    ],
+    "text": "Wizard\nCore Wizard Traits\nPrimary Ability Intelligence\nHit Point Die D6 per Wizard level\nSaving Throw\nProficiencies\nIntelligence and Wisdom\nSkill Proficiencies Choose 2: Arcana, History, Insight, Investigation, Medicine,\nNature, or Religion\nWeapon Proficiencies Simple weapons\nArmor Training None\nStarting Equipment Choose A or B: (A) 2 Daggers,\nArcane Focus (Quarterstaff),\nRobe, Spellbook, Scholar’s\nPack, and 5 GP; or (B) 55 GP\nBecoming a Wizard …\nAs a Level 1 Character\n• Gain all the traits in the Core Wizard Traits table.\n• Gain the Wizard’s level 1 features, which are\nlisted in the Wizard Features table.\nWizard Features\nProficiency\nBonus Level Class Features Ca\n1 +2 Spellcasting, Ritual Adept,\nArcane Recovery\n2 +2 Scholar\n3 +2 Wizard Subclass\n4 +2 Ability Score Improvement\n5 +3 Memorize Spell\n6 +3 Subclass feature\n7 +3 —\n8 +3 Ability Score Improvement\n9 +4 —\n10 +4 Subclass feature\n11 +4 —\n12 +4 Ability Score Improvement\n13 +5 —\n14 +5 Subclass feature\n15 +5 —\n16 +5 Ability Score Improvement\n17 +6 —\n18 +6 Spell Mastery\n19 +6 Epic Boon\n20 +6 Signature Spells\nAs a Multiclass Character\n• Gain the Hit Point Die from the Core Wizard Traits\ntable.\n• Gain the Wizard’s level 1 features, which are\nlisted in the Wizard Features table. See the multiclassing rules in “Character Creation” to determine your available spell slots.\nWizard Class Features\nAs a Wizard, you gain the following class features\nwhen you reach the specified Wizard levels. These\nfeatures are listed in the Wizard Features table."
+  },
+  "reused_from": [
+    "data/core/classes/wizard.json",
+    "reference/2024/classes/wizard.json",
+    "docs/mechanics/wizard-2024.md"
+  ],
+  "acquisition": {
+    "starting_traits": {
+      "weapons": [
+        "simple"
+      ],
+      "skills": [
+        {
+          "choose": {
+            "from": [
+              "arcana",
+              "history",
+              "insight",
+              "investigation",
+              "medicine",
+              "nature",
+              "religion"
+            ],
+            "count": 2
+          }
+        }
+      ]
+    },
+    "multiclass_donor": {},
+    "hit_die": {
+      "number": 1,
+      "faces": 6
+    },
+    "primary_ability": [
+      {
+        "int": true
+      }
+    ],
+    "saving_throws": [
+      "int",
+      "wis"
+    ],
+    "grant_policy": "First total level: full Core Traits and level1 features. Later class entry: only source multiclass traits plus all class level1 features; no starting gear or saving throws. Explicit resolved grants in multiclass.json.",
+    "starting_equipment_donor": {
+      "additionalFromBackground": true,
+      "defaultData": [
+        {
+          "A": [
+            {
+              "item": "dagger|xphb",
+              "quantity": 2
+            },
+            {
+              "item": "quarterstaff|xphb"
+            },
+            {
+              "item": "robe|xphb"
+            },
+            {
+              "special": "Spellbook"
+            },
+            {
+              "item": "scholar's pack|xphb"
+            },
+            {
+              "value": 500
+            }
+          ],
+          "B": [
+            {
+              "value": 5500
+            }
+          ]
+        }
+      ],
+      "entries": [
+        "{@i Choose A or B:} (A) 2 {@item Dagger|XPHB|Daggers}, {@item Arcane Focus|XPHB} ({@item Quarterstaff|XPHB}), {@item Robe|XPHB}, Spellbook, {@item Scholar's Pack|XPHB}, and 5 GP; or (B) 55 GP"
+      ]
+    },
+    "starting_equipment": {
+      "A": {
+        "gp": 5,
+        "items": [
+          {
+            "source_item_key": "dagger",
+            "quantity": 2
+          },
+          {
+            "source_item_key": "arcane_focus_quarterstaff",
+            "quantity": 1
+          },
+          {
+            "source_item_key": "robe",
+            "quantity": 1
+          },
+          {
+            "source_item_key": "spellbook",
+            "quantity": 1
+          },
+          {
+            "source_item_key": "scholars_pack",
+            "quantity": 1
+          }
+        ]
+      },
+      "B": {
+        "gp": 55,
+        "items": []
+      }
+    },
+    "equipment_mapping_notes": [
+      "source_item_key is an authoring identity, not automatically a resolved loaded item. Later inventory reconciliation records missing/choice links.",
+      "Monk chosen_tool is the same single Artisan’s Tool OR Musical Instrument chosen for proficiency. Bard instrument is a separate equipment choice.",
+      "Holy Symbol form is a choice or unresolved generic mapping; no silent form substitution."
+    ],
+    "multiclass_grants": {
+      "all": [
+        "INT"
+      ],
+      "score_minimum": 13,
+      "hit_die": "d6",
+      "features": "All own-class level1 features plus later features at own-class thresholds; subclass at class3, feat entitlement at class4. See class candidate.",
+      "starting_equipment": [],
+      "saving_throws": []
+    }
+  },
+  "level_hit_points": {
+    "first_total_level": "maximum class Hit Die + permanent CON modifier",
+    "later_levels": "roll class Hit Die OR use fixed average rounded up; add permanent CON modifier; minimum1 HP",
+    "fixed_average": 4,
+    "hit_dice": "Add one Hit Die of this class type; preserve separate types",
+    "project_policy": "Current bounded permanent progression uses fixed level_hit_points and existing level-up living-character heal; rolled advancement is unsupported there, not silently removed from source."
+  },
+  "features": [
+    {
+      "id": "wizard_spellcasting",
+      "name": "Spellcasting",
+      "class_level": 1,
+      "rules": {
+        "authority": "SRD 5.2.1",
+        "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+        "pages": [
+          77,
+          78
+        ],
+        "text": "Level 1: Spellcasting\nAs a student of arcane magic, you have learned to\ncast spells. See “Spells” for the rules on spellcasting.\nThe information below details how you use those\nrules with Wizard spells, which appear in the Wizard spell list later in the class’s description.\nCantrips.\nYou know three Wizard cantrips of your\nchoice.\nLight\n,\nMage Hand\n, and\nRay of Frost\nare recommended. Whenever you finish a Long Rest, you\ncan replace one of your cantrips from this feature\nwith another Wizard cantrip of your choice.\nPrepared\nSpells\n——Spell Slots per Spell Level——\nantrips 1 2 3 4 5 6 7 8 9\n3 4 2 — — — — — — — —\n3 5 3 — — — — — — — —\n3 6 4 2 — — — — — — —\n4 7 4 3 — — — — — — —\n4 9 4 3 2 — — — — — —\n4 10 4 3 3 — — — — — —\n4 11 4 3 3 1 — — — — —\n4 12 4 3 3 2 — — — — —\n4 14 4 3 3 3 1 — — — —\n5 15 4 3 3 3 2 — — — —\n5 16 4 3 3 3 2 1 — — —\n5 16 4 3 3 3 2 1 — — —\n5 17 4 3 3 3 2 1 1 — —\n5 18 4 3 3 3 2 1 1 — —\n5 19 4 3 3 3 2 1 1 1 —\n5 21 4 3 3 3 2 1 1 1 —\n5 22 4 3 3 3 2 1 1 1 1\n5 23 4 3 3 3 3 1 1 1 1\n5 24 4 3 3 3 3 2 1 1 1\n5 25 4 3 3 3 3 2 2 1 1\nWhen you reach Wizard levels 4 and 10, you learn\nanother Wizard cantrip of your choice, as shown in\nthe Cantrips column of the Wizard Features table.\nSpellbook.\nYour wizardly apprenticeship culminated in the creation of a unique book: your\nspellbook. It is a Tiny object that weighs 3 pounds,\ncontains 100 pages, and can be read only by you or\nsomeone casting\nIdentify\n. You determine the book’s\nappearance and materials, such as a gilt-edged tome\nor a collection of vellum bound with twine.\nThe book contains the level 1+ spells you know. It\nstarts with six level 1 Wizard spells of your choice.\nDetect Magic\n,\nFeather Fall\n,\nMage Armor\n,\nMagic Missile\n,\nSleep\n, and\nThunderwave\nare recommended.\nWhenever you gain a Wizard level after 1, add two\nWizard spells of your choice to your spellbook. Each\nof these spells must be of a level for which you have\nspell slots, as shown in the Wizard Features table.\nThe spells are the culmination of arcane research\nyou do regularly.\nSpell Slots.\nThe Wizard Features table shows\nhow many spell slots you have to cast your level 1+\nspells. You regain all expended slots when you finish a Long Rest.\nPrepared Spells of Level 1+.\nYou prepare the list\nof level 1+ spells that are available for you to cast\nwith this feature. To do so, choose four spells from\nyour spellbook. The chosen spells must be of a level\nfor which you have spell slots.\nThe number of spells on your list increases as you\ngain Wizard levels, as shown in the Prepared Spells\ncolumn of the Wizard Features table. Whenever that\nnumber increases, choose additional Wizard spells\nuntil the number of spells on your list matches the\nnumber in the table. The chosen spells must be of a\nlevel for which you have spell slots. For example, if\nyou’re a level 3 Wizard, your list of prepared spells\ncan include six spells of levels 1 and 2 in any combination, chosen from your spellbook.\nIf another Wizard feature gives you spells that\nyou always have prepared, those spells don’t count\nagainst the number of spells you can prepare with\nthis feature, but those spells otherwise count as\nWizard spells for you.\nChanging Your Prepared Spells.\nWhenever you\nfinish a Long Rest, you can change your list of prepared spells, replacing any of the spells there with\nspells from your spellbook.\nSpellcasting Ability.\nIntelligence is your spellcasting ability for your Wizard spells.\nSpellcasting Focus.\nYou can use an Arcane Focus\nor your spellbook as a Spellcasting Focus for your\nWizard spells."
+      },
+      "revised_reference_entries": [
+        "As a student of arcane magic, you have learned to cast spells. See {@book chapter 7|XPHB|7} for the rules on spellcasting. The information below details how you use those rules with Wizard spells, which appear in the {@filter Wizard spell list|spells|class=Wizard} later in the class's description.",
+        {
+          "type": "entries",
+          "entries": [
+            {
+              "type": "entries",
+              "name": "Cantrips",
+              "entries": [
+                "You know three Wizard cantrips of your choice. {@spell Light|XPHB}, {@spell Mage Hand|XPHB}, and {@spell Ray of Frost|XPHB} are recommended. Whenever you finish a {@variantrule Long Rest|XPHB}, you can replace one of your cantrips from this feature with another Wizard cantrip of your choice.",
+                "When you reach Wizard levels 4 and 10, you learn another Wizard cantrip of your choice, as shown in the Cantrips column of the Wizard Features table."
+              ]
+            },
+            {
+              "type": "entries",
+              "name": "Spellbook",
+              "entries": [
+                "Your wizardly apprenticeship culminated in the creation of a unique book: your spellbook. It is a Tiny object that weighs 3 pounds, contains 100 pages, and can be read only by you or someone casting {@spell Identify|XPHB}. You determine the book's appearance and materials, such as a gilt-edged tome or a collection of vellum bound with twine.",
+                "The book contains the level 1+ spells you know. It starts with six level 1 Wizard spells of your choice. {@spell Detect Magic|XPHB}, {@spell Feather Fall|XPHB}, {@spell Mage Armor|XPHB}, {@spell Magic Missile|XPHB}, {@spell Sleep|XPHB}, and {@spell Thunderwave|XPHB} are recommended.",
+                "Whenever you gain a Wizard level after 1, add two Wizard spells of your choice to your spellbook. Each of these spells must be of a level for which you have spell slots, as shown in the Wizard Features table. The spells are the culmination of arcane research you do regularly."
+              ]
+            },
+            {
+              "type": "entries",
+              "name": "Spell Slots",
+              "entries": [
+                "The Wizard Features table shows how many spell slots you have to cast your level 1+ spells. You regain all expended slots when you finish a {@variantrule Long Rest|XPHB}."
+              ]
+            },
+            {
+              "type": "entries",
+              "name": "Prepared Spells of Level 1+",
+              "entries": [
+                "You prepare the list of level 1+ spells that are available for you to cast with this feature. To do so, choose four spells from your spellbook. The chosen spells must be of a level for which you have spell slots.",
+                "The number of spells on your list increases as you gain Wizard levels, as shown in the Prepared Spells column of the Wizard Features table. Whenever that number increases, choose additional Wizard spells until the number of spells on your list matches the number in the table. The chosen spells must be of a level for which you have spell slots. For example, if you're a level 3 Wizard, your list of prepared spells can include six spells of levels 1 and 2 in any combination, chosen from your spellbook.",
+                "If another Wizard feature gives you spells that you always have prepared, those spells don't count against the number of spells you can prepare with this feature, but those spells otherwise count as Wizard spells for you."
+              ]
+            },
+            {
+              "type": "entries",
+              "name": "Changing Your Prepared Spells",
+              "entries": [
+                "Whenever you finish a {@variantrule Long Rest|XPHB}, you can change your list of prepared spells, replacing any of the spells there with spells from your spellbook."
+              ]
+            },
+            {
+              "type": "entries",
+              "name": "Spellcasting Ability",
+              "entries": [
+                "Intelligence is your spellcasting ability for your Wizard spells."
+              ]
+            },
+            {
+              "type": "entries",
+              "name": "Spellcasting Focus",
+              "entries": [
+                "You can use an {@item Arcane Focus|XPHB} or your spellbook as a {@variantrule Spellcasting Focus|XPHB} for your Wizard spells."
+              ]
+            },
+            {
+              "type": "inset",
+              "name": "Expanding and Replacing a Spellbook",
+              "entries": [
+                "The spells you add to your spellbook as you gain levels reflect your ongoing magical research, but you might find other spells during your adventures that you can add to the book. You could discover a Wizard spell on a {@item Spell Scroll|XDMG}, for example, and then copy it into your spellbook.",
+                {
+                  "type": "entries",
+                  "name": "Copying a Spell into the Book",
+                  "entries": [
+                    "When you find a level 1+ Wizard spell, you can copy it into your spellbook if it's of a level you can prepare and if you have time to copy it. For each level of the spell, the transcription takes 2 hours and costs 50 GP. Afterward you can prepare the spell like the other spells in your spellbook."
+                  ]
+                },
+                {
+                  "type": "entries",
+                  "name": "Copying the Book",
+                  "entries": [
+                    "You can copy a spell from your spellbook into another book. This is like copying a new spell into your spellbook but faster, since you already know how to cast the spell. You need spend only 1 hour and 10 GP for each level of the copied spell.",
+                    "If you lose your spellbook, you can use the same procedure to transcribe the Wizard spells that you have prepared into a new spellbook. Filling out the remainder of the new book requires you to find new spells to do so. For this reason, many wizards keep a backup spellbook."
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "authored_operations": [
+        {
+          "trigger": "Acquire class; class-level advancement; legal preparation/replacement window",
+          "cost": "Actual action, slot, components and source permission for each cast",
+          "effects": [
+            "Use class casting package in this candidate; own-class preparation eligibility even with higher multiclass slots",
+            "Preserve source cantrip replacement and preparation rules, chosen ability, focus and always-prepared exclusions",
+            "Own exact spellbook, initial six spells, two additions per class level, copy/replacement time and GP"
+          ],
+          "ending_and_identity": "Distinct class source, ordinary/Pact/free/created slots and cast identities; rests recover declared pools once",
+          "required_extension_groups": [
+            "casting",
+            "choices",
+            "resources"
+          ]
+        }
+      ],
+      "unsupported_behavior": [
+        {
+          "groups": [
+            "casting",
+            "choices",
+            "resources"
+          ],
+          "requirement": {
+            "trigger": "Acquire class; class-level advancement; legal preparation/replacement window",
+            "cost": "Actual action, slot, components and source permission for each cast",
+            "effects": [
+              "Use class casting package in this candidate; own-class preparation eligibility even with higher multiclass slots",
+              "Preserve source cantrip replacement and preparation rules, chosen ability, focus and always-prepared exclusions",
+              "Own exact spellbook, initial six spells, two additions per class level, copy/replacement time and GP"
+            ],
+            "ending": "Distinct class source, ordinary/Pact/free/created slots and cast identities; rests recover declared pools once"
+          },
+          "mapping_boundary": "Map this complete sequence to shared contracts; retained native behavior and fragments do not certify it.",
+          "status": "unmapped_or_unverified_candidate"
+        }
+      ]
+    },
+    {
+      "id": "wizard_ritual_adept",
+      "name": "Ritual Adept",
+      "class_level": 1,
+      "rules": {
+        "authority": "SRD 5.2.1",
+        "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+        "pages": [
+          78
+        ],
+        "text": "Level 1: Ritual Adept\nYou can cast any spell as a Ritual if that spell has\nthe Ritual tag and the spell is in your spellbook. You\nExpandinG and rEplacinG a spEllBook\nThe spells you add to your spellbook as you gain\nlevels reflect your ongoing magical research, but you\nmight find other spells during your adventures that\nyou can add to the book. You could discover a Wizard spell on a Spell Scroll, for example, and then copy\nit into your spellbook.\nCopying a Spell into the Book. When you find\na level 1+ Wizard spell, you can copy it into your\nspellbook if it’s of a level you can prepare and if you\nhave time to copy it. For each level of the spell, the\ntranscription takes 2 hours and costs 50 GP. Afterward you can prepare the spell like the other spells\nin your spellbook.\nCopying the Book. You can copy a spell from\nyour spellbook into another book. This is like copying a new spell into your spellbook but faster, since\nyou already know how to cast the spell. You need\nspend only 1 hour and 10 GP for each level of the\ncopied spell.\nIf you lose your spellbook, you can use the same\nprocedure to transcribe the Wizard spells that you\nhave prepared into a new spellbook. Filling out the\nremainder of the new book requires you to find new\nspells to do so. For this reason, many wizards keep a\nbackup spellbook.\nneedn’t have the spell prepared, but you must read\nfrom the book to cast a spell in this way."
+      },
+      "revised_reference_entries": [
+        "You can cast any spell as a {@variantrule Ritual|XPHB} if that spell has the {@variantrule Ritual|XPHB} tag and the spell is in your spellbook. You needn't have the spell prepared, but you must read from the book to cast a spell in this way."
+      ],
+      "authored_operations": [
+        {
+          "trigger": "Cast Ritual spell from own spellbook",
+          "cost": "Ritual time and components; no spell slot",
+          "effects": [
+            "May cast even if not prepared; must read from book"
+          ],
+          "ending_and_identity": "Exact source owns the grant/state; remove temporary effects at the declared ending; never replay acquisition on restore.",
+          "required_extension_groups": [
+            "casting",
+            "world"
+          ]
+        }
+      ],
+      "unsupported_behavior": [
+        {
+          "groups": [
+            "casting",
+            "world"
+          ],
+          "requirement": {
+            "trigger": "Cast Ritual spell from own spellbook",
+            "cost": "Ritual time and components; no spell slot",
+            "effects": [
+              "May cast even if not prepared; must read from book"
+            ],
+            "ending": "Exact source owns the grant/state; remove temporary effects at the declared ending; never replay acquisition on restore."
+          },
+          "mapping_boundary": "Map this complete sequence to shared contracts; retained native behavior and fragments do not certify it.",
+          "status": "unmapped_or_unverified_candidate"
+        }
+      ]
+    },
+    {
+      "id": "wizard_arcane_recovery",
+      "name": "Arcane Recovery",
+      "class_level": 1,
+      "rules": {
+        "authority": "SRD 5.2.1",
+        "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+        "pages": [
+          78
+        ],
+        "text": "Level 1: Arcane Recovery\nYou can regain some of your magical energy by\nstudying your spellbook. When you finish a Short\nRest, you can choose expended spell slots to recover. The spell slots can have a combined level\nequal to no more than half your Wizard level (round\nup), and none of the slots can be level 6 or higher.\nFor example, if you’re a level 4 Wizard, you can recover up to two levels’ worth of spell slots, regaining either one level 2 spell slot or two level 1 spell\nslots.\nOnce you use this feature, you can’t do so again\nuntil you finish a Long Rest."
+      },
+      "revised_reference_entries": [
+        "You can regain some of your magical energy by studying your spellbook. When you finish a {@variantrule Short Rest|XPHB}, you can choose expended spell slots to recover. The spell slots can have a combined level equal to no more than half your Wizard level (round up), and none of the slots can be level 6 or higher. For example, if you're a level 4 Wizard, you can recover up to two levels' worth of spell slots, regaining either one level 2 spell slot or two level 1 spell slots.",
+        "Once you use this feature, you can't do so again until you finish a {@variantrule Long Rest|XPHB}."
+      ],
+      "authored_operations": [
+        {
+          "trigger": "Finish Short Rest while studying spellbook",
+          "cost": "once per Long Rest",
+          "effects": [
+            "Choose expended ordinary slots totaling at most ceil(Wizard level/2); none level6+; do not recover Pact slots"
+          ],
+          "ending_and_identity": "Exact source owns the grant/state; remove temporary effects at the declared ending; never replay acquisition on restore.",
+          "required_extension_groups": [
+            "resources",
+            "casting"
+          ]
+        }
+      ],
+      "unsupported_behavior": [
+        {
+          "groups": [
+            "resources",
+            "casting"
+          ],
+          "requirement": {
+            "trigger": "Finish Short Rest while studying spellbook",
+            "cost": "once per Long Rest",
+            "effects": [
+              "Choose expended ordinary slots totaling at most ceil(Wizard level/2); none level6+; do not recover Pact slots"
+            ],
+            "ending": "Exact source owns the grant/state; remove temporary effects at the declared ending; never replay acquisition on restore."
+          },
+          "mapping_boundary": "Map this complete sequence to shared contracts; retained native behavior and fragments do not certify it.",
+          "status": "unmapped_or_unverified_candidate"
+        }
+      ]
+    },
+    {
+      "id": "wizard_scholar",
+      "name": "Scholar",
+      "class_level": 2,
+      "rules": {
+        "authority": "SRD 5.2.1",
+        "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+        "pages": [
+          78
+        ],
+        "text": "Level 2: Scholar\nWhile studying magic, you also specialized in another field of study. Choose one of the following\nskills in which you have proficiency: Arcana, History, Investigation, Medicine, Nature, or Religion.\nYou have Expertise in the chosen skill."
+      },
+      "revised_reference_entries": [
+        "While studying magic, you also specialized in another field of study. Choose one of the following skills in which you have proficiency: {@skill Arcana|XPHB}, {@skill History|XPHB}, {@skill Investigation|XPHB}, {@skill Medicine|XPHB}, {@skill Nature|XPHB}, or {@skill Religion|XPHB}. You have {@variantrule Expertise|XPHB} in the chosen skill."
+      ],
+      "authored_operations": [
+        {
+          "trigger": "Wizard2 acquisition",
+          "cost": "none",
+          "effects": [
+            "Choose one proficient skill among Arcana, History, Investigation, Medicine, Nature, Religion; grant Expertise"
+          ],
+          "ending_and_identity": "Exact source owns the grant/state; remove temporary effects at the declared ending; never replay acquisition on restore.",
+          "required_extension_groups": [
+            "choices"
+          ]
+        }
+      ],
+      "unsupported_behavior": [
+        {
+          "groups": [
+            "choices"
+          ],
+          "requirement": {
+            "trigger": "Wizard2 acquisition",
+            "cost": "none",
+            "effects": [
+              "Choose one proficient skill among Arcana, History, Investigation, Medicine, Nature, Religion; grant Expertise"
+            ],
+            "ending": "Exact source owns the grant/state; remove temporary effects at the declared ending; never replay acquisition on restore."
+          },
+          "mapping_boundary": "Map this complete sequence to shared contracts; retained native behavior and fragments do not certify it.",
+          "status": "unmapped_or_unverified_candidate"
+        }
+      ]
+    },
+    {
+      "id": "wizard_wizard_subclass",
+      "name": "Wizard Subclass",
+      "class_level": 3,
+      "rules": {
+        "authority": "SRD 5.2.1",
+        "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+        "pages": [
+          78,
+          79
+        ],
+        "text": "Level 3: Wizard Subclass\nYou gain a Wizard subclass of your choice. The\nEvoker subclass is detailed after this class’s description. A subclass is a specialization that grants\nyou features at certain Wizard levels. For the rest\nof your career, you gain each of your subclass’s features that are of your Wizard level or lower."
+      },
+      "revised_reference_entries": [
+        "You gain a Wizard subclass of your choice. A subclass is a specialization that grants you features at certain Wizard levels. For the rest of your career, you gain each of your subclass's features that are of your Wizard level or lower."
+      ],
+      "authored_operations": [
+        {
+          "trigger": "Class level3",
+          "cost": "one subclass choice",
+          "effects": [
+            "Grant selected SRD subclass in-band features at actual class thresholds; no level6+ grants"
+          ],
+          "ending_and_identity": "Permanent exact subclass ownership; acquisition once",
+          "required_extension_groups": [
+            "progression",
+            "choices"
+          ]
+        }
+      ],
+      "unsupported_behavior": [
+        {
+          "groups": [
+            "progression",
+            "choices"
+          ],
+          "requirement": {
+            "trigger": "Class level3",
+            "cost": "one subclass choice",
+            "effects": [
+              "Grant selected SRD subclass in-band features at actual class thresholds; no level6+ grants"
+            ],
+            "ending": "Permanent exact subclass ownership; acquisition once"
+          },
+          "mapping_boundary": "Map this complete sequence to shared contracts; retained native behavior and fragments do not certify it.",
+          "status": "unmapped_or_unverified_candidate"
+        }
+      ]
+    },
+    {
+      "id": "wizard_ability_score_improvement",
+      "name": "Ability Score Improvement",
+      "class_level": 4,
+      "rules": {
+        "authority": "SRD 5.2.1",
+        "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+        "pages": [
+          79
+        ],
+        "text": "Level 4: Ability Score Improvement\nYou gain the Ability Score Improvement feat (see\n“Feats”) or another feat of your choice for which you\nqualify. You gain this feature again at Wizard levels\n8, 12, and 16."
+      },
+      "revised_reference_entries": [
+        "You gain the {@feat Ability Score Improvement|XPHB} feat or another {@5etools feat|feats.html} of your choice for which you qualify. You gain this feature again at Wizard levels 8, 12, and 16."
+      ],
+      "authored_operations": [
+        {
+          "trigger": "Class level 4 entitlement",
+          "cost": "one entitlement",
+          "effects": [
+            "Choose ASI or another qualifying feat; validate chosen feat category/prerequisites; source owns grant once"
+          ],
+          "ending_and_identity": "Exact source owns the grant/state; remove temporary effects at the declared ending; never replay acquisition on restore.",
+          "required_extension_groups": [
+            "choices",
+            "progression"
+          ]
+        }
+      ],
+      "unsupported_behavior": [
+        {
+          "groups": [
+            "choices",
+            "progression"
+          ],
+          "requirement": {
+            "trigger": "Class level 4 entitlement",
+            "cost": "one entitlement",
+            "effects": [
+              "Choose ASI or another qualifying feat; validate chosen feat category/prerequisites; source owns grant once"
+            ],
+            "ending": "Exact source owns the grant/state; remove temporary effects at the declared ending; never replay acquisition on restore."
+          },
+          "mapping_boundary": "Map this complete sequence to shared contracts; retained native behavior and fragments do not certify it.",
+          "status": "unmapped_or_unverified_candidate"
+        }
+      ]
+    },
+    {
+      "id": "wizard_memorize_spell",
+      "name": "Memorize Spell",
+      "class_level": 5,
+      "rules": {
+        "authority": "SRD 5.2.1",
+        "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+        "pages": [
+          79
+        ],
+        "text": "Level 5: Memorize Spell\nWhenever you finish a Short Rest, you can study\nyour spellbook and replace one of the level 1+ Wizard spells you have prepared for your Spellcasting\nfeature with another level 1+ spell from the book."
+      },
+      "revised_reference_entries": [
+        "Whenever you finish a {@variantrule Short Rest|XPHB}, you can study your spellbook and replace one of the level 1+ Wizard spells you have prepared for your Spellcasting feature with another level 1+ spell from the book."
+      ],
+      "authored_operations": [
+        {
+          "trigger": "Finish Short Rest studying spellbook",
+          "cost": "none",
+          "effects": [
+            "Replace one prepared level1+ Wizard spell with another level1+ spell in book; preserve class preparation eligibility and count"
+          ],
+          "ending_and_identity": "Exact source owns the grant/state; remove temporary effects at the declared ending; never replay acquisition on restore.",
+          "required_extension_groups": [
+            "choices",
+            "casting"
+          ]
+        }
+      ],
+      "unsupported_behavior": [
+        {
+          "groups": [
+            "choices",
+            "casting"
+          ],
+          "requirement": {
+            "trigger": "Finish Short Rest studying spellbook",
+            "cost": "none",
+            "effects": [
+              "Replace one prepared level1+ Wizard spell with another level1+ spell in book; preserve class preparation eligibility and count"
+            ],
+            "ending": "Exact source owns the grant/state; remove temporary effects at the declared ending; never replay acquisition on restore."
+          },
+          "mapping_boundary": "Map this complete sequence to shared contracts; retained native behavior and fragments do not certify it.",
+          "status": "unmapped_or_unverified_candidate"
+        }
+      ]
+    }
+  ],
+  "casting": {
+    "ability": "int",
+    "prepared_counts_by_class_level": [
+      4,
+      5,
+      6,
+      7,
+      9
+    ],
+    "cantrips_by_class_level": [
+      3,
+      3,
+      3,
+      4,
+      4
+    ],
+    "ordinary_slots_by_class_level": [
+      [
+        2,
+        0,
+        0
+      ],
+      [
+        3,
+        0,
+        0
+      ],
+      [
+        4,
+        2,
+        0
+      ],
+      [
+        4,
+        3,
+        0
+      ],
+      [
+        4,
+        3,
+        2
+      ]
+    ],
+    "pact_slots_by_class_level": [],
+    "pact_slot_tuple": "[number of slots, slot level]",
+    "prepared_change": "any after Long Rest",
+    "cantrip_change": "one after Long Rest",
+    "spell_list": "SRD own-class list at spell levels0–3; spell-candidates index retains exact authoritative lists",
+    "spellbook": {
+      "initial_level1_spells": 6,
+      "additional_per_wizard_level": 2,
+      "new_spell_copy": {
+        "hours_per_spell_level": 2,
+        "gp_per_spell_level": 50
+      },
+      "own_book_or_prepared_replacement_copy": {
+        "hours_per_spell_level": 1,
+        "gp_per_spell_level": 10
+      },
+      "restrictions": "Wizard spell of level eligible to prepare; exact book and GP/time; missing book permits replacement of prepared spells only"
+    },
+    "spell_choices": {
+      "0": [
+        "acid_splash",
+        "chill_touch",
+        "dancing_lights",
+        "elementalism",
+        "fire_bolt",
+        "light",
+        "mage_hand",
+        "mending",
+        "message",
+        "minor_illusion",
+        "poison_spray",
+        "prestidigitation",
+        "ray_of_frost",
+        "shocking_grasp",
+        "true_strike"
+      ],
+      "1": [
+        "alarm",
+        "burning_hands",
+        "charm_person",
+        "chromatic_orb",
+        "color_spray",
+        "comprehend_languages",
+        "detect_magic",
+        "disguise_self",
+        "expeditious_retreat",
+        "false_life",
+        "feather_fall",
+        "find_familiar",
+        "fog_cloud",
+        "grease",
+        "ice_knife",
+        "identify",
+        "illusory_script",
+        "jump",
+        "longstrider",
+        "mage_armor",
+        "magic_missile",
+        "protection_from_evil_and_good",
+        "ray_of_sickness",
+        "shield",
+        "silent_image",
+        "sleep",
+        "tashas_hideous_laughter",
+        "tensers_floating_disk",
+        "thunderwave",
+        "unseen_servant"
+      ],
+      "2": [
+        "alter_self",
+        "arcane_lock",
+        "augury",
+        "blindness/deafness",
+        "blur",
+        "continual_flame",
+        "darkness",
+        "darkvision",
+        "detect_thoughts",
+        "dragons_breath",
+        "enhance_ability",
+        "enlarge/reduce",
+        "flaming_sphere",
+        "gentle_repose",
+        "gust_of_wind",
+        "hold_person",
+        "invisibility",
+        "knock",
+        "levitate",
+        "locate_object",
+        "magic_mouth",
+        "magic_weapon",
+        "melfs_acid_arrow",
+        "mind_spike",
+        "mirror_image",
+        "misty_step",
+        "nystuls_magic_aura",
+        "phantasmal_force",
+        "ray_of_enfeeblement",
+        "rope_trick",
+        "scorching_ray",
+        "see_invisibility",
+        "shatter",
+        "spider_climb",
+        "suggestion",
+        "web"
+      ],
+      "3": [
+        "animate_dead",
+        "bestow_curse",
+        "blink",
+        "clairvoyance",
+        "counterspell",
+        "dispel_magic",
+        "fear",
+        "fireball",
+        "fly",
+        "gaseous_form",
+        "glyph_of_warding",
+        "haste",
+        "hypnotic_pattern",
+        "leomunds_tiny_hut",
+        "lightning_bolt",
+        "magic_circle",
+        "major_image",
+        "nondetection",
+        "phantom_steed",
+        "protection_from_energy",
+        "remove_curse",
+        "sending",
+        "sleet_storm",
+        "slow",
+        "speak_with_dead",
+        "stinking_cloud",
+        "tongues",
+        "vampiric_touch",
+        "water_breathing"
+      ]
+    },
+    "spell_choice_policy": "These are SRD list memberships through spell level3, not permission to prepare above own-class slot progression; always-prepared and feat/species permissions are additional source grants."
+  },
+  "retained_runtime_seed": {
+    "id": "wizard",
+    "name": "Wizard",
+    "description": "2024 Wizard class progression. Source: SRD 5.2.1.",
+    "hit_die": "d6",
+    "primary_ability": "INT",
+    "saving_throw_proficiencies": [
+      "INT",
+      "WIS"
+    ],
+    "armor_proficiencies": [],
+    "weapon_proficiencies": [
+      "simple"
+    ],
+    "creation_proficiency_choices": true,
+    "skill_choices": {
+      "pick": 2,
+      "from": [
+        "Arcana",
+        "History",
+        "Insight",
+        "Investigation",
+        "Medicine",
+        "Nature",
+        "Religion"
+      ]
+    },
+    "starting_equipment": [
+      "dagger",
+      "spellbook"
+    ],
+    "spell_slots_by_level": {},
+    "cantrips_known": [],
+    "spell_list_ids": [
+      "acid_splash",
+      "alarm",
+      "alter_self",
+      "animate_dead",
+      "animate_objects",
+      "antimagic_field",
+      "antipathy_sympathy",
+      "arcane_eye",
+      "arcane_hand",
+      "arcane_lock",
+      "arcane_sword",
+      "astral_projection",
+      "augury",
+      "banishment",
+      "befuddlement",
+      "bestow_curse",
+      "black_tentacles",
+      "blade_ward",
+      "blight",
+      "blindness/deafness",
+      "blink",
+      "blur",
+      "burning_hands",
+      "chain_lightning",
+      "charm_monster",
+      "charm_person",
+      "chill_touch",
+      "chromatic_orb",
+      "circle_of_death",
+      "clairvoyance",
+      "clone",
+      "cloud_of_daggers",
+      "cloudkill",
+      "color_spray",
+      "comprehend_languages",
+      "cone_of_cold",
+      "confusion",
+      "conjure_elemental",
+      "conjure_minor_elementals",
+      "contact_other_plane",
+      "contingency",
+      "continual_flame",
+      "control_water",
+      "control_weather",
+      "counterspell",
+      "create_undead",
+      "creation",
+      "dancing_lights",
+      "darkness",
+      "darkvision",
+      "delayed_blast_fireball",
+      "demiplane",
+      "detect_magic",
+      "detect_thoughts",
+      "dimension_door",
+      "disguise_self",
+      "disintegrate",
+      "dispel_magic",
+      "divination",
+      "dominate_monster",
+      "dominate_person",
+      "dragons_breath",
+      "dream",
+      "elementalism",
+      "enhance_ability",
+      "enlarge/reduce",
+      "etherealness",
+      "expeditious_retreat",
+      "eyebite",
+      "fabricate",
+      "faithful_hound",
+      "false_life",
+      "fear",
+      "feather_fall",
+      "find_familiar",
+      "finger_of_death",
+      "fire_bolt",
+      "fire_shield",
+      "fireball",
+      "flaming_sphere",
+      "flesh_to_stone",
+      "fly",
+      "fog_cloud",
+      "forcecage",
+      "foresight",
+      "freezing_sphere",
+      "gaseous_form",
+      "gate",
+      "geas",
+      "gentle_repose",
+      "globe_of_invulnerability",
+      "glyph_of_warding",
+      "grease",
+      "greater_invisibility",
+      "guards_and_wards",
+      "gust_of_wind",
+      "hallucinatory_terrain",
+      "haste",
+      "hold_monster",
+      "hold_person",
+      "hypnotic_pattern",
+      "ice_knife",
+      "ice_storm",
+      "identify",
+      "illusory_script",
+      "imprisonment",
+      "incendiary_cloud",
+      "instant_summons",
+      "invisibility",
+      "irresistible_dance",
+      "jump",
+      "knock",
+      "legend_lore",
+      "leomunds_tiny_hut",
+      "levitate",
+      "light",
+      "lightning_bolt",
+      "locate_creature",
+      "locate_object",
+      "longstrider",
+      "mage_armor",
+      "mage_hand",
+      "magic_circle",
+      "magic_jar",
+      "magic_missile",
+      "magic_mouth",
+      "magic_weapon",
+      "magnificent_mansion",
+      "major_image",
+      "mass_suggestion",
+      "maze",
+      "melfs_acid_arrow",
+      "mending",
+      "message",
+      "meteor_swarm",
+      "mind_blank",
+      "mind_spike",
+      "minor_illusion",
+      "mirage_arcane",
+      "mirror_image",
+      "mislead",
+      "misty_step",
+      "modify_memory",
+      "move_earth",
+      "nondetection",
+      "nystuls_magic_aura",
+      "passwall",
+      "phantasmal_force",
+      "phantasmal_killer",
+      "phantom_steed",
+      "planar_binding",
+      "plane_shift",
+      "poison_spray",
+      "polymorph",
+      "power_word_kill",
+      "power_word_stun",
+      "prestidigitation",
+      "prismatic_spray",
+      "prismatic_wall",
+      "private_sanctum",
+      "programmed_illusion",
+      "project_image",
+      "protection_from_energy",
+      "protection_from_evil_and_good",
+      "ray_of_enfeeblement",
+      "ray_of_frost",
+      "ray_of_sickness",
+      "remove_curse",
+      "resilient_sphere",
+      "reverse_gravity",
+      "rope_trick",
+      "scorching_ray",
+      "scrying",
+      "secret_chest",
+      "see_invisibility",
+      "seeming",
+      "sending",
+      "sequester",
+      "shapechange",
+      "shatter",
+      "shield",
+      "shocking_grasp",
+      "silent_image",
+      "simulacrum",
+      "sleep",
+      "sleet_storm",
+      "slow",
+      "speak_with_dead",
+      "spider_climb",
+      "stinking_cloud",
+      "stone_shape",
+      "stoneskin",
+      "suggestion",
+      "summon_dragon",
+      "sunbeam",
+      "sunburst",
+      "symbol",
+      "tashas_hideous_laughter",
+      "telekinesis",
+      "telepathic_bond",
+      "teleport",
+      "teleportation_circle",
+      "tensers_floating_disk",
+      "thunderwave",
+      "time_stop",
+      "tongues",
+      "true_polymorph",
+      "true_seeing",
+      "true_strike",
+      "unseen_servant",
+      "vampiric_touch",
+      "vitriolic_sphere",
+      "wall_of_fire",
+      "wall_of_force",
+      "wall_of_ice",
+      "wall_of_stone",
+      "water_breathing",
+      "web",
+      "weird",
+      "wish"
+    ],
+    "spells_known_by_level": {
+      "1": [],
+      "2": [],
+      "3": []
+    },
+    "features_by_level": {
+      "1": [
+        {
+          "id": "wizard_spellcasting",
+          "name": "Spellcasting",
+          "description": "Intelligence-based prepared spellcasting. Level-based learning is recorded separately from the prepared list; spell access remains a curated subset.",
+          "type": "passive",
+          "effects": [
+            {
+              "type": "spellcasting",
+              "ability": "INT",
+              "spell_lists": [
+                "wizard"
+              ],
+              "default_cantrips": [
+                "fire_bolt",
+                "ray_of_frost",
+                "light"
+              ],
+              "default_prepared_spells": [
+                "magic_missile",
+                "shield",
+                "mage_armor",
+                "sleep"
+              ],
+              "capacity_by_level": {
+                "1": {
+                  "cantrips": 3,
+                  "prepared_spells": 4
+                },
+                "2": {
+                  "cantrips": 3,
+                  "prepared_spells": 5
+                },
+                "3": {
+                  "cantrips": 3,
+                  "prepared_spells": 6
+                },
+                "4": {
+                  "cantrips": 4,
+                  "prepared_spells": 7
+                },
+                "5": {
+                  "cantrips": 4,
+                  "prepared_spells": 9
+                },
+                "6": {
+                  "cantrips": 4,
+                  "prepared_spells": 10
+                },
+                "7": {
+                  "cantrips": 4,
+                  "prepared_spells": 11
+                },
+                "8": {
+                  "cantrips": 4,
+                  "prepared_spells": 12
+                },
+                "9": {
+                  "cantrips": 4,
+                  "prepared_spells": 14
+                },
+                "10": {
+                  "cantrips": 5,
+                  "prepared_spells": 15
+                },
+                "11": {
+                  "cantrips": 5,
+                  "prepared_spells": 16
+                },
+                "12": {
+                  "cantrips": 5,
+                  "prepared_spells": 16
+                },
+                "13": {
+                  "cantrips": 5,
+                  "prepared_spells": 17
+                },
+                "14": {
+                  "cantrips": 5,
+                  "prepared_spells": 18
+                },
+                "15": {
+                  "cantrips": 5,
+                  "prepared_spells": 19
+                },
+                "16": {
+                  "cantrips": 5,
+                  "prepared_spells": 21
+                },
+                "17": {
+                  "cantrips": 5,
+                  "prepared_spells": 22
+                },
+                "18": {
+                  "cantrips": 5,
+                  "prepared_spells": 23
+                },
+                "19": {
+                  "cantrips": 5,
+                  "prepared_spells": 24
+                },
+                "20": {
+                  "cantrips": 5,
+                  "prepared_spells": 25
+                }
+              }
+            }
+          ],
+          "enabled": true,
+          "rules_status": "2024-partial",
+          "rules_source": "dnd-2024-srd-5.2.1"
+        },
+        {
+          "id": "wizard_ritual_adept",
+          "name": "Ritual Adept",
+          "description": "Cast a Wizard ritual from your spellbook without preparing it. Ritual casting takes 10 minutes longer than the spell's normal casting time and does not expend a spell slot.",
+          "type": "passive",
+          "effects": [
+            {
+              "type": "wizard_ritual_casting"
+            }
+          ],
+          "enabled": true,
+          "rules_status": "2024-supported",
+          "rules_source": "dnd-2024-srd-5.2.1"
+        },
+        {
+          "id": "wizard_arcane_recovery",
+          "name": "Arcane Recovery",
+          "description": "Once per Long Rest when you finish a Short Rest, recover expended spell slots whose combined levels are no more than half your Wizard level (round up); slot levels 6+ are ineligible.",
+          "type": "triggered",
+          "effects": [
+            {
+              "type": "rest_slot_recovery",
+              "trigger": "short_rest_completed",
+              "class_level_source": "wizard",
+              "budget_formula": "half_class_level_ceil",
+              "min_slot_level": 1,
+              "max_slot_level": 5
+            }
+          ],
+          "enabled": true,
+          "rules_status": "2024-supported",
+          "rules_source": "dnd-2024-srd-5.2.1",
+          "uses": 1,
+          "uses_per": "long_rest"
+        }
+      ],
+      "2": [
+        {
+          "id": "wizard_scholar",
+          "name": "Scholar",
+          "description": "Choose one proficient skill from Arcana, History, Investigation, Medicine, Nature, or Religion for Expertise through the shared skill-expertise choice path.",
+          "type": "passive",
+          "effects": [
+            {
+              "type": "skill_expertise_choice",
+              "count": 1,
+              "allowed_skills": [
+                "Arcana",
+                "History",
+                "Investigation",
+                "Medicine",
+                "Nature",
+                "Religion"
+              ]
+            }
+          ],
+          "enabled": true,
+          "rules_status": "2024-partial",
+          "rules_source": "dnd-2024-srd-5.2.1"
+        }
+      ],
+      "3": [
+        {
+          "id": "wizard_subclass",
+          "name": "Wizard Subclass",
+          "description": "Choose a Wizard subclass. Subclass features are gained at levels 3, 6, 10, and 14.",
+          "type": "passive",
+          "effects": [],
+          "enabled": false,
+          "rules_status": "2024-partial",
+          "rules_source": "dnd-2024-srd-5.2.1"
+        }
+      ],
+      "4": [
+        {
+          "id": "wizard_ability_improvement_4",
+          "name": "Ability Score Improvement",
+          "description": "Gain an Ability Score Improvement feat or another feat for which you qualify.",
+          "type": "passive",
+          "effects": [
+            {
+              "type": "asi"
+            }
+          ],
+          "enabled": true,
+          "rules_status": "2024-supported",
+          "rules_source": "dnd-2024-srd-5.2.1"
+        }
+      ],
+      "5": [
+        {
+          "id": "wizard_memorize_spell",
+          "name": "Memorize Spell",
+          "description": "After a Short Rest, replace one prepared Wizard spell of level 1 or higher with another spell from your spellbook.",
+          "type": "passive",
+          "effects": [
+            {
+              "type": "wizard_memorize_spell"
+            }
+          ],
+          "enabled": true,
+          "rules_status": "2024-supported",
+          "rules_source": "dnd-2024-srd-5.2.1"
+        }
+      ]
+    },
+    "spell_slots_by_character_level": {
+      "1": [
+        2
+      ],
+      "2": [
+        3
+      ],
+      "3": [
+        4,
+        2
+      ],
+      "4": [
+        4,
+        3
+      ],
+      "5": [
+        4,
+        3,
+        2
+      ]
+    },
+    "subclass_level": 3,
+    "spellcasting_ability": "INT"
+  },
+  "required_extensions": [
+    "progression",
+    "choices",
+    "casting"
+  ],
+  "equipment_resolution": [
+    {
+      "option": "A",
+      "source_item_key": "dagger",
+      "quantity": 2,
+      "runtime_item_id": "dagger",
+      "status": "source_definition_exists_not_gameplay_verified",
+      "requirement": "Preserve quantity, exact source item facts and complete pack contents"
+    },
+    {
+      "option": "A",
+      "source_item_key": "arcane_focus_quarterstaff",
+      "quantity": 1,
+      "runtime_item_id": null,
+      "status": "choice_or_missing_definition",
+      "requirement": "Quarterstaff must also be an Arcane Focus; ordinary Quarterstaff is not enough"
+    },
+    {
+      "option": "A",
+      "source_item_key": "robe",
+      "quantity": 1,
+      "runtime_item_id": "robe",
+      "status": "source_definition_exists_not_gameplay_verified",
+      "requirement": "Preserve quantity, exact source item facts and complete pack contents"
+    },
+    {
+      "option": "A",
+      "source_item_key": "spellbook",
+      "quantity": 1,
+      "runtime_item_id": "spellbook",
+      "status": "source_definition_exists_not_gameplay_verified",
+      "requirement": "Preserve quantity, exact source item facts and complete pack contents"
+    },
+    {
+      "option": "A",
+      "source_item_key": "scholars_pack",
+      "quantity": 1,
+      "runtime_item_id": null,
+      "status": "choice_or_missing_definition",
+      "requirement": "Preserve quantity, exact source item facts and complete pack contents"
+    }
+  ],
+  "unsupported_behavior": [
+    {
+      "groups": [
+        "progression",
+        "items"
+      ],
+      "requirement": "Complete starting/multiclass acquisition, choices and equipment quantities/GP; candidate equipment_resolution retains every unresolved item or choice. No opt-in or native-path replacement is authorized by this candidate."
+    }
+  ],
+  "source_revision": "2a19eb1d (existing working-tree definitions and recovered drafts read on 2026-11-08)",
+  "reused_input_hashes": {
+    "data/core/classes/wizard.json": "24e2e2d15bd061766893d731a719ec0a564110dc7c14bfb00aa564c378db6674",
+    "reference/2024/classes/wizard.json": "36656050434de5afb28f57ac3c0c75f6710034230368ab8b37109983b588aa31",
+    "docs/mechanics/wizard-2024.md": "c2699705d9a5e77a21e0b210728c962de2311ec406acc65a6754915cdd73ba62"
+  }
+}

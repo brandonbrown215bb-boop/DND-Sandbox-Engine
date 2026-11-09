@@ -1,0 +1,115 @@
+{
+  "format": "crown-spell-candidate/1",
+  "id": "gentle_repose",
+  "name": "Gentle Repose",
+  "level": 2,
+  "status": "written_unverified_not_loaded",
+  "source": {
+    "authority": "SRD 5.2.1",
+    "url": "https://media.dndbeyond.com/compendium-images/srd/5.2/SRD_CC_v5.2.1.pdf",
+    "sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      135
+    ],
+    "header": {
+      "Casting Time": "Action or Ritual",
+      "Range": "Touch",
+      "Components": "V, S, M (2 Copper Pieces, which the spell consumes)",
+      "Duration": "10 days"
+    },
+    "attribution": "System Reference Document 5.2.1, Wizards of the Coast LLC; CC BY 4.0."
+  },
+  "casting": {
+    "casting_time": "Action or Ritual",
+    "kind": "action",
+    "seconds": null,
+    "ritual_available": true,
+    "range": {
+      "source": "Touch",
+      "kind": "touch",
+      "feet": 5
+    },
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "2 Copper Pieces, which the spell consumes",
+    "duration": "10 days",
+    "concentration": false,
+    "spell_lists": [
+      "cleric",
+      "paladin",
+      "wizard"
+    ]
+  },
+  "authored_intent": "Touch corpse/remains with consumed 2-Copper-Piece materials; preserve from decay/Undeath; pause resurrection time-limit counting for ten days; preserve exact remains identity and source duration.",
+  "rules": [
+    {
+      "id": "r001",
+      "text": "You touch a corpse or other remains."
+    },
+    {
+      "id": "r002",
+      "text": "For the duration, the target is protected from decay and can’t become Undead."
+    },
+    {
+      "id": "r003",
+      "text": "The spell also effectively extends the time limit on raising the target from the dead, since days spent under the influence of this spell don’t count against the time limit of spells such as Raise Dead ."
+    }
+  ],
+  "authored_operations": [
+    {
+      "operation": "preserve_remains",
+      "parameters": {
+        "target": "corpse_or_remains",
+        "prevent": [
+          "decay",
+          "becoming_undead"
+        ],
+        "revival_deadline": "exclude_days_under_this_source"
+      },
+      "status": "authoring_declaration_not_a_registered_opcode",
+      "required_source_rules": [
+        "r001",
+        "r002",
+        "r003"
+      ]
+    }
+  ],
+  "runtime_draft": {
+    "origin": "proposed_operations",
+    "definition": null,
+    "fragments": {},
+    "coverage": "Unverified. Neither a full definition nor a fragment certifies all source rules or controls. Required extensions are not silently waived."
+  },
+  "required_extensions": [
+    {
+      "group": "death_and_remains",
+      "requirement": "Retain exact dead/living/corpse identity, death timing, source restrictions and actual stabilization/revival/remains changes; preserve excluded deaths and missing parts.",
+      "spell_specific_intent": "Touch corpse/remains with consumed 2-Copper-Piece materials; preserve from decay/Undeath; pause resurrection time-limit counting for ten days; preserve exact remains identity and source duration.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003"
+      ],
+      "existing_owner_to_reuse": "src/combat/zero_hp_aftermath_rules.gd",
+      "slice_references": "S-119/S-120/S-175/S-176",
+      "disposition": "requires_mapping_or_host_completion",
+      "note": "This is an authored handoff requirement, not a fresh runtime failure or claim that the whole referenced slice is missing."
+    }
+  ],
+  "audit": {
+    "source": "docs/audits/spells.md",
+    "batch": "088-8",
+    "production_definition_at_authoring": "res://data/core/spells/imported_spells.json#84",
+    "baseline_execution": "native",
+    "source_revision": "2a19eb1d",
+    "existing_conversion_label": "queued"
+  },
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile every source rule and required extension, then implement and verify through production paths before any deliberate promotion. Keep native behavior until covered."
+  }
+}

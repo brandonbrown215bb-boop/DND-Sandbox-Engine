@@ -1,0 +1,635 @@
+{
+  "schema": "crown-reachable-items-index/1",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "scope": "Remaining Crown item roots: shop source leads and retained historical inventory, companion class seeds, campaign/event/generated rewards, tactical contents/keys, direct-monster reward metadata, all 183 spell material requirements and selected physical character/spell/tool creations. Actor bodies, persistent world spell effects and arbitrary crafting/catalog expansion are separate.",
+  "new_candidate_count": 73,
+  "reused_candidate_count": 29,
+  "candidates": [
+    {
+      "id": "antidote",
+      "kind": "campaign_consumable",
+      "path": "items/antidote.json",
+      "disposition": "new_written_candidate"
+    },
+    {
+      "id": "ashvale_brass_key",
+      "kind": "quest_item",
+      "path": "items/ashvale_brass_key.json",
+      "disposition": "new_written_candidate"
+    },
+    {
+      "id": "battleaxe",
+      "kind": "weapon",
+      "path": "items/battleaxe.json",
+      "disposition": "new_written_candidate"
+    },
+    {
+      "id": "black_pearl_powder_500gp",
+      "kind": "legacy_spell_component",
+      "path": "items/black_pearl_powder_500gp.json",
+      "disposition": "new_written_candidate"
+    },
+    {
+      "id": "blowgun",
+      "kind": "weapon",
+      "path": "items/blowgun.json",
+      "disposition": "new_written_candidate"
+    },
+    {
+      "id": "bolts",
+      "kind": "ammunition",
+      "path": "items/bolts.json",
+      "disposition": "new_written_candidate"
+    },
+    {
+      "id": "book_of_shadows",
+      "kind": "created_item",
+      "path": "items/book_of_shadows.json",
+      "disposition": "new_written_candidate"
+    },
+    {
+      "id": "breastplate",
+      "kind": "armor",
+      "path": "items/breastplate.json",
+      "disposition": "new_written_candidate"
+    },
+    {
+      "id": "chain_mail",
+      "kind": "armor",
+      "path": "../crown-equipment/items/chain_mail.json",
+      "disposition": "reuse_existing_equipment_candidate"
+    },
+    {
+      "id": "chain_shirt",
+      "kind": "armor",
+      "path": "../crown-equipment/items/chain_shirt.json",
+      "disposition": "reuse_existing_equipment_candidate"
+    },
+    {
+      "id": "clairvoyance_glass_eye_100gp",
+      "kind": "spell_component",
+      "path": "items/clairvoyance_glass_eye_100gp.json",
+      "disposition": "new_written_candidate"
+    },
+    {
+      "id": "clairvoyance_jeweled_horn_100gp",
+      "kind": "spell_component",
+      "path": "items/clairvoyance_jeweled_horn_100gp.json",
+      "disposition": "new_written_candidate"
+    },
+    {
+      "id": "clean_water",
+      "kind": "created_item",
+      "path": "items/clean_water.json",
+      "disposition": "new_written_candidate"
+    },
+    {
+      "id": "club",
+      "kind": "weapon",
+      "path": "items/club.json",
+      "disposition": "new_written_candidate"
+    },
+    {
+      "id": "component_pouch",
+      "kind": "gear",
+      "path": "items/component_pouch.json",
+      "disposition": "new_written_candidate"
+    },
+    {
+      "id": "copper_piece",
+      "kind": "spell_component",
+      "path": "items/copper_piece.json",
+      "disposition": "new_written_candidate"
+    },
+    {
+      "id": "created_food",
+      "kind": "created_item",
+      "path": "items/created_food.json",
+      "disposition": "new_written_candidate"
+    },
+    {
+      "id": "crossbow_bolt_case",
+      "kind": "gear",
+      "path": "items/crossbow_bolt_case.json",
+      "disposition": "new_written_candidate"
+    },
+    {
+      "id": "crown_fragment",
+      "kind": "quest_item",
+      "path": "items/crown_fragment.json",
+      "disposition": "new_written_candidate"
+    },
+    {
+      "id": "dagger",
+      "kind": "weapon",
+      "path": "../crown-equipment/items/dagger.json",
+      "disposition": "reuse_existing_equipment_candidate"
+    },
+    {
+      "id": "dart",
+      "kind": "weapon",
+      "path": "items/dart.json",
+      "disposition": "new_written_candidate"
+    },
+    {
+      "id": "diamond_300gp",
+      "kind": "spell_component",
+      "path": "items/diamond_300gp.json",
+      "disposition": "new_written_candidate"
+    },
+    {
+      "id": "diamond_50gp",
+      "kind": "spell_component",
+      "path": "items/diamond_50gp.json",
+      "disposition": "new_written_candidate"
+    },
+    {
+      "id": "diamond_dust_200gp",
+      "kind": "spell_component",
+      "path": "items/diamond_dust_200gp.json",
+      "disposition": "new_written_candidate"
+    },
+    {
+      "id": "diamond_dust_25gp",
+      "kind": "spell_component",
+      "path": "items/diamond_dust_25gp.json",
+      "disposition": "new_written_candidate"
+    },
+    {
+      "id": "divinatory_tokens_25gp",
+      "kind": "spell_component",
+      "path": "items/divinatory_tokens_25gp.json",
+      "disposition": "new_written_candidate"
+    },
+    {
+      "id": "druidic_focus_quarterstaff",
+      "kind": "focus",
+      "path": "../crown-equipment/items/druidic_focus_quarterstaff.json",
+      "disposition": "reuse_existing_equipment_candidate"
+    },
+    {
+      "id": "firearm_bullets",
+      "kind": "ammunition",
+      "path": "items/firearm_bullets.json",
+      "disposition": "new_written_candidate"
+    },
+    {
+      "id": "flail",
+      "kind": "weapon",
+      "path": "../crown-equipment/items/flail.json",
+      "disposition": "reuse_existing_equipment_candidate"
+    },
+    {
+      "id": "gentle_repose_copper",
+      "kind": "spell_component",
+      "path": "items/gentle_repose_copper.json",
+      "disposition": "new_written_candidate"
+    },
+    {
+      "id": "glaive",
+      "kind": "weapon",
+      "path": "items/glaive.json",
+      "disposition": "new_written_candidate"
+    },
+    {
+      "id": "gold_100",
+      "kind": "currency_reward",
+      "path": "items/gold_100.json",
+      "disposition": "new_written_candidate"
+    },
+    {
+      "id": "gold_50",
+      "kind": "currency_reward",
+      "path": "items/gold_50.json",
+      "disposition": "new_written_candidate"
+    },
+    {
+      "id": "gold_dust_25gp",
+      "kind": "spell_component",
+      "path": "items/gold_dust_25gp.json",
+      "disposition": "new_written_candidate"
+    },
+    {
+      "id": "goodberry_batch",
+      "kind": "created_item",
+      "path": "items/goodberry_batch.json",
+      "disposition": "new_written_candidate"
+    },
+    {
+      "id": "greataxe",
+      "kind": "weapon",
+      "path": "../crown-equipment/items/greataxe.json",
+      "disposition": "reuse_existing_equipment_candidate"
+    },
+    {
+      "id": "greatclub",
+      "kind": "weapon",
+      "path": "items/greatclub.json",
+      "disposition": "new_written_candidate"
+    },
+    {
+      "id": "greatsword",
+      "kind": "weapon",
+      "path": "../crown-equipment/items/greatsword.json",
+      "disposition": "reuse_existing_equipment_candidate"
+    },
+    {
+      "id": "halberd",
+      "kind": "weapon",
+      "path": "items/halberd.json",
+      "disposition": "new_written_candidate"
+    },
+    {
+      "id": "half_plate_armor",
+      "kind": "armor",
+      "path": "items/half_plate_armor.json",
+      "disposition": "new_written_candidate"
+    },
+    {
+      "id": "hand_crossbow",
+      "kind": "weapon",
+      "path": "items/hand_crossbow.json",
+      "disposition": "new_written_candidate"
+    },
+    {
+      "id": "handaxe",
+      "kind": "weapon",
+      "path": "../crown-equipment/items/handaxe.json",
+      "disposition": "reuse_existing_equipment_candidate"
+    },
+    {
+      "id": "heavy_crossbow",
+      "kind": "weapon",
+      "path": "items/heavy_crossbow.json",
+      "disposition": "new_written_candidate"
+    },
+    {
+      "id": "hide_armor",
+      "kind": "armor",
+      "path": "items/hide_armor.json",
+      "disposition": "new_written_candidate"
+    },
+    {
+      "id": "holy_symbol",
+      "kind": "equipment_choice",
+      "path": "../crown-equipment/items/holy_symbol.json",
+      "disposition": "reuse_existing_equipment_candidate"
+    },
+    {
+      "id": "holy_water",
+      "kind": "gear",
+      "path": "../crown-equipment/items/holy_water.json",
+      "disposition": "reuse_existing_equipment_candidate"
+    },
+    {
+      "id": "incense_10gp",
+      "kind": "spell_component",
+      "path": "items/incense_10gp.json",
+      "disposition": "new_written_candidate"
+    },
+    {
+      "id": "ink",
+      "kind": "gear",
+      "path": "../crown-equipment/items/ink.json",
+      "disposition": "reuse_existing_equipment_candidate"
+    },
+    {
+      "id": "jade_dust_10gp",
+      "kind": "spell_component",
+      "path": "items/jade_dust_10gp.json",
+      "disposition": "new_written_candidate"
+    },
+    {
+      "id": "javelin",
+      "kind": "weapon",
+      "path": "../crown-equipment/items/javelin.json",
+      "disposition": "reuse_existing_equipment_candidate"
+    },
+    {
+      "id": "lance",
+      "kind": "weapon",
+      "path": "items/lance.json",
+      "disposition": "new_written_candidate"
+    },
+    {
+      "id": "lantern_bullseye",
+      "kind": "gear",
+      "path": "../crown-equipment/items/lantern_bullseye.json",
+      "disposition": "reuse_existing_equipment_candidate"
+    },
+    {
+      "id": "leather_armor",
+      "kind": "armor",
+      "path": "../crown-equipment/items/leather_armor.json",
+      "disposition": "reuse_existing_equipment_candidate"
+    },
+    {
+      "id": "light_crossbow",
+      "kind": "weapon",
+      "path": "items/light_crossbow.json",
+      "disposition": "new_written_candidate"
+    },
+    {
+      "id": "light_hammer",
+      "kind": "weapon",
+      "path": "items/light_hammer.json",
+      "disposition": "new_written_candidate"
+    },
+    {
+      "id": "longbow",
+      "kind": "weapon",
+      "path": "../crown-equipment/items/longbow.json",
+      "disposition": "reuse_existing_equipment_candidate"
+    },
+    {
+      "id": "longsword",
+      "kind": "weapon",
+      "path": "../crown-equipment/items/longsword.json",
+      "disposition": "reuse_existing_equipment_candidate"
+    },
+    {
+      "id": "mace",
+      "kind": "weapon",
+      "path": "../crown-equipment/items/mace.json",
+      "disposition": "reuse_existing_equipment_candidate"
+    },
+    {
+      "id": "maul",
+      "kind": "weapon",
+      "path": "items/maul.json",
+      "disposition": "new_written_candidate"
+    },
+    {
+      "id": "morningstar",
+      "kind": "weapon",
+      "path": "items/morningstar.json",
+      "disposition": "new_written_candidate"
+    },
+    {
+      "id": "mushroom_powder_25gp",
+      "kind": "legacy_spell_component",
+      "path": "items/mushroom_powder_25gp.json",
+      "disposition": "new_written_candidate"
+    },
+    {
+      "id": "musket",
+      "kind": "weapon",
+      "path": "items/musket.json",
+      "disposition": "new_written_candidate"
+    },
+    {
+      "id": "needles",
+      "kind": "ammunition",
+      "path": "items/needles.json",
+      "disposition": "new_written_candidate"
+    },
+    {
+      "id": "net",
+      "kind": "gear",
+      "path": "items/net.json",
+      "disposition": "new_written_candidate"
+    },
+    {
+      "id": "pact_weapon",
+      "kind": "created_item",
+      "path": "items/pact_weapon.json",
+      "disposition": "new_written_candidate"
+    },
+    {
+      "id": "padded_armor",
+      "kind": "armor",
+      "path": "items/padded_armor.json",
+      "disposition": "new_written_candidate"
+    },
+    {
+      "id": "pearl_100gp",
+      "kind": "spell_component",
+      "path": "items/pearl_100gp.json",
+      "disposition": "new_written_candidate"
+    },
+    {
+      "id": "pike",
+      "kind": "weapon",
+      "path": "items/pike.json",
+      "disposition": "new_written_candidate"
+    },
+    {
+      "id": "pistol",
+      "kind": "weapon",
+      "path": "items/pistol.json",
+      "disposition": "new_written_candidate"
+    },
+    {
+      "id": "plate_armor",
+      "kind": "armor",
+      "path": "items/plate_armor.json",
+      "disposition": "new_written_candidate"
+    },
+    {
+      "id": "platinum_ring_50gp",
+      "kind": "spell_component",
+      "path": "items/platinum_ring_50gp.json",
+      "disposition": "new_written_candidate"
+    },
+    {
+      "id": "potion_greater_healing",
+      "kind": "potion",
+      "path": "items/potion_greater_healing.json",
+      "disposition": "new_written_candidate"
+    },
+    {
+      "id": "potion_healing",
+      "kind": "potion",
+      "path": "items/potion_healing.json",
+      "disposition": "new_written_candidate"
+    },
+    {
+      "id": "potion_superior_healing",
+      "kind": "potion",
+      "path": "items/potion_superior_healing.json",
+      "disposition": "new_written_candidate"
+    },
+    {
+      "id": "potion_supreme_healing",
+      "kind": "potion",
+      "path": "items/potion_supreme_healing.json",
+      "disposition": "new_written_candidate"
+    },
+    {
+      "id": "pouch",
+      "kind": "gear",
+      "path": "../crown-equipment/items/pouch.json",
+      "disposition": "reuse_existing_equipment_candidate"
+    },
+    {
+      "id": "prestidigitation_trinket",
+      "kind": "created_item",
+      "path": "items/prestidigitation_trinket.json",
+      "disposition": "new_written_candidate"
+    },
+    {
+      "id": "priests_pack",
+      "kind": "pack",
+      "path": "../crown-equipment/items/priests_pack.json",
+      "disposition": "reuse_existing_equipment_candidate"
+    },
+    {
+      "id": "quarterstaff",
+      "kind": "weapon",
+      "path": "../crown-equipment/items/quarterstaff.json",
+      "disposition": "reuse_existing_equipment_candidate"
+    },
+    {
+      "id": "rapier",
+      "kind": "weapon",
+      "path": "items/rapier.json",
+      "disposition": "new_written_candidate"
+    },
+    {
+      "id": "ring_mail",
+      "kind": "armor",
+      "path": "items/ring_mail.json",
+      "disposition": "new_written_candidate"
+    },
+    {
+      "id": "rock_gnome_clockwork",
+      "kind": "created_item",
+      "path": "items/rock_gnome_clockwork.json",
+      "disposition": "new_written_candidate"
+    },
+    {
+      "id": "ruby_dust_50gp",
+      "kind": "spell_component",
+      "path": "items/ruby_dust_50gp.json",
+      "disposition": "new_written_candidate"
+    },
+    {
+      "id": "salt_silver_100gp",
+      "kind": "spell_component",
+      "path": "items/salt_silver_100gp.json",
+      "disposition": "new_written_candidate"
+    },
+    {
+      "id": "scale_mail",
+      "kind": "armor",
+      "path": "items/scale_mail.json",
+      "disposition": "new_written_candidate"
+    },
+    {
+      "id": "scimitar",
+      "kind": "weapon",
+      "path": "../crown-equipment/items/scimitar.json",
+      "disposition": "reuse_existing_equipment_candidate"
+    },
+    {
+      "id": "shield",
+      "kind": "armor",
+      "path": "../crown-equipment/items/shield.json",
+      "disposition": "reuse_existing_equipment_candidate"
+    },
+    {
+      "id": "shortbow",
+      "kind": "weapon",
+      "path": "../crown-equipment/items/shortbow.json",
+      "disposition": "reuse_existing_equipment_candidate"
+    },
+    {
+      "id": "shortsword",
+      "kind": "weapon",
+      "path": "../crown-equipment/items/shortsword.json",
+      "disposition": "reuse_existing_equipment_candidate"
+    },
+    {
+      "id": "sickle",
+      "kind": "weapon",
+      "path": "../crown-equipment/items/sickle.json",
+      "disposition": "reuse_existing_equipment_candidate"
+    },
+    {
+      "id": "sling",
+      "kind": "weapon",
+      "path": "items/sling.json",
+      "disposition": "new_written_candidate"
+    },
+    {
+      "id": "sling_bullets",
+      "kind": "ammunition",
+      "path": "items/sling_bullets.json",
+      "disposition": "new_written_candidate"
+    },
+    {
+      "id": "spear",
+      "kind": "weapon",
+      "path": "../crown-equipment/items/spear.json",
+      "disposition": "reuse_existing_equipment_candidate"
+    },
+    {
+      "id": "splint_armor",
+      "kind": "armor",
+      "path": "items/splint_armor.json",
+      "disposition": "new_written_candidate"
+    },
+    {
+      "id": "studded_leather_armor",
+      "kind": "armor",
+      "path": "../crown-equipment/items/studded_leather_armor.json",
+      "disposition": "reuse_existing_equipment_candidate"
+    },
+    {
+      "id": "thieves_tools",
+      "kind": "tool",
+      "path": "../crown-equipment/items/thieves_tools.json",
+      "disposition": "reuse_existing_equipment_candidate"
+    },
+    {
+      "id": "tinker_scrap_item",
+      "kind": "created_item",
+      "path": "items/tinker_scrap_item.json",
+      "disposition": "new_written_candidate"
+    },
+    {
+      "id": "torch",
+      "kind": "gear",
+      "path": "../crown-equipment/items/torch.json",
+      "disposition": "reuse_existing_equipment_candidate"
+    },
+    {
+      "id": "trident",
+      "kind": "weapon",
+      "path": "items/trident.json",
+      "disposition": "new_written_candidate"
+    },
+    {
+      "id": "war_pick",
+      "kind": "weapon",
+      "path": "items/war_pick.json",
+      "disposition": "new_written_candidate"
+    },
+    {
+      "id": "warhammer",
+      "kind": "weapon",
+      "path": "items/warhammer.json",
+      "disposition": "new_written_candidate"
+    },
+    {
+      "id": "whip",
+      "kind": "weapon",
+      "path": "items/whip.json",
+      "disposition": "new_written_candidate"
+    }
+  ],
+  "new_candidates_by_kind": {
+    "ammunition": 4,
+    "armor": 8,
+    "campaign_consumable": 1,
+    "created_item": 8,
+    "currency_reward": 2,
+    "gear": 3,
+    "legacy_spell_component": 2,
+    "potion": 4,
+    "quest_item": 2,
+    "spell_component": 16,
+    "weapon": 23
+  },
+  "source_pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87"
+}

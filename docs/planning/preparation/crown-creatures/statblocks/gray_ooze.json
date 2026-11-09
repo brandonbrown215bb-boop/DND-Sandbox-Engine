@@ -1,0 +1,380 @@
+{
+  "schema": "crown-creature-candidate/1",
+  "id": "srd_gray_ooze",
+  "name": "Gray Ooze",
+  "kind": "srd_statblock",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring intent only; not registered engine syntax. Mapping requirements do not assert the whole referenced engine slice is absent.",
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile all source clauses, mappings and source differences before later production-path verification. Keep native paths until replacements cover them."
+  },
+  "source": {
+    "authority": "SRD 5.2.1",
+    "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      293
+    ],
+    "text": "Gray Ooze\nMedium Ooze, Unaligned\nAC 9 Initiative −2 (13)\nHP 22 (3d8 + 9)\nSpeed 10 ft., Climb 10 ft.\nMOD SAVE MOD SAVE MOD SAVE\nStr 12 +1 +1 Dex 6 −2 −2 Con 16 +3 +3\nInt 1 −5 −5 WIS 6 −2 −2 Cha 2 −4 −4\nSkills Stealth +2\nResistances Acid, Cold, Fire\nImmunities Blinded, Charmed, Deafened, Exhaustion,\nFrightened, Grappled, Prone, Restrained\nSenses Blindsight 60 ft.; Passive Perception 8\nLanguages None\nCR 1/2 (XP 100; PB +2)\nTraits\nAmorphous. The ooze can move through a space\nas narrow as 1 inch without expending extra move-\nment to do so.\nCorrosive Form. Nonmagical ammunition is destroyed\nimmediately after hitting the ooze and dealing any\ndamage. Any nonmagical weapon takes a cumulative\n−1 penalty to attack rolls immediately after dealing\ndamage to the ooze and coming into contact with it.\nThe weapon is destroyed if the penalty reaches −5. The\npenalty can be removed by casting the Mending spell\non the weapon.\nThe ooze can eat through 2-inch-thick, nonmagical\nmetal or wood in 1 round.\nActions\nPseudopod. Melee Attack Roll: +3, reach 5 ft. Hit: 10\n(2d8 + 1) Acid damage. Nonmagical armor worn by the\ntarget takes a −1 penalty to the AC it offers. The armor\nis destroyed if the penalty reduces its AC to 10. The\npenalty can be removed by casting the Mending spell\non the armor.",
+    "transcription": "Two-column extraction; line breaks retained. Whole selected page context is in source-pages.json. No stat correction inferred from donor data."
+  },
+  "statistics": {
+    "identity_line": "Medium Ooze, Unaligned",
+    "AC": "9 Initiative −2 (13)",
+    "HP": "22 (3d8 + 9)",
+    "Speed": "10 ft., Climb 10 ft.",
+    "Skills": "Stealth +2",
+    "Resistances": "Acid, Cold, Fire",
+    "Immunities": "Blinded, Charmed, Deafened, Exhaustion,\nFrightened, Grappled, Prone, Restrained",
+    "Senses": "Blindsight 60 ft.; Passive Perception 8",
+    "Languages": "None",
+    "CR": "1/2 (XP 100; PB +2)",
+    "ability_scores": {
+      "STR": 12,
+      "DEX": 6,
+      "CON": 16,
+      "INT": 1,
+      "WIS": 6,
+      "CHA": 2
+    },
+    "saving_throw_modifiers": {
+      "STR": 1,
+      "DEX": -2,
+      "CON": 3,
+      "INT": -5,
+      "WIS": -2,
+      "CHA": -4
+    },
+    "initiative_modifier": -2,
+    "initiative_score_printed": 13,
+    "armor_class": 9,
+    "movement_feet": {
+      "walk": 10,
+      "climb": 10
+    }
+  },
+  "authored_operations": [
+    {
+      "key": "b001",
+      "name": "Amorphous",
+      "source_section": "Traits",
+      "full_rule": "Amorphous. The ooze can move through a space\nas narrow as 1 inch without expending extra movement to do so.",
+      "budget": "passive_or_declared_trigger",
+      "steps": [
+        {
+          "intent": "Represent actual size/space, climb/swim/fly and breathing, jumps, straight-line charge history, opportunity exceptions, web surfaces and legal release.",
+          "mapping_group": "movement"
+        }
+      ],
+      "parameters_from_rule": {
+        "attack_bonus": [],
+        "save_dc": [],
+        "distances_feet": [],
+        "dice": []
+      },
+      "blockers": [
+        "map_movement"
+      ],
+      "ending_and_identity": "Exact actor/action/target/source instance; use every qualifier and ending in full_rule, not only extracted parameters.",
+      "behavior_plan": {
+        "budget": "passive_or_declared_trigger",
+        "source_outcomes": {},
+        "minimum_gap_inches": 1,
+        "extra_movement_cost": 0
+      }
+    },
+    {
+      "key": "b002",
+      "name": "Corrosive Form",
+      "source_section": "Traits",
+      "full_rule": "Corrosive Form. Nonmagical ammunition is destroyed\nimmediately after hitting the ooze and dealing any\ndamage. Any nonmagical weapon takes a cumulative\n−1 penalty to attack rolls immediately after dealing\ndamage to the ooze and coming into contact with it.\nThe weapon is destroyed if the penalty reaches −5. The\npenalty can be removed by casting the Mending spell\non the weapon.\nThe ooze can eat through 2-inch-thick, nonmagical\nmetal or wood in 1 round.",
+      "budget": "passive_or_declared_trigger",
+      "steps": [
+        {
+          "intent": "Exact carried copies, corrosion penalties/destruction and Mending, temporary tack separation and dropped equipment; loot metadata is not a paid reward.",
+          "mapping_group": "items"
+        },
+        {
+          "intent": "Represent actual size/space, climb/swim/fly and breathing, jumps, straight-line charge history, opportunity exceptions, web surfaces and legal release.",
+          "mapping_group": "movement"
+        }
+      ],
+      "parameters_from_rule": {
+        "attack_bonus": [],
+        "save_dc": [],
+        "distances_feet": [],
+        "dice": []
+      },
+      "blockers": [
+        "map_items",
+        "map_movement"
+      ],
+      "ending_and_identity": "Exact actor/action/target/source instance; use every qualifier and ending in full_rule, not only extracted parameters.",
+      "behavior_plan": {
+        "budget": "passive_or_declared_trigger",
+        "source_outcomes": {},
+        "triggers": [
+          {
+            "when": "Nonmagical ammunition hits and deals any damage",
+            "effect": "Destroy that ammunition immediately"
+          },
+          {
+            "when": "Nonmagical weapon deals damage and contacts ooze",
+            "effect": "Cumulative -1 attack penalty; destroy at -5; Mending removes penalty"
+          }
+        ],
+        "world_action": "Eat through2-inch nonmagical metal/wood in1 round"
+      }
+    },
+    {
+      "key": "b003",
+      "name": "Pseudopod",
+      "source_section": "Actions",
+      "full_rule": "Pseudopod. Melee Attack Roll: +3, reach 5 ft. Hit: 10\n(2d8 + 1) Acid damage. Nonmagical armor worn by the\ntarget takes a −1 penalty to the AC it offers. The armor\nis destroyed if the penalty reduces its AC to 10. The\npenalty can be removed by casting the Mending spell\non the armor.",
+      "budget": "action",
+      "steps": [
+        {
+          "intent": "Resolve declared roll or save, targets, range/reach, damage packets, multiattack choice, riders and exact action budget. A save-only action is not a weapon hit rider.",
+          "mapping_group": "attacks"
+        },
+        {
+          "intent": "Exact carried copies, corrosion penalties/destruction and Mending, temporary tack separation and dropped equipment; loot metadata is not a paid reward.",
+          "mapping_group": "items"
+        },
+        {
+          "intent": "Represent actual size/space, climb/swim/fly and breathing, jumps, straight-line charge history, opportunity exceptions, web surfaces and legal release.",
+          "mapping_group": "movement"
+        }
+      ],
+      "parameters_from_rule": {
+        "attack_bonus": [
+          3
+        ],
+        "save_dc": [],
+        "distances_feet": [
+          5
+        ],
+        "dice": [
+          "2d8 + 1"
+        ]
+      },
+      "blockers": [
+        "map_attacks",
+        "map_items",
+        "map_movement"
+      ],
+      "ending_and_identity": "Exact actor/action/target/source instance; use every qualifier and ending in full_rule, not only extracted parameters.",
+      "behavior_plan": {
+        "budget": "action",
+        "source_outcomes": {
+          "hit": "10 (2d8 + 1) Acid damage. Nonmagical armor worn by the target takes a −1 penalty to the AC it offers. The armor is destroyed if the penalty reduces its AC to 10. The penalty can be removed by casting the Mending spell on the armor."
+        },
+        "after_hit": "Worn nonmagical armor takes -1 to AC offered; destroy when AC becomes10; Mending removes penalty; exact armor copy",
+        "resolution": "attack_roll",
+        "attack_kind": "melee",
+        "damage_and_riders": "10 (2d8 + 1) Acid damage. Nonmagical armor worn by the target takes a −1 penalty to the AC it offers. The armor is destroyed if the penalty reduces its AC to 10. The penalty can be removed by casting the Mending spell on the armor.",
+        "permission": "ordinary familiar cannot attack; invocation exceptions must grant this exact attack or Attack action, not every Actions entry"
+      }
+    }
+  ],
+  "retained_definitions": [
+    {
+      "path": "data/core/monsters/core_monsters.json",
+      "sha256": "33bf505c91476b32f7dd2887dd0caa19521e4a9e206392b8d803090b105eb8c2",
+      "pointer": "/7",
+      "payload": {
+        "id": "ooze",
+        "name": "Gray Ooze",
+        "description": "A blob of living slime that dissolves organic matter.",
+        "size": "medium",
+        "challenge_rating": 0.5,
+        "hit_points": "3d8 + 9",
+        "armor_class": 8,
+        "speed": 2,
+        "ability_scores": {
+          "STR": 12,
+          "DEX": 6,
+          "CON": 16,
+          "INT": 1,
+          "WIS": 6,
+          "CHA": 2
+        },
+        "damage_immunities": [
+          "fire",
+          "acid"
+        ],
+        "condition_immunities": [
+          "blinded",
+          "charmed",
+          "deafened",
+          "frightened",
+          "prone"
+        ],
+        "attacks": [
+          {
+            "name": "Pseudopod",
+            "ability": "STR",
+            "damage": "1d6 + 1",
+            "damage_type": "acid",
+            "range": 1,
+            "extra_effects": [
+              {
+                "type": "corrode_armor"
+              }
+            ]
+          }
+        ],
+        "ai_behavior": "aggressive",
+        "loot_table": [],
+        "xp": 100
+      },
+      "manifest_declarations": []
+    },
+    {
+      "path": "data/core/monsters/imported_monsters.json",
+      "sha256": "f57bee1e93f185a89575bed3d8b2b610b53cfd3b7f2eb56448d1dd64a0126c5f",
+      "pointer": "/201",
+      "payload": {
+        "id": "gray_ooze",
+        "name": "Gray Ooze",
+        "hit_points": "3d8 + 9",
+        "armor_class": 8,
+        "speed": 2,
+        "ability_scores": {
+          "STR": 12,
+          "DEX": 6,
+          "CON": 16,
+          "INT": 1,
+          "WIS": 6,
+          "CHA": 2
+        },
+        "attacks": [
+          {
+            "name": "Claws",
+            "ability": "STR",
+            "damage": "1d6",
+            "range": 1,
+            "damage_type": "slashing"
+          }
+        ],
+        "ai_behavior": "aggressive"
+      },
+      "manifest_declarations": [
+        {
+          "type": "monster",
+          "id": "gray_ooze",
+          "winner": "res://data/core/monsters/srd_monsters.json#211",
+          "replaces": [
+            "res://data/core/monsters/imported_monsters.json#202"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "data/core/monsters/srd_monsters.json",
+      "sha256": "83786ed8bafc802e37b7794c04ba8901e3e10b35d288f301c92f01bbed50cd73",
+      "pointer": "/210",
+      "payload": {
+        "id": "gray_ooze",
+        "name": "Gray Ooze",
+        "description": "A corrosive medium ooze that dissolves weapons and armor on contact.",
+        "size": "medium",
+        "challenge_rating": 0.5,
+        "hit_points": "3d8 + 9",
+        "armor_class": 9,
+        "speed": 2,
+        "ability_scores": {
+          "STR": 12,
+          "DEX": 6,
+          "CON": 16,
+          "INT": 1,
+          "WIS": 6,
+          "CHA": 2
+        },
+        "damage_resistances": [
+          "acid",
+          "cold",
+          "fire"
+        ],
+        "condition_immunities": [
+          "blinded",
+          "charmed",
+          "deafened",
+          "exhaustion",
+          "frightened",
+          "grappled",
+          "prone",
+          "restrained"
+        ],
+        "attacks": [
+          {
+            "name": "Pseudopod",
+            "ability": "STR",
+            "damage": "2d8 + 1",
+            "damage_type": "acid",
+            "range": 1,
+            "extra_effects": [
+              {
+                "type": "corrode_armor"
+              }
+            ]
+          }
+        ],
+        "ai_behavior": "aggressive",
+        "special_abilities": [
+          {
+            "id": "climb",
+            "name": "Climb",
+            "description": "Climb speed 2 hexes (10 ft)."
+          },
+          {
+            "id": "amorphous",
+            "name": "Amorphous",
+            "description": "Can move through gaps as narrow as 1 inch."
+          },
+          {
+            "id": "corrosive_form",
+            "name": "Corrosive Form",
+            "description": "Destroys nonmagical ammunition on hit; corrodes nonmagical weapons that strike it."
+          }
+        ],
+        "loot_table": [],
+        "xp": 100
+      },
+      "manifest_declarations": [
+        {
+          "type": "monster",
+          "id": "gray_ooze",
+          "winner": "res://data/core/monsters/srd_monsters.json#211",
+          "replaces": [
+            "res://data/core/monsters/imported_monsters.json#202"
+          ]
+        }
+      ]
+    }
+  ],
+  "selection": {
+    "wild_shape_druid_levels_2_3": false,
+    "wild_shape_druid_levels_4_5": false,
+    "normal_familiar": false,
+    "pact_of_chain_special": false,
+    "animate_dead_output": false,
+    "held_swarm": false,
+    "encounter_comparison_only": true
+  },
+  "acquisition_links": [
+    "selection-links.json"
+  ],
+  "blockers": [
+    "map_statistics",
+    "map_attacks",
+    "map_items",
+    "map_movement"
+  ],
+  "source_reconciliation": "Official body is authoritative for this SRD candidate. Retained donor payloads are comparison/reuse seeds, including legacy values and manifest winners; do not merge their statistics or traits by ID. Direct Crown encounters retain separate candidates.",
+  "equipment_links": [],
+  "explicit_blockers": [
+    "Printed Initiative is -2 (13), internally inconsistent. Preserve both printed values; source/erratum reconciliation required before choosing a displayed fixed initiative score."
+  ]
+}

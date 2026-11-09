@@ -1,0 +1,163 @@
+{
+  "schema": "crown-character-candidate/1",
+  "id": "goliath",
+  "name": "Goliath",
+  "kind": "species",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "scope": {
+    "total_character_level_maximum": 5
+  },
+  "operation_language": "authoring intent only; not registered engine syntax",
+  "runtime_support": "Retained definitions are reuse material, not proof of full rules. Every authored operation needs contract mapping and later production-path verification before promotion.",
+  "rules": {
+    "authority": "SRD 5.2.1",
+    "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      85,
+      86
+    ],
+    "text": "Goliath\nCreature Type: Humanoid\nSize: Medium (about 7–8 feet tall)\nSpeed: 35 feet\nAs a Goliath, you have these special traits.\nGiant Ancestry.\nYou are descended from Giants.\nChoose one of the following benefits—a supernatural boon from your ancestry; you can use the chosen\nbenefit a number of times equal to your Proficiency\nBonus, and you regain all expended uses when you\nfinish a Long Rest:\nCloud’s Jaunt (Cloud Giant).\nAs a Bonus Action, you\nmagically teleport up to 30 feet to an unoccupied\nspace you can see.\nFire’s Burn (Fire Giant).\nWhen you hit a target\nwith an attack roll and deal damage to it, you can\nalso deal 1d10 Fire damage to that target.\nFrost’s Chill (Frost Giant).\nWhen you hit a target\nwith an attack roll and deal damage to it, you\ncan also deal 1d6 Cold damage to that target and\nreduce its Speed by 10 feet until the start of your\nnext turn.\nHill’s Tumble (Hill Giant).\nWhen you hit a Large\nor smaller creature with an attack roll and deal\ndamage to it, you can give that target the Prone\ncondition.\nStone’s Endurance (Stone Giant).\nWhen you take\ndamage, you can take a Reaction to roll 1d12. Add\nyour Constitution modifier to the number rolled\nand reduce the damage by that total.\nLevel 3 Level 5\n0 feet. Faerie Fire Darkness\ner you finish\nh a different\nDetect Magic Misty Step\now the Longstrider Pass without Trace\nStorm’s Thunder (Storm Giant).\nWhen you take\ndamage from a creature within 60 feet of you, you\ncan take a Reaction to deal 1d8 Thunder damage\nto that creature.\nLarge Form.\nStarting at character level 5, you can\nchange your size to Large as a Bonus Action if you’re\nin a big enough space. This transformation lasts for\n10 minutes or until you end it (no action required).\nFor that duration, you have Advantage on Strength\nchecks, and your Speed increases by 10 feet. Once\nyou use this trait, you can’t use it again until you\nfinish a Long Rest.\nPowerful Build.\nYou have Advantage on any ability check you make to end the Grappled condition.\nYou also count as one size larger when determining\nyour carrying capacity."
+  },
+  "definition": {
+    "size": [
+      "Medium"
+    ],
+    "speed_feet": 35,
+    "choices": {
+      "giant_ancestry": [
+        "cloud",
+        "fire",
+        "frost",
+        "hill",
+        "stone",
+        "storm"
+      ]
+    },
+    "ancestries": {
+      "cloud": {
+        "trigger": "Bonus Action",
+        "effect": "Teleport up to30 feet to visible unoccupied space"
+      },
+      "fire": {
+        "trigger": "Attack roll hits and deals damage",
+        "effect": "Extra1d10 Fire damage to target"
+      },
+      "frost": {
+        "trigger": "Attack roll hits and deals damage",
+        "effect": "Extra1d6 Cold damage; target Speed-10 feet until start next owner turn"
+      },
+      "hill": {
+        "trigger": "Attack roll hits Large or smaller creature and deals damage",
+        "effect": "Give target Prone"
+      },
+      "stone": {
+        "trigger": "Take damage; Reaction",
+        "effect": "Reduce damage by1d12+CON"
+      },
+      "storm": {
+        "trigger": "Take damage from creature within60 feet; Reaction",
+        "effect": "Deal1d8 Thunder to that creature"
+      }
+    },
+    "creature_type": "Humanoid",
+    "ability_score_increases": {},
+    "languages": {
+      "fixed": [
+        "Common"
+      ],
+      "choose": 2,
+      "from": [
+        "Common Sign Language",
+        "Draconic",
+        "Dwarvish",
+        "Elvish",
+        "Giant",
+        "Gnomish",
+        "Goblin",
+        "Halfling",
+        "Orc"
+      ],
+      "source": "creation p20; species supplies no fixed ancestral language"
+    }
+  },
+  "authored_operations": [
+    {
+      "name": "Base species and creation grants",
+      "trigger": "Creation confirmation",
+      "cost": "One species; listed size and language choices",
+      "effects": [
+        "Humanoid creature type",
+        "Choose listed size; use declared Speed in feet; no fixed species ASIs",
+        "Know Common and choose two Standard Languages"
+      ],
+      "required_extension_groups": [
+        "progression",
+        "choices",
+        "languages",
+        "movement",
+        "world"
+      ],
+      "ending_and_identity": "Save exact selected species/size/languages; grant once; preserve legacy records separately."
+    },
+    {
+      "name": "Giant Ancestry",
+      "trigger": "Qualifying selected ancestry trigger",
+      "cost": "PB uses per Long Rest for selected benefit",
+      "effects": [
+        "Resolve selected boon with exact attack or incoming damage identity; enforce Reaction/Bonus Action and legal teleport placement"
+      ],
+      "required_extension_groups": [
+        "choices",
+        "reactions",
+        "resources"
+      ],
+      "ending_and_identity": "Exact species/selected trait source; respect source ending; permanent grants once at actual character level."
+    },
+    {
+      "name": "Large Form",
+      "trigger": "Character5; Bonus Action; enough space for Large size",
+      "cost": "once per Long Rest",
+      "effects": [
+        "Become Large for10 minutes; Advantage Strength checks and Speed+10 feet; may end no action"
+      ],
+      "required_extension_groups": [
+        "forms",
+        "resources",
+        "movement"
+      ],
+      "ending_and_identity": "Exact species/selected trait source; respect source ending; permanent grants once at actual character level."
+    },
+    {
+      "name": "Powerful Build",
+      "trigger": "Grapple escape ability check or carrying capacity",
+      "cost": "none",
+      "effects": [
+        "Advantage on any ability check to end Grappled; count one size larger for carrying capacity"
+      ],
+      "required_extension_groups": [
+        "rolls",
+        "items"
+      ],
+      "ending_and_identity": "Exact species/selected trait source; respect source ending; permanent grants once at actual character level."
+    }
+  ],
+  "reused_from": [],
+  "retained_runtime_seed": null,
+  "unsupported_behavior": [
+    {
+      "groups": [
+        "choices",
+        "forms",
+        "items",
+        "movement",
+        "reactions",
+        "resources",
+        "rolls"
+      ],
+      "requirement": "2024 choices, character-level grants and full named trait outcomes must map to shared hosts. Legacy seed is comparison material only: never inherit its fixed ASIs, old weapon grants or other unselected traits.",
+      "status": "mapping_and_host_verification_required"
+    }
+  ],
+  "source_revision": "2a19eb1d (existing working-tree definitions and recovered drafts read on 2026-11-08)",
+  "reused_input_hashes": {}
+}

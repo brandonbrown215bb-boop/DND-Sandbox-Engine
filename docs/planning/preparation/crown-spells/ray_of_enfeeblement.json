@@ -1,0 +1,165 @@
+{
+  "format": "crown-spell-candidate/1",
+  "id": "ray_of_enfeeblement",
+  "name": "Ray of Enfeeblement",
+  "level": 2,
+  "status": "written_unverified_not_loaded",
+  "source": {
+    "authority": "SRD 5.2.1",
+    "url": "https://media.dndbeyond.com/compendium-images/srd/5.2/SRD_CC_v5.2.1.pdf",
+    "sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      157
+    ],
+    "header": {
+      "Casting Time": "Action",
+      "Range": "60 feet",
+      "Components": "V, S",
+      "Duration": "Concentration, up to 1 minute"
+    },
+    "attribution": "System Reference Document 5.2.1, Wizards of the Coast LLC; CC BY 4.0."
+  },
+  "casting": {
+    "casting_time": "Action",
+    "kind": "action",
+    "seconds": null,
+    "ritual_available": false,
+    "range": {
+      "source": "60 feet",
+      "kind": "distance",
+      "feet": 60
+    },
+    "components": [
+      "V",
+      "S"
+    ],
+    "material": null,
+    "duration": "Concentration, up to 1 minute",
+    "concentration": true,
+    "spell_lists": [
+      "warlock",
+      "wizard"
+    ]
+  },
+  "authored_intent": "Creature CON save; success gives next-attack Disadvantage through start of caster next turn; failure gives STR-based D20 Test Disadvantage and subtracts 1d8 from all damage rolls for Concentration duration; end-turn CON repeat save, no obsolete half-Strength-damage rule.",
+  "rules": [
+    {
+      "id": "r001",
+      "text": "A beam of enervating energy shoots from you toward a creature within range."
+    },
+    {
+      "id": "r002",
+      "text": "The target must make a Constitution saving throw."
+    },
+    {
+      "id": "r003",
+      "text": "On a successful save, the target has Disadvantage on the next attack roll it makes until the start of your next turn."
+    },
+    {
+      "id": "r004",
+      "text": "On a failed save, the target has Disadvantage on Strength-based D20 Tests for the duration."
+    },
+    {
+      "id": "r005",
+      "text": "During that time, it also subtracts 1d8 from all its damage rolls."
+    },
+    {
+      "id": "r006",
+      "text": "The target repeats the save at the end of each of its turns, ending the spell on a success."
+    }
+  ],
+  "authored_operations": [
+    {
+      "operation": "save_outcome_benefit",
+      "parameters": {
+        "save": "CON",
+        "success": {
+          "next_attack": "disadvantage_until_caster_next_turn_start"
+        },
+        "failure": {
+          "STR_D20_tests": "disadvantage",
+          "all_damage_rolls": "subtract_1d8",
+          "repeat_save": "CON_at_target_turn_end"
+        }
+      },
+      "status": "authoring_declaration_not_a_registered_opcode",
+      "required_source_rules": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006"
+      ]
+    }
+  ],
+  "runtime_draft": {
+    "origin": "existing_shared_definition",
+    "definition": {
+      "attack_type": "none",
+      "casting_time": "action",
+      "classes": [
+        "warlock",
+        "wizard"
+      ],
+      "components": [
+        "V",
+        "S"
+      ],
+      "concentration": true,
+      "description": "A beam of enervating energy shoots from you toward a creature within range. The target must make a Constitution saving throw. On a successful save, the target has Disadvantage on the next attack roll it makes until the start of your next turn. On a failed save, the target has Disadvantage on Strength-based D20 Tests for the duration. During that time, it also subtracts 1d8 from all its damage rolls. The target repeats the save at the end of each of its turns, ending the spell on a success.",
+      "duration": "Concentration, up to 1 minute",
+      "duration_seconds": 60,
+      "effects": [
+        {
+          "condition": "enfeebled",
+          "rider_by_outcome": {
+            "failure": true,
+            "success": false
+          },
+          "type": "grant_condition"
+        },
+        {
+          "condition": "next_attack_disadvantage",
+          "expiry": {
+            "boundary": "caster_turn_start",
+            "turns": 1.0
+          },
+          "rider_by_outcome": {
+            "failure": false,
+            "success": true
+          },
+          "type": "grant_condition"
+        }
+      ],
+      "execution": "shared",
+      "id": "ray_of_enfeeblement",
+      "level": 2,
+      "name": "Ray of Enfeeblement",
+      "range": 12,
+      "repeat_save": "CON",
+      "repeat_save_schedule": "target_turn_end",
+      "rules_source": "SRD 5.2.1",
+      "rules_status": "authoring-draft-unverified",
+      "save": "CON",
+      "school": "necromancy",
+      "target": "single"
+    },
+    "fragments": {},
+    "coverage": "Unverified. Neither a full definition nor a fragment certifies all source rules or controls. Required extensions are not silently waived."
+  },
+  "required_extensions": [],
+  "audit": {
+    "source": "docs/audits/spells.md",
+    "batch": "088-4",
+    "production_definition_at_authoring": "res://data/core/spells/crown_sc_07.json#1",
+    "baseline_execution": "shared",
+    "source_revision": "2a19eb1d",
+    "existing_conversion_label": "converted"
+  },
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile every source rule and required extension, then implement and verify through production paths before any deliberate promotion. Keep native behavior until covered."
+  }
+}

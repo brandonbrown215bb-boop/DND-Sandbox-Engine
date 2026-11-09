@@ -1,0 +1,59 @@
+{
+  "schema": "crown-equipment-candidate/1",
+  "id": "three_dragon_ante_set",
+  "name": "Three-Dragon Ante",
+  "kind": "gaming_set",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring intent only; not registered engine syntax.",
+  "rules": {
+    "authority": "SRD 5.2.1",
+    "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      93,
+      94
+    ],
+    "section": "Three-Dragon Ante",
+    "text": "Each Gaming Set variant needs separate proficiency. Ability Wisdom. Utilize: discern whether someone is cheating (DC 10), or win the game (DC 20). Tool proficiency adds PB; also having the used skill proficiency grants Advantage. Source weight is unspecified.",
+    "source_context": "../source-pages.json"
+  },
+  "definition": {
+    "id": "three_dragon_ante_set",
+    "name": "Three-Dragon Ante",
+    "ability": "wisdom",
+    "weight_lb": null,
+    "cost_gp": 1
+  },
+  "authored_operations": [
+    "Each Gaming Set variant needs separate proficiency. Ability Wisdom. Utilize: discern whether someone is cheating (DC 10), or win the game (DC 20). Tool proficiency adds PB; also having the used skill proficiency grants Advantage. Source weight is unspecified."
+  ],
+  "retained_runtime_seeds": [
+    {
+      "path": "data/core/items/srd_gear.json",
+      "array_index": 46,
+      "file_sha256": "ed873f9a0967f5bb6e20241428e4f53b92c011fa547321af69798ece822b57d4",
+      "definition": {
+        "id": "three_dragon_ante_set",
+        "name": "Gaming Set (Three-Dragon Ante)",
+        "description": "A gaming set. Ability: Wisdom. Utilize: Discern whether someone is cheating (DC 10), or win the game (DC 20).",
+        "type": "tool",
+        "effects": [],
+        "value": 1
+      }
+    }
+  ],
+  "manifest_overrides": [],
+  "required_mapping": [
+    "tools"
+  ],
+  "consumers": [
+    {
+      "choice_id": "chosen_gaming_set"
+    }
+  ],
+  "unsupported_behavior": [
+    {
+      "group": "tools",
+      "requirement": "Map exact variant proficiency, declared tool ability/DC, PB plus applicable skill Advantage and actual Utilize task outcomes. Do not use a generic +PB check as every tool action."
+    }
+  ]
+}

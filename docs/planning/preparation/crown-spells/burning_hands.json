@@ -1,0 +1,169 @@
+{
+  "format": "crown-spell-candidate/1",
+  "id": "burning_hands",
+  "name": "Burning Hands",
+  "level": 1,
+  "status": "written_unverified_not_loaded",
+  "source": {
+    "authority": "SRD 5.2.1",
+    "url": "https://media.dndbeyond.com/compendium-images/srd/5.2/SRD_CC_v5.2.1.pdf",
+    "sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      114
+    ],
+    "header": {
+      "Casting Time": "Action",
+      "Range": "Self",
+      "Components": "V, S",
+      "Duration": "Instantaneous"
+    },
+    "attribution": "System Reference Document 5.2.1, Wizards of the Coast LLC; CC BY 4.0."
+  },
+  "casting": {
+    "casting_time": "Action",
+    "kind": "action",
+    "seconds": null,
+    "ritual_available": false,
+    "range": {
+      "source": "Self",
+      "kind": "self",
+      "feet": 0
+    },
+    "components": [
+      "V",
+      "S"
+    ],
+    "material": null,
+    "duration": "Instantaneous",
+    "concentration": false,
+    "spell_lists": [
+      "sorcerer",
+      "wizard"
+    ]
+  },
+  "authored_intent": "Self-origin 15-foot cone; DEX half 3d6 Fire; higher slots add 1d6; ignite eligible unworn/uncarried flammable objects.",
+  "rules": [
+    {
+      "id": "r001",
+      "text": "A thin sheet of flames shoots forth from you."
+    },
+    {
+      "id": "r002",
+      "text": "Each creature in a 15-foot Cone makes a Dexterity saving throw, taking 3d6 Fire damage on a failed save or half as much damage on a successful one."
+    },
+    {
+      "id": "r003",
+      "text": "Flammable objects in the Cone that aren’t being worn or carried start burning."
+    },
+    {
+      "id": "r004",
+      "text": "Using a Higher-Level Spell Slot."
+    },
+    {
+      "id": "r005",
+      "text": "The damage increases by 1d6 for each spell slot level above 1."
+    }
+  ],
+  "authored_operations": [
+    {
+      "operation": "cone_damage_and_ignition",
+      "parameters": {
+        "cone_feet": 15,
+        "save": "DEX",
+        "damage": "3d6",
+        "damage_type": "fire",
+        "half_on_success": true,
+        "ignite": {
+          "flammable": true,
+          "not_worn_or_carried": true
+        },
+        "upcast_damage_per_slot": "1d6"
+      },
+      "status": "authoring_declaration_not_a_registered_opcode",
+      "required_source_rules": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005"
+      ]
+    }
+  ],
+  "runtime_draft": {
+    "origin": "existing_shared_definition",
+    "definition": {
+      "casting_time": "action",
+      "cone_size": 3.0,
+      "damage": "3d6",
+      "damage_type": "fire",
+      "description": "A thin sheet of flames shoots forth from you. Each creature in a 15-foot Cone makes a Dexterity saving throw, taking 3d6 Fire damage on a failed save or half as much damage on a successful one. Flammable objects in the Cone that aren’t being worn or carried start burning. Using a Higher-Level Spell Slot. The damage increases by 1d6 for each spell slot level above 1.",
+      "effects": [
+        {
+          "shape": "cone",
+          "size": 3.0,
+          "type": "area_selection"
+        }
+      ],
+      "execution": "shared",
+      "half_on_save": true,
+      "id": "burning_hands",
+      "ignites_objects": true,
+      "level": 1,
+      "name": "Burning Hands",
+      "range": 0,
+      "save": "DEX",
+      "school": "evocation",
+      "target": "cone",
+      "upcast": {
+        "damage_per_level": "1d6",
+        "starting_level": 1.0
+      },
+      "classes": [
+        "sorcerer",
+        "wizard"
+      ],
+      "components": [
+        "V",
+        "S"
+      ],
+      "duration": "Instantaneous",
+      "concentration": false,
+      "rules_source": "SRD 5.2.1",
+      "rules_status": "authoring-draft-unverified",
+      "range_kind": "self"
+    },
+    "fragments": {},
+    "coverage": "Unverified. Neither a full definition nor a fragment certifies all source rules or controls. Required extensions are not silently waived."
+  },
+  "required_extensions": [
+    {
+      "group": "object_ignition",
+      "requirement": "Enumerate exact eligible unworn/uncarried flammable objects, including collocated objects; apply actual damage/burning and preserve unknown material facts.",
+      "spell_specific_intent": "Self-origin 15-foot cone; DEX half 3d6 Fire; higher slots add 1d6; ignite eligible unworn/uncarried flammable objects.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005"
+      ],
+      "existing_owner_to_reuse": "src/dungeon/local_room_shared_spells.gd",
+      "slice_references": "S-032/S-091/S-098/S-099",
+      "disposition": "requires_mapping_or_host_completion",
+      "note": "This is an authored handoff requirement, not a fresh runtime failure or claim that the whole referenced slice is missing."
+    }
+  ],
+  "audit": {
+    "source": "docs/audits/spells.md",
+    "batch": "088-2",
+    "production_definition_at_authoring": "res://data/core/spells/core_spells.json#7",
+    "baseline_execution": "shared",
+    "source_revision": "2a19eb1d",
+    "existing_conversion_label": "already_shared_baseline"
+  },
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile every source rule and required extension, then implement and verify through production paths before any deliberate promotion. Keep native behavior until covered."
+  }
+}

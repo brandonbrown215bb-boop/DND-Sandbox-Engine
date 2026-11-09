@@ -1,0 +1,39 @@
+{
+  "schema": "crown-world-candidate/1",
+  "id": "discovery",
+  "name": "Discovery",
+  "kind": "procedures",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring declarations only; not registered engine opcodes.",
+  "required_extensions": [
+    "discovery"
+  ],
+  "authored_operations": [
+    {
+      "operation": "resolve_discovery",
+      "requirement": "Use actual source space, plane, vicinity, senses and observer. Retain hidden-object, trap, Medicine, Insight, tracks and Study declarations independently; automatic language recognition is distinct from rolling to notice. Reveal only the declared result to eligible observers and persist receipts without another roll or cost."
+    }
+  ],
+  "blockers": [
+    "OA-01–OA-13 room controls are reusable bounded hosts. Generated event checks have no positioned trap or automatic general Search/disarm implementation. Do not convert flavor text into hidden-object/track/knowledge facts."
+  ],
+  "slices": "S-188/S-190/S-191/S-229/S-237",
+  "source_context_pages": [
+    11,
+    182,
+    187,
+    189
+  ],
+  "source_context": "../source-pages.json",
+  "current_owner_pins": [
+    {
+      "path": "src/dungeon/local_room_search_rules.gd",
+      "sha256": "51f1446a9693f61284d7212c1097a574b2d8915a7aac20c9278acaf7a23e0f65"
+    },
+    {
+      "path": "src/dungeon/local_room_checks.gd",
+      "sha256": "61b74a703ca8f6012304417fba4be0cb231b836d2e76a0e95b6c226692891d94"
+    }
+  ],
+  "reuse_boundary": "Existing accepted pieces remain accepted at their documented limits; these requirements do not mark the entire slices missing."
+}

@@ -1,0 +1,130 @@
+{
+  "format": "crown-spell-candidate/1",
+  "id": "feather_fall",
+  "name": "Feather Fall",
+  "level": 1,
+  "status": "written_unverified_not_loaded",
+  "source": {
+    "authority": "SRD 5.2.1",
+    "url": "https://media.dndbeyond.com/compendium-images/srd/5.2/SRD_CC_v5.2.1.pdf",
+    "sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      130
+    ],
+    "header": {
+      "Casting Time": "Reaction, which you take when you or a creature you can see within 60 feet of you falls",
+      "Range": "60 feet",
+      "Components": "V, M (a small feather or piece of down)",
+      "Duration": "1 minute"
+    },
+    "attribution": "System Reference Document 5.2.1, Wizards of the Coast LLC; CC BY 4.0."
+  },
+  "casting": {
+    "casting_time": "Reaction, which you take when you or a creature you can see within 60 feet of you falls",
+    "kind": "reaction",
+    "seconds": null,
+    "ritual_available": false,
+    "range": {
+      "source": "60 feet",
+      "kind": "distance",
+      "feet": 60
+    },
+    "components": [
+      "V",
+      "M"
+    ],
+    "material": "a small feather or piece of down",
+    "duration": "1 minute",
+    "concentration": false,
+    "spell_lists": [
+      "bard",
+      "sorcerer",
+      "wizard"
+    ]
+  },
+  "authored_intent": "Reaction when caster or seen creature falls; choose up to five falling creatures within range; fall rate 60 feet/round and no landing damage if landing before ending; ends for each on landing, with no invented automatic on-feet benefit.",
+  "rules": [
+    {
+      "id": "r001",
+      "text": "Choose up to five falling creatures within range."
+    },
+    {
+      "id": "r002",
+      "text": "A falling creature’s rate of descent slows to 60 feet per round until the spell ends."
+    },
+    {
+      "id": "r003",
+      "text": "If a creature lands before the spell ends, the creature takes no damage from the fall, and the spell ends for that creature."
+    }
+  ],
+  "authored_operations": [
+    {
+      "operation": "alter_fall",
+      "parameters": {
+        "trigger": "casting_header",
+        "targets_max": 5,
+        "targets": "falling_creatures",
+        "feet_per_round": 60,
+        "on_landing_before_expiry": {
+          "fall_damage": 0,
+          "end_for_recipient": true
+        }
+      },
+      "status": "authoring_declaration_not_a_registered_opcode",
+      "required_source_rules": [
+        "r001",
+        "r002",
+        "r003"
+      ]
+    }
+  ],
+  "runtime_draft": {
+    "origin": "proposed_operations",
+    "definition": null,
+    "fragments": {},
+    "coverage": "Unverified. Neither a full definition nor a fragment certifies all source rules or controls. Required extensions are not silently waived."
+  },
+  "required_extensions": [
+    {
+      "group": "falling",
+      "requirement": "Execute real falling with captured descent rate, duration, source-specific landing damage/ending and actual legal destination; a falling condition icon does not supply the world host.",
+      "spell_specific_intent": "Reaction when caster or seen creature falls; choose up to five falling creatures within range; fall rate 60 feet/round and no landing damage if landing before ending; ends for each on landing, with no invented automatic on-feet benefit.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003"
+      ],
+      "existing_owner_to_reuse": "src/combat/combat_action.gd",
+      "slice_references": "S-180/S-181",
+      "disposition": "requires_mapping_or_host_completion",
+      "note": "This is an authored handoff requirement, not a fresh runtime failure or claim that the whole referenced slice is missing."
+    },
+    {
+      "group": "reaction_routes",
+      "requirement": "Produce the exact qualifying trigger across required attack/cast/damage/fall hosts; revalidate actor/target, interruption and one Reaction/payment.",
+      "spell_specific_intent": "Reaction when caster or seen creature falls; choose up to five falling creatures within range; fall rate 60 feet/round and no landing damage if landing before ending; ends for each on landing, with no invented automatic on-feet benefit.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003"
+      ],
+      "existing_owner_to_reuse": "src/spells/spell_cast_reactions.gd",
+      "slice_references": "S-041/S-042/S-134/S-135/S-160",
+      "disposition": "requires_mapping_or_host_completion",
+      "note": "This is an authored handoff requirement, not a fresh runtime failure or claim that the whole referenced slice is missing."
+    }
+  ],
+  "audit": {
+    "source": "docs/audits/spells.md",
+    "batch": "088-6",
+    "production_definition_at_authoring": "res://data/core/spells/imported_spells.json#71",
+    "baseline_execution": "native",
+    "source_revision": "2a19eb1d",
+    "existing_conversion_label": "queued"
+  },
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile every source rule and required extension, then implement and verify through production paths before any deliberate promotion. Keep native behavior until covered."
+  }
+}

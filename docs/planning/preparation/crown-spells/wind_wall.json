@@ -1,0 +1,183 @@
+{
+  "format": "crown-spell-candidate/1",
+  "id": "wind_wall",
+  "name": "Wind Wall",
+  "level": 3,
+  "status": "written_unverified_not_loaded",
+  "source": {
+    "authority": "SRD 5.2.1",
+    "url": "https://media.dndbeyond.com/compendium-images/srd/5.2/SRD_CC_v5.2.1.pdf",
+    "sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      174
+    ],
+    "header": {
+      "Casting Time": "Action",
+      "Range": "120 feet",
+      "Components": "V, S, M (a fan and a feather)",
+      "Duration": "Concentration, up to 1 minute"
+    },
+    "attribution": "System Reference Document 5.2.1, Wizards of the Coast LLC; CC BY 4.0."
+  },
+  "casting": {
+    "casting_time": "Action",
+    "kind": "action",
+    "seconds": null,
+    "ritual_available": false,
+    "range": {
+      "source": "120 feet",
+      "kind": "distance",
+      "feet": 120
+    },
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "a fan and a feather",
+    "duration": "Concentration, up to 1 minute",
+    "concentration": true,
+    "spell_lists": [
+      "druid",
+      "ranger"
+    ]
+  },
+  "authored_intent": "Choose contiguous ground-origin wall up to 50 feet long, 15 feet high and 1 foot thick; appearance STR-half Bludgeoning; block source-specified gases/flying sizes/projectiles, not boulders; Concentration.",
+  "rules": [
+    {
+      "id": "r001",
+      "text": "A wall of strong wind rises from the ground at a point you choose within range."
+    },
+    {
+      "id": "r002",
+      "text": "You can make the wall up to 50 feet long, 15 feet high, and 1 foot thick."
+    },
+    {
+      "id": "r003",
+      "text": "You can shape the wall in any way you choose so long as it makes one continuous path along the ground."
+    },
+    {
+      "id": "r004",
+      "text": "The wall lasts for the duration."
+    },
+    {
+      "id": "r005",
+      "text": "When the wall appears, each creature in its area makes a Strength saving throw, taking 4d8 Bludgeoning damage on a failed save or half as much damage on a successful one."
+    },
+    {
+      "id": "r006",
+      "text": "The strong wind keeps fog, smoke, and other gases at bay."
+    },
+    {
+      "id": "r007",
+      "text": "Small or smaller flying creatures or objects can’t pass through the wall."
+    },
+    {
+      "id": "r008",
+      "text": "Loose, lightweight materials brought into the wall fly upward."
+    },
+    {
+      "id": "r009",
+      "text": "Arrows, bolts, and other ordinary projectiles launched at targets behind the wall are deflected upward and miss automatically."
+    },
+    {
+      "id": "r010",
+      "text": "Boulders hurled by Giants or siege engines, and similar projectiles, are unaffected."
+    },
+    {
+      "id": "r011",
+      "text": "Creatures in gaseous form can’t pass through it."
+    }
+  ],
+  "authored_operations": [
+    {
+      "operation": "create_selective_wind_wall",
+      "parameters": {
+        "ground_path": "continuous_caster_chosen",
+        "length_feet_max": 50,
+        "height_feet_max": 15,
+        "thickness_feet": 1,
+        "appearance_damage": {
+          "save": "STR",
+          "dice": "4d8",
+          "type": "bludgeoning",
+          "half_on_success": true
+        },
+        "blocks": [
+          "fog",
+          "smoke",
+          "gas",
+          "small_or_smaller_flying_creatures_or_objects",
+          "gaseous_form_creatures"
+        ],
+        "loose_light_materials": "fly_upward",
+        "ordinary_projectiles": "deflect_and_miss",
+        "large_projectiles": "unaffected"
+      },
+      "status": "authoring_declaration_not_a_registered_opcode",
+      "required_source_rules": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006",
+        "r007",
+        "r008",
+        "r009",
+        "r010",
+        "r011"
+      ]
+    }
+  ],
+  "runtime_draft": {
+    "origin": "fragments_only",
+    "definition": null,
+    "fragments": {
+      "appearance_save": {
+        "damage": "4d8",
+        "damage_type": "bludgeoning",
+        "save": "STR",
+        "half_on_save": true
+      }
+    },
+    "coverage": "Unverified. Neither a full definition nor a fragment certifies all source rules or controls. Required extensions are not silently waived."
+  },
+  "required_extensions": [
+    {
+      "group": "barriers",
+      "requirement": "Supply exact occupied volume, permitted creatures/objects/spells/projectiles, movement/admission and ending/release; do not substitute general impassable terrain.",
+      "spell_specific_intent": "Choose contiguous ground-origin wall up to 50 feet long, 15 feet high and 1 foot thick; appearance STR-half Bludgeoning; block source-specified gases/flying sizes/projectiles, not boulders; Concentration.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006",
+        "r007",
+        "r008",
+        "r009",
+        "r010",
+        "r011"
+      ],
+      "existing_owner_to_reuse": "src/dungeon/local_room_rules.gd",
+      "slice_references": "S-170/S-172/S-184/S-186",
+      "disposition": "requires_mapping_or_host_completion",
+      "note": "This is an authored handoff requirement, not a fresh runtime failure or claim that the whole referenced slice is missing."
+    }
+  ],
+  "audit": {
+    "source": "docs/audits/spells.md",
+    "batch": "088-5",
+    "production_definition_at_authoring": "res://data/core/spells/imported_spells.json#195",
+    "baseline_execution": "native",
+    "source_revision": "2a19eb1d",
+    "existing_conversion_label": "queued"
+  },
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile every source rule and required extension, then implement and verify through production paths before any deliberate promotion. Keep native behavior until covered."
+  }
+}

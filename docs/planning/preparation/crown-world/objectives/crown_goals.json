@@ -1,0 +1,40 @@
+{
+  "schema": "crown-world-candidate/1",
+  "id": "crown_goals",
+  "name": "Recover the Crown and defeat the Lich King",
+  "kind": "objectives",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring declarations only; not registered engine opcodes.",
+  "required_extensions": [
+    "objectives_rewards",
+    "bodies_actors"
+  ],
+  "authored_operations": [
+    {
+      "operation": "evaluate_conjunction",
+      "requirement": "Count three crown_fragment copies across active characters and lich_king in defeated_monsters. Preserve actual active-roster behavior and completion transition. Claimed reward metadata or boss display name alone does not satisfy a goal."
+    }
+  ],
+  "blockers": [
+    "Lich Rejuvenation/phylactery policy remains unresolved; no simulated revival or finale reversal is authored. Inactive-roster fragment ownership policy remains current active-only counting until explicitly changed."
+  ],
+  "retained_input": {
+    "path": "data/core/campaigns/the_lost_crown.json",
+    "sha256": "3352b2d22be36e68591bfdf4ec73b8201f2bec6c69a3a60b0c8beb7d5074db44",
+    "pointer": "/win_condition",
+    "payload": {
+      "type": "goal",
+      "goals": [
+        {
+          "type": "collect_item",
+          "item_id": "crown_fragment",
+          "count": 3
+        },
+        {
+          "type": "defeat_monster",
+          "monster_id": "lich_king"
+        }
+      ]
+    }
+  }
+}

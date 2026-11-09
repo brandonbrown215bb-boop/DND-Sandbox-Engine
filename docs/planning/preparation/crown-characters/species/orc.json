@@ -1,0 +1,110 @@
+{
+  "schema": "crown-character-candidate/1",
+  "id": "orc",
+  "name": "Orc",
+  "kind": "species",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "scope": {
+    "total_character_level_maximum": 5
+  },
+  "operation_language": "authoring intent only; not registered engine syntax",
+  "runtime_support": "Retained definitions are reuse material, not proof of full rules. Every authored operation needs contract mapping and later production-path verification before promotion.",
+  "rules": {
+    "authority": "SRD 5.2.1",
+    "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      86
+    ],
+    "text": "Orc\nCreature Type: Humanoid\nSize: Medium (about 6–7 feet tall)\nSpeed: 30 feet\nAs an Orc, you have these special traits.\nAdrenaline Rush.\nYou can take the Dash action as\na Bonus Action. When you do so, you gain a number\nof Temporary Hit Points equal to your Proficiency\nBonus.\nYou can use this trait a number of times equal\nto your Proficiency Bonus, and you regain all expended uses when you finish a Short or Long Rest.\nDarkvision.\nYou have Darkvision with a range of\n120 feet.\nRelentless Endurance.\nWhen you are reduced to\n0 Hit Points but not killed outright, you can drop to\n1 Hit Point instead. Once you use this trait, you can’t\ndo so again until you finish a Long Rest."
+  },
+  "definition": {
+    "size": [
+      "Medium"
+    ],
+    "speed_feet": 30,
+    "darkvision_feet": 120,
+    "creature_type": "Humanoid",
+    "ability_score_increases": {},
+    "languages": {
+      "fixed": [
+        "Common"
+      ],
+      "choose": 2,
+      "from": [
+        "Common Sign Language",
+        "Draconic",
+        "Dwarvish",
+        "Elvish",
+        "Giant",
+        "Gnomish",
+        "Goblin",
+        "Halfling",
+        "Orc"
+      ],
+      "source": "creation p20; species supplies no fixed ancestral language"
+    }
+  },
+  "authored_operations": [
+    {
+      "name": "Base species and creation grants",
+      "trigger": "Creation confirmation",
+      "cost": "One species; listed size and language choices",
+      "effects": [
+        "Humanoid creature type",
+        "Choose listed size; use declared Speed in feet; no fixed species ASIs",
+        "Know Common and choose two Standard Languages",
+        "Darkvision 120 feet; lineage override applies; execute observer-specific sight rather than an overworld vision bonus"
+      ],
+      "required_extension_groups": [
+        "progression",
+        "choices",
+        "languages",
+        "movement",
+        "world"
+      ],
+      "ending_and_identity": "Save exact selected species/size/languages; grant once; preserve legacy records separately."
+    },
+    {
+      "name": "Adrenaline Rush",
+      "trigger": "Bonus Action",
+      "cost": "PB uses per Short or Long Rest",
+      "effects": [
+        "Dash and gain Temporary HP=PB; one committed use for both"
+      ],
+      "required_extension_groups": [
+        "actions",
+        "resources"
+      ],
+      "ending_and_identity": "Exact species/selected trait source; respect source ending; permanent grants once at actual character level."
+    },
+    {
+      "name": "Relentless Endurance",
+      "trigger": "Reduced to0 HP but not killed outright",
+      "cost": "once per Long Rest",
+      "effects": [
+        "May instead drop to1 HP; exact incoming settlement replacement, not heal after death"
+      ],
+      "required_extension_groups": [
+        "reactions",
+        "rolls"
+      ],
+      "ending_and_identity": "Exact species/selected trait source; respect source ending; permanent grants once at actual character level."
+    }
+  ],
+  "reused_from": [],
+  "retained_runtime_seed": null,
+  "unsupported_behavior": [
+    {
+      "groups": [
+        "actions",
+        "reactions",
+        "resources",
+        "rolls"
+      ],
+      "requirement": "2024 choices, character-level grants and full named trait outcomes must map to shared hosts. Legacy seed is comparison material only: never inherit its fixed ASIs, old weapon grants or other unselected traits.",
+      "status": "mapping_and_host_verification_required"
+    }
+  ],
+  "source_revision": "2a19eb1d (existing working-tree definitions and recovered drafts read on 2026-11-08)",
+  "reused_input_hashes": {}
+}

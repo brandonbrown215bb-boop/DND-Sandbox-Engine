@@ -1,0 +1,143 @@
+{
+  "format": "crown-spell-candidate/1",
+  "id": "dispel_magic",
+  "name": "Dispel Magic",
+  "level": 3,
+  "status": "written_unverified_not_loaded",
+  "source": {
+    "authority": "SRD 5.2.1",
+    "url": "https://media.dndbeyond.com/compendium-images/srd/5.2/SRD_CC_v5.2.1.pdf",
+    "sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      124
+    ],
+    "header": {
+      "Casting Time": "Action",
+      "Range": "120 feet",
+      "Components": "V, S",
+      "Duration": "Instantaneous"
+    },
+    "attribution": "System Reference Document 5.2.1, Wizards of the Coast LLC; CC BY 4.0."
+  },
+  "casting": {
+    "casting_time": "Action",
+    "kind": "action",
+    "seconds": null,
+    "ritual_available": false,
+    "range": {
+      "source": "120 feet",
+      "kind": "distance",
+      "feet": 120
+    },
+    "components": [
+      "V",
+      "S"
+    ],
+    "material": null,
+    "duration": "Instantaneous",
+    "concentration": false,
+    "spell_lists": [
+      "bard",
+      "cleric",
+      "druid",
+      "paladin",
+      "ranger",
+      "sorcerer",
+      "warlock",
+      "wizard"
+    ]
+  },
+  "authored_intent": "Choose creature/object/magical effect; end each qualifying ongoing spell at or below paid slot; higher-level spell gets separate casting-ability check DC 10 plus spell level; do not erase unrelated nonspell sources.",
+  "rules": [
+    {
+      "id": "r001",
+      "text": "Choose one creature, object, or magical effect within range."
+    },
+    {
+      "id": "r002",
+      "text": "Any ongoing spell of level 3 or lower on the target ends."
+    },
+    {
+      "id": "r003",
+      "text": "For each ongoing spell of level 4 or higher on the target, make an ability check using your spellcasting ability (DC 10 plus that spell’s level)."
+    },
+    {
+      "id": "r004",
+      "text": "On a successful check, the spell ends."
+    },
+    {
+      "id": "r005",
+      "text": "Using a Higher-Level Spell Slot."
+    },
+    {
+      "id": "r006",
+      "text": "You automatically end a spell on the target if the spell’s level is equal to or less than the level of the spell slot you use."
+    }
+  ],
+  "authored_operations": [
+    {
+      "operation": "end_target_spell_sources",
+      "parameters": {
+        "target_choices": [
+          "creature",
+          "object",
+          "magical_effect"
+        ],
+        "automatic_through_slot_level": true,
+        "base_automatic_max_level": 3,
+        "higher_source_check": {
+          "ability": "selected_casting_ability",
+          "dc": "10+source_spell_level",
+          "separate_per_spell": true
+        }
+      },
+      "status": "authoring_declaration_not_a_registered_opcode",
+      "required_source_rules": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006"
+      ]
+    }
+  ],
+  "runtime_draft": {
+    "origin": "proposed_operations",
+    "definition": null,
+    "fragments": {},
+    "coverage": "Unverified. Neither a full definition nor a fragment certifies all source rules or controls. Required extensions are not silently waived."
+  },
+  "required_extensions": [
+    {
+      "group": "dispelling",
+      "requirement": "Inspect ongoing spell source levels; end each eligible source or make the declared higher-level check independently; preserve unrelated effects and item properties.",
+      "spell_specific_intent": "Choose creature/object/magical effect; end each qualifying ongoing spell at or below paid slot; higher-level spell gets separate casting-ability check DC 10 plus spell level; do not erase unrelated nonspell sources.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006"
+      ],
+      "existing_owner_to_reuse": "src/spells/spell_effects.gd",
+      "slice_references": "S-074/S-276",
+      "disposition": "requires_mapping_or_host_completion",
+      "note": "This is an authored handoff requirement, not a fresh runtime failure or claim that the whole referenced slice is missing."
+    }
+  ],
+  "audit": {
+    "source": "docs/audits/spells.md",
+    "batch": "088-8",
+    "production_definition_at_authoring": "res://data/core/spells/imported_spells.json#56",
+    "baseline_execution": "native",
+    "source_revision": "2a19eb1d",
+    "existing_conversion_label": "queued"
+  },
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile every source rule and required extension, then implement and verify through production paths before any deliberate promotion. Keep native behavior until covered."
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "schema": "crown-world-candidate/1",
+  "id": "knowledge_social",
+  "name": "Knowledge Social",
+  "kind": "procedures",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring declarations only; not registered engine opcodes.",
+  "required_extensions": [
+    "knowledge_social"
+  ],
+  "authored_operations": [
+    {
+      "operation": "resolve_knowledge_social",
+      "requirement": "Author factual text/knowledge and actual languages, literacy, attitude, senses, communication route and recipient identity. Preserve Druidic and Thieves’ Cant distinctions, secret-message notice versus deciphering, corpse/plant/animal knowledge limits, question counts, time windows and divination uncertainty/history. Illusion discovery and social consequences are per observer; use bounded authored outcomes where world judgment is required."
+    }
+  ],
+  "blockers": [
+    "Ghost warnings, rumors, journals, maps, prophecy, corpses and plants need actual authored answers before an information spell can query them. Fallen guard has no former knowledge. Flavor does not grant full NPC stats, an encounter, a quest, or omniscient answers. ADR-0023 still owns Wish/illusion policy."
+  ],
+  "slices": "S-187/S-188/S-189/S-194/S-209/S-214/S-218/S-219/S-237",
+  "source_context_pages": [
+    9,
+    11,
+    182,
+    187,
+    189
+  ],
+  "source_context": "../source-pages.json",
+  "current_owner_pins": [
+    {
+      "path": "src/dungeon/local_room_checks.gd",
+      "sha256": "61b74a703ca8f6012304417fba4be0cb231b836d2e76a0e95b6c226692891d94"
+    },
+    {
+      "path": "src/events/event_resolver.gd",
+      "sha256": "b114b09342b9b1ec15f59e4a125c475e45d28fc4b0a76dda23caa34935c759da"
+    }
+  ],
+  "reuse_boundary": "Existing accepted pieces remain accepted at their documented limits; these requirements do not mark the entire slices missing."
+}

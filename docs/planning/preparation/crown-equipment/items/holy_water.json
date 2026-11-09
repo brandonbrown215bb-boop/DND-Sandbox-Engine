@@ -1,0 +1,69 @@
+{
+  "schema": "crown-equipment-candidate/1",
+  "id": "holy_water",
+  "name": "Holy Water",
+  "kind": "gear",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "operation_language": "Authoring intent only; not registered engine syntax.",
+  "rules": {
+    "authority": "SRD 5.2.1",
+    "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      95,
+      98
+    ],
+    "section": "Holy Water",
+    "text": "With the Attack action, replace one attack by throwing a flask at a visible creature within 20 feet. Dexterity save DC 8 + your Dexterity modifier + Proficiency Bonus; failure deals 2d8 Radiant damage if target is Fiend or Undead.",
+    "source_context": "../source-pages.json"
+  },
+  "definition": {
+    "id": "holy_water",
+    "name": "Holy Water",
+    "weight_lb": 1,
+    "cost_gp": 25,
+    "range_feet": 20,
+    "save": "dexterity",
+    "save_dc": "8 + actor.dexterity_modifier + actor.proficiency_bonus",
+    "damage": "2d8 radiant",
+    "eligible_types": [
+      "fiend",
+      "undead"
+    ]
+  },
+  "authored_operations": [
+    "With the Attack action, replace one attack by throwing a flask at a visible creature within 20 feet. Dexterity save DC 8 + your Dexterity modifier + Proficiency Bonus; failure deals 2d8 Radiant damage if target is Fiend or Undead."
+  ],
+  "retained_runtime_seeds": [
+    {
+      "path": "data/core/items/consumables.json",
+      "array_index": 7,
+      "file_sha256": "045f413d89391312c1e3a175351f90427accde8f21b8d087abc1d6c5d9c3ec2d",
+      "definition": {
+        "id": "holy_water",
+        "weight": 1,
+        "name": "Holy Water (Flask, 25 GP)",
+        "description": "A flask of Holy Water worth 25 GP. Consumed when casting Protection from Evil and Good.",
+        "type": "consumable",
+        "action_cost": "free",
+        "effects": [],
+        "value": 25
+      }
+    }
+  ],
+  "manifest_overrides": [],
+  "required_mapping": [
+    "attack_items"
+  ],
+  "consumers": [
+    {
+      "pack_id": "priests_pack",
+      "quantity": 1
+    }
+  ],
+  "unsupported_behavior": [
+    {
+      "group": "attack_items",
+      "requirement": "Holy Water replaces one Attack-action attack and consumes one flask; keep remaining attacks, sight/range, Dexterity DC and Fiend/Undead gate. Seed effect arrays do not certify support."
+    }
+  ]
+}

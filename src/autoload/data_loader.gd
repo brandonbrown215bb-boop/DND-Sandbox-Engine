@@ -483,7 +483,7 @@ func _validate_content(data: Dictionary, content_type: String, source: String) -
 		if CombatChildActions.units(data) == 0 or data.get("type") != "consumable" or data.get("action_cost", "action") != "action":
 			_load_errors.append("Invalid item strike substitution: " + str(data.get("id", "")))
 			return false
-	if content_type == "item" and str(data.get("type", "")) not in ["weapon", "armor", "shield", "ring", "wand", "staff", "rod", "wondrous", "consumable", "tool", "currency", "spell_component"]:
+	if content_type == "item" and str(data.get("type", "")) not in ["weapon", "armor", "shield", "ring", "wand", "staff", "rod", "wondrous", "consumable", "tool", "currency", "spell_component", "ammunition"]:
 		_load_errors.append("Item has unsupported type '%s' in %s" % [data.get("type"), source])
 		return false
 	if content_type in ["race", "feat", "item"]:
@@ -696,6 +696,11 @@ func _validate_semantics(data: Dictionary, content_type: String, source: String)
 		var recovery_error := LastChargeRules.charge_recovery_error(data["charge_recovery"], data)
 		if not recovery_error.is_empty():
 			_load_errors.append("%s in %s" % [recovery_error, source])
+			valid = false
+	if content_type == "item" and (data.has("ammunition_kind") or data.get("type") == "ammunition"):
+		var ammunition_error := AmmunitionRules.definition_error(data)
+		if not ammunition_error.is_empty():
+			_load_errors.append("%s in %s" % [ammunition_error, source])
 			valid = false
 	if content_type == "item" and data.has("container"):
 		var container_error := ContainerRules.policy_error(data["container"])

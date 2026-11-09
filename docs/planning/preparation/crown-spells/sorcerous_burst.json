@@ -1,0 +1,188 @@
+{
+  "format": "crown-spell-candidate/1",
+  "id": "sorcerous_burst",
+  "name": "Sorcerous Burst",
+  "level": 0,
+  "status": "written_unverified_not_loaded",
+  "source": {
+    "authority": "SRD 5.2.1",
+    "url": "https://media.dndbeyond.com/compendium-images/srd/5.2/SRD_CC_v5.2.1.pdf",
+    "sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      163
+    ],
+    "header": {
+      "Casting Time": "Action",
+      "Range": "120 feet",
+      "Components": "V, S",
+      "Duration": "Instantaneous"
+    },
+    "attribution": "System Reference Document 5.2.1, Wizards of the Coast LLC; CC BY 4.0."
+  },
+  "casting": {
+    "casting_time": "Action",
+    "kind": "action",
+    "seconds": null,
+    "ritual_available": false,
+    "range": {
+      "source": "120 feet",
+      "kind": "distance",
+      "feet": 120
+    },
+    "components": [
+      "V",
+      "S"
+    ],
+    "material": null,
+    "duration": "Instantaneous",
+    "concentration": false,
+    "spell_lists": [
+      "sorcerer"
+    ]
+  },
+  "authored_intent": "Ranged spell attack against creature/object; choose seven damage types; an 8 permits optional extra d8 bounded by selected casting modifier with no invented minimum-one allowance; cantrip scaling and critical dice provenance.",
+  "rules": [
+    {
+      "id": "r001",
+      "text": "You cast sorcerous energy at one creature or object within range."
+    },
+    {
+      "id": "r002",
+      "text": "Make a ranged spell attack against the target."
+    },
+    {
+      "id": "r003",
+      "text": "On a hit, the target takes 1d8 damage of a type you choose: Acid, Cold, Fire, Lightning, Poison, Psychic, or Thunder."
+    },
+    {
+      "id": "r004",
+      "text": "If you roll an 8 on a d8 for this spell, you can roll another d8, and add it to the damage."
+    },
+    {
+      "id": "r005",
+      "text": "When you cast this spell, the maximum number of these d8s you can add to the spell’s damage equals your spellcasting ability modifier."
+    },
+    {
+      "id": "r006",
+      "text": "Cantrip Upgrade."
+    },
+    {
+      "id": "r007",
+      "text": "The damage increases by 1d8 when you reach levels 5 (2d8), 11 (3d8), and 17 (4d8)."
+    }
+  ],
+  "authored_operations": [
+    {
+      "operation": "shared_definition_reference",
+      "parameters": {
+        "definition": "runtime_draft.definition"
+      },
+      "status": "shared_definition_reference_unverified",
+      "required_source_rules": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006",
+        "r007"
+      ]
+    }
+  ],
+  "runtime_draft": {
+    "origin": "existing_shared_definition",
+    "definition": {
+      "attack_type": "ranged_spell",
+      "casting_time": "action",
+      "classes": [
+        "sorcerer"
+      ],
+      "components": [
+        "V",
+        "S"
+      ],
+      "concentration": false,
+      "damage": "1d8",
+      "damage_type": "acid",
+      "damage_type_options": [
+        "acid",
+        "cold",
+        "fire",
+        "lightning",
+        "poison",
+        "psychic",
+        "thunder"
+      ],
+      "description": "You cast sorcerous energy at one creature or object within range. Make a ranged spell attack against the target. On a hit, the target takes 1d8 damage of a type you choose: Acid, Cold, Fire, Lightning, Poison, Psychic, or Thunder. If you roll an 8 on a d8 for this spell, you can roll another d8, and add it to the damage. When you cast this spell, the maximum number of these d8s you can add to the spell’s damage equals your spellcasting ability modifier. Cantrip Upgrade. The damage increases by 1d8 when you reach levels 5 (2d8), 11 (3d8), and 17 (4d8).",
+      "duration": "Instantaneous",
+      "execution": "shared",
+      "exploding_dice": {
+        "max_extra": "spellcasting_modifier",
+        "sides": 8.0
+      },
+      "id": "sorcerous_burst",
+      "level": 0,
+      "name": "Sorcerous Burst",
+      "range": 24,
+      "rules_source": "SRD 5.2.1",
+      "rules_status": "authoring-draft-unverified",
+      "scaling": {
+        "11": "3d8",
+        "17": "4d8",
+        "5": "2d8"
+      },
+      "school": "evocation",
+      "target": "single"
+    },
+    "fragments": {},
+    "coverage": "Unverified. Neither a full definition nor a fragment certifies all source rules or controls. Required extensions are not silently waived."
+  },
+  "required_extensions": [
+    {
+      "group": "object_targets",
+      "requirement": "Complete the declared object target/control consumer and its effects; a creature-only path does not author the full spell.",
+      "spell_specific_intent": "Ranged spell attack against creature/object; choose seven damage types; an 8 permits optional extra d8 bounded by selected casting modifier with no invented minimum-one allowance; cantrip scaling and critical dice provenance.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006",
+        "r007"
+      ],
+      "existing_owner_to_reuse": "src/spells/spell_cast_targeting.gd",
+      "slice_references": "S-032/S-098/S-099",
+      "disposition": "requires_mapping_or_host_completion",
+      "note": "This is an authored handoff requirement, not a fresh runtime failure or claim that the whole referenced slice is missing."
+    },
+    {
+      "group": "retained_conversion_limit",
+      "requirement": "Connect actual object targeting and typed damage; keep the selected permission ability for the explosion cap.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003",
+        "r004",
+        "r005",
+        "r006",
+        "r007"
+      ],
+      "disposition": "recorded_partial_or_blocked_consumer",
+      "queue_status": "partial: creature damage choice and exploding dice migrated; object targets remain missing"
+    }
+  ],
+  "audit": {
+    "source": "docs/audits/spells.md",
+    "batch": "088-2",
+    "production_definition_at_authoring": "res://data/core/spells/crown_sc_03_support_05.json#1",
+    "baseline_execution": "shared",
+    "source_revision": "2a19eb1d",
+    "existing_conversion_label": "partial: creature damage choice and exploding dice migrated; object targets remain missing"
+  },
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile every source rule and required extension, then implement and verify through production paths before any deliberate promotion. Keep native behavior until covered."
+  }
+}

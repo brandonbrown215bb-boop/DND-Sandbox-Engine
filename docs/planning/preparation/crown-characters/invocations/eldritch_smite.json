@@ -1,0 +1,71 @@
+{
+  "schema": "crown-character-candidate/1",
+  "id": "eldritch_smite",
+  "name": "Eldritch Smite",
+  "kind": "invocation",
+  "status": "written_not_loaded_not_gameplay_verified",
+  "scope": {
+    "total_character_level_maximum": 5
+  },
+  "operation_language": "authoring intent only; not registered engine syntax",
+  "runtime_support": "Retained definitions are reuse material, not proof of full rules. Every authored operation needs contract mapping and later production-path verification before promotion.",
+  "minimum_warlock_level": 5,
+  "rules": {
+    "authority": "SRD 5.2.1",
+    "pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      72,
+      73
+    ],
+    "text": "Eldritch Smite\nPrerequisite: Level 5+ Warlock, Pact of the Blade\nInvocation\nOnce per turn when you hit a creature with your\npact weapon, you can expend a Pact Magic spell slot\nto deal an extra 1d8 Force damage to the target,\nplus another 1d8 per level of the spell slot, and you\ncan give the target the Prone condition if it is Huge\nor smaller."
+  },
+  "prerequisites": {
+    "warlock_level": 5,
+    "invocations": [
+      "pact_of_the_blade"
+    ],
+    "cantrip_parameter": null
+  },
+  "repeatable": false,
+  "authored_operations": [
+    {
+      "trigger": "Warlock5; pact weapon hits creature; once per turn",
+      "cost": "One Pact Magic slot, not ordinary slot",
+      "effects": [
+        "Extra(1+slot level)d8 Force; optional Prone if Huge or smaller"
+      ],
+      "ending_and_identity": "Exact invocation source owns permission; normal spell endings still apply; remove only its grants when replaced.",
+      "required_extension_groups": [
+        "attacks",
+        "resources",
+        "conditions"
+      ]
+    }
+  ],
+  "retained_runtime_fragment": {
+    "id": "eldritch_smite",
+    "name": "Eldritch Smite",
+    "minimum_level": 5,
+    "requires_invocations": [
+      "pact_of_the_blade"
+    ],
+    "effects": [
+      {
+        "type": "eldritch_smite"
+      }
+    ]
+  },
+  "unsupported_behavior": [
+    {
+      "groups": [
+        "attacks",
+        "resources",
+        "conditions"
+      ],
+      "requirement": "Extra(1+slot level)d8 Force; optional Prone if Huge or smaller",
+      "status": "mapping_and_production_host_verification_required"
+    }
+  ],
+  "source_revision": "2a19eb1d (existing working-tree definitions and recovered drafts read on 2026-11-08)",
+  "reused_input_hashes": {}
+}

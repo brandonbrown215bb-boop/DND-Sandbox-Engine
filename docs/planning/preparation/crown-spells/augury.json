@@ -1,0 +1,144 @@
+{
+  "format": "crown-spell-candidate/1",
+  "id": "augury",
+  "name": "Augury",
+  "level": 2,
+  "status": "written_unverified_not_loaded",
+  "source": {
+    "authority": "SRD 5.2.1",
+    "url": "https://media.dndbeyond.com/compendium-images/srd/5.2/SRD_CC_v5.2.1.pdf",
+    "sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+    "pages": [
+      111
+    ],
+    "header": {
+      "Casting Time": "1 minute or Ritual",
+      "Range": "Self",
+      "Components": "V, S, M (specially marked sticks, bones, cards, or other divinatory tokens worth 25+ GP)",
+      "Duration": "Instantaneous"
+    },
+    "attribution": "System Reference Document 5.2.1, Wizards of the Coast LLC; CC BY 4.0."
+  },
+  "casting": {
+    "casting_time": "1 minute or Ritual",
+    "kind": "timed",
+    "seconds": 60,
+    "ritual_available": true,
+    "range": {
+      "source": "Self",
+      "kind": "self",
+      "feet": 0
+    },
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "material": "specially marked sticks, bones, cards, or other divinatory tokens worth 25+ GP",
+    "duration": "Instantaneous",
+    "concentration": false,
+    "spell_lists": [
+      "cleric",
+      "druid",
+      "wizard"
+    ]
+  },
+  "authored_intent": "Use 25-GP divination implements; pin a planned course within 30 minutes; authored Weal/Woe/Weal-and-Woe/Indifference answer; cumulative 25-percent no-answer chance after first cast before Long Rest, not a fabricated random omen; captured uncertainty.",
+  "rules": [
+    {
+      "id": "r001",
+      "text": "You receive an omen from an otherworldly entity about the results of a course of action that you plan to take within the next 30 minutes."
+    },
+    {
+      "id": "r002",
+      "text": "The GM chooses the omen from the Omens table."
+    },
+    {
+      "id": "r003",
+      "text": "Omens Omen For Results That Will Be … Weal Good Woe Bad Weal and woe Good and bad Indifference Neither good nor bad The spell doesn’t account for circumstances, such as other spells, that might change the results."
+    },
+    {
+      "id": "r004",
+      "text": "If you cast the spell more than once before finishing a Long Rest, there is a cumulative 25 percent chance for each casting after the first that you get no answer."
+    }
+  ],
+  "authored_operations": [
+    {
+      "operation": "resolve_authored_omen",
+      "parameters": {
+        "planned_action_within_minutes": 30,
+        "outcomes": [
+          "weal",
+          "woe",
+          "weal_and_woe",
+          "indifference"
+        ],
+        "does_not_predict_changed_circumstances": true,
+        "repeated_cast": {
+          "reset": "caster_long_rest",
+          "no_answer_chance_increase": 0.25,
+          "first_cast_uncertain": false,
+          "capture_roll": true
+        }
+      },
+      "status": "authoring_declaration_not_a_registered_opcode",
+      "required_source_rules": [
+        "r001",
+        "r002",
+        "r003",
+        "r004"
+      ]
+    }
+  ],
+  "runtime_draft": {
+    "origin": "proposed_operations",
+    "definition": null,
+    "fragments": {},
+    "coverage": "Unverified. Neither a full definition nor a fragment certifies all source rules or controls. Required extensions are not silently waived."
+  },
+  "required_extensions": [
+    {
+      "group": "divination",
+      "requirement": "Resolve against authored facts/outcomes with captured uncertainty and use history; no invented answer or success-only log.",
+      "spell_specific_intent": "Use 25-GP divination implements; pin a planned course within 30 minutes; authored Weal/Woe/Weal-and-Woe/Indifference answer; cumulative 25-percent no-answer chance after first cast before Long Rest, not a fabricated random omen; captured uncertainty.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003",
+        "r004"
+      ],
+      "existing_owner_to_reuse": "src/combat/study_rules.gd",
+      "slice_references": "S-209/S-214/S-219",
+      "disposition": "requires_mapping_or_host_completion",
+      "note": "This is an authored handoff requirement, not a fresh runtime failure or claim that the whole referenced slice is missing."
+    },
+    {
+      "group": "long_cast",
+      "requirement": "Preserve the source casting duration, participants, ritual extension, interruption and once-only payment; do not replace a timed cast with an Action.",
+      "spell_specific_intent": "Use 25-GP divination implements; pin a planned course within 30 minutes; authored Weal/Woe/Weal-and-Woe/Indifference answer; cumulative 25-percent no-answer chance after first cast before Long Rest, not a fabricated random omen; captured uncertainty.",
+      "source_rule_ids": [
+        "r001",
+        "r002",
+        "r003",
+        "r004"
+      ],
+      "existing_owner_to_reuse": "src/spells/cast_interruption_rules.gd",
+      "slice_references": "S-066/S-067/S-134",
+      "disposition": "requires_mapping_or_host_completion",
+      "note": "This is an authored handoff requirement, not a fresh runtime failure or claim that the whole referenced slice is missing."
+    }
+  ],
+  "audit": {
+    "source": "docs/audits/spells.md",
+    "batch": "088-8",
+    "production_definition_at_authoring": "res://data/core/spells/imported_spells.json#11",
+    "baseline_execution": "native",
+    "source_revision": "2a19eb1d",
+    "existing_conversion_label": "queued"
+  },
+  "integration": {
+    "load": false,
+    "gameplay_tests_run": false,
+    "promotion": "Reconcile every source rule and required extension, then implement and verify through production paths before any deliberate promotion. Keep native behavior until covered."
+  }
+}
