@@ -1,5 +1,17 @@
 # Author ordinary spells in JSON
 
+## Avoided cantrip damage (CXM-06)
+
+A passive feature can declare `{"type":"avoided_spell_damage",
+"spell_level":0,"outcomes":["miss","success"],"scale":0.5}`. For a
+creature that avoids a cantrip by a missed attack or successful save, the
+delivery settles half damage and suppresses the cantrip's additional effects
+for that occurrence. Ordered effects follow their referenced delivery; a later
+independent hit keeps its effects. Projectile attacks settle missed beams at
+half separately from full-damage hits. Objects do not receive this rule. The
+renamed fixture demonstrates the operation; Evoker catalog conversion remains
+separate.
+
 Batch L adds a bounded `grant_source_benefits` self-cast host for fixed AC and walking-speed additions; see [source carriers](source-benefit-carriers.md) for syntax, independent-review status and limits.
 
 `bind_tether` supports several Character-anchored recipients under one cast;

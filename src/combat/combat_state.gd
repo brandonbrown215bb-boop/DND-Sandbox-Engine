@@ -854,6 +854,8 @@ func _roll_initiative_and_start() -> void:
 			dex
 		)
 
+		if p.get("is_steed", false): tracker.combatants.back()["exchange_eligible"] = false
+
 	# Roll monsters
 	for m in monster_entities:
 		var m_id := str(m.get("id", ""))
@@ -872,6 +874,25 @@ func _roll_initiative_and_start() -> void:
 			dex
 		)
 
+	await _offer_initiative_exchanges()
+	if not is_inside_tree(): return
+	tracker.close_exchange_entry()
+	# A recalled familiar keeps its exchanged encounter-local count.
+	for p in player_entities:
+		if not p.get("is_familiar", false): continue
+		var familiar_id := str(p.get("combat_id", ""))
+		var familiar_entry := tracker._exchange_entry(familiar_id)
+		if not familiar_entry.is_empty() and familiar_initiative.has(familiar_id): familiar_initiative[familiar_id]["roll"] = familiar_entry.roll
+	# Steeds share their owner's count rather than keeping the pre-exchange value.
+	for p in player_entities:
+		if not p.get("is_steed", false): continue
+		var steed_entry := tracker._exchange_entry(str(p.get("combat_id", "")))
+		for entry in tracker.combatants:
+			if entry.get("entity") == p.get("steed_owner") and not steed_entry.is_empty():
+				steed_entry.roll = entry.roll
+				steed_entry.dex = entry.dex
+				break
+
 	_interrupt_work_for_combat()
 	tracker.sort_initiative()
 	for p in player_entities: # Batch 056 S-157: declared initiative for created actors.
@@ -882,6 +903,36 @@ func _roll_initiative_and_start() -> void:
 	# that rolled ahead of the original leader in the first round too.
 	tracker.active_index = 0
 	_start_combat_turn()
+
+
+## Initial rolls are all available before anyone acts; no later arrival opens
+## an old exchange. Each owner chooses, then the selected ally consents.
+func _offer_initiative_exchanges() -> void:
+	var owners := tracker.combatants.duplicate()
+	for owner in owners:
+		if not owner.get("is_player", false) or not owner.get("exchange_eligible", true): continue
+		var token := tracker.begin_exchange(str(owner.id))
+		if token < 0: continue
+		var candidates := tracker.exchange_candidates(token)
+		if candidates.is_empty() or GameManager.test_mode:
+			tracker.settle_exchange(token, {}, false)
+			continue
+		var ids: Array[String] = [""]
+		var labels := {"": "Keep initiative"}
+		for candidate in candidates:
+			ids.append(str(candidate.id))
+			labels[str(candidate.id)] = "%s (%d)" % [candidate.name, candidate.roll]
+		var selected := await hud._request_popup_choice("%s (%d): exchange initiative with an ally?" % [owner.name, owner.roll], ids, labels)
+		if not is_inside_tree(): return
+		var target: Dictionary = {}
+		for candidate in candidates:
+			if str(candidate.id) == selected: target = candidate
+		var willing := false
+		if not target.is_empty() and tracker.bind_exchange_target(token, target):
+			willing = await hud.request_reaction(str(target.name), "initiative_exchange", "%s wants to exchange initiative with you." % owner.name, "Do you agree?", "Agree", "Initiative exchange — %s" % target.name)
+		if not is_inside_tree(): return
+		if tracker.settle_exchange(token, target, willing):
+			hud.add_log("%s and %s exchange initiative." % [owner.name, target.name])
 
 
 func _start_combat_turn() -> void:
@@ -2838,6 +2889,9 @@ func _on_hud_action(action_type: String, extra_data: Dictionary) -> void:
 	if active_character.class_id == "familiar" and action_type not in ["move", "dodge", "ordinary_action", "end_turn", "cancel", "use_feature"]:
 		hud.add_log("A familiar can move, Dodge, or take another non-attack action.")
 		return
+	if action_type in ["cast_spell", "activate_magic_item"] and active_character.untrained_worn_armor():
+		hud.add_log("You cannot cast spells while wearing armor you lack training in.")
+		return
 	if action_type in ["cast_spell", "activate_magic_item"] and active_character != null:
 		var support := SpellSupport.availability(extra_data.get("spell", {}))
 		if not support["available"]:
@@ -3850,23 +3904,32 @@ func _resolve_player_weapon_attack(attacker: Character, target, weapon: Dictiona
 ## S-127: a captured hit asks its authored damage-type choice before damage.
 ## Dismissing the menu keeps the inherited type; the choice itself costs nothing.
 func _settle_attack_profile_hit_choice(result: Dictionary) -> Dictionary:
-	if not result.has("attack_profile_choice_request"):
-		return result
-	var request: Dictionary = result["attack_profile_choice_request"]
-	var chosen := await hud.request_damage_type_choice(request.get("options", []), str(request.get("name", "Damage type")))
-	var settled := AttackProfileRules.resume_hit_choice(result, chosen)
-	if bool(settled.get("attack_profile_choice_stale", false)):
-		hud.add_log("[color=yellow]%s is no longer an eligible damage type; the weapon's own type is used.[/color]" % chosen.capitalize())
-	elif chosen.is_empty() and not bool(settled.get("refused", false)):
-		# Batch 077: a dismissed hit-window choice is reported, never silent.
-		hud.add_log("[color=yellow]%s: no damage type chosen; this hit deals the weapon's own damage type.[/color]" % str(request.get("name", "Damage type")))
-	if result.get("weapon_attack_bonus_settled", false):
-		settled["weapon_attack_bonus_settled"] = true
-	return settled
+	var bonus_settled := bool(result.get("weapon_attack_bonus_settled", false))
+	while result.has("attack_profile_choice_request") or result.has("whole_damage_request"):
+		if result.has("attack_profile_choice_request"):
+			var request: Dictionary = result["attack_profile_choice_request"]
+			var chosen := await hud.request_damage_type_choice(request.get("options", []), str(request.get("name", "Damage type")))
+			result = AttackProfileRules.resume_hit_choice(result, chosen)
+			if bool(result.get("attack_profile_choice_stale", false)):
+				hud.add_log("[color=yellow]%s is no longer an eligible damage type; the weapon's own type is used.[/color]" % chosen.capitalize())
+			elif chosen.is_empty() and not bool(result.get("refused", false)):
+				hud.add_log("[color=yellow]%s: no damage type chosen; this hit deals the weapon's own damage type.[/color]" % str(request.get("name", "Damage type")))
+		else:
+			var request: Dictionary = result.whole_damage_request
+			var answer := ""
+			if str(request.phase) == "offer":
+				answer = "decline" if GameManager.test_mode else await hud._request_popup_choice("%s: roll the weapon's damage dice twice?" % str(request.name), ["use", "decline"], {"use": "Use", "decline": "Save for later"})
+			else:
+				var totals: Array = request.totals
+				answer = await hud._request_popup_choice("%s: choose a complete weapon damage roll" % str(request.name), ["first", "second"], {"first": "First: %s (%s)" % [totals[0], CombatAction.whole_damage_roll_label(request.rolls[0])], "second": "Second: %s (%s)" % [totals[1], CombatAction.whole_damage_roll_label(request.rolls[1])]})
+			result = CombatAction.resume_whole_damage(result, answer)
+	if bonus_settled: result["weapon_attack_bonus_settled"] = true
+	return result
 
 
 func _resolve_player_weapon_attack_roll(attacker: Character, target, weapon: Dictionary, advantage: bool, disadvantage: bool, decisions: Dictionary, additional_damage: Dictionary) -> Dictionary:
 	var attack_decisions := CombatPerception.weapon_decisions(hex_grid, attacker, target, decisions)
+	attack_decisions["allow_whole_damage_choice"] = true
 	attack_decisions["combat_history"] = action_history
 	if child_actions.current("strike"):
 		attack_decisions["parent_action"] = {"invocation_id":child_actions.frame.invocation, "action_id":child_actions.frame.feature.child_actions.classification, "source_id":child_actions.frame.feature.id}
@@ -4689,6 +4752,7 @@ func _on_hex_clicked(coord: Vector2i) -> void:
 			var stroke_accepted := await hud.request_reaction(_owner_label_for_character(active_character), "stroke_of_luck", "This attack failed (%d vs AC %d). Turn the d20 into a 20?" % [int(result.get("attack_roll", 0)), int(result.get("target_ac", 0))], "Use Stroke of Luck?", "Stroke of Luck", "Stroke of Luck — %s" % _owner_label_for_character(active_character))
 			if stroke_accepted:
 				attack_reaction_decisions["stroke_of_luck"] = true
+				attack_reaction_decisions["allow_whole_damage_choice"] = true
 				result = await _settle_attack_profile_hit_choice(CombatAction.resolve_weapon_attack(active_character, clicked_monster, weapon, has_advantage, has_disadvantage, attack_reaction_decisions, attack_additional_damage))
 		DruidRules.apply_attack_effects(active_character, clicked_monster, weapon, result)
 		if not parent_strike:
@@ -5230,6 +5294,7 @@ func _spell_cast_context(target_coord: Vector2i = Vector2i.ZERO, additional_targ
 	cast.offer_power_word_heal_stand = _offer_power_word_heal_stand
 	cast.offer_sneak_attack = _offer_sneak_attack
 	cast.offer_divine_smite = _offer_divine_smite
+	cast.settle_weapon_hit = _settle_attack_profile_hit_choice
 	cast.offer_weapon_damage_riders = _offer_weapon_damage_riders
 	cast.publish_true_strike_activity = _publish_true_strike_activity
 	cast.spend_action_cost = _spend_action_cost.bind(cast.invocation_id)
@@ -6192,6 +6257,7 @@ func _finish_fighter_attack(target: Dictionary, weapon: Dictionary, result: Dict
 				if not cleave_effects.is_empty():
 					cleave_decisions["barbarian_brutal_strike_effects"] = cleave_effects
 				cleave_decisions.merge(cleave_choice.decisions, true)
+				cleave_decisions["allow_whole_damage_choice"] = true
 				var cleave_packet := await _conjure_minor_elementals_damage_choice(actor, other)
 				var cleave_additional_damage := {"packets": [cleave_packet]} if not cleave_packet.is_empty() else {}
 				var cleave := await _settle_attack_profile_hit_choice(CombatAction.resolve_weapon_attack(actor, other, cleave_weapon, false, false, CombatPerception.weapon_decisions(hex_grid, actor, other, cleave_decisions), cleave_additional_damage))
@@ -6328,6 +6394,7 @@ func _offer_light_attack(target: Dictionary) -> void:
 		if not light_effects.is_empty():
 			light_decisions["barbarian_brutal_strike_effects"] = light_effects
 		light_decisions.merge(light_choice.decisions, true)
+		light_decisions["allow_whole_damage_choice"] = true
 		var light_packet := await _conjure_minor_elementals_damage_choice(active_character, candidate)
 		var light_additional_damage := {"packets": [light_packet]} if not light_packet.is_empty() else {}
 		var result := await _settle_attack_profile_hit_choice(CombatAction.resolve_weapon_attack(active_character, candidate, weapon, false, false, CombatPerception.weapon_decisions(hex_grid, active_character, candidate, light_decisions), light_additional_damage))
@@ -6528,7 +6595,7 @@ func _offer_divine_smite(target, weapon: Dictionary, result: Dictionary, actor: 
 		var properties: Array = weapon.get("properties", [])
 		var melee := str(weapon.get("id", "")) == "unarmed_strike" or (str(weapon.get("type", "")) == "weapon" and "ranged" not in properties and "ammunition" not in properties)
 		var target_hp: int = target.current_hp if target is Character else int(target.get("current_hp", 0))
-		if not melee or target_hp <= 0 or not actor.has_feature("paladin_paladins_smite") or CombatAction.is_incapacitated(actor) or actor.has_condition("raging") or not DruidRules.can_cast_spell(actor, spell):
+		if not melee or target_hp <= 0 or actor.untrained_worn_armor() or not actor.has_feature("paladin_paladins_smite") or CombatAction.is_incapacitated(actor) or actor.has_condition("raging") or not DruidRules.can_cast_spell(actor, spell):
 			return
 		if not actor.has_free_spell_cast("divine_smite") and CombatAction.get_spell_slot_level(actor, spell) <= 0:
 			return
@@ -6538,7 +6605,9 @@ func _offer_divine_smite(target, weapon: Dictionary, result: Dictionary, actor: 
 		return
 	var origin: Vector2i = player_entities[current_player_idx]["hex_position"]
 	var reactions := await _collect_counterspell_decisions(actor, spell, origin, actor)
-	var smite := CombatAction.resolve_divine_smite(actor, target, int(choice["slot_level"]), bool(choice["free_cast"]), bool(result.get("crit", false)), reactions.get("decisions", {}), reactions.get("observers", []))
+	var smite_decisions: Dictionary = reactions.get("decisions", {}).duplicate()
+	smite_decisions["weapon_damage_profile"] = CombatAction.weapon_profile_for_hit(actor, target, result)
+	var smite := CombatAction.resolve_divine_smite(actor, target, int(choice["slot_level"]), bool(choice["free_cast"]), bool(result.get("crit", false)), smite_decisions, reactions.get("observers", []))
 	if smite.get("cast_committed", false):
 		_spend_action_cost("bonus_action")
 	if smite.get("success", false):
@@ -7504,6 +7573,7 @@ func _check_opportunity_attacks_for_path(entity, entity_dict: Dictionary, path: 
 					var opportunity_packet := await _conjure_minor_elementals_damage_choice(char_data, entity_dict)
 					var opportunity_additional_damage := {"packets": [opportunity_packet]} if not opportunity_packet.is_empty() else {}
 					opportunity_decisions.merge(oa_choice.decisions, true)
+					opportunity_decisions["allow_whole_damage_choice"] = true
 					if not str(oa_error.call()).is_empty():
 						if entity_dict.get("hex_position") == from_hex: entity_dict["hex_position"] = to_hex
 						continue

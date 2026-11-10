@@ -70,7 +70,7 @@ static func _definitions(check: Callable) -> void:
 	var probe := Character.new()
 	probe.level = 4
 	var offered := FeatRules.options(probe, "origin") + FeatRules.options(probe, "")
-	check.call(["alert", "magic_initiate", "savage_attacker"].all(func(id): return DataLoader.get_feat(id).get("category", "") == "origin") and not offered.any(func(id): return str(id).get_slice("|", 0) in ["alert", "magic_initiate", "savage_attacker"]) and "skilled" in offered, "CXM-04 background Origin feats load but effects-pending feats are not offered as picks")
+	check.call(["alert", "magic_initiate", "savage_attacker"].all(func(id): return DataLoader.get_feat(id).get("category", "") == "origin") and not offered.any(func(id): return str(id).get_slice("|", 0) == "magic_initiate") and "alert" in offered and "savage_attacker" in offered and "skilled" in offered, "Origin feats load; working feats are offered and Magic Initiate remains pending")
 	check.call(BackgroundRules.ability_spreads("soldier").size() == 7 and BackgroundRules.ability_spreads("soldier").all(func(s): return BackgroundRules.choices_error("soldier", picks(s, ["dice_set"])).is_empty()), "CXM-04 every listed +2/+1 and +1/+1/+1 spread is legal")
 
 static func _acquisition(check: Callable) -> void:

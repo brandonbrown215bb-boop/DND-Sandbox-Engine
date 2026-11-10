@@ -56,7 +56,8 @@ formula language; cast-only/result/choice inputs are rejected. It is preflighted
 at activation and reevaluated on later AC reads, using effective ability
 modifiers. Unavailable later formulas contribute no alternative. The ordinary
 equipment/native base and all eligible selected alternative bases compete by
-maximum; bases are never summed. A legal shield adds its normal bonus once to
+maximum by default. The base AC chooser can instead select one exact legal source;
+bases are never summed. A legal shield adds its normal bonus once to
 each candidate. Native Mage Armor participates in the existing maximum; additive
 protection bonuses apply afterward, alongside ordinary existing AC bonuses.
 Existing shaped-form AC remains under its native owner and bypasses this AC path.
@@ -87,7 +88,7 @@ The `group` is a simple identifier. `stacking: "stack"` retains every eligible
 owned grant in that group. `stacking: "exclusive"` retains all owned alternatives
 but applies only one eligible grant from that group. Different feature IDs do
 not evade the same exclusive group. A live group cannot mix stacking policies.
-Different groups coexist; base AC still uses the maximum, and additive benefits
+Different groups coexist; base AC uses the chosen legal base or the maximum fallback, and additive benefits
 combine only from selected/stacking grants.
 
 Combat's Features list exposes `Choose protection: <group>`. The actual recipient

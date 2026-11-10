@@ -9,22 +9,65 @@ retains vocabulary-first delivery, current save priorities, and Wish/illusion po
 
 ## Current work
 
+**CXM-02–CXM-04 have partial runtime delivery (2026-11-09).** Background
+creation now loads Acolyte, Criminal, Sage and Soldier and grants the selected
+ability spread, skills, tools, equipment or 50 GP, and fixed Origin feat once.
+Legacy characters keep their existing species ability bonuses; background
+characters do not stack those bonuses. See the
+[background boundary](docs/planning/vocabulary-slices.md#background-acquisition-at-creation).
+Savage Attacker and Alert now have their combat rules. Magic Initiate remains
+pending, including its spells and casting ability. Alert
+now supplies initiative proficiency and the willing exchange before combat.
+
+Class starting kits and alternatives now use generic creation controls across
+all twelve classes, including Fighter A/B/C and expanded packs. Wizard's
+alternative is **55 GP plus a Spellbook**, under the recorded house ruling;
+it is implemented, not waiting on a decision. Catalog Arrows are stowed in
+Quivers, but catalog bows do not spend them yet. See
+[starting equipment and limits](docs/mechanics/progression-choices.md#class-proficiency-choices-at-creation-crown-g2).
+
+Dungeon clear and generated-room rewards now deliver a whole bundle or refuse;
+a full backpack leaves the clear reward pending for retry instead of losing
+the fragment. Real boss-clear/full-party proof, pending-reward checkpoint
+relaunch and the active/inactive recipient policy remain open. Event item
+delivery reports refusal but does not retain a pending reward. See the
+[reward boundary](docs/planning/vocabulary-slices.md#dungeon-reward-delivery-or-refusal).
+
+**CXM-06 delivers bounded natural thresholds and whole damage rolls.** The
+[slice boundary](docs/planning/vocabulary-slices.md#src-01-batch-2) records the
+limits; the next ordered assignment is CXM-07. CXM-05 supplies Alert's initial willing initiative exchange; see the
+[exchange boundary](docs/planning/vocabulary-slices.md#initial-willing-initiative-exchange). Keep the partial
+CXM-02–CXM-04 limits visible; these entries are not fully accepted. The
+[assignment queue](docs/planning/crown-engine-mapping/assignments.md) owns the
+remaining work and prerequisites.
+
+Verification repairs (2026-11-09): full Windows logic is **7,035 passed / 0
+failed**, with bootstrap, parse and boot gates passing. The earlier failures
+were stale checks: starting kits changed backpack positions and initial gold,
+and backgrounds added a required creation step and legitimate tool owners.
+Controlled fixtures now isolate their exact copies; event refusal preserves
+its starting gold; the normal creation matrix selects a real background; and
+class proficiency creation/reload checks exact class and background tool owners.
+The repaired matrix and proficiency flow/reload pass, including legacy saves.
+Focused independent review found no runtime defect or weakened safeguard.
+These repairs do not extend the partial runtime boundaries above.
+
 **CXM-01/S-249 exact ammunition now has a verified bounded runtime** using
 existing copies, attack budgets and campaign clock. Actual attacks and one-minute
 floor-half recovery pass the Windows runner, including both allowed DTOs in a
 fresh process. See the [verified boundary](docs/planning/vocabulary-slices.md#exact-ammunition-spending-and-recovery)
 and [ammunition contract](docs/mechanics/ammunition.md). Catalog promotion and
 fired-ammo corrosion remain separate; continue with the remaining ordered
-assignments. The first mapping entry is now delivered.
+assignments. CXM-02–CXM-04 have the partial deliveries above.
 
 The **Crown cross-set engine mapping is complete as planning** in the
 [mapping and clause ledger](docs/planning/crown-engine-mapping/README.md).
 It reuses all six written sets: 608 indexed candidates plus multiclass, full
 rules/blockers and dependency/acquisition links. The
 [ordered bounded assignments](docs/planning/crown-engine-mapping/assignments.md)
-begin with **CXM-01, exact ammunition spending/recovery (S-249)** (now delivered above), using existing
-copies, budgets and clock; general liquids/fuel and whole parent slices are not
-gates. [Unresolved source/policy decisions](docs/planning/crown-engine-mapping/unresolved.md)
+retain delivered **CXM-01, exact ammunition spending/recovery (S-249)** and
+partial CXM-02–CXM-04 above and CXM-05–CXM-06. General liquids/fuel and
+whole parent slices are not gates. [Unresolved source/policy decisions](docs/planning/crown-engine-mapping/unresolved.md)
 hold only their affected consumers. The mapping pass ran structural/source/link checks,
 not gameplay acceptance; that pass made no runtime, loaded-data or save changes.
 Use this cross-set queue for the next implementation, retaining the older spell
@@ -139,7 +182,8 @@ for finishing the campaign, or quietly reduce Crown's content to improve a count
 
 The [2026-11-03 integration update](docs/planning/crown-parallel-work.md#integrated-work--2026-11-03)
 records merged acquisition work through PR #80, delivered OA-01–OA-13 and the
-next equipment/Hit Dice split. Backgrounds and Draconic remain preparation;
+next equipment/Hit Dice split. Draconic remains preparation; backgrounds now
+have the partial delivery above;
 production multiclassing remains unavailable. The older inventory and G1–G6
 assignment descriptions are historical scope, not a fresh queue.
 
@@ -306,7 +350,8 @@ rebuilding those controls:
 2. Verify the existing S-234 multiclass entry gate; then extend the bounded
    progression host before production multiclass conversion. Class JSON opt-in
    alone cannot supply secondary features, subclasses, resources and casting.
-3. S-231 backgrounds.
+3. Finish S-231 backgrounds beyond the partial CXM-04 boundary above, including
+   the pending Origin feat rules; do not rebuild the creation step.
 4. S-232 species choices and the SRD species set.
 5. Production feats: ten Origin/General/Fighting Style feats for Crown; the seven Epic Boons remain broader work.
 6. S-243 XP advancement, S-244 higher-level start, then S-245 post-20 feats (campaign-enabled). Crown keeps its existing level-1 start and milestones.

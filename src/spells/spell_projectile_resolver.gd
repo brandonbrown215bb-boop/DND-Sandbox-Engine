@@ -110,11 +110,18 @@ static func _resolve_scorching_ray(caster: Character, target_entity, spell_data:
 		target_ac = SpellEffects.effective_ac(target_entity, int(target_entity.get("armor_class", 10)) + (2 if CombatAction.has_condition(target_entity, "shield_of_faith") else 0))
 	target_ac += CoverRules.bonus(reaction_decisions, spell_data)
 	var hits := 0
+	var avoided_packets: Array[Dictionary] = []
 	var bonus_packets: Array[Dictionary] = []
 	var bonus_choices: Array = spell_data.get("_conjure_minor_elementals_bonus_packets", [])
 	var details := {"formula": damage_dice, "dice_terms": [], "modifiers": [], "final_total": 0}
 	var stroke_of_luck_used := false
 	var shield_used := false
+	var beam_bonus := CombatAction.spell_damage_bonus(caster, spell_data) if not spell_data.get("beam_count_by_level", {}).is_empty() else 0
+	var cast := SpellResolutionContext.new()
+	cast.caster = caster
+	cast.target = target_entity
+	cast.spell = spell_data
+	var avoided_damage := SpellDamageRolls.avoided_spell_damage(cast, "miss")
 	reaction_decisions = reaction_decisions.duplicate()
 	reaction_decisions["perception_handles_blindness"] = true
 	for ray_index in ray_count:
@@ -144,6 +151,8 @@ static func _resolve_scorching_ray(caster: Character, target_entity, spell_data:
 			hit = bool(attack_result.get("is_crit", false)) or int(attack_result.get("total", 0)) >= target_ac
 		if not hit:
 			FighterRules.record_miss(caster, target_entity)
+			if avoided_damage:
+				avoided_packets.append({"details": SpellDamageRolls._roll_spell_damage(caster, damage_dice, 1, {}), "type": str(spell_data.get("damage_type", "fire")), "label": "Missed projectile", "formula": damage_dice, "_scale": 0.5, "_bonus": beam_bonus, "_projectile_miss": true})
 		if hit:
 			var ray_is_crit := bool(attack_result.get("is_crit", false)) or (CombatAction.is_unconscious(target_entity) or CombatAction.is_paralyzed(target_entity)) and int(spell_data.get("range", 6)) <= 1
 			hits += 1
@@ -155,14 +164,19 @@ static func _resolve_scorching_ray(caster: Character, target_entity, spell_data:
 				var bonus_formula := str(choice.get("formula", ""))
 				if not bonus_formula.is_empty():
 					bonus_packets.append({"details": SpellDamageRolls._roll_spell_damage(caster, bonus_formula, 2 if ray_is_crit else 1, {}), "type": str(choice.get("type", "acid")), "label": str(choice.get("label", "Conjure Minor Elementals")), "formula": bonus_formula})
-	if hits == 0:
+	if hits == 0 and avoided_packets.is_empty():
 		return {"success": true, "hit": false, "damage": 0, "ray_count": ray_count, "shield_used": shield_used, "message": "%s misses all %d %ss.%s" % [spell_data.get("name", "Scorching Ray"), ray_count, str(spell_data.get("_projectile_noun", "ray")), " Shield raises the target's AC for subsequent attacks." if shield_used else ""]}
-	var beam_bonus := CombatAction.spell_damage_bonus(caster, spell_data) if not spell_data.get("beam_count_by_level", {}).is_empty() else 0
+	var primary_scale := 1.0
+	if hits == 0:
+		details = avoided_packets.pop_front().details
+		primary_scale = 0.5
 	if beam_bonus > 0 and hits > 1:
 		details["final_total"] = int(details["final_total"]) + beam_bonus * (hits - 1)
 		details["modifiers"].append({"source": "per-hit cantrip bonus", "value": beam_bonus * (hits - 1)})
-	return SpellDamageRolls._finish_spell_damage(caster, target_entity, details, beam_bonus, 1.0, str(spell_data.get("damage_type", "fire")), reaction_decisions, {
-		"success": true, "hit": true, "ray_count": ray_count, "rays_hit": hits,
+	bonus_packets.append_array(avoided_packets)
+	if not avoided_packets.is_empty(): reaction_decisions["_select_projectile_packet_dice"] = true
+	return SpellDamageRolls._finish_spell_damage(caster, target_entity, details, beam_bonus, primary_scale, str(spell_data.get("damage_type", "fire")), reaction_decisions, {
+		"success": true, "hit": hits > 0, "ray_count": ray_count, "rays_hit": hits, "suppress_avoided_spell_effects": hits == 0 and avoided_damage,
 		"stroke_of_luck_used": stroke_of_luck_used, "shield_used": shield_used,
 		"message": "%s hits with %d of %d %ss for {damage} %s damage.%s%s" % [spell_data.get("name", "Scorching Ray"), hits, ray_count, str(spell_data.get("_projectile_noun", "ray")), spell_data.get("damage_type", "fire"), " Stroke of Luck turns the first missed ray's attack into a 20." if stroke_of_luck_used else "", " Shield raises the target's AC for subsequent attacks." if shield_used else ""]
 	}, 1, bonus_packets)

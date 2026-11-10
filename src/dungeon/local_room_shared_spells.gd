@@ -66,7 +66,7 @@ static func _cast(state: Dictionary, caster: Character, spell: Dictionary, targe
 	if (caster_inside or target_inside or ContainmentRules.involved(state, target_kind, target_id)) and (spell.has("save_exit_placement") or spell.get("effects", []).any(func(e): return e.get("type") in ["create_actor", "actor_projection", "grant_source_benefits", "teleport", "transform"])): return LocalRoomRules.failure("That spell needs containment release or placement support.")
 	var error := LocalRoomRules._room_spell_caster_error(caster, spell)
 	if not error.is_empty(): return LocalRoomRules.failure(error)
-	if caster.has_condition("raging") or not DruidRules.can_cast_spell(caster, spell):
+	if caster.untrained_worn_armor() or caster.has_condition("raging") or not DruidRules.can_cast_spell(caster, spell):
 		return LocalRoomRules.failure("That character cannot cast a spell in its current state.")
 	var positions: Dictionary = state.get("party_positions", {})
 	if not positions.has(caster.character_id) or (object.is_empty() and not positions.has(target_id)):

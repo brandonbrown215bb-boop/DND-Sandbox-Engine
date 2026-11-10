@@ -301,12 +301,15 @@ static func inspire_die(c: Character, sides: int, value: int) -> int:
 	return value
 
 static func weapon_damage(c: Character, weapon: Dictionary, detail: Dictionary) -> int:
-	var two_hands := c.inventory.get_equipped(Inventory.Slot.SHIELD).is_empty() and c.inventory.get_equipped(Inventory.Slot.OFFHAND).is_empty()
+	var two_hands := bool(weapon.get("_damage_two_hands", c.inventory.get_equipped(Inventory.Slot.SHIELD).is_empty() and c.inventory.get_equipped(Inventory.Slot.OFFHAND).is_empty()))
 	var properties: Array = weapon.get("properties", [])
 	var is_two_handed := "two_handed" in properties or "two-handed" in properties or "versatile" in properties or str(weapon.get("id", "")) in ["greatsword", "greataxe", "maul", "halberd", "glaive", "pike"]
+	var thrown_attack := "thrown" in properties and int(weapon.get("attack_distance", 1)) > int(weapon.get("range", 1))
 	var gain := 0
-	if has_style(c, "great_weapon_fighting") and two_hands and "ranged" not in properties and is_two_handed:
+	if has_style(c, "great_weapon_fighting") and two_hands and "ranged" not in properties and not thrown_attack and is_two_handed:
 		for term in detail.get("dice_terms", []):
+			if str(term.get("label", "")).begins_with("-"):
+				continue
 			var rolls: Array = term.get("results", [])
 			for i in rolls.size():
 				if i < term.get("kept", []).size() and not term["kept"][i]:

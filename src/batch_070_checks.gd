@@ -45,6 +45,7 @@ static func run(check: Callable) -> void:
 	_reload(check)
 	_swings(check)
 	_review_stacking(check)
+	_base_choice(check)
 
 static func _validation(check: Callable) -> void:
 	check.call(RuleUpgradeRules.validate_rule(_upgrade({"attack_count": {"set": 2}})).is_empty(), "070 an attack_count set in an exclusive group validates")
@@ -72,6 +73,7 @@ static func _values(check: Callable) -> void:
 	var done := ModeControls.apply(a, GUARD, "alternative", "base_ac|guard_b@" + id, stale)
 	check.call(done.success and a.get_ac() == 15 and a.base_ac == 15, "070 Sturdy Frame: AC 10 + DEX 2 + CON 3 = 15 (%d)" % a.get_ac())
 	check.call(ModeControls.apply(a, GUARD, "alternative", "base_ac|guard_a@" + id, stale).reason == "stale" and a.rule_alternatives[GUARD + "|base_ac"] == "guard_b@" + id, "070 a stale popup answer is refused and changes nothing")
+	a.armor_proficiencies.append("shields")
 	a.inventory.add_item("shield")
 	a.inventory.equip(Inventory.Slot.SHIELD, "shield")
 	check.call(a.get_ac() == 14, "070 Sturdy Frame disallows a shield: 10 + DEX + shield 2 = 14 (%d)" % a.get_ac())
@@ -155,3 +157,101 @@ static func _review_stacking(check: Callable) -> void:
 	a.extra_attacks = 1
 	RuleUpgradeRules.choose_alternative(a, EXTRA, "drill", "drill_a@" + id)
 	check.call(RuleUpgradeRules.extra_attacks(a) == 2, "R070 single rule upgraded to set 2 still gives 2 (%d)" % RuleUpgradeRules.extra_attacks(a))
+
+
+static func _base_choice(check: Callable) -> void:
+	var a := actor("cxm07_base_choice")
+	var row := ModeControls.row(a, ModeControls.BASE_AC_CONTROL)
+	var ordinary := JSON.stringify(["unarmored"])
+	check.call(row.actions == ["base_ac"] and a.get_ac() == 13, "CXM-07 competing loaded base formulas expose a choice with highest fallback")
+	check.call(ModeControls.apply(a, ModeControls.BASE_AC_CONTROL, "base_ac", ordinary, row.token).success and a.get_ac() == 12, "CXM-07 player can select ordinary AC even when an owned formula is higher")
+	var stale := ModeControls.row(a, ModeControls.BASE_AC_CONTROL)
+	a.ability_scores.wisdom = 16
+	var feature_id := ""
+	for candidate in a.base_ac_candidates():
+		if candidate.name == "Unarmored Guard": feature_id = candidate.id
+	check.call(not feature_id.is_empty() and ModeControls.apply(a, ModeControls.BASE_AC_CONTROL, "base_ac", feature_id, stale.token).reason == "stale" and a.get_ac() == 12, "CXM-07 changed ability invalidates the offered AC choice")
+	row = ModeControls.row(a, ModeControls.BASE_AC_CONTROL)
+	check.call(ModeControls.apply(a, ModeControls.BASE_AC_CONTROL, "base_ac", feature_id, row.token).success and a.get_ac() == 15, "CXM-07 exact loaded feature formula can be selected")
+	var armor_copy := Batch041Checks.add_copy(a, "chain_mail")
+	a.inventory.equipment_control_equip(Inventory.Slot.BODY, armor_copy)
+	var temporarily_armored := a.to_dict()
+	var recovered_armored := Character.new()
+	recovered_armored.from_dict(JSON.parse_string(JSON.stringify(temporarily_armored)))
+	a.inventory.equipment_control_unequip(Inventory.Slot.BODY)
+	recovered_armored.inventory.equipment_control_unequip(Inventory.Slot.BODY)
+	check.call(temporarily_armored.base_ac_choice == feature_id and a.base_ac_choice == feature_id and a.get_ac() == 15 and recovered_armored.base_ac_choice == feature_id and recovered_armored.get_ac() == 15, "CXM-07 saving through temporary armor ineligibility preserves the owned feature preference")
+	a.add_condition("mage_armor", 20)
+	var mage_id := ""
+	for candidate in a.base_ac_candidates():
+		if candidate.name == "Mage Armor": mage_id = candidate.id
+	row = ModeControls.row(a, ModeControls.BASE_AC_CONTROL)
+	check.call(not mage_id.is_empty() and ModeControls.apply(a, ModeControls.BASE_AC_CONTROL, "base_ac", mage_id, row.token).success and a.get_ac() == 15, "CXM-07 Mage Armor is a separate selectable base")
+	row = ModeControls.row(a, ModeControls.BASE_AC_CONTROL)
+	check.call(ModeControls.apply(a, ModeControls.BASE_AC_CONTROL, "base_ac", ordinary, row.token).success and a.get_ac() == 12, "CXM-07 explicit ordinary base wins over Mage Armor as well")
+	var dto: Dictionary = JSON.parse_string(JSON.stringify(a.to_dict()))
+	var restored := Character.new()
+	restored.from_dict(dto)
+	check.call(Character.saved_base_ac_choice_error(dto).is_empty() and restored.base_ac_choice == ordinary and restored.get_ac() == 12, "CXM-07 exact base preference survives character DTO recovery")
+	dto.base_ac_choice = "bad"
+	check.call(not Character.saved_base_ac_choice_error(dto).is_empty(), "CXM-07 malformed saved base choice is refused")
+	for forged in [JSON.stringify(["armor", "unowned_copy"]), JSON.stringify(["protection", "unowned_grant"]), JSON.stringify(["feature", "unowned_feature", "", ""])]:
+		dto.base_ac_choice = forged
+		check.call(not Character.saved_base_ac_choice_error(dto).is_empty(), "CXM-07 forged AC source is refused: %s" % forged)
+	row = ModeControls.row(a, ModeControls.BASE_AC_CONTROL)
+	check.call(ModeControls.apply(a, ModeControls.BASE_AC_CONTROL, "base_ac", JSON.stringify(["automatic"]), row.token).success and a.get_ac() == 15, "CXM-07 automatic highest-base fallback can be restored")
+
+	DataLoader._load_json_file("res://data/fixtures/batch_g_protections.json", "class")
+	var guarded := actor("cxm07_timed_base")
+	var feature: Dictionary = DataLoader.get_character_class("fixture:batch_g_protections").features_by_level["1"][0].duplicate(true)
+	feature.source_instance_id = "cxm07:protection"
+	guarded.features.append(feature)
+	var acquired := ResourcePoolRules.acquire(guarded, feature, feature.source_instance_id)
+	var activated := ClassFeature.execute(guarded, feature, null, null, feature.source_instance_id)
+	var protection_id := ""
+	for candidate in guarded.base_ac_candidates():
+		if str(candidate.id).contains("protection"): protection_id = candidate.id
+	row = ModeControls.row(guarded, ModeControls.BASE_AC_CONTROL)
+	var ordinary_choice := ModeControls.apply(guarded, ModeControls.BASE_AC_CONTROL, "base_ac", ordinary, row.token)
+	check.call(acquired.get("success", false) and activated.get("success", false) and not protection_id.is_empty() and ordinary_choice.success and guarded.get_ac() == 12 and guarded.ability_scores.get_score("STR") == 18, "CXM-07 choosing a different base keeps the timed protection's other benefits")
+	row = ModeControls.row(guarded, ModeControls.BASE_AC_CONTROL)
+	check.call(ModeControls.apply(guarded, ModeControls.BASE_AC_CONTROL, "base_ac", protection_id, row.token).success and guarded.get_ac() == 15, "CXM-07 exact timed protection is a selectable AC base")
+	guarded.class_id = "familiar"
+	guarded.base_ac = 17
+	guarded.base_ac_choice = ""
+	check.call(guarded.get_ac() == 17, "CXM-07 automatic selection retains template AC against a lower timed base")
+	row = ModeControls.row(guarded, ModeControls.BASE_AC_CONTROL)
+	var native_id := JSON.stringify(["native"])
+	check.call(ModeControls.apply(guarded, ModeControls.BASE_AC_CONTROL, "base_ac", native_id, row.token).success and guarded.get_ac() == 17, "CXM-07 a template creature chooses its real native AC rather than an invented unarmored formula")
+	guarded.inventory.equip(Inventory.Slot.SHIELD, "shield", true)
+	guarded.inventory.unequip(Inventory.Slot.SHIELD)
+	guarded._recalculate_ac()
+	check.call(guarded.base_ac == 17 and guarded.get_ac() == 17, "CXM-07 template AC survives equipment changes and recalculation")
+	guarded.class_id = CLASS
+	guarded.base_ac_choice = protection_id
+	ProtectionRules.remove_source(guarded, feature.source_instance_id)
+	check.call(guarded.get_ac() == 13, "CXM-07 a removed selected source falls back to a surviving legal base")
+
+	var legacy := actor("cxm07_legacy_shield")
+	legacy.armor_proficiencies.append("shields")
+	legacy.inventory.equip(Inventory.Slot.SHIELD, "shield", true)
+	legacy.armor_proficiencies.clear()
+	var legacy_dto := legacy.to_dict()
+	legacy_dto.erase("base_ac_choice")
+	var recovered := Character.new()
+	recovered.from_dict(legacy_dto)
+	check.call(int(legacy_dto.base_ac) == 14 and recovered.get_ac() == 12, "CXM-07 legacy equipment recovery removes a stale untrained Shield bonus")
+
+	var item_owner := actor("cxm07_item_choice")
+	var bracers := wear(item_owner)
+	var upgraded_choice := ""
+	for candidate in item_owner.base_ac_candidates():
+		if candidate.name == "Unarmored Guard": upgraded_choice = candidate.id
+	row = ModeControls.row(item_owner, ModeControls.BASE_AC_CONTROL)
+	var picked := ModeControls.apply(item_owner, ModeControls.BASE_AC_CONTROL, "base_ac", upgraded_choice, row.token)
+	item_owner.inventory.unequip(Inventory.Slot.HEAD)
+	var packed: Dictionary = JSON.parse_string(JSON.stringify(item_owner.to_dict()))
+	var reloaded := Character.new()
+	reloaded.from_dict(packed)
+	var reequipped := reloaded.inventory.equip_instance(Inventory.Slot.HEAD, bracers)
+	check.call(picked.success and packed.base_ac_choice == upgraded_choice and reequipped and reloaded.base_ac_choice == upgraded_choice and reloaded.get_ac() == 15, "CXM-07 saving while an owned upgrade copy is unequipped preserves its exact base preference")

@@ -98,8 +98,9 @@ static func run(check: Callable) -> void:
 
 	var unknown_dialog := scene.instantiate() as EventDialog
 	tree.root.add_child(unknown_dialog)
+	var gold_before_refusal := owner.inventory.gold
 	unknown_dialog.popup_event(owner, {"id": "caller_event", "type": "skill_check", "check": {"id": "caller_check", "ability": "INT", "skill": "Investigation", "dc": 1, "check_context": context}, "success": {"effects": [{"type": "gold", "value": 999}]}, "failure": {"effects": [{"type": "gold", "value": 999}]}})
-	check.call(unknown_dialog.btn_roll.disabled and unknown_dialog._pending_authored_context.is_empty() and owner.inventory.gold == 0, "Unloaded context check is refused before caller-authored consequences can run")
+	check.call(unknown_dialog.btn_roll.disabled and unknown_dialog._pending_authored_context.is_empty() and owner.inventory.gold == gold_before_refusal, "Unloaded context check is refused before caller-authored consequences can run")
 	unknown_dialog.queue_free()
 	await tree.process_frame
 

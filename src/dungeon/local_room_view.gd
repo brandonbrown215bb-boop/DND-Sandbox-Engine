@@ -11,6 +11,7 @@ var grid: HexGrid
 var hud: DungeonHUD
 var flush: Callable
 var last_action_result: Dictionary = {}
+var room_strike_pending := false
 var panel: VBoxContainer
 var actors: OptionButton
 var movement_modes: OptionButton
@@ -871,7 +872,51 @@ func refresh() -> void:
 	grid.queue_redraw()
 
 func _interact(action: String, instance_id: String = "") -> void:
-	_result(CombatNoiseRules.room_interact(state, actor(), characters, grid, _selected(objects), action, instance_id))
+	if room_strike_pending: return
+	var owner := actor()
+	var id := _selected(objects)
+	var result := CombatNoiseRules.room_interact(state, owner, characters, grid, id, action, instance_id, action == "strike")
+	if result.has("room_strike"):
+		room_strike_pending = true
+		var captured: Dictionary = result.room_strike
+		var attack: Dictionary = captured.attack
+		while attack.has("whole_damage_request"):
+			var request: Dictionary = attack.whole_damage_request
+			var answer := await _room_whole_damage_choice(request)
+			var stale := CombatNoiseRules.room_strike_error(state, owner, characters, id, captured)
+			if answer == "cancel" or not stale.is_empty():
+				CombatAction.cancel_whole_damage(attack)
+				var stopped := CombatNoiseRules.abort_room_strike(state, owner, characters, grid, captured, stale if not stale.is_empty() else "The room closed before the strike finished.")
+				room_strike_pending = false
+				if is_instance_valid(panel) and panel.is_inside_tree(): _result(stopped)
+				else: GameManager.advance_campaign_time(int(stopped.get("seconds", 0)))
+				return
+			attack = CombatAction.resume_whole_damage(attack, answer)
+		result = CombatNoiseRules.finish_room_strike(state, owner, characters, grid, id, captured, attack)
+		room_strike_pending = false
+	_result(result)
+
+func _room_whole_damage_choice(request: Dictionary) -> String:
+	if GameManager.test_mode: return "decline" if request.phase == "offer" else "first"
+	var menu := PopupMenu.new()
+	menu.title = "%s: roll weapon damage twice?" % str(request.name) if request.phase == "offer" else "%s: choose a complete weapon roll" % str(request.name)
+	if request.phase == "offer":
+		menu.add_item("Use", 0)
+		menu.add_item("Save for later", 1)
+	else:
+		menu.add_item("First: %s (%s)" % [request.totals[0], CombatAction.whole_damage_roll_label(request.rolls[0])], 0)
+		menu.add_item("Second: %s (%s)" % [request.totals[1], CombatAction.whole_damage_roll_label(request.rolls[1])], 1)
+	panel.add_child(menu)
+	var decision := {"done": false, "index": -1}
+	menu.id_pressed.connect(func(index): decision.index = index; decision.done = true)
+	menu.popup_hide.connect(func(): decision.done = true)
+	menu.popup_centered(Vector2i(480, 180))
+	while not decision.done and is_instance_valid(menu) and is_instance_valid(panel) and panel.is_inside_tree():
+		await panel.get_tree().process_frame
+	var detached := not is_instance_valid(panel) or not panel.is_inside_tree()
+	if is_instance_valid(menu): menu.queue_free()
+	if detached: return "cancel"
+	return ("use" if decision.index == 0 else "decline") if request.phase == "offer" else ("second" if decision.index == 1 else "first")
 
 
 func _study() -> void:

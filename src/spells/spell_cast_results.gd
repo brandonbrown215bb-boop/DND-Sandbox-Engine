@@ -347,7 +347,9 @@ static func _resolve_player_target(cast: SpellCastContext, p_target: Character, 
 		var fey_damage_packet := await SpellZoneConjurations._conjure_minor_elementals_damage_choice(cast.areas, cast.caster, p_target)
 		if not fey_damage_packet.is_empty():
 			strike_additional_damage["packets"] = [fey_damage_packet]
+		if cast.settle_weapon_hit.is_valid(): target_spell_decisions["allow_whole_damage_choice"] = true
 		var strike_result := CombatAction.resolve_weapon_attack(cast.caster, p_target, true_strike_profile, strike_advantage, strike_disadvantage, target_spell_decisions, strike_additional_damage)
+		if cast.settle_weapon_hit.is_valid(): strike_result = await cast.settle_weapon_hit.call(strike_result)
 		await cast.offer_divine_smite.call(p_target, true_strike_profile, strike_result, cast.caster)
 		var cast_message := str(res.get("message", "%s resolves." % str(cast.spell.get("name", "The spell"))))
 		res.merge(strike_result, true)
@@ -452,7 +454,9 @@ static func _resolve_monster_target(cast: SpellCastContext, m_target: Dictionary
 		var fey_damage_packet := await SpellZoneConjurations._conjure_minor_elementals_damage_choice(cast.areas, cast.caster, m_target)
 		if not fey_damage_packet.is_empty():
 			strike_additional_damage["packets"] = [fey_damage_packet]
+		if cast.settle_weapon_hit.is_valid(): strike_reactions["allow_whole_damage_choice"] = true
 		var strike_result := CombatAction.resolve_weapon_attack(cast.caster, m_target, true_strike_profile, strike_advantage, strike_disadvantage, strike_reactions, strike_additional_damage)
+		if cast.settle_weapon_hit.is_valid(): strike_result = await cast.settle_weapon_hit.call(strike_result)
 		await cast.offer_divine_smite.call(m_target, true_strike_profile, strike_result, cast.caster)
 		await cast.offer_sneak_attack.call(m_target, true_strike_profile, strike_result, cast.caster, strike_advantage, strike_disadvantage)
 		await cast.offer_weapon_damage_riders.call(cast.caster, m_target, true_strike_profile, strike_result)

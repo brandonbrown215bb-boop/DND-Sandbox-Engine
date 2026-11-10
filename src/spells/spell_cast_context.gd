@@ -83,6 +83,7 @@ var offer_potent_spellcasting_vitality: Callable
 var offer_power_word_heal_stand: Callable
 var offer_sneak_attack: Callable
 var offer_divine_smite: Callable
+var settle_weapon_hit: Callable
 var offer_weapon_damage_riders: Callable
 var publish_true_strike_activity: Callable
 var spend_action_cost: Callable

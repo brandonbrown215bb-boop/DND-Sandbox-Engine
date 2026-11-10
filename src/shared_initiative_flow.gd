@@ -141,5 +141,43 @@ static func run(h: Node) -> void:
 	owner.spell_effects.erase(ended_source)
 	CreatedCommandRules.reconcile(combat)
 	h._assert(not combat.tracker.combatants.any(func(c): return c.get("shared_group", "") == ended_source) and combat.tracker.combatants.any(func(c): return c.entity == b[0]) and combat.active_character == ally and combat._can_spend_action_cost("action"), "Ending one shared source removes only that group and preserves the active ally and sibling source")
+	await _exchange_controls(h, combat)
 	h._teardown_scene(combat)
 	h._exit_test()
+
+
+static func _exchange_controls(h: Node, combat: Node) -> void:
+	var old_tracker: InitiativeTracker = combat.tracker
+	var owner := Batch031Checks._character("exchange_control_owner", 30)
+	var ally := Batch031Checks._character("exchange_control_ally", 30)
+	owner.origin_feat = "alert"
+	owner.remove_condition("incapacitated")
+	ally.remove_condition("incapacitated")
+	combat.tracker = InitiativeTracker.new()
+	combat.tracker.add_combatant("alert_owner", "Exchange Owner", true, owner, 17, 10)
+	combat.tracker.add_combatant("alert_ally", "Exchange Ally", true, ally, 4, 10)
+	GameManager.test_mode = false
+	combat._offer_initiative_exchanges()
+	var menu: PopupMenu = null
+	for frame in 120:
+		for child in combat.hud.get_children():
+			if child is PopupMenu and child.visible and child.title.contains("exchange initiative"): menu = child
+		if menu != null: break
+		await h.get_tree().process_frame
+	var saw_menu := menu != null
+	if saw_menu: menu.id_pressed.emit(menu.get_item_id(1))
+	var dialog: ConfirmationDialog = null
+	for frame in 120:
+		for child in combat.hud.get_children():
+			if child is ConfirmationDialog and child.visible and child.title.contains("Initiative exchange"): dialog = child
+		if dialog != null: break
+		await h.get_tree().process_frame
+	var saw_dialog := dialog != null
+	if saw_dialog: dialog.confirmed.emit()
+	for frame in 120:
+		if combat.tracker._exchange_entry("alert_owner").roll == 4: break
+		await h.get_tree().process_frame
+	combat.tracker.sort_initiative()
+	h._assert(saw_menu and saw_dialog and combat.tracker._exchange_entry("alert_owner").roll == 4 and combat.tracker._exchange_entry("alert_ally").roll == 17 and combat.tracker.combatants[0].id == "alert_ally", "CXM-05 actual owner selection and ally consent exchange values and order (menu=%s dialog=%s owner=%s ally=%s pending=%s)" % [str(saw_menu), str(saw_dialog), str(combat.tracker._exchange_entry("alert_owner").roll), str(combat.tracker._exchange_entry("alert_ally").roll), str(combat.tracker._exchange_window)])
+	GameManager.test_mode = true
+	combat.tracker = old_tracker

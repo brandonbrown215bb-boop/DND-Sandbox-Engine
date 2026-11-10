@@ -913,7 +913,25 @@ static func resolve(cast: SpellResolutionContext) -> Dictionary:
 	result["effect_cast"] = cast.effect_cast
 	return apply(cast.caster, cast.target, cast.spell, result, cast.spatial_host, cast.decisions)
 
+static func prior_avoided_spell_effects(target, step_results: Array, gate_ref: Variant = null) -> bool:
+	var last := step_results.size() - 1
+	if gate_ref is int: last = mini(last, int(gate_ref))
+	elif gate_ref is String:
+		for index in step_results.size():
+			if str(step_results[index].get("step_id", "")) == gate_ref:
+				last = index
+				break
+	for index in range(last, -1, -1):
+		var prior: Dictionary = step_results[index]
+		if str(prior.get("type", "")) not in ["attack", "save"]: continue
+		for outcome in prior.get("target_outcomes", []):
+			if is_same(outcome.get("target"), target) and not bool(outcome.get("skipped", false)):
+				return bool(outcome.get("result", {}).get("suppress_avoided_spell_effects", false))
+	return false
+
 static func apply_custom_effects(caster: Character, target, effects: Array, result: Dictionary, slot_level: int, step_results: Array = [], adapter: Object = null, spell: Dictionary = {}, host: SpellCastContext = null, decisions: Dictionary = {}) -> Dictionary:
+	if bool(result.get("suppress_avoided_spell_effects", false)): return result
+	if not result.has("attack_roll") and not result.has("save_total") and prior_avoided_spell_effects(target, step_results, result.get("_effect_gate_step", null)): return result
 	if adapter != null:
 		var context = adapter.get("cast")
 		if context != null:
@@ -1100,7 +1118,7 @@ static func apply(caster: Character, target, spell: Dictionary, result: Dictiona
 		return result
 	result["shared_effects_applied"] = true
 	var effects := SpellDamageRolls.spell_effects_for_slot_level(spell, int(result.get("slot_level", spell.get("level", 0))))
-	return apply_custom_effects(caster, target, effects, result, int(result.get("slot_level", spell.get("level", 0))), [], null, spell, host, decisions)
+	return apply_custom_effects(caster, target, effects, result, int(result.get("slot_level", spell.get("level", 0))), result.get("step_results", []), null, spell, host, decisions)
 
 
 const DELAYED_DAMAGE_TRIGGERS := ["end_of_target_next_turn"]

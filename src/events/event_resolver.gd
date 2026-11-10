@@ -171,6 +171,9 @@ static func ability_check_roll_mode(character: Character, ability: String, skill
 	if ability.to_upper() == "STR" and character != null:
 		str_markers = CombatAction.conditions_with_consequence(character, "str_d20_disadvantage")
 	var has_disadvantage := not str_markers.is_empty() or (character != null and CombatAction.check_has_marker_disadvantage(character, ability))
+	if character != null and ((ability.to_upper() in ["STR", "DEX"] and character.untrained_worn_armor()) or (skill.to_lower() == "stealth" and character.armor_stealth_disadvantage())):
+		has_disadvantage = true
+		contributors.append({"source_kind":"equipment", "source_id":character.inventory.get_armor(), "mode":"disadvantage", "status":"active"})
 	if skill == "Perception" and context.get("sense") == "sight" and bool(context.get("lightly_obscured", false)):
 		has_disadvantage = true
 		contributors.append({"source_kind":"world", "source_id":"lightly_obscured", "mode":"disadvantage", "status":"active"})

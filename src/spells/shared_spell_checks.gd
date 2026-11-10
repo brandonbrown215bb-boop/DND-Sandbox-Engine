@@ -8,6 +8,7 @@ static func run(check: Callable) -> void:
 	_save_context_eligibility_checks(check)
 	check.call(DataLoader.get_load_errors().is_empty(), "Shared JSON fixtures load through the production loader")
 	_outcome_mapping_checks(check)
+	_avoided_cantrip_checks(check)
 	_batch_c_boundary_checks(check)
 	_fact_predicate_checks(check)
 	_action_history_checks(check)
@@ -2142,6 +2143,103 @@ static func _s029_make_resolution(caster: Character, target: Character, spell: D
 	cast.source_owner_id = caster.character_id
 	cast.invocation_id = "fixture:s029-origin-invocation"
 	return cast
+static func _avoided_cantrip_checks(check: Callable) -> void:
+	var caster := Character.new()
+	caster.initialize("Cantrip fixture", "human", "wizard", AbilityScores.new())
+	caster.character_id = "avoided-cantrip-caster"
+	var feature: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://data/fixtures/batch_cxm_06/features/avoided_spell_damage.json"))
+	check.call(DataLoader._feature_content_error(feature).is_empty(), "Renamed passive avoided-spell damage fixture validates")
+	var malformed := feature.duplicate(true)
+	malformed.effects[0]["scale"] = {}
+	check.call(not DataLoader._feature_content_error(malformed).is_empty(), "Malformed avoided-spell damage scale is rejected")
+	caster.features.append(feature)
+	var attack := DataLoader.get_spell("sandbox:outcome_attack_neutral").duplicate(true)
+	attack["level"] = 0
+	attack.erase("damage_scale_by_outcome")
+	var missed_target := {"id": "avoided-miss", "name": "Miss", "current_hp": 100, "max_hp": 100, "is_alive": true, "armor_class": 100, "conditions": {}, "temp_hp": 0}
+	FighterChecks._seed_die(20, 5)
+	var missed := CombatAction.resolve_spell(caster, missed_target, attack, false, {}, [], 0, 5)
+	check.call(not bool(missed.get("hit", true)) and int(missed.get("damage", 0)) == 2 and not CombatAction.has_condition(missed_target, "frightened"), "Damaging cantrip miss deals half and suppresses the attack rider")
+	var ordered := DataLoader.get_spell("sandbox:outcome_save_ordered_renamed").duplicate(true)
+	ordered["level"] = 0
+	ordered.steps[0].erase("damage_scale_by_outcome")
+	var saved_target := {"id": "avoided-save", "name": "Save", "current_hp": 100, "max_hp": 100, "is_alive": true, "ability_scores": {"DEX": 100}, "conditions": {}, "temp_hp": 0}
+	FighterChecks._seed_die(20, 20)
+	var saved := CombatAction.resolve_spell(caster, saved_target, ordered, false, {}, [], 0, 5)
+	check.call(int(saved.get("damage", 0)) == 2 and int(saved_target.temp_hp) == 0 and not CombatAction.has_condition(saved_target, "restrained"), "Successful cantrip save deals half and suppresses same-step and later effects")
+	var repeated := DataLoader.get_spell("sandbox:outcome_attack_ordered").duplicate(true)
+	repeated["level"] = 0
+	repeated.steps[0].erase("damage_scale_by_outcome")
+	var second: Dictionary = repeated.steps[0].duplicate(true)
+	second["id"] = "second"
+	repeated.steps.insert(1, second)
+	var repeated_target := {"id": "avoided-then-hit", "name": "Two attacks", "current_hp": 100, "max_hp": 100, "is_alive": true, "armor_class": 10, "conditions": {}, "condition_sources": {}, "temp_hp": 0}
+	for candidate in 10000:
+		seed(candidate)
+		if randi_range(1, 20) == 1 and randi_range(1, 20) == 15:
+			seed(candidate)
+			break
+	var repeated_result := CombatAction.resolve_spell(caster, repeated_target, repeated, false, {}, [], 0, 5)
+	check.call(int(repeated_result.get("damage", 0)) == 7 and CombatAction.has_condition(repeated_target, "frightened") and int(repeated_target.temp_hp) == 1, "A later successful attack has its own full damage and effects after an earlier miss: %s target=%s" % [str(repeated_result), str(repeated_target)])
+	var beams := DataLoader.get_spell("eldritch_blast").duplicate(true)
+	beams.projectiles["damage"] = "5"
+	beams.projectiles["count"] = 2
+	beams.projectiles["count_by_character_level"] = {"1": 2}
+	var beam_target := {"id": "avoided-beams", "name": "Beams", "current_hp": 100, "max_hp": 100, "is_alive": true, "armor_class": 100, "conditions": {}}
+	for candidate in 10000:
+		seed(candidate)
+		if randi_range(1, 20) < 20 and randi_range(1, 20) < 20:
+			seed(candidate)
+			break
+	var beam_miss := CombatAction.resolve_spell(caster, beam_target, beams, false, {}, [], 0, 5)
+	check.call(not bool(beam_miss.get("hit", true)) and int(beam_miss.get("damage", 0)) == 4, "Each missed projectile cantrip deals its own half damage")
+	beam_target.armor_class = 10
+	beam_target.current_hp = 100
+	for candidate in 10000:
+		seed(candidate)
+		if randi_range(1, 20) == 1 and randi_range(1, 20) == 15:
+			seed(candidate)
+			break
+	var mixed_beams := CombatAction.resolve_spell(caster, beam_target, beams, false, {}, [], 0, 5)
+	check.call(bool(mixed_beams.get("hit", false)) and int(mixed_beams.get("rays_hit", 0)) == 1 and int(mixed_beams.get("damage", 0)) == 7, "A missed projectile is halved without halving the later hit")
+	var sorcerer := Character.new()
+	sorcerer.initialize("Empowered cantrip fixture", "human", "sorcerer", AbilityScores.new())
+	sorcerer.character_id = "avoided-empowered"
+	sorcerer.features.append(feature.duplicate(true))
+	if not sorcerer.has_feature("sorcerer_metamagic"): sorcerer.features.append({"id": "sorcerer_metamagic"})
+	sorcerer.sorcerer_metamagic_choices.assign(["empowered_spell"])
+	sorcerer.feature_uses["sorcery_points"] = 3
+	beams.projectiles["damage"] = "1d6"
+	beam_target.armor_class = 100
+	beam_target.current_hp = 100
+	for candidate in 10000:
+		seed(candidate)
+		var first_attack := randi_range(1, 20)
+		randi_range(1, 6)
+		var second_attack := randi_range(1, 20)
+		if first_attack < 20 and second_attack < 20:
+			seed(candidate)
+			break
+	var decisions := {"metamagic:empowered": true, "defer_empowered": true}
+	var pending := CombatAction.resolve_spell(sorcerer, beam_target, beams, false, decisions, [], 0, 5)
+	var offered_dice := Dice.selectable_dice(pending.get("damage_request", {}).get("details", {}))
+	check.call(offered_dice.size() == 2 and beam_target.current_hp == 100 and not pending.has("cast_settlement"), "Empowered offers dice from both missed beams before damage and cast settlement")
+	if offered_dice.size() == 2:
+		var first_half := int(floor(float(offered_dice[0].value) / 2.0))
+		FighterChecks._seed_die(6, 6)
+		var settled := CombatAction.finish_pending_spell_damage(sorcerer, beam_target, pending, {"metamagic:empowered_dice": [1]})
+		var after_hp := int(beam_target.current_hp)
+		check.call(int(settled.get("damage", -1)) == first_half + 3 and sorcerer.get_sorcery_points() == 2 and settled.has("cast_settlement") and after_hp == 100 - first_half - 3, "Rerolling the second missed beam uses its new face and pays once")
+		CombatAction.finish_pending_spell_damage(sorcerer, beam_target, pending, {"metamagic:empowered_dice": [1]})
+		check.call(int(beam_target.current_hp) == after_hp and sorcerer.get_sorcery_points() == 2, "Replaying projectile damage cannot reroll or repay")
+	var object_target := {"id": "avoided-object", "name": "Object", "is_object": true, "current_hp": 100, "max_hp": 100, "is_alive": true, "armor_class": 100, "conditions": {}}
+	var context := SpellResolutionContext.new()
+	context.caster = caster
+	context.target = object_target
+	context.spell = attack
+	check.call(not SpellDamageRolls.avoided_spell_damage(context, "miss"), "Avoided-spell damage excludes objects")
+	randomize()
+
 static func _outcome_mapping_checks(check: Callable) -> void:
 	var attack := DataLoader.get_spell("sandbox:outcome_attack_neutral")
 	var ordered_attack := DataLoader.get_spell("sandbox:outcome_attack_ordered")

@@ -5,7 +5,8 @@
 class_name ModeControls
 extends RefCounted
 
-const KINDS := ["activate", "choose", "reselect", "switch", "alternative"]
+const KINDS := ["activate", "choose", "reselect", "switch", "alternative", "base_ac"]
+const BASE_AC_CONTROL := "__base_ac_choice"
 
 ## Batch 062 (queue item 4, Brandon: "Yes."): the explicit outside-combat context.
 ## Outside initiative there is no turn budget, so a declared action/bonus_action
@@ -32,6 +33,8 @@ static func rows(actor: Character) -> Array[Dictionary]:
 	if actor == null: return out
 	FeatureModeRules.refresh(actor)
 	var seen := {}
+	if not DruidRules.is_shaped(actor) and ActorProjectionRules.ac(actor) < 0 and actor.base_ac_candidates().size() > 1:
+		out.append(row(actor, BASE_AC_CONTROL))
 	for feature in actor.features:
 		# Batch 070: a passive Extra Attack / Unarmored Defense rule with owned exclusive upgrades is offered "Choose upgrade" only.
 		if (feature.get("type", "") != "mode_choice" and not RuleUpgradeRules.consumer_target(actor, feature)) or seen.has(str(feature.id)): continue
@@ -40,6 +43,9 @@ static func rows(actor: Character) -> Array[Dictionary]:
 	return out
 
 static func row(actor: Character, feature_id: String) -> Dictionary:
+	if feature_id == BASE_AC_CONTROL:
+		var candidates := actor.base_ac_candidates()
+		return {"feature_id": feature_id, "name": "Base Armor Class", "boundary": "passive", "available": true, "reason": "", "active": false, "mode": "", "uses": 0, "max_uses": 0, "alternatives": [], "candidates": candidates, "actions": ["base_ac"] if candidates.size() > 1 and not DruidRules.is_shaped(actor) and ActorProjectionRules.ac(actor) < 0 else [], "token": token(actor, feature_id)}
 	var feature := actor.get_feature(feature_id)
 	var owned := FeatureModeRules.owned_rule(actor, feature_id)
 	var live := FeatureModeRules.rule(actor, feature_id)
@@ -104,6 +110,8 @@ static func actions(row_data: Dictionary, r: Dictionary) -> Array[String]:
 
 ## Everything a popup answer depends on; any change makes the answer stale.
 static func token(actor: Character, feature_id: String) -> String:
+	if feature_id == BASE_AC_CONTROL:
+		return JSON.stringify([actor.character_id, actor.base_ac_choice, actor.base_ac_candidates(), actor.inventory.equipped_instance_id(Inventory.Slot.BODY), actor.inventory.equipped_instance_id(Inventory.Slot.SHIELD), DruidRules.is_shaped(actor), ActorProjectionRules.ac(actor)])
 	var feature := actor.get_feature(feature_id)
 	var state: Dictionary = actor.feature_modes.get(feature_id, {})
 	var pool := str(feature.get("resource_id", feature_id))
@@ -121,7 +129,11 @@ static func label(r: Dictionary) -> String:
 ## Option ids a kind offers (modes, or "group|upgrade" pairs).
 static func options(r: Dictionary, kind: String) -> Array[String]:
 	var out: Array[String] = []
-	if kind == "alternative":
+	if kind == "base_ac":
+		out.append(JSON.stringify(["automatic"]))
+		for candidate in r.candidates:
+			out.append(str(candidate.id))
+	elif kind == "alternative":
 		for g in r.alternatives:
 			for o in g.options:
 				if o != g.chosen: out.append("%s|%s" % [g.group, o])
@@ -129,6 +141,14 @@ static func options(r: Dictionary, kind: String) -> Array[String]:
 		for m in r.modes:
 			if kind == "activate" or kind == "choose" or m != r.mode: out.append(m)
 	return out
+
+## Player-facing labels keep exact internal source identities out of the menu.
+static func option_label(row_data: Dictionary, kind: String, option: String) -> String:
+	if kind == "base_ac":
+		if option == JSON.stringify(["automatic"]): return "Automatic (highest AC)"
+		for candidate in row_data.candidates:
+			if str(candidate.id) == option: return "%s (AC %d)" % [candidate.name, int(candidate.value)]
+	return option.replace("|", ": ")
 
 ## Batch 057: the combat-budget cost of a kind ("none" for choose/alternative).
 static func cost(actor: Character, feature_id: String, kind: String) -> String:
@@ -164,6 +184,9 @@ static func apply(actor: Character, feature_id: String, kind: String, option: St
 	var r := row(actor, feature_id)
 	if kind not in r.actions: return {"success": false, "reason": "unavailable"}
 	if option not in options(r, kind): return {"success": false, "reason": "unknown_option"}
+	if kind == "base_ac":
+		actor.base_ac_choice = "" if option == JSON.stringify(["automatic"]) else option
+		return {"success": true, "reason": "chosen"}
 	var price := cost(actor, feature_id, kind)
 	var refused := cost_error(actor, feature_id, kind, budget)
 	if not refused.is_empty(): return {"success": false, "reason": refused}
@@ -211,4 +234,4 @@ static func duration_label(seconds: int) -> String:
 	return " ".join(parts)
 
 static func kind_label(kind: String) -> String:
-	return {"activate": "Activate", "choose": "Choose mode", "reselect": "Change mode", "switch": "Switch mode", "alternative": "Choose upgrade"}.get(kind, kind)
+	return {"activate": "Activate", "choose": "Choose mode", "reselect": "Change mode", "switch": "Switch mode", "alternative": "Choose upgrade", "base_ac": "Choose base AC"}.get(kind, kind)

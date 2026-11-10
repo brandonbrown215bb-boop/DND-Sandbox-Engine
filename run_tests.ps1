@@ -244,6 +244,7 @@ if ($runIntegration) {
 	$scenarios += "batch_056_created_initiative_flow"
 	$scenarios += "created_actor_scheduling_flow"
 	$scenarios += "shared_initiative_flow"
+	$scenarios += "whole_damage_flow"
 	$scenarios += "batch_057_mode_costs_flow"
 	$scenarios += "batch_058_summon_lists_flow"
 	$scenarios += "batch_059_corpse_limit_flow"

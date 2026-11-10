@@ -368,6 +368,8 @@ func _validate_save_data(data: Dictionary) -> String:
 			if not magic_error.is_empty(): return magic_error
 			var feature_mode_error := FeatureModeRules.saved_error(character_data)
 			if not feature_mode_error.is_empty(): return feature_mode_error
+			var base_ac_choice_error := Character.saved_base_ac_choice_error(character_data)
+			if not base_ac_choice_error.is_empty(): return base_ac_choice_error
 			var alternative_error := RuleUpgradeRules.saved_error(character_data)
 			if not alternative_error.is_empty(): return alternative_error
 			var numeric_pool_error := ResourcePoolRules.saved_state_error(character_data)
@@ -578,6 +580,8 @@ func _validate_party_data(data: Dictionary, campaign_seconds: int = 0) -> String
 		if not magic_error.is_empty(): return magic_error
 		var feature_mode_error := FeatureModeRules.saved_error(character_data)
 		if not feature_mode_error.is_empty(): return feature_mode_error
+		var base_ac_choice_error := Character.saved_base_ac_choice_error(character_data)
+		if not base_ac_choice_error.is_empty(): return base_ac_choice_error
 		var alternative_error := RuleUpgradeRules.saved_error(character_data)
 		if not alternative_error.is_empty(): return alternative_error
 		var numeric_pool_error := ResourcePoolRules.saved_state_error(character_data)

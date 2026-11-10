@@ -209,7 +209,7 @@ static func emit(state: CombatState, event: Dictionary) -> void:
 
 
 ## Room operations use the same declared sound and actual-attempt boundary.
-static func room_interact(room: Dictionary, actor: Character, party: Array, grid: HexGrid, id: String, action: String, instance_id: String = "") -> Dictionary:
+static func room_interact(room: Dictionary, actor: Character, party: Array, grid: HexGrid, id: String, action: String, instance_id: String = "", allow_whole_damage_choice: bool = false) -> Dictionary:
 	var object := LocalRoomRules.get_object(room, id, actor)
 	if object.is_empty(): return LocalRoomRules.failure("That object is no longer known here.")
 	var declarations: Variant = object.get("interaction_noise", {})
@@ -220,11 +220,62 @@ static func room_interact(room: Dictionary, actor: Character, party: Array, grid
 	if PhysicalFactsRules.get_plane(actor, room) != PhysicalFactsRules.get_plane(object, room): return LocalRoomRules.failure("The object is on another plane.")
 	var object_altitude := int(object.get("altitude_feet", LocalRoomRules.elevation_feet(room, LocalRoomRules.coord(object.position))))
 	if abs(LocalRoomRules.altitude_feet(room, actor.character_id) - object_altitude) > 5: return LocalRoomRules.failure("Move within 5 feet of the object first.")
-	var result := LocalRoomRules.interact(room, id, action, actor, instance_id, LocalRoomSearchRules.check_context(room, actor, grid, party))
+	var context := LocalRoomSearchRules.check_context(room, actor, grid, party)
+	context["allow_whole_damage_choice"] = allow_whole_damage_choice
+	var result := LocalRoomRules.interact(room, id, action, actor, instance_id, context)
+	if result.has("room_strike"):
+		result.room_strike["origin"] = LocalRoomRules.coord(room.party_positions[actor.character_id])
+		result.room_strike["object_position"] = LocalRoomRules.coord(object.position)
+		result.room_strike["declarations"] = declarations.duplicate(true)
+		result.room_strike["noise"] = noise.duplicate(true)
+	return _finish_room_noise(room, actor, party, grid, action, declarations, noise, result)
+
+static func room_strike_error(room: Dictionary, actor: Character, party: Array, id: String, captured: Dictionary) -> String:
+	if bool(captured.get("settled", false)): return "That strike was already settled."
+	if actor == null or actor not in party or not actor.is_alive or CombatAction.is_incapacitated(actor) or not room.get("party_positions", {}).has(actor.character_id):
+		return "The attacker is no longer available."
+	if ContainmentRules.involved(room, "object", id) or not ContainmentRules.relation(room, "character", actor.character_id).is_empty(): return "The attacker or object is now inside a container."
+	var object := LocalRoomRules.get_object(room, id, actor)
+	if object.is_empty() or not is_same(object, captured.get("object")) or bool(object.get("removed", false)) or actor != captured.get("actor") or not CombatObjectRules.can_take_spell_damage(object):
+		return "The struck object is no longer available."
+	var position := LocalRoomRules.coord(room.party_positions[actor.character_id])
+	if position != captured.get("origin") or LocalRoomRules.coord(object.position) != captured.get("object_position") or HexUtils.get_distance(position, LocalRoomRules.coord(object.position)) > 1 or PhysicalFactsRules.get_plane(actor, room) != PhysicalFactsRules.get_plane(object, room):
+		return "The struck object is no longer in reach."
+	var object_altitude := int(object.get("altitude_feet", LocalRoomRules.elevation_feet(room, LocalRoomRules.coord(object.position))))
+	if abs(LocalRoomRules.altitude_feet(room, actor.character_id) - object_altitude) > 5: return "The struck object is no longer in reach."
+	var declarations: Variant = object.get("interaction_noise", {})
+	if not declarations is Dictionary: return "Object interaction_noise must map operations to sounds."
+	var noise: Variant = declarations.get("strike", {})
+	if declarations.has("strike") and not error(noise).is_empty(): return error(noise)
+	return ""
+
+static func abort_room_strike(room: Dictionary, actor: Character, party: Array, grid: HexGrid, captured: Dictionary, reason: String) -> Dictionary:
+	if bool(captured.get("settled", false)): return LocalRoomRules.failure("That strike was already settled.")
+	captured["settled"] = true
+	var result := {"success": false, "seconds": 6, "message": reason}
+	return _finish_room_noise(room, actor, party, grid, "strike", captured.get("declarations", {}), captured.get("noise", {}), result, captured.get("origin", Vector2i.ZERO))
+
+static func finish_room_strike(room: Dictionary, actor: Character, party: Array, grid: HexGrid, id: String, captured: Dictionary, attack: Dictionary) -> Dictionary:
+	var stale := room_strike_error(room, actor, party, id, captured)
+	if not stale.is_empty(): return abort_room_strike(room, actor, party, grid, captured, stale)
+	if int(attack.get("whole_damage_completion_id", 0)) != int(captured.get("attack", {}).get("whole_damage_request", {}).get("id", -1)):
+		return abort_room_strike(room, actor, party, grid, captured, "The captured strike did not settle.")
+	captured["settled"] = true
+	var object := LocalRoomRules.get_object(room, id, actor)
+	var declarations: Dictionary = object.get("interaction_noise", {})
+	var noise: Variant = declarations.get("strike", {})
+	var result := LocalRoomRules.finish_strike(object, captured.get("weapon", {}), actor, attack)
+	return _finish_room_noise(room, actor, party, grid, "strike", declarations, noise, result)
+
+static func _finish_room_noise(room: Dictionary, actor: Character, party: Array, grid: HexGrid, action: String, declarations: Dictionary, noise: Variant, result: Dictionary, captured_origin: Variant = null) -> Dictionary:
 	if int(result.get("seconds", 0)) <= 0 or not declarations.has(action) or CombatPerception._has_condition(actor, "silenced"): return result
+	if not is_instance_valid(grid):
+		result["noise"] = noise.duplicate(true)
+		result["heard_by"] = []
+		return result
 	# Resolve the operation first, so an opened door no longer blocks its sound.
 	for position in grid.tiles: grid.get_tile(position).custom_properties["blocks_sound"] = LocalRoomRules.blocks_sound(room, position)
-	var origin := LocalRoomRules.coord(room.party_positions[actor.character_id])
+	var origin: Vector2i = captured_origin if captured_origin is Vector2i else LocalRoomRules.coord(room.party_positions[actor.character_id])
 	var heard: Array[String] = []
 	for observer in party:
 		if not observer.is_alive or not room.party_positions.has(observer.character_id) or not ContainmentRules.relation(room, "character", observer.character_id).is_empty(): continue

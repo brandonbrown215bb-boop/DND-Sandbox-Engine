@@ -1791,7 +1791,7 @@ func request_mode_control(owner: Character, offer: Dictionary) -> Dictionary:
 	var labels := {"cancel": "Cancel"}
 	for option in ModeControls.options(row, kind):
 		choices.append(option)
-		labels[option] = option.replace("|", ": ")
+		labels[option] = ModeControls.option_label(row, kind, option)
 	_mode_popup_serial += 1
 	var serial := _mode_popup_serial
 	var picked := await _request_popup_choice("%s: %s" % [ModeControls.kind_label(kind), row.name], choices, labels)
@@ -1804,7 +1804,7 @@ func request_mode_control(owner: Character, offer: Dictionary) -> Dictionary:
 		return {"success": false, "reason": "stale"}
 	result = ModeControls.apply(owner, feature_id, kind, picked, str(offer.token), _mode_budget())
 	if result.success:
-		add_log("%s: %s %s." % [row.name, ModeControls.kind_label(kind).to_lower(), picked.replace("|", ": ")])
+		add_log("%s: %s %s." % [row.name, ModeControls.kind_label(kind).to_lower(), ModeControls.option_label(row, kind, picked)])
 		_update_sidebar_stats()
 		if str(result.get("cost_kind", "free")) in ["action", "magic_action", "bonus_action"]:
 			await get_parent()._completed_player_action(owner)

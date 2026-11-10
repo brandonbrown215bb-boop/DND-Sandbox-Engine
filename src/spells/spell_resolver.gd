@@ -58,6 +58,8 @@ static func resolve(caster: Character, target_entity, spell_data: Dictionary, de
 	for input_id in cast.spell.get("formula_inputs", {}):
 		if not SpellFormulaInputs.read(cast, str(input_id)).get("success", false):
 			return {"success":false,"refused":true,"message":"Formula input was not captured by this cast."}
+	if not ongoing_zone_trigger and not (owned_host_valid and not invocation_host.ready_release_token.is_empty()) and cast.caster.untrained_worn_armor():
+		return {"success": false, "refused": true, "message": "You cannot cast spells while wearing armor you lack training in."}
 	if cast.caster.has_condition("raging") and not ongoing_zone_trigger:
 		return {"success": false, "message": "You cannot cast spells while raging."}
 	if not ongoing_zone_trigger and not (owned_host_valid and not invocation_host.ready_release_token.is_empty()) and not DruidRules.can_cast_spell(cast.caster, cast.spell):
@@ -220,7 +222,10 @@ static func resolve(caster: Character, target_entity, spell_data: Dictionary, de
 		projectile_result["slot_level"] = cast.slot_level
 		projectile_result["effect_cast"] = cast.effect_cast
 		if not caller_owns_settlement:
-			projectile_result["cast_settlement"] = CastInterruptionRules.settle_cast_outcome(cast, CastInterruptionRules.result_outcome(cast.spell, projectile_result))
+			if projectile_result.has("damage_request"):
+				SpellDamageRolls.attach_projectile_cast(projectile_result, cast)
+			else:
+				projectile_result["cast_settlement"] = CastInterruptionRules.settle_cast_outcome(cast, CastInterruptionRules.result_outcome(cast.spell, projectile_result))
 		return projectile_result
 	if SharedSpell.uses(cast.spell):
 		var result := SharedSpell.resolve(cast)

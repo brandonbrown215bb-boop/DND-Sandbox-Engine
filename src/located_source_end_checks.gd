@@ -149,6 +149,8 @@ static func run(check: Callable) -> void:
 
 static func _exact_copy_actor_producers(check: Callable) -> void:
 	var owner := Batch031Checks._character("located-producers", 30)
+	# This fixture owns exactly the copies it projects, independent of class kits.
+	owner.inventory = Inventory.new()
 	var room_state := room(owner)
 	var previous_context := GameManager.transition_context
 	var previous_state := GameManager.current_state

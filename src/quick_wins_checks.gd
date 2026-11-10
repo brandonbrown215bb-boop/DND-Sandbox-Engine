@@ -152,3 +152,67 @@ static func _budget(check: Callable) -> void:
 
 static func _armor(check: Callable) -> void:
 	check.call(Inventory.armor_change_seconds({"type":"armor","armor_type":"light"}, true) == 60 and Inventory.armor_change_seconds({"type":"armor","armor_type":"medium"}, true) == 300 and Inventory.armor_change_seconds({"type":"armor","armor_type":"heavy"}, true) == 600 and Inventory.armor_change_seconds({"type":"armor","armor_type":"heavy"}, false) == 300, "S252 don/doff table uses campaign seconds")
+
+	var wearer := Batch051Checks.fresh("armor_penalties")
+	wearer.inventory.equip(Inventory.Slot.BODY, "chain_mail", true)
+	wearer.armor_proficiencies.clear()
+	wearer.ability_scores.strength = 12
+	check.call(wearer.untrained_worn_armor() and wearer.armor_speed_penalty() == 2 and wearer.armor_stealth_disadvantage(), "CXM-07 untrained chain mail applies the listed worn penalties below STR 13")
+	check.call(EventResolver.ability_check_roll_mode(wearer, "DEX", "Stealth", {}).disadvantage and CombatAction.save_has_disadvantage(wearer, "STR") and CombatAction.attacker_has_condition_disadvantage(wearer, "DEX"), "CXM-07 worn armor reaches checks, saves and attacks")
+	var refused_cast := CombatAction.resolve_spell(wearer, target(), DataLoader.get_spell("fixture:budget_light"))
+	check.call(not refused_cast.get("success", true) and refused_cast.get("refused", false), "CXM-07 untrained armor refuses a new spell before resolution")
+	var original_speed := wearer.speed
+	wearer.speed = 2
+	wearer.set_movement_speed_feet("fly", 60)
+	check.call(wearer.get_speed() == 0 and wearer.movement_speed_feet("fly") == 50, "CXM-07 Strength penalty reduces each speed independently even when walking becomes zero")
+	wearer.speed = original_speed
+	wearer.ability_scores.strength = 13
+	wearer.armor_proficiencies.append("heavy")
+	check.call(wearer.armor_speed_penalty() == 0 and not wearer.untrained_worn_armor() and wearer.armor_stealth_disadvantage(), "CXM-07 training and STR threshold clear their own penalties, not Stealth")
+	wearer.inventory.unequip(Inventory.Slot.BODY)
+	wearer.inventory.unequip(Inventory.Slot.WEAPON)
+	wearer.inventory.unequip(Inventory.Slot.OFFHAND)
+	wearer.inventory.equip(Inventory.Slot.SHIELD, "shield", true)
+	var untrained_shield_ac := wearer.get_ac()
+	check.call(wearer.trained_shield_bonus() == 0 and not wearer.untrained_worn_armor(), "CXM-07 untrained Shield gives no AC and does not impose armor penalties")
+	wearer.armor_proficiencies.append("shields")
+	wearer._recalculate_ac()
+	check.call(wearer.trained_shield_bonus() == 2 and wearer.get_ac() == untrained_shield_ac + 2, "CXM-07 Shield training grants exactly one bonus to real AC")
+
+	var invalid_item := {"id":"fixture:bad_armor", "name":"Bad armor", "type":"armor", "armor_type":"heavy", "ac":16, "strength_requirement":"13"}
+	var errors_before := DataLoader._load_errors.size()
+	var accepted_bad := DataLoader._validate_content(invalid_item, "item", "armor validation probe")
+	DataLoader._load_errors.resize(errors_before)
+	invalid_item.strength_requirement = 13
+	invalid_item["stealth_disadvantage"] = "false"
+	var accepted_bad_stealth := DataLoader._validate_content(invalid_item, "item", "armor validation probe")
+	DataLoader._load_errors.resize(errors_before)
+	invalid_item.erase("stealth_disadvantage")
+	invalid_item.armor_type = "unknown"
+	var accepted_bad_category := DataLoader._validate_content(invalid_item, "item", "armor validation probe")
+	DataLoader._load_errors.resize(errors_before)
+	check.call(not accepted_bad and not accepted_bad_stealth and not accepted_bad_category, "CXM-07 malformed armor threshold, Stealth facts and category are rejected when loaded")
+	var stale := Batch051Checks.fresh("cxm07_unknown_armor")
+	stale.inventory.equipped[Inventory.Slot.BODY] = "fixture:missing_armor"
+	check.call(stale.untrained_worn_armor(), "CXM-07 an unknown legacy armor definition cannot silently authorize spellcasting")
+	Batch070Checks.load_fixtures()
+	var room_actor := Batch070Checks.actor("cxm07_armor_controls")
+	var original_ac := room_actor.get_ac()
+	var mage_cast := CombatAction.resolve_spell(room_actor, room_actor, DataLoader.get_spell("mage_armor"), false, {}, [], 1, 0)
+	if mage_cast.get("success", false): SpellEffects.grant(room_actor, mage_cast.get("effect_cast", {}), "mage_armor", "start")
+	var had_mage := SpellEffects.has_spell(room_actor, "mage_armor")
+	var chain_copy := Batch041Checks.add_copy(room_actor, "chain_mail")
+	var equipped := room_actor.inventory.equipment_control_equip(Inventory.Slot.BODY, chain_copy)
+	check.call(equipped.success and original_ac == 13 and room_actor.get_ac() == 16 and had_mage and not SpellEffects.has_spell(room_actor, "mage_armor"), "CXM-07 actual equipment control recalculates AC and ends Mage Armor: before=%d after=%d result=%s" % [original_ac, room_actor.get_ac(), str(equipped)])
+	var removed := room_actor.inventory.equipment_control_unequip(Inventory.Slot.BODY)
+	check.call(removed.success and room_actor.get_ac() == 13, "CXM-07 actual armor removal restores the previous legal base: after=%d result=%s" % [room_actor.get_ac(), str(removed)])
+
+	var swapper := Batch070Checks.actor("cxm07_swap")
+	swapper.inventory.equip(Inventory.Slot.SHIELD, "shield", true)
+	swapper.inventory.equip(Inventory.Slot.BODY, "chain_mail", true)
+	var chain_id := swapper.inventory.equipped_instance_id(Inventory.Slot.BODY)
+	var scale_id := Batch041Checks.add_copy(swapper, "scale_mail")
+	var owned_before := swapper.inventory.owned_instances().map(func(r): return str(r.instance_id))
+	var swap := swapper.inventory.equipment_control_equip(Inventory.Slot.BODY, scale_id)
+	var owned_after := swapper.inventory.owned_instances().map(func(r): return str(r.instance_id))
+	check.call(swap.success and owned_before.size() == owned_after.size() and chain_id in owned_after and scale_id in owned_after and swapper.inventory.equipped_instance_id(Inventory.Slot.BODY) == scale_id, "CXM-07 armor replacement with a worn Shield retains each exact copy once")

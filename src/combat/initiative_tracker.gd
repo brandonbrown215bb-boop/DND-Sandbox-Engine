@@ -18,6 +18,10 @@ var current_round: int = 1
 var shared_groups: Dictionary = {}
 var _started_counts: Dictionary = {}
 var _shared_members: Dictionary = {}
+var _exchange_window: Dictionary = {}
+var _exchange_serial: int = 0
+var _entry_open: bool = true
+var _exchange_offered: Dictionary = {}
 
 ## One d20-test owner for encounter entry, late arrivals and rolled groups.
 ## Groups capture the first authored member's live modes once, then keep the count.
@@ -27,9 +31,11 @@ static func roll_result(actor, dex: int = -1, decisions: Dictionary = {}) -> Dic
 	var advantage := CombatAction.is_invisible(actor)
 	if actor is Character:
 		advantage = advantage or actor.has_feature("champion_remarkable_athlete") or actor.has_feature_effect("initiative_advantage")
-	var result := RollTokenRules.resolve_d20_test(actor, "initiative", advantage, CombatAction.is_incapacitated(actor), decisions)
+	var result := RollTokenRules.resolve_d20_test(actor, "initiative", advantage, CombatAction.is_incapacitated(actor) or (actor is Character and actor.untrained_worn_armor()), decisions)
 	var exhaustion: int = actor.exhaustion_level if actor is Character else int(actor.get("exhaustion_level", actor.get("conditions", {}).get("exhaustion", 0)))
 	result["modifier"] = AbilityScores.get_modifier(dex) - exhaustion * 2
+	if actor is Character and FeatRules.initiative_benefit(actor, "proficiency"):
+		result["modifier"] += actor.proficiency_bonus
 	result["total"] = int(result.get("total", 1)) + int(result.modifier)
 	return result
 
@@ -42,6 +48,10 @@ func clear() -> void:
 	shared_groups.clear()
 	_started_counts.clear()
 	_shared_members.clear()
+	_exchange_window.clear()
+	_exchange_serial += 1
+	_entry_open = true
+	_exchange_offered.clear()
 
 
 ## Add a participant.
@@ -64,6 +74,53 @@ func add_combatant(id: String, name: String, is_player: bool, entity, roll: int,
 		"has_acted": false
 	})
 
+
+## A window is bound to this tracker, exact entries and one response. It cannot
+## survive an encounter reset, a turn start, or either participant leaving.
+func begin_exchange(owner_id: String) -> int:
+	if not _exchange_window.is_empty() or not _entry_open or _exchange_offered.has(owner_id): return -1
+	var owner := _exchange_entry(owner_id)
+	if owner.is_empty() or not owner.entity is Character or not FeatRules.initiative_benefit(owner.entity, "willing_exchange") or CombatAction.is_incapacitated(owner.entity): return -1
+	_exchange_offered[owner_id] = true
+	_exchange_serial += 1
+	_exchange_window = {"token": _exchange_serial, "owner": owner, "owner_entity": owner.entity}
+	return _exchange_serial
+
+func _exchange_entry(id: String) -> Dictionary:
+	for entry in combatants:
+		if str(entry.id) == id: return entry
+	return {}
+
+func exchange_candidates(token: int) -> Array[Dictionary]:
+	var out: Array[Dictionary] = []
+	if not _entry_open or _exchange_window.is_empty() or int(_exchange_window.get("token", -1)) != token: return out
+	var owner: Dictionary = _exchange_window.owner
+	if not combatants.any(func(entry): return is_same(entry, owner)) or owner.entity != _exchange_window.owner_entity or CombatAction.is_incapacitated(owner.entity): return out
+	for entry in combatants:
+		if entry != owner and entry.get("is_player", false) and entry.get("exchange_eligible", true) and entry.entity is Character and not entry.get("scheduling_only", false) and not CombatAction.is_incapacitated(entry.entity): out.append(entry)
+	return out
+
+func bind_exchange_target(token: int, target: Dictionary) -> bool:
+	if not exchange_candidates(token).any(func(entry): return is_same(entry, target)): return false
+	_exchange_window["target"] = target
+	_exchange_window["target_entity"] = target.entity
+	return true
+
+func close_exchange_entry() -> void:
+	_entry_open = false
+	_exchange_window.clear()
+
+func settle_exchange(token: int, target: Dictionary, willing: bool) -> bool:
+	var candidates := exchange_candidates(token)
+	if _exchange_window.is_empty() or int(_exchange_window.get("token", -1)) != token: return false
+	var owner: Dictionary = _exchange_window.owner
+	var bound: bool = is_same(_exchange_window.get("target", {}), target) and _exchange_window.get("target_entity") == target.get("entity")
+	_exchange_window.clear()
+	if not bound or not willing or target.is_empty() or not candidates.any(func(entry): return is_same(entry, target)) or not FeatRules.initiative_benefit(owner.entity, "willing_exchange"): return false
+	var value: int = owner.roll
+	owner.roll = target.roll
+	target.roll = value
+	return true
 
 ## Sort initiative: highest roll first, then highest DEX, then stable ID.
 ## The final key must be deterministic and transitive; a random comparator can
@@ -112,6 +169,8 @@ func add_shared_combatant(id: String, name: String, entity: Character, group_id:
 
 ## Called at the actual turn boundary, before any action or suspended choice.
 func mark_turn_started() -> void:
+	_entry_open = false
+	_exchange_window.clear()
 	var active := get_active()
 	if active.is_empty(): return
 	_started_counts[int(active.roll)] = current_round

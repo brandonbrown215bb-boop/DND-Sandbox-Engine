@@ -189,8 +189,27 @@ func _run_class_equipment_smoke(target_class: String, expected_equipment: Array[
 	await get_tree().process_frame
 	creation.btn_next.pressed.emit()
 	await get_tree().process_frame
+	# Pick a background with no overlap with the pinned class skills below.
+	var background_id := "criminal" if target_class in ["Cleric", "Paladin"] else "acolyte"
+	var background_button: Button
+	for button in creation._background_list.find_children("*", "Button", true, false):
+		if button.text == DataLoader.get_background(background_id).name: background_button = button
+	_check(background_button != null, "%s smoke offers its background through the production UI" % target_class)
+	if background_button == null: return
+	background_button.pressed.emit()
+	await get_tree().process_frame
+	var ability_picker: OptionButton = creation._background_list.get_node("BackgroundAbilities")
+	ability_picker.select(1)
+	ability_picker.item_selected.emit(1)
+	var equipment_picker: OptionButton = creation._background_list.get_node("BackgroundEquipment")
+	equipment_picker.select(1) # 50 GP; leave the class kit assertions independent.
+	equipment_picker.item_selected.emit(1)
+	_check(not creation.btn_next.disabled, "%s smoke completes a legal background choice" % target_class)
 	creation.btn_next.pressed.emit()
 	await get_tree().process_frame
+	creation.btn_next.pressed.emit()
+	await get_tree().process_frame
+	_check(creation.current_step == creation.CreationStep.EQUIPMENT, "%s smoke reaches Equipment after Background and Stats" % target_class)
 
 	var picks := []
 	if target_class == "Cleric":
@@ -220,23 +239,24 @@ func _run_class_equipment_smoke(target_class: String, expected_equipment: Array[
 	_check(character != null and character.class_id == target_class.to_lower(), "normal creation saves a %s character" % target_class)
 	if character == null:
 		return
+	_check(character.background_id == background_id and character.origin_feat == DataLoader.get_background(background_id).origin_feat, "normal %s retains its chosen background and Origin feat" % target_class)
 	if CLASS_SKILL_PICKS.has(target_class):
 		var chosen: Array = CLASS_SKILL_PICKS[target_class]
 		_check(character.creation_choices.get("skills", []) == chosen and chosen.all(func(skill): return character.skill_proficiencies.count(skill) == 1), "normal %s owns its selected class skills once" % target_class)
 	if target_class == "Fighter":
 		_check(character.inventory.get_armor() == "chain_mail", "normal Fighter equips chain mail")
 		_check(character.inventory.get_equipped(Inventory.Slot.SHIELD).is_empty(), "normal Fighter option A has no shield")
-		_check(character.inventory.get_weapon() == "greatsword" and character.inventory.gold == 4, "normal Fighter equips a greatsword and has 4 GP")
+		_check(character.inventory.get_weapon() == "greatsword" and character.inventory.gold == 54, "normal Fighter equips a greatsword and has 4 class GP plus 50 background GP")
 		_check(character.fighter_training.get("skills", []).size() == 2 and character.creation_choices.get("skills", []) == character.fighter_training.get("skills", []), "normal Fighter keeps its preselected training skills as the class picks")
 	elif target_class == "Barbarian":
 		_check(character.inventory.get_armor().is_empty(), "normal Barbarian starts unarmored")
 		_check(character.inventory.get_weapon() == "greataxe", "normal Barbarian equips a greataxe")
-		_check(character.inventory.count_item("handaxe") == 4 and character.inventory.has_item("explorers_pack") and character.inventory.gold == 15, "normal Barbarian carries four Handaxes, an Explorer's Pack and 15 GP")
+		_check(character.inventory.count_item("handaxe") == 4 and character.inventory.has_item("explorers_pack") and character.inventory.gold == 65, "normal Barbarian carries four Handaxes, an Explorer's Pack and 15 class GP plus 50 background GP")
 		var expected_unarmored_ac := 10 + character.ability_scores.get_ability_modifier("DEX") + character.ability_scores.get_ability_modifier("CON")
 		_check(character.has_feature("barbarian_unarmored_defense") and character.get_ac() == expected_unarmored_ac, "normal Barbarian starts with Unarmored Defense")
 	elif target_class == "Rogue":
 		_check(character.inventory.get_armor() == "leather_armor", "normal Rogue equips leather armor")
-		_check(character.inventory.get_weapon() == "dagger" and character.inventory.gold == 8, "normal Rogue equips a dagger and has 8 GP")
+		_check(character.inventory.get_weapon() == "dagger" and character.inventory.gold == 58, "normal Rogue equips a dagger and has 8 class GP plus 50 background GP")
 		_check(character.inventory.has_item("shortbow") and character.inventory.has_item("burglars_pack"), "normal Rogue carries a shortbow and a Burglar's Pack")
 		_check(character.inventory.has_item("dagger") and character.inventory.count_item("arrows") == 0, "normal Rogue carries a second dagger and its Arrows are in the Quiver")
 		_check(character.inventory.has_item("thieves_tools"), "normal Rogue carries thieves' tools")
@@ -281,7 +301,7 @@ func _run_class_equipment_smoke(target_class: String, expected_equipment: Array[
 	elif target_class == "Ranger":
 		_check(character.inventory.get_armor() == "studded_leather_armor", "normal Ranger equips studded leather armor")
 		_check(character.inventory.get_equipped(Inventory.Slot.SHIELD).is_empty() and character.inventory.has_item("shortsword") and character.inventory.has_item("longbow"), "normal Ranger carries a shortsword and longbow and has no starting shield")
-		_check(character.inventory.get_weapon() == "scimitar" and character.inventory.gold == 7, "normal Ranger equips a scimitar and has 7 GP")
+		_check(character.inventory.get_weapon() == "scimitar" and character.inventory.gold == 57, "normal Ranger equips a scimitar and has 7 class GP plus 50 background GP")
 		character.level_up()
 		_check(character.has_feature("ranger_fighting_style") and character.get_attack_style_bonus(DataLoader.get_item("longbow")) == 0 and not character.feature_choices.has("ranger_fighting_style"), "normal Ranger waits for a level-2 Fighting Style choice")
 		await _choose_sheet_style(character, "archery")

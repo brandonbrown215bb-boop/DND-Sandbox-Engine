@@ -13,6 +13,8 @@ static var active_combat_round: int = 0
 static var bounded_round_rider_locks: Dictionary = {}
 static var weapon_rider_rolls: Dictionary = {}
 static var weapon_rider_roll_serial: int = 0
+static var whole_damage_requests: Dictionary = {}
+static var whole_damage_request_serial: int = 0
 
 
 static func advance_combat_turn(actor: Character = null, round_number: int = -1) -> void:
@@ -26,6 +28,13 @@ static func advance_combat_turn(actor: Character = null, round_number: int = -1)
 	active_turn_actor_id = actor.get_instance_id() if actor != null else 0
 	if actor != null: MaxHpSourceRules.on_event(actor, "turn_started")
 	if actor != null: FeatureModeRules.on_event(actor, "turn_start")
+
+## A room strike takes its own six-second action outside initiative.
+static func begin_room_weapon_turn() -> void:
+	bounded_hit_rider_locks.clear()
+	weapon_rider_rolls.clear()
+	active_turn_serial += 1
+	active_turn_actor_id = 0
 
 
 static func reset_bounded_owner_turn_rider_locks() -> void:
@@ -279,6 +288,7 @@ static func save_has_advantage(entity, ability: String) -> bool:
 
 static func save_has_disadvantage(entity, ability: String) -> bool:
 	var upper := ability.to_upper()
+	if entity is Character and upper in ["STR", "DEX"] and entity.untrained_worn_armor(): return true
 	if upper == "DEX" and condition_rule("restrained", "dex_save_disadvantage") and has_condition(entity, "restrained"):
 		return true
 	if upper == "STR" and not conditions_with_consequence(entity, "str_d20_disadvantage").is_empty():
@@ -307,6 +317,7 @@ static func attack_target_imposes_disadvantage(target_entity, attack_distance_he
 
 
 static func attacker_has_condition_disadvantage(attacker, ability: String = "", decisions: Dictionary = {}) -> bool:
+	if attacker is Character and ability.to_upper() in ["STR", "DEX"] and attacker.untrained_worn_armor(): return true
 	for condition in conditions_with_consequence(attacker, "attack_disadvantage"):
 		if condition == "blinded" and bool(decisions.get("perception_handles_blindness", false)): continue
 		if has_condition(attacker, condition):
@@ -1325,7 +1336,7 @@ static func unarmed_attack_profile(attacker: Character) -> Dictionary:
 		if attacker.has_condition("alter_self_natural_%s" % damage_type):
 			var spell_ability := attacker.get_spellcasting_ability()
 			return {
-				"id": "alter_self_natural_weapons", "type": "weapon", "weapon_type": "simple", "properties": [],
+				"id": "alter_self_natural_weapons", "type": "weapon", "weapon_type": "simple", "properties": [], "_unarmed_strike": true,
 				"ability": spell_ability, "damage": "1d6+%s" % spell_ability,
 				"damage_type": damage_type, "range": 1,
 			}
@@ -1333,7 +1344,7 @@ static func unarmed_attack_profile(attacker: Character) -> Dictionary:
 	var damage_die := attacker.get_martial_arts_die() if martial_arts else "1"
 	var damage_type := "force" if attacker.has_feature("monk_empowered_strikes") else "bludgeoning"
 	return {
-		"id": "unarmed_strike", "type": "weapon", "weapon_type": "simple", "properties": [],
+		"id": "unarmed_strike", "type": "weapon", "weapon_type": "simple", "properties": [], "_unarmed_strike": true,
 		"ability": "DEX" if martial_arts and attacker.ability_scores.get_score("DEX") >= attacker.ability_scores.get_score("STR") else "STR",
 		"damage": damage_die + "+DEX" if martial_arts and attacker.ability_scores.get_score("DEX") >= attacker.ability_scores.get_score("STR") else damage_die + "+STR",
 		"damage_type": damage_type,
@@ -1614,6 +1625,7 @@ static func resolve_weapon_attack(attacker: Character, target_entity, weapon_dat
 	if is_charmed_by(attacker, target_entity):
 		return {"success": false, "hit": false, "damage": 0, "charmed_blocked": true, "message": "%s cannot attack their charmer." % attacker.character_name}
 	weapon_data = weapon_data.duplicate(true)
+	weapon_data["_damage_two_hands"] = attacker.inventory.get_equipped(Inventory.Slot.SHIELD).is_empty() and attacker.inventory.get_equipped(Inventory.Slot.OFFHAND).is_empty()
 	# S-250: authored range bands are in feet. Existing fixtures that only carry
 	# a hex range keep their old behavior; production ranged weapons can declare
 	# both bands without converting feet to board cells in the catalog.
@@ -1791,6 +1803,7 @@ static func resolve_weapon_attack(attacker: Character, target_entity, weapon_dat
 		attack_result["roll_kept"].append(true)
 		attack_result["is_crit"] = reroll >= attacker.crit_range
 		attack_result["is_miss"] = reroll == 1
+		provisional_hit = bool(attack_result["is_crit"]) or (not bool(attack_result["is_miss"]) and int(attack_result["total"]) >= target_ac)
 
 	var captured := {
 		"attacker": attacker, "target": target_entity, "weapon_data": weapon_data,
@@ -1979,6 +1992,7 @@ static func _settle_weapon_attack_context(context: Dictionary) -> Dictionary:
 		return miss
 
 	var hit_stage := {"attacker": attacker, "target_entity": target_entity, "weapon_data": weapon_data, "reaction_decisions": reaction_decisions, "additional_damage": additional_damage, "ability": ability, "attack_result": attack_result, "original_attack_result": original_attack_result, "original_target_ac": original_target_ac, "target_ac": target_ac, "magic_weapon_bonus": magic_weapon_bonus, "stroke_result": stroke_result, "sundering_bonus": sundering_bonus, "irresistible_damage": irresistible_damage, "bardic_bonus": bardic_bonus, "bardic_message": bardic_message, "bardic_die": bardic_die, "brutal_effects": brutal_effects, "selected_bonus": selected_bonus, "override_outcome": override_outcome, "is_crit": is_crit, "is_hit": is_hit, "reaction_msg": reaction_msg, "before_peerless": before_peerless, "adjustment_operation": adjustment_operation, "token_replaced": token_replaced, "adjustment_cost_paid": adjustment_cost_paid, "selected_payment_receipt": selected_payment_receipt}
+	hit_stage["next_hit_grant"] = attacker.take_oldest_next_melee_hit_grant(int(GameManager.campaign_elapsed_seconds)) if _is_melee_weapon_attack(weapon_data) else {}
 	# S-127: an authored hit-window damage-type choice pauses here, after the
 	# final hit and every pre-damage payment, and before any damage is rolled.
 	var profile_choice := AttackProfileRules.hit_window_request(attacker, weapon_data, reaction_decisions, hit_stage)
@@ -1988,6 +2002,71 @@ static func _settle_weapon_attack_context(context: Dictionary) -> Dictionary:
 
 
 ## Hit stage of a weapon attack: damage, riders and settlement for a final hit.
+static func _whole_damage_request(stage: Dictionary, phase: String, choice: Dictionary, candidates: Array = []) -> Dictionary:
+	whole_damage_request_serial += 1
+	var id := whole_damage_request_serial
+	if phase == "offer": stage["whole_damage_root_id"] = id
+	whole_damage_requests[id] = {"stage": stage, "phase": phase, "choice": choice, "turn": active_turn_serial, "candidates": candidates}
+	var request := {"id": id, "phase": phase, "name": str(choice.get("name", "Damage roll"))}
+	if phase == "choose":
+		request["totals"] = [int(candidates[0].final_total), int(candidates[1].final_total)]
+		request["rolls"] = [candidates[0].dice_terms.duplicate(true), candidates[1].dice_terms.duplicate(true)]
+	return {"hit": true, "pending": true, "whole_damage_request": request}
+
+static func whole_damage_roll_label(terms: Array) -> String:
+	var labels: Array[String] = []
+	for term in terms:
+		var values: Array[String] = []
+		for index in term.get("results", []).size():
+			if index >= term.get("kept", []).size() or bool(term.kept[index]): values.append(str(term.results[index]))
+		labels.append("%s: %s" % [str(term.get("label", "die")), ", ".join(values)])
+	return "; ".join(labels)
+
+static func _roll_whole_weapon_damage(stage: Dictionary) -> Dictionary:
+	var attacker: Character = stage.attacker
+	var weapon: Dictionary = stage.weapon_data
+	var ability := str(stage.ability)
+	var mod := attacker.ability_scores.get_ability_modifier(ability)
+	if bool(weapon.get("fixed_damage", false)): mod = 0
+	if (weapon.get("light_extra", false) and not FighterRules.has_style(attacker, "two_weapon_fighting")) or weapon.get("cleave_extra", false): mod = mini(0, mod)
+	var modifiers := {"STR": mod, "DEX": mod, "CON": mod, "INT": mod, "WIS": mod, "CHA": mod}
+	var formula := str(weapon.get("damage", "1d4"))
+	var detail := Dice.parse_dice_details(formula, modifiers, attacker)
+	detail["final_total"] = int(detail.final_total) + FighterRules.weapon_damage(attacker, weapon, detail)
+	if bool(stage.is_crit):
+		var critical := Dice.parse_dice_details(_critical_dice_formula(formula), {}, attacker)
+		detail["final_total"] += int(critical.final_total) + FighterRules.weapon_damage(attacker, weapon, critical)
+		for term in critical.dice_terms:
+			term["label"] = "Critical %s" % str(term.get("label", "damage die"))
+			detail.dice_terms.append(term)
+	return detail
+
+static func resume_whole_damage(request: Dictionary, answer: String) -> Dictionary:
+	var id := int(request.get("whole_damage_request", {}).get("id", 0))
+	if not whole_damage_requests.has(id): return {"hit": false, "refused": true, "message": "This damage choice was already settled."}
+	var record: Dictionary = whole_damage_requests[id]
+	whole_damage_requests.erase(id)
+	var stage: Dictionary = record.stage
+	var attacker: Character = stage.attacker
+	if int(record.turn) != active_turn_serial:
+		return {"hit": false, "refused": true, "message": "The damage choice belongs to an earlier combat turn."}
+	if record.phase == "offer":
+		stage["whole_damage_offered"] = true
+		var current := FeatRules.weapon_damage_roll_choice(attacker)
+		var lock := JSON.stringify(["whole_damage", attacker.get_instance_id(), str(record.choice.id)])
+		if answer == "use" and int(record.turn) == active_turn_serial and current.get("id", "") == record.choice.id and not bounded_hit_rider_locks.has(lock):
+			bounded_hit_rider_locks[lock] = true
+			return _whole_damage_request(stage, "choose", current, [_roll_whole_weapon_damage(stage), _roll_whole_weapon_damage(stage)])
+	else:
+		var index := 1 if answer == "second" else 0
+		stage["whole_damage_detail"] = record.candidates[index]
+		stage["whole_damage_candidates"] = record.candidates
+		stage["whole_damage_selected"] = index
+	return _settle_weapon_attack_hit(stage)
+
+static func cancel_whole_damage(request: Dictionary) -> void:
+	whole_damage_requests.erase(int(request.get("whole_damage_request", {}).get("id", 0)))
+
 static func _settle_weapon_attack_hit(stage: Dictionary) -> Dictionary:
 	var attacker: Character = stage["attacker"]
 	var target_entity = stage["target_entity"]
@@ -2017,11 +2096,15 @@ static func _settle_weapon_attack_hit(stage: Dictionary) -> Dictionary:
 	var token_replaced: bool = stage["token_replaced"]
 	var adjustment_cost_paid: bool = stage["adjustment_cost_paid"]
 	var selected_payment_receipt: Dictionary = stage["selected_payment_receipt"]
+	var whole_choice := FeatRules.weapon_damage_roll_choice(attacker)
+	var whole_lock := JSON.stringify(["whole_damage", attacker.get_instance_id(), str(whole_choice.get("id", ""))])
+	if bool(reaction_decisions.get("allow_whole_damage_choice", false)) and not stage.has("whole_damage_offered") and not whole_choice.is_empty() and not bounded_hit_rider_locks.has(whole_lock) and str(weapon_data.get("type", "")) == "weapon" and not bool(weapon_data.get("_unarmed_strike", false)) and not weapon_data.has("wild_shape_attack") and _critical_dice_formula(str(weapon_data.get("damage", ""))) != "0":
+		return _whole_damage_request(stage, "offer", whole_choice)
 	# Capture and consume a matching source-owned grant after the final hit/miss
 	# outcome, but before base damage can down the target. The snapshot travels
 	# with this synchronous resolution, so a later activation cannot be consumed
 	# by an older hit completion.
-	var next_hit_grant: Dictionary = attacker.take_oldest_next_melee_hit_grant(int(GameManager.campaign_elapsed_seconds)) if _is_melee_weapon_attack(weapon_data) else {}
+	var next_hit_grant: Dictionary = stage.get("next_hit_grant", {})
 
 	# Roll damage
 	var damage_str: String = weapon_data.get("damage", "1d4")
@@ -2038,8 +2121,9 @@ static func _settle_weapon_attack_hit(stage: Dictionary) -> Dictionary:
 		mod = mini(0, mod)
 	var modifiers := {"STR": mod, "DEX": mod, "CON": mod, "INT": mod, "WIS": mod, "CHA": mod}
 	
-	var damage_detail: Dictionary = Dice.parse_dice_details(damage_str, modifiers, attacker)
-	var damage_roll := int(damage_detail.get("final_total", 0)) + FighterRules.weapon_damage(attacker, weapon_data, damage_detail)
+	var captured_whole := stage.has("whole_damage_detail")
+	var damage_detail: Dictionary = stage["whole_damage_detail"] if captured_whole else Dice.parse_dice_details(damage_str, modifiers, attacker)
+	var damage_roll := int(damage_detail.get("final_total", 0)) + (0 if captured_whole else FighterRules.weapon_damage(attacker, weapon_data, damage_detail))
 	var additional_damage_packets: Array[Dictionary] = []
 	var packet_inputs: Array = []
 	if not str(additional_damage.get("formula", "")).is_empty():
@@ -2062,10 +2146,10 @@ static func _settle_weapon_attack_hit(stage: Dictionary) -> Dictionary:
 		var packet_roll := int(packet.get("fixed_amount", 0))
 		if not formula.is_empty():
 			detail = Dice.parse_dice_details(formula, {}, attacker)
-			packet_roll = int(detail.get("final_total", 0))
+			packet_roll = int(detail.get("final_total", 0)) + FighterRules.weapon_damage(attacker, weapon_data, detail)
 		if attack_result["is_crit"] and not formula.is_empty():
 			var critical_detail: Dictionary = Dice.parse_dice_details(formula, {}, attacker)
-			packet_roll += int(critical_detail.get("final_total", 0))
+			packet_roll += int(critical_detail.get("final_total", 0)) + FighterRules.weapon_damage(attacker, weapon_data, critical_detail)
 			for critical_term in critical_detail.get("dice_terms", []):
 				var labeled_critical_term: Dictionary = critical_term.duplicate(true)
 				labeled_critical_term["label"] = "Critical %s" % str(labeled_critical_term.get("label", "damage die"))
@@ -2088,7 +2172,7 @@ static func _settle_weapon_attack_hit(stage: Dictionary) -> Dictionary:
 			damage_detail["modifiers"].append({"label": "Rage damage", "value": rage_bonus})
 	
 	# Crits double damage dice
-	if attack_result["is_crit"]:
+	if attack_result["is_crit"] and not captured_whole:
 		# Roll damage dice a second time
 		var critical_detail: Dictionary = Dice.parse_dice_details(_critical_dice_formula(damage_str), {}, attacker)
 		damage_roll += int(critical_detail.get("final_total", 0)) + FighterRules.weapon_damage(attacker, weapon_data, critical_detail)
@@ -2108,10 +2192,10 @@ static func _settle_weapon_attack_hit(stage: Dictionary) -> Dictionary:
 	if not brutal_effects.is_empty():
 		brutal_dice = BarbarianRules.brutal_strike_dice(attacker)
 		var brutal_detail: Dictionary = Dice.parse_dice_details(brutal_dice, {}, attacker)
-		brutal_damage = int(brutal_detail.get("final_total", 0))
+		brutal_damage = int(brutal_detail.get("final_total", 0)) + FighterRules.weapon_damage(attacker, weapon_data, brutal_detail)
 		if attack_result["is_crit"]:
 			var critical_brutal: Dictionary = Dice.parse_dice_details(brutal_dice, {}, attacker)
-			brutal_damage += int(critical_brutal.get("final_total", 0))
+			brutal_damage += int(critical_brutal.get("final_total", 0)) + FighterRules.weapon_damage(attacker, weapon_data, critical_brutal)
 			for term in critical_brutal.get("dice_terms", []):
 				var critical_term: Dictionary = term.duplicate(true)
 				critical_term["label"] = "Critical Brutal Strike"
@@ -2230,6 +2314,10 @@ static func _settle_weapon_attack_hit(stage: Dictionary) -> Dictionary:
 		"consumed_next_hit_grant": next_hit_grant.duplicate(true),
 		"message": reaction_msg + bardic_message + "%sHit! (%d vs AC %d) %s" % [crit_prefix, attack_result["total"], target_ac, damage_message]
 	}
+	if captured_whole:
+		result["whole_damage_rolls"] = stage.whole_damage_candidates
+		result["whole_damage_selected"] = stage.whole_damage_selected
+	if stage.has("whole_damage_root_id"): result["whole_damage_completion_id"] = stage.whole_damage_root_id
 	if not selected_payment_receipt.is_empty(): result["selected_payment"] = selected_payment_receipt.duplicate(true)
 	if adjustment_operation in ["attack_total_adjustment", "defending_ac_adjustment"]:
 		var adjustment_receipt := SpellDamageRolls.attack_adjustment_receipt(selected_bonus, original_attack_result, original_target_ac, attack_result, target_ac, true, is_crit, adjustment_cost_paid, {"domain": "weapon_attack", "ability": ability, "weapon": weapon_data})
@@ -2272,7 +2360,7 @@ static func _settle_weapon_attack_hit(stage: Dictionary) -> Dictionary:
 					result["post_roll_bonus_die"] = selected_bonus.get("bonus_roll", {}).duplicate(true)
 	if not additional_damage_packets.is_empty():
 		result["message"] += " Includes %s." % ", ".join(additional_damage_packets.map(func(entry: Dictionary) -> String: return "%d %s" % [int(additional_settlements[additional_damage_packets.find(entry)].get("damage", 0)), str(entry["packet"].get("type", "damage"))]))
-	if target_entity is Dictionary and str(weapon_data.get("type", "")) == "weapon":
+	if str(weapon_data.get("type", "")) == "weapon":
 		weapon_rider_roll_serial += 1
 		result["weapon_rider_roll_id"] = weapon_rider_roll_serial
 		weapon_rider_rolls[weapon_rider_roll_serial] = {"actor": attacker, "target": target_entity, "result": result, "weapon_id": str(weapon_data.get("id", "")), "weapon": weapon_data.duplicate(true), "critical": is_crit, "parent": str(reaction_decisions.get("parent_action", {}).get("action_id", "opportunity_attack" if bool(weapon_data.get("opportunity_attack", false)) else "weapon_attack")), "causal_parent":reaction_decisions.get("parent_action", {}).duplicate(true), "used": {}}
@@ -2290,7 +2378,7 @@ static func _settle_weapon_attack_hit(stage: Dictionary) -> Dictionary:
 	var is_melee_hit: bool = _is_melee_weapon_attack(weapon_data)
 	var target_alive: bool = (target_entity is Character and target_entity.is_alive) or (target_entity is Dictionary and int(target_entity.get("current_hp", 0)) > 0)
 	var smite_spell: Dictionary = DataLoader.get_spell("divine_smite")
-	var can_smite: bool = is_melee_hit and target_alive and attacker is Character and attacker.has_feature("paladin_paladins_smite") and not is_incapacitated(attacker) and not attacker.has_condition("raging") and DruidRules.can_cast_spell(attacker, smite_spell) and (attacker.has_free_spell_cast("divine_smite") or get_spell_slot_level(attacker, smite_spell) > 0)
+	var can_smite: bool = is_melee_hit and target_alive and attacker is Character and not attacker.untrained_worn_armor() and attacker.has_feature("paladin_paladins_smite") and not is_incapacitated(attacker) and not attacker.has_condition("raging") and DruidRules.can_cast_spell(attacker, smite_spell) and (attacker.has_free_spell_cast("divine_smite") or get_spell_slot_level(attacker, smite_spell) > 0)
 	result["can_divine_smite"] = can_smite
 	result["divine_smite_eligible"] = can_smite
 	if can_smite and reaction_decisions.has("divine_smite") and reaction_decisions["divine_smite"] != null:
@@ -2305,6 +2393,7 @@ static func _settle_weapon_attack_hit(stage: Dictionary) -> Dictionary:
 			var slot_lvl: int = int(smite_decision.get("slot_level", 1))
 			var is_free: bool = bool(smite_decision.get("free_cast", false))
 			var smite_reactions: Dictionary = smite_decision.get("reactions", {}) if smite_decision.has("reactions") else reaction_decisions
+			smite_reactions["weapon_damage_profile"] = weapon_data
 			var smite_res := resolve_divine_smite(attacker, target_entity, slot_lvl, is_free, bool(attack_result["is_crit"]), smite_reactions)
 			result["divine_smite"] = smite_res
 			if smite_res.get("success", false):
@@ -2336,6 +2425,12 @@ static func _record_attack_history(decisions: Dictionary, attacker, target) -> v
 	var history: Variant = decisions.get("combat_history", null)
 	if history is CombatActionHistory:
 		history.record_attack(attacker, target)
+
+static func weapon_profile_for_hit(attacker: Character, target, receipt: Dictionary) -> Dictionary:
+	var roll: Dictionary = weapon_rider_rolls.get(int(receipt.get("weapon_rider_roll_id", 0)), {})
+	if roll.is_empty() or roll.actor != attacker or not is_same(roll.target, target) or not is_same(roll.result, receipt) or not bool(receipt.get("hit", false)):
+		return {}
+	return roll.weapon
 
 
 static func resume_weapon_attack_bonus(record: Dictionary, selected: Dictionary, stroke: Dictionary = {}) -> Dictionary:
@@ -2466,7 +2561,7 @@ static func resolve_divine_smite(caster: Character, target_entity, slot_level: i
 	var spell_data := DataLoader.get_spell("divine_smite")
 	if spell_data.is_empty():
 		return {"success": false, "damage": 0, "message": "Divine Smite has no spell record."}
-	if is_incapacitated(caster) or caster.has_condition("raging") or not DruidRules.can_cast_spell(caster, spell_data):
+	if is_incapacitated(caster) or caster.untrained_worn_armor() or caster.has_condition("raging") or not DruidRules.can_cast_spell(caster, spell_data):
 		return {"success": false, "damage": 0, "message": "You cannot cast Divine Smite in this state."}
 	if not caster.inventory.has_required_spell_component(spell_data, caster.class_id):
 		return {"success": false, "damage": 0, "message": "Divine Smite's components are unavailable."}
@@ -2510,7 +2605,7 @@ static func resolve_divine_smite(caster: Character, target_entity, slot_level: i
 	if critical:
 		dice_count *= 2
 	var damage_detail := Dice.parse_dice_details("%dd8" % dice_count)
-	var rolled_damage := int(damage_detail["final_total"])
+	var rolled_damage := int(damage_detail["final_total"]) + FighterRules.weapon_damage(caster, reaction_decisions.get("weapon_damage_profile", {}), damage_detail)
 	var settlement := resolve_damage(target_entity, rolled_damage, damage_type, {}, false, false, caster)
 	var actual := int(settlement["damage"])
 	var resolved := int(settlement["resolved"])
@@ -2845,7 +2940,8 @@ static func resolve_weapon_damage_riders(attacker: Character, target: Dictionary
 				grant.used_rider_options.append(str(effect.id))
 			else:
 				bounded_hit_rider_locks[lock_key] = true
-		var rolled := Dice.parse_dice_string(formula, {}, attacker)
+		var rider_detail := Dice.parse_dice_details(formula, {}, attacker)
+		var rolled := int(rider_detail.final_total) + FighterRules.weapon_damage(attacker, weapon_data, rider_detail)
 		var actual := int(resolve_damage(target, rolled, damage_type, {}, false, false, attacker)["damage"])
 		if once_per_turn:
 			attacker.feature_uses[marker] = 1
@@ -3054,6 +3150,12 @@ static func finish_pending_spell_damage(caster: Character, target, result: Dicti
 			SpellDamageRolls.attach_continuation(str(working_result.damage_request.request_id), ordered_cont, ordered_cont.get("cast"))
 			return working_result
 		return SharedSpell.resume_pending_steps(record["caster"], record["target"], working_result, record["decisions"], ordered_cont)
+	var projectile_cast: SpellResolutionContext = record.get("projectile_cast")
+	if projectile_cast != null:
+		if working_result.has("damage_request"):
+			SpellDamageRolls.attach_projectile_cast(working_result, projectile_cast)
+		else:
+			working_result["cast_settlement"] = CastInterruptionRules.settle_cast_outcome(projectile_cast, CastInterruptionRules.result_outcome(projectile_cast.spell, working_result))
 	return working_result
 
 

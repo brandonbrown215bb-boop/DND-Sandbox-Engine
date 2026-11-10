@@ -118,7 +118,7 @@ static func target(reactor: Character, spell: Dictionary, event: Dictionary) -> 
 ## Run the normal target restrictions before spending a slot or Reaction.
 ## The paid marker permits this boundary's validation; this copy never resolves.
 static func target_error(reactor: Character, spell: Dictionary, event: Dictionary) -> String:
-	if reactor.has_condition("raging") or not DruidRules.can_cast_spell(reactor, spell): return "cannot_cast"
+	if reactor.untrained_worn_armor() or reactor.has_condition("raging") or not DruidRules.can_cast_spell(reactor, spell): return "cannot_cast"
 	var damage_error := SharedSpell.damage_policy_availability_error(spell, reactor)
 	if not damage_error.is_empty(): return damage_error
 	if str(spell.get("target", "single")) not in ["self", "single", "ally"]: return "unsupported_target"

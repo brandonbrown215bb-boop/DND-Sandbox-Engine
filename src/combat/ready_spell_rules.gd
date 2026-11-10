@@ -30,7 +30,7 @@ static func prepare(state: CombatState, actor: Character, selected: Dictionary, 
 	var spell: Dictionary = AttackProfileRules.apply_cast(actor, command.payload.spell)
 	if spell.get("casting_time", "action") != "action": return {"success":false, "message":"Only a spell with an Action casting time can be readied."}
 	if not SpellSupport.availability(spell).available: return {"success":false, "message":"The selected spell is unavailable."}
-	if not DruidRules.can_cast_spell(actor, spell) or CombatAction.is_incapacitated(actor): return {"success":false, "message":"The caster cannot cast this spell now."}
+	if actor.untrained_worn_armor() or not DruidRules.can_cast_spell(actor, spell) or CombatAction.is_incapacitated(actor): return {"success":false, "message":"The caster cannot cast this spell now."}
 	if SorcererRules.quickened_spell_blocks_cast(actor, spell): return {"success":false, "message":"Quickened Spell prevents this cast."}
 	var turn := CombatAction.active_turn_serial
 	var cast := context(state, actor, spell)

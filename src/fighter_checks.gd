@@ -41,6 +41,90 @@ static func run(check: Callable) -> void:
 	var detail := {"dice_terms": [{"results": [1, 2, 5], "subtotal": 8}]}
 	check.call(FighterRules.weapon_damage(c, DataLoader.get_item("greatsword"), detail) == 3 and detail["dice_terms"][0]["results"] == [3, 3, 5], "2024 Great Weapon Fighting raises 1s and 2s to 3")
 	check.call(FighterRules.weapon_damage(c, DataLoader.get_item("longbow"), {"dice_terms": [{"results": [1], "subtotal": 1}]}) == 0, "Great Weapon Fighting never raises ranged damage")
+	var versatile := DataLoader.get_item("longsword")
+	check.call(FighterRules.weapon_damage(c, versatile, {"dice_terms": [{"results": [1, 2], "subtotal": 3}]}) == 3, "Great Weapon Fighting raises versatile melee dice with both hands free")
+	var one_hand_weapon := versatile.duplicate(true)
+	one_hand_weapon["_damage_two_hands"] = false
+	check.call(FighterRules.weapon_damage(c, one_hand_weapon, {"dice_terms": [{"results": [1], "subtotal": 1}]}) == 0 and FighterRules.weapon_damage(c, {"type": "spell", "properties": []}, {"dice_terms": [{"results": [1], "subtotal": 1}]}) == 0, "One-handed attacks and spell dice do not gain Great Weapon Fighting")
+	check.call(FighterRules.weapon_damage(c, {"properties": ["versatile", "thrown"], "range": 1, "attack_distance": 3}, {"dice_terms": [{"results": [1], "subtotal": 1}]}) == 0, "A thrown versatile weapon does not gain the two-handed melee style")
+	check.call(FighterRules.weapon_damage(c, DataLoader.get_item("greatsword"), {"dice_terms": [{"label": "-d4", "results": [1], "subtotal": -1}]}) == 0, "Great Weapon Fighting does not raise a subtracted die")
+	var rider_fighter := _fighter()
+	rider_fighter.fighter_training["styles"] = ["great_weapon_fighting"]
+	for candidate in 10000:
+		seed(candidate)
+		var attack_face := randi_range(1, 20)
+		randi_range(1, 6)
+		randi_range(1, 6)
+		if attack_face > 1 and attack_face < 20 and randi_range(1, 4) == 1:
+			seed(candidate)
+			break
+	var rider_target := {"id": "style-rider-target", "armor_class": 1, "current_hp": 100, "is_alive": true}
+	var rider_hit := CombatAction.resolve_weapon_attack(rider_fighter, rider_target, DataLoader.get_item("greatsword"), false, false, {}, {"formula": "1d4", "type": "radiant", "label": "Test rider"})
+	var rider_components: Array = rider_hit.get("damage_components", [])
+	check.call(rider_hit.get("hit", false) and rider_components.size() == 2 and int(rider_components[1].get("value", 0)) == 3, "Great Weapon Fighting raises an extra attack damage die through the weapon resolver")
+	rider_fighter.inventory.equip(Inventory.Slot.SHIELD, "shield", true)
+	var captured_weapon := CombatAction.weapon_profile_for_hit(rider_fighter, rider_target, rider_hit)
+	check.call(bool(captured_weapon.get("_damage_two_hands", false)) and CombatAction.weapon_profile_for_hit(rider_fighter, rider_target, rider_hit.duplicate()).is_empty() and CombatAction.weapon_profile_for_hit(rider_fighter, {"id": "other"}, rider_hit).is_empty(), "The hit receipt preserves its original grip and refuses copied or other-target Smite profiles")
+	rider_fighter.features.append({"id": "fixture:style_rider", "effects": [{"type": "weapon_damage_rider", "trigger": "weapon_attack_hit", "dice_by_level": {"1": "1d4"}, "damage_type": "radiant"}]})
+	_seed_die(4, 1)
+	var late_riders := CombatAction.resolve_weapon_damage_riders(rider_fighter, rider_target, {}, DataLoader.get_item("greatsword"), false, true, rider_hit)
+	check.call(late_riders.size() == 1 and int(late_riders[0].get("damage", 0)) == 3, "Great Weapon Fighting raises separately settled hit-rider dice using the captured weapon")
+	var critical_fighter := _fighter()
+	critical_fighter.level_up()
+	critical_fighter.level_up()
+	for face in [18, 19, 20]:
+		for profile in [DataLoader.get_item("greatsword"), CombatAction.unarmed_attack_profile(critical_fighter), {}]:
+			_seed_die(20, face)
+			var attack := critical_fighter.make_attack_roll("STR", false, false, profile)
+			check.call(int(attack.get("natural", 0)) == face and bool(attack.get("is_crit", false)) == (face >= (19 if not profile.is_empty() else 20)), "Expanded critical threshold retains natural %d for weapon, unarmed, or spell roll" % face)
+		for profile in [DataLoader.get_item("greatsword"), CombatAction.unarmed_attack_profile(critical_fighter)]:
+			var crit_target := {"id": "threshold-target", "armor_class": 1000, "current_hp": 100, "is_alive": true}
+			_seed_die(20, face)
+			var actual := CombatAction.resolve_weapon_attack(critical_fighter, crit_target, profile)
+			check.call(bool(actual.get("hit", false)) == (face >= 19) and (face < 19 or bool(actual.get("crit", false))), "Natural %d uses the expanded threshold through the actual weapon or Unarmed Strike" % face)
+	DataLoader._load_json_file("res://data/fixtures/batch_cxm_06/feats/whole_roll.json", "feat")
+	var whole_fighter := _fighter()
+	whole_fighter.origin_feat = "savage_attacker"
+	check.call(FeatRules.weapon_damage_roll_choice(whole_fighter).get("id", "") == "savage_attacker", "The Soldier's loaded Origin feat supplies the whole-roll rule")
+	whole_fighter.origin_feat = "fixture:whole_roll"
+	CombatAction.advance_combat_turn(whole_fighter, 1)
+	var whole_target := {"id": "whole-roll-target", "armor_class": 1, "current_hp": 200, "is_alive": true}
+	var rider_rolls := {"count": 0}
+	var capture_rider := func(event):
+		if int(event.get("sides", 0)) == 4 and str(event.get("type", "")) == "multiple": rider_rolls.count += 1
+	Dice.dice_rolled.connect(capture_rider)
+	_seed_die(20, 20)
+	var offer := CombatAction.resolve_weapon_attack(whole_fighter, whole_target, DataLoader.get_item("greatsword"), false, false, {"allow_whole_damage_choice": true}, {"formula": "1d4", "type": "radiant"})
+	check.call(offer.get("whole_damage_request", {}).get("phase", "") == "offer" and whole_target.current_hp == 200, "Whole-roll choice pauses after a critical hit before damage")
+	var choose := CombatAction.resume_whole_damage(offer, "use")
+	var candidates: Array = choose.get("whole_damage_request", {}).get("rolls", [])
+	check.call(choose.get("whole_damage_request", {}).get("phase", "") == "choose" and candidates.size() == 2 and candidates[0].size() == 2 and candidates[1].size() == 2, "Both whole-roll candidates include base and critical weapon dice")
+	var whole_hit := CombatAction.resume_whole_damage(choose, "second")
+	Dice.dice_rolled.disconnect(capture_rider)
+	check.call(whole_hit.get("hit", false) and int(whole_hit.get("whole_damage_selected", -1)) == 1 and whole_hit.get("damage_components", []).size() == 2 and whole_target.current_hp < 200 and rider_rolls.count == 2, "A selected whole critical weapon roll settles once and rolls the separate rider and its critical die once each")
+	check.call(CombatAction.resume_whole_damage(choose, "first").get("refused", false) and CombatAction.resume_whole_damage(offer, "use").get("refused", false), "Whole-roll continuations cannot be replayed")
+	_seed_die(20, 10)
+	var locked := CombatAction.resolve_weapon_attack(whole_fighter, whole_target, DataLoader.get_item("greatsword"), false, false, {"allow_whole_damage_choice": true})
+	check.call(locked.get("hit", false) and not locked.has("whole_damage_request"), "Whole-roll use is locked for the rest of this turn")
+	CombatAction.advance_combat_turn(null, 1)
+	_seed_die(20, 10)
+	var other_turn := CombatAction.resolve_weapon_attack(whole_fighter, whole_target, DataLoader.get_item("greatsword"), false, false, {"allow_whole_damage_choice": true})
+	check.call(other_turn.get("whole_damage_request", {}).get("phase", "") == "offer", "Whole-roll use refreshes on another creature's turn")
+	var declined := CombatAction.resume_whole_damage(other_turn, "decline")
+	check.call(declined.get("hit", false), "Declining the whole-roll choice still settles the hit")
+	_seed_die(20, 10)
+	var after_decline := CombatAction.resolve_weapon_attack(whole_fighter, whole_target, DataLoader.get_item("greatsword"), false, false, {"allow_whole_damage_choice": true})
+	check.call(after_decline.has("whole_damage_request"), "Declining leaves the turn's whole-roll use available")
+	CombatAction.resume_whole_damage(after_decline, "decline")
+	var unarmed := CombatAction.unarmed_attack_profile(whole_fighter)
+	unarmed["damage"] = "1d6+STR"
+	_seed_die(20, 10)
+	var unarmed_hit := CombatAction.resolve_weapon_attack(whole_fighter, whole_target, unarmed, false, false, {"allow_whole_damage_choice": true})
+	check.call(unarmed_hit.get("hit", false) and not unarmed_hit.has("whole_damage_request"), "Unarmed damage dice never offer the weapon-only whole-roll choice")
+	var fixed_weapon := {"id": "fixture:fixed_weapon", "type": "weapon", "damage": "1+DEX", "damage_type": "piercing", "ability": "DEX", "range": 1}
+	_seed_die(20, 10)
+	var fixed_hit := CombatAction.resolve_weapon_attack(whole_fighter, whole_target, fixed_weapon, false, false, {"allow_whole_damage_choice": true})
+	check.call(fixed_hit.get("hit", false) and not fixed_hit.has("whole_damage_request"), "An ability name containing D does not count as a weapon damage die")
 	c.long_rest()
 	check.call(FighterRules.choose_mastery(c, "scimitar", 0) and not FighterRules.choose_mastery(c, "dagger", 1), "Long Rest permits exactly one mastery replacement")
 	check.call(FighterRules.choose_mastery(c, "warhammer") and FighterRules.mastery(c, DataLoader.get_item("warhammer")) == "push", "Higher-level capacity accepts a new weapon mastery")

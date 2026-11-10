@@ -52,7 +52,7 @@ static func open(view: LocalRoomView) -> PopupMenu:
 	menu.title = "%s: %s" % [ModeControls.kind_label(str(offer.kind)), r.name]
 	menu.add_item("Cancel", 0)
 	var choices: Array[String] = ModeControls.options(r, str(offer.kind))
-	for i in choices.size(): menu.add_item(choices[i].replace("|", ": "), i + 1)
+	for i in choices.size(): menu.add_item(ModeControls.option_label(r, str(offer.kind), choices[i]), i + 1)
 	menu.id_pressed.connect(func(id):
 		answer(view, owner, offer, "" if id == 0 else choices[id - 1], serial)
 		menu.queue_free())
@@ -62,7 +62,8 @@ static func open(view: LocalRoomView) -> PopupMenu:
 	return menu
 
 static func answer(view: LocalRoomView, owner: Character, offer: Dictionary, picked: String, serial: int) -> Dictionary:
-	var name := str(owner.get_feature(str(offer.feature_id)).get("name", offer.feature_id))
+	var row := ModeControls.row(owner, str(offer.feature_id))
+	var name := str(row.name)
 	if picked.is_empty():
 		view.hud.add_log("%s: canceled; nothing was spent." % name)
 		return {"success": false, "reason": "canceled"}
@@ -71,7 +72,7 @@ static func answer(view: LocalRoomView, owner: Character, offer: Dictionary, pic
 		return {"success": false, "reason": "stale"}
 	var result := ModeControls.apply(owner, str(offer.feature_id), str(offer.kind), picked, str(offer.token), ModeControls.outside_combat())
 	var ok := bool(result.get("success", false))
-	var message := "%s: %s %s." % [name, ModeControls.kind_label(str(offer.kind)).to_lower(), picked.replace("|", ": ")] if ok else "%s: refused (%s); nothing was spent." % [name, str(result.get("reason", "")).replace("_", " ")]
+	var message := "%s: %s %s." % [name, ModeControls.kind_label(str(offer.kind)).to_lower(), ModeControls.option_label(row, str(offer.kind), picked)] if ok else "%s: refused (%s); nothing was spent." % [name, str(result.get("reason", "")).replace("_", " ")]
 	if ok and int(result.get("activation_seconds", 0)) > 0:
 		message += " (takes %s; time not advanced)" % ModeControls.duration_label(int(result.activation_seconds))
 	view._result({"success": ok, "seconds": 0, "message": message}) # Batch 064: seconds stay 0, no clock is advanced.

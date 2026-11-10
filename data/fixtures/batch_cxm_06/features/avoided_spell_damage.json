@@ -1,0 +1,8 @@
+{
+  "id": "fixture:avoided_damage",
+  "name": "Persistent Cantrip",
+  "type": "passive",
+  "effects": [
+    {"type": "avoided_spell_damage", "spell_level": 0, "outcomes": ["miss", "success"], "scale": 0.5}
+  ]
+}

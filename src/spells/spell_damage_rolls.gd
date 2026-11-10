@@ -13,6 +13,14 @@ const RESOLUTION_WINDOW_FIELDS := {
 	"post_damage": ["roll_natural", "roll_modifier", "roll_total", "target_ac", "final_hit", "critical", "damage_occurrence_id", "damage_type", "damage_raw", "damage_resolved", "damage_hp_loss"]
 }
 
+## A feature can preserve damage when a creature avoids a spell's normal outcome.
+static func avoided_spell_damage(cast: SpellResolutionContext, outcome: String) -> bool:
+	if cast == null or cast.caster == null or int(cast.spell.get("level", -1)) != 0 or outcome not in ["miss", "success"]: return false
+	if not cast.target is Character and (not cast.target is Dictionary or bool(cast.target.get("is_object", false))): return false
+	for effect in ClassProgression.selected_feature_effects_of_type(cast.caster, "avoided_spell_damage"):
+		if int(effect.get("spell_level", -1)) == 0 and outcome in effect.get("outcomes", []) and float(effect.get("scale", 0)) == 0.5: return true
+	return false
+
 static func spell_damage_formula(caster: Character, spell_data: Dictionary, slot_level: int = 0) -> String:
 	var formula := str(spell_data.get("damage", "0"))
 	if caster == null:
@@ -240,6 +248,13 @@ static var _active_request_id_by_caster: Dictionary = {}
 static var _request_counter: int = 0
 static var _epoch: int = 0
 static var _resolution_occurrence_counter: int = 0
+
+static func attach_projectile_cast(result: Dictionary, cast: SpellResolutionContext) -> void:
+	var id := str(result.get("damage_request", {}).get("request_id", ""))
+	if _pending_requests.has(id):
+		_pending_requests[id]["projectile_cast"] = cast
+		_pending_requests[id]["result_base"]["slot_level"] = cast.slot_level
+		_pending_requests[id]["result_base"]["effect_cast"] = cast.effect_cast
 
 
 static func _resolution_actor_id(actor: Variant) -> String:
@@ -1850,6 +1865,20 @@ static func apply_damage_policies(caster: Character, components: Array[Dictionar
 
 
 static func _finish_spell_damage(caster: Character, target, details: Dictionary, bonus: int, scale: float, damage_type: String, decisions: Dictionary, result: Dictionary, condition_duration: int = 1, additional_damage_packets: Array[Dictionary] = [], damage_reductions: Array = [], damage_bypasses: Array = []) -> Dictionary:
+	# Projectile misses are separate scaled damage rolls, but their dice share
+	# the one Empowered Spell selection with the captured hit dice.
+	if bool(decisions.get("_select_projectile_packet_dice", false)) and not details.has("_packet_dice_map"):
+		details = details.duplicate(true)
+		var mapping: Array[Dictionary] = []
+		for packet_index in additional_damage_packets.size():
+			var packet: Dictionary = additional_damage_packets[packet_index]
+			if not bool(packet.get("_projectile_miss", false)): continue
+			var packet_detail: Dictionary = packet.get("details", {})
+			var start: int = details.dice_terms.size()
+			var terms: Array = packet_detail.get("dice_terms", []).duplicate(true)
+			details.dice_terms.append_array(terms)
+			mapping.append({"packet": packet_index, "start": start, "count": terms.size(), "subtotals": terms.map(func(term): return int(term.get("subtotal", 0)))})
+		details["_packet_dice_map"] = mapping
 	var context: Dictionary = decisions.get("spell_damage_context", {})
 	if SpellDamageRolls._can_empower(caster, decisions) and bool(decisions.get("defer_empowered", false)) and not context.get("empowered_resolved", false) and not Dice.selectable_dice(details).is_empty():
 		var cha_mod := maxi(1, caster.ability_scores.get_ability_modifier("CHA")) if caster != null else 1
@@ -1864,6 +1893,23 @@ static func _finish_spell_damage(caster: Character, target, details: Dictionary,
 		return result
 	var metamagic := SpellDamageRolls._apply_empowered_spell(caster, details, decisions)
 	details = metamagic["details"]
+	if details.has("_packet_dice_map"):
+		additional_damage_packets = additional_damage_packets.duplicate(true)
+		var mapping: Array = details["_packet_dice_map"]
+		var primary_terms: int = details.dice_terms.size()
+		for entry in mapping:
+			var packet: Dictionary = additional_damage_packets[int(entry.packet)]
+			var packet_detail: Dictionary = packet.details
+			var delta := 0
+			for index in int(entry.count):
+				var term: Dictionary = details.dice_terms[int(entry.start) + index]
+				delta += int(term.get("subtotal", 0)) - int(entry.subtotals[index])
+				packet_detail.dice_terms[index] = term
+			packet_detail["final_total"] = int(packet_detail.get("final_total", 0)) + delta
+			details["final_total"] = int(details.final_total) - delta
+			primary_terms = mini(primary_terms, int(entry.start))
+		details["dice_terms"] = details.dice_terms.slice(0, primary_terms)
+		details.erase("_packet_dice_map")
 	details = SpellDamageRolls._resolve_exploding_dice(caster, details)
 	# Reuse the owned damage continuation: damage dice are captured, while HP,
 	# save RNG, history and source payment have not yet settled.
@@ -1897,7 +1943,8 @@ static func _finish_spell_damage(caster: Character, target, details: Dictionary,
 	# Marker riders (a curse's extra damage) join this occurrence once, after deferrals, so a
 	# continuation never rerolls them. They keep their own amount: no save scale or multiplier.
 	additional_damage_packets = additional_damage_packets.duplicate()
-	additional_damage_packets.append_array(CombatAction.marker_rider_packets(target, caster, bool(decisions.get("damage_is_critical", decisions.get("critical", false)))))
+	if not bool(result.get("suppress_avoided_spell_effects", false)):
+		additional_damage_packets.append_array(CombatAction.marker_rider_packets(target, caster, bool(decisions.get("damage_is_critical", decisions.get("critical", false)))))
 	var primary_component_id := str(decisions.get("_shared_component_id", "%s:1" % damage_type))
 	var policy_components: Array[Dictionary] = [{"component_id": primary_component_id, "type": damage_type, "raw": amount}]
 	var packet_component_ids: Array[String] = []
@@ -1906,7 +1953,8 @@ static func _finish_spell_damage(caster: Character, target, details: Dictionary,
 		if packet_details.is_empty(): continue
 		var packet_type := str(packet.get("type", "acid"))
 		var unscaled := bool(packet.get("unscaled", false))
-		var packet_amount := int(packet_details.get("final_total", 0)) if unscaled else int(floor(float(int(packet_details.get("final_total", 0))) * scale))
+		var packet_scale := float(packet.get("_scale", scale))
+		var packet_amount := int(packet_details.get("final_total", 0)) if unscaled else int(floor(float(int(packet_details.get("final_total", 0)) + int(packet.get("_bonus", 0))) * packet_scale))
 		if not unscaled and multiplier is Dictionary and not multiplier.is_empty() and not (bool(multiplier.get("exclude_critical", false)) and bool(decisions.get("damage_is_critical", decisions.get("critical", false)))):
 			packet_amount = int(Dice.apply_damage_multiplier(packet_amount, int(multiplier.get("numerator", 1)), int(multiplier.get("denominator", 1)), str(multiplier.get("rounding", "floor"))).get("value", packet_amount))
 		var packet_id := str(packet.get("component_id", "%s:%d" % [packet_type, policy_components.size() + 1]))

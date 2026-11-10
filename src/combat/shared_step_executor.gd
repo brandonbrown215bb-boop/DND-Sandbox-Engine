@@ -2825,7 +2825,8 @@ class SpellAdapter:
 		var damage_decisions := cast.decisions.duplicate()
 		damage_decisions["damage_result_multiplier"] = step.get("damage_result_multiplier", {})
 		damage_decisions["_shared_component_id"] = str(step_spell.get("component_id", "%s:%s" % [str(step.get("id", "")), str(step_spell["damage_type"])]))
-		var res := SpellDamageRolls._finish_spell_damage(cast.caster, s_target, roll, CombatAction.spell_damage_bonus(cast.caster, step_spell), 1.0, str(step_spell["damage_type"]), damage_decisions, {"success": true, "hit": true, "effect_cast": cast.effect_cast, "message": "%s deals {damage} %s damage." % [cast.spell["name"], step_spell["damage_type"]]}, 1, [], step_spell.get("damage_reductions", []), step_spell.get("damage_bypasses", []))
+		var scale := 0.5 if SharedSpell.prior_avoided_spell_effects(s_target, step_results, step.get("gate_step", null)) else 1.0
+		var res := SpellDamageRolls._finish_spell_damage(cast.caster, s_target, roll, CombatAction.spell_damage_bonus(cast.caster, step_spell), scale, str(step_spell["damage_type"]), damage_decisions, {"success": true, "hit": true, "effect_cast": cast.effect_cast, "message": "%s deals {damage} %s damage." % [cast.spell["name"], step_spell["damage_type"]]}, 1, [], step_spell.get("damage_reductions", []), step_spell.get("damage_bypasses", []))
 		if res.has("damage_request"):
 			var req_id: String = str(res["damage_request"].get("request_id", ""))
 			var continuation := {
@@ -2861,6 +2862,7 @@ class SpellAdapter:
 	func resolve_effect_step(step: Dictionary, s_target, step_results: Array = []) -> Dictionary:
 		if step.has("effects"):
 			var res := {"success": true, "hit": true, "slot_level": cast.slot_level, "effect_cast": cast.effect_cast}
+			if step.has("gate_step"): res["_effect_gate_step"] = step.gate_step
 			res = SharedSpell.apply_custom_effects(cast.caster, s_target, step["effects"], res, cast.slot_level, step_results, self)
 			return res
 		return {}

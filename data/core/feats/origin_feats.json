@@ -3,10 +3,10 @@
     "id": "alert",
     "name": "Alert",
     "category": "origin",
-    "effects_pending": true,
+    "initiative": {"proficiency": true, "willing_exchange": true},
     "description": "Add your Proficiency Bonus to Initiative, and swap Initiative with one willing ally right after you roll.",
     "source": "SRD 5.2.1 p.87 Origin Feats: Alert",
-    "source_note": "Acquisition record only. The Initiative rules belong to CXM-05.",
+    "source_note": "Initiative proficiency and willing exchange are implemented.",
     "features": []
   },
   {
@@ -25,10 +25,10 @@
     "id": "savage_attacker",
     "name": "Savage Attacker",
     "category": "origin",
-    "effects_pending": true,
     "description": "Once per turn when you hit with a weapon, roll its damage dice twice and use either roll.",
+    "weapon_damage_roll_choice": {"rolls": 2, "uses_per": "turn"},
     "source": "SRD 5.2.1 p.87 Origin Feats: Savage Attacker",
-    "source_note": "Acquisition record only. The damage roll rule belongs to CXM-06.",
+    "source_note": "Whole weapon damage dice may be rolled twice once per turn.",
     "features": []
   }
 ]

@@ -389,6 +389,8 @@ var shillelagh_weapon_id: String = ""
 
 ## Armor class (calculated from equipment + DEX).
 var base_ac: int = 10
+## Exact preferred legal base; empty means the existing highest-value fallback.
+var base_ac_choice: String = ""
 
 ## Movement speed in hex tiles per turn.
 var speed: int = 6
@@ -562,6 +564,45 @@ var fiendish_resilience_type: String = ""
 var pact_weapon_damage_type: String = ""
 
 
+## Merged projection equipment remains in inventory but is not worn.
+func worn_armor_id() -> String:
+	if DruidRules.is_shaped(self) and wild_shape_state.get("equipment_mode", "merged") == "merged": return ""
+	var id := inventory.get_armor()
+	return "" if not id.is_empty() and ActorProjectionRules.merged(self, str(inventory.copies.equipped.get(Inventory.Slot.BODY, ""))) else id
+
+
+func worn_shield_id() -> String:
+	if DruidRules.is_shaped(self) and wild_shape_state.get("equipment_mode", "merged") == "merged": return ""
+	var id := inventory.get_equipped(Inventory.Slot.SHIELD)
+	return "" if not id.is_empty() and ActorProjectionRules.merged(self, str(inventory.copies.equipped.get(Inventory.Slot.SHIELD, ""))) else id
+
+
+## Worn armor facts are read live, so removing one source clears only its effects.
+func untrained_worn_armor() -> bool:
+	var armor_id := worn_armor_id()
+	if armor_id.is_empty() or DruidRules.is_shaped(self): return false
+	var category := str(DataLoader.get_item(armor_id).get("armor_type", ""))
+	return category not in ["light", "medium", "heavy"] or category not in armor_proficiencies
+
+
+func armor_stealth_disadvantage() -> bool:
+	if DruidRules.is_shaped(self): return false
+	return bool(DataLoader.get_item(worn_armor_id()).get("stealth_disadvantage", false))
+
+
+func armor_speed_penalty() -> int:
+	if DruidRules.is_shaped(self): return 0
+	var requirement := int(DataLoader.get_item(worn_armor_id()).get("strength_requirement", 0))
+	return 2 if requirement > 0 and ability_scores.get_score("STR") < requirement else 0
+
+
+func trained_shield_bonus() -> int:
+	var shield_id := worn_shield_id()
+	if shield_id.is_empty() or "shields" not in armor_proficiencies: return 0
+	var shield_data := DataLoader.get_item(shield_id)
+	return int(shield_data.get("ac_bonus", 2)) if shield_data.get("type", "") == "shield" else 0
+
+
 ## Effective movement speed after timed modifiers.
 func get_speed(ignore_restrained: bool = false) -> int:
 	if CombatAction.is_speed_zero(self, ignore_restrained):
@@ -587,17 +628,17 @@ func get_speed(ignore_restrained: bool = false) -> int:
 				if int(key) <= level and int(key) > threshold:
 					threshold = int(key)
 			movement_bonus += int(table[str(threshold)]) if threshold > 0 else int(effect.get("bonus", 0))
-	return maxi(0, speed + movement_bonus + SourceBenefitRules.total(self, "speed") + get_modifier("stat", "speed") - exhaustion_level - SpellEffects.condition_amount(self, "speed_reduced"))
+	return maxi(0, speed + movement_bonus + SourceBenefitRules.total(self, "speed") + get_modifier("stat", "speed") - exhaustion_level - SpellEffects.condition_amount(self, "speed_reduced") - armor_speed_penalty())
 
 
 func movement_speed_feet(mode: String = "walk", ignore_restrained: bool = false) -> int:
 	if mode == "walk": return get_speed(ignore_restrained) * 5
 	if mode not in ["climb", "swim", "fly"]: return 0
-	if get_speed(ignore_restrained) <= 0: return 0
-	if mode == "fly" and SpellEffects.has_spell(self, "fly"): return 60
+	if CombatAction.is_speed_zero(self, ignore_restrained): return 0
+	if mode == "fly" and SpellEffects.has_spell(self, "fly"): return maxi(0, 60 - armor_speed_penalty() * 5)
 	if mode == "climb" and SpellEffects.has_spell(self, "spider_climb"): return movement_speed_feet("walk", ignore_restrained)
 	if mode == "swim" and SpellEffects.has_spell(self, "freedom_of_movement"): return movement_speed_feet("walk", ignore_restrained)
-	return maxi(0, int(movement_speeds_feet.get(mode, 0)) - exhaustion_level * 5)
+	return maxi(0, int(movement_speeds_feet.get(mode, 0)) - exhaustion_level * 5 - armor_speed_penalty() * 5)
 
 
 func set_movement_speed_feet(mode: String, feet: int) -> void:
@@ -606,7 +647,7 @@ func set_movement_speed_feet(mode: String, feet: int) -> void:
 
 
 func _is_wearing_heavy_armor() -> bool:
-	var armor_id := inventory.get_armor()
+	var armor_id := worn_armor_id()
 	return not armor_id.is_empty() and str(DataLoader.get_item(armor_id).get("armor_type", "")) == "heavy"
 
 
@@ -1059,7 +1100,7 @@ func apply_skill_check_roll_floor(roll: int, skill: String) -> int:
 
 
 func is_unarmored() -> bool:
-	return inventory.get_armor().is_empty() and inventory.get_equipped(Inventory.Slot.SHIELD).is_empty()
+	return worn_armor_id().is_empty() and worn_shield_id().is_empty()
 
 
 func is_monk_weapon(weapon: Dictionary) -> bool:
@@ -1539,21 +1580,20 @@ func _equipment_base_ac() -> int:
 	var shield_id := inventory.get_equipped(Inventory.Slot.SHIELD)
 
 	if armor_id.is_empty():
-		var unarmored_defense := get_feature_effect("unarmored_defense")
-		# Batch 070 (S-085): an owned base_ac alternative replaces this calculation (SRD 5.2.1 "Only One Base AC").
-		var alternative := _base_ac_alternative()
-		if not alternative.is_empty():
-			if bool(alternative.allows_shield) or shield_id.is_empty():
-				computed_base = int(alternative.base)
-				for ability in alternative.abilities: computed_base += ability_scores.get_ability_modifier(str(ability))
-			else:
-				computed_base = 10 + dex_mod
-		elif not unarmored_defense.is_empty() and (bool(unarmored_defense.get("allows_shield", false)) or shield_id.is_empty()):
-			var secondary_ability := str(unarmored_defense.get("ability", "WIS"))
-			computed_base = 10 + dex_mod + ability_scores.get_ability_modifier(secondary_ability)
-		else:
-			# No armor: AC = 10 + DEX
-			computed_base = 10 + dex_mod
+		computed_base = 10 + dex_mod
+		for feature in features:
+			if not OwnedFeatureSources.copy_active(self, feature): continue
+			var defense := RuleUpgradeRules._effect_of(self, feature, "unarmored_defense")
+			if defense.is_empty(): continue
+			var alternative := RuleUpgradeRules.base_ac_formula(self, feature)
+			if not alternative.is_empty():
+				if not bool(alternative.allows_shield) and not shield_id.is_empty(): continue
+				var candidate := int(alternative.base)
+				for ability in alternative.abilities: candidate += ability_scores.get_ability_modifier(str(ability))
+				computed_base = maxi(computed_base, candidate)
+			elif bool(defense.get("allows_shield", false)) or shield_id.is_empty():
+				var secondary_ability := str(defense.get("ability", "WIS"))
+				computed_base = maxi(computed_base, 10 + dex_mod + ability_scores.get_ability_modifier(secondary_ability))
 	else:
 		var armor_data := DataLoader.get_item(armor_id)
 		var armor_type: String = armor_data.get("armor_type", "light")
@@ -1568,14 +1608,118 @@ func _equipment_base_ac() -> int:
 				computed_base = armor_ac  # No DEX bonus
 
 	# Shield bonus
-	var shield_ac: int = 0
-	if not shield_id.is_empty():
-		var shield_data := DataLoader.get_item(shield_id)
-		shield_ac = int(shield_data.get("ac_bonus", 2))
-
-	computed_base += shield_ac
+	computed_base += trained_shield_bonus()
 
 	return computed_base
+
+
+## Live legal formulas carry their owner identity, not just their current number.
+func base_ac_candidates() -> Array[Dictionary]:
+	var candidates: Array[Dictionary] = []
+	var armor_id := inventory.get_armor()
+	var shield_id := inventory.get_equipped(Inventory.Slot.SHIELD)
+	var shield := trained_shield_bonus()
+	var dex := ability_scores.get_ability_modifier("DEX")
+	var template_actor := class_id in ["familiar", "created_actor", "created_creature"]
+	var ordinary := base_ac if template_actor else 10 + dex
+	if not template_actor and not armor_id.is_empty():
+		var armor := DataLoader.get_item(armor_id)
+		match str(armor.get("armor_type", "")):
+			"light": ordinary = int(armor.get("ac", 10)) + dex
+			"medium": ordinary = int(armor.get("ac", 10)) + mini(dex, 2)
+			"heavy": ordinary = int(armor.get("ac", 10))
+	var ordinary_id := JSON.stringify(["native"]) if template_actor else (JSON.stringify(["armor", inventory.equipped_instance_id(Inventory.Slot.BODY)]) if not armor_id.is_empty() else JSON.stringify(["unarmored"]))
+	candidates.append({"id": ordinary_id, "name": "Natural armor" if template_actor else (str(DataLoader.get_item(armor_id).get("name", "Armor")) if not armor_id.is_empty() else "Unarmored"), "value": ordinary if template_actor else ordinary + shield})
+	if armor_id.is_empty():
+		for feature in features:
+			if not OwnedFeatureSources.copy_active(self, feature): continue
+			var defense := RuleUpgradeRules._effect_of(self, feature, "unarmored_defense")
+			if defense.is_empty(): continue
+			var alternative := RuleUpgradeRules.base_ac_formula(self, feature)
+			var value := 10 + dex
+			var upgrade := ""
+			if not alternative.is_empty():
+				if not bool(alternative.allows_shield) and not shield_id.is_empty(): continue
+				value = int(alternative.base)
+				for ability in alternative.abilities: value += ability_scores.get_ability_modifier(str(ability))
+				upgrade = str(alternative.get("upgrade", ""))
+			else:
+				if not bool(defense.get("allows_shield", false)) and not shield_id.is_empty(): continue
+				value += ability_scores.get_ability_modifier(str(defense.get("ability", "WIS")))
+			candidates.append({"id": JSON.stringify(["feature", str(feature.get("id", "")), str(feature.get("source_instance_id", "")), upgrade]), "name": str(feature.get("name", "Unarmored defense")), "value": value + shield})
+		if has_condition("mage_armor"):
+			var found := false
+			for source in SpellEffects.records(self):
+				if str(SpellEffects.records(self)[source].get("spell_id", "")) != "mage_armor": continue
+				found = true
+				candidates.append({"id": JSON.stringify(["mage", str(source)]), "name": "Mage Armor", "value": 13 + dex + shield})
+			if not found: candidates.append({"id": JSON.stringify(["mage", "legacy"]), "name": "Mage Armor", "value": 13 + dex + shield})
+	for contribution in ProtectionRules.ac(self, 0).sources:
+		if contribution.operation != "base": continue
+		candidates.append({"id": JSON.stringify(["protection", str(contribution.grant_instance_id)]), "name": "Protection (%s)" % str(contribution.source_instance_id), "value": int(contribution.value), "expires_at_seconds": int(contribution.expires_at_seconds)})
+	return candidates
+
+
+static func saved_base_ac_choice_error(data: Dictionary) -> String:
+	var value: Variant = data.get("base_ac_choice", "")
+	if not value is String or value.length() > 1024: return "Invalid base AC choice."
+	if value.is_empty(): return ""
+	var parser := JSON.new()
+	if parser.parse(value) != OK: return "Invalid base AC choice."
+	var parts: Variant = parser.data
+	if not parts is Array or parts.is_empty() or parts.size() > 4: return "Invalid base AC choice."
+	if parts.any(func(part): return not part is String or part.length() > 240): return "Invalid base AC choice."
+	var sizes := {"unarmored": 1, "native": 1, "armor": 2, "feature": 4, "mage": 2, "protection": 2}
+	if not sizes.has(parts[0]) or parts.size() != sizes[parts[0]] or JSON.stringify(parts) != value: return "Invalid base AC choice."
+	if parts.size() > 1 and str(parts[1]).is_empty(): return "Invalid base AC choice source."
+	var template_actor := str(data.get("class_id", "")) in ["familiar", "created_actor", "created_creature"]
+	if parts[0] == "native" and not template_actor: return "Base AC choice is not a native template."
+	if parts[0] == "unarmored" and template_actor: return "Base AC choice is not a player formula."
+	if parts[0] == "armor":
+		var inventory_data: Variant = data.get("inventory", {})
+		if not inventory_data is Dictionary: return "Invalid base AC armor source."
+		var copies: Variant = inventory_data.get("copies", {})
+		if not copies is Dictionary or not copies.get("records", {}) is Dictionary: return "Invalid base AC armor source."
+		var record: Variant = copies.get("records", {}).get(parts[1], {})
+		if not record is Dictionary or record.is_empty() or DataLoader.get_item(str(record.get("definition_id", ""))).get("type", "") != "armor": return "Base AC armor source is not owned."
+	if parts[0] == "mage":
+		var effects: Variant = data.get("spell_effects", {})
+		if not effects is Dictionary: return "Invalid Mage Armor source."
+		if parts[1] == "legacy":
+			if not data.get("conditions", {}) is Dictionary or not data.conditions.has("mage_armor"): return "Mage Armor source is not active."
+		elif not effects.get(parts[1]) is Dictionary or effects[parts[1]].get("spell_id", "") != "mage_armor": return "Mage Armor source is not owned."
+	if parts[0] == "protection":
+		var grants: Variant = data.get("protection_grants", [])
+		if not grants is Array: return "Base AC protection source is not owned."
+		var found_grant := false
+		for grant in grants:
+			if not grant is Dictionary or grant.get("grant_instance_id", "") != parts[1]: continue
+			var effect: Variant = grant.get("effect")
+			if not effect is Dictionary or not effect.get("benefits") is Array: continue
+			found_grant = effect.benefits.any(func(b): return b is Dictionary and b.get("stat", "") == "AC" and b.get("operation", "") == "base")
+		if not found_grant: return "Base AC protection source is not owned."
+	if parts[0] == "feature":
+		var declared := FeatureModeRules.declared_features(data)
+		# An exact item copy may be in the backpack or unattuned for now. It
+		# remains owned and can restore its preference when worn again.
+		var saved_inventory: Variant = data.get("inventory", {})
+		var saved_copies: Variant = saved_inventory.get("copies", {}) if saved_inventory is Dictionary else {}
+		var saved_records: Variant = saved_copies.get("records", {}) if saved_copies is Dictionary else {}
+		if saved_records is Dictionary:
+			for copy_id in saved_records:
+				var copy: Variant = saved_records[copy_id]
+				if copy is Dictionary:
+					declared.append_array(OwnedFeatureSources.item_features(DataLoader.get_item(str(copy.get("definition_id", ""))), str(copy_id)))
+		var found := declared.any(func(f): return f is Dictionary and str(f.get("id", "")) == parts[1] and str(f.get("source_instance_id", "")) == parts[2] and (f.get("effects", []) + f.get("passive_effects", [])).any(func(e): return e is Dictionary and e.get("type", "") == "unarmored_defense"))
+		if not found: return "Base AC feature source is not owned."
+		if not str(parts[3]).is_empty() and not declared.any(func(f): return f is Dictionary and f.get("id", "") == parts[3] and f.get("rule", "") == parts[1] and f.get("changes", {}).has("base_ac")): return "Base AC upgrade source is not owned."
+	return ""
+
+
+func selected_base_ac(candidates: Array[Dictionary], fallback: int) -> int:
+	for candidate in candidates:
+		if candidate.id == base_ac_choice: return int(candidate.value)
+	return fallback
 
 
 ## Batch 070: the chosen base_ac upgrade on the owned unarmored_defense rule, or {}.
@@ -1588,8 +1732,9 @@ func _base_ac_alternative() -> Dictionary:
 
 
 func _recalculate_ac() -> void:
-	if not inventory.get_armor().is_empty() and has_condition("mage_armor"):
+	if not worn_armor_id().is_empty() and has_condition("mage_armor"):
 		SpellEffects.end_mage_armor_if_armored(self)
+	if class_id in ["familiar", "created_actor", "created_creature"]: return
 	base_ac = _equipment_base_ac()
 
 ## Get effective AC (base + conditions/buffs).
@@ -1602,7 +1747,8 @@ func get_ac() -> int:
 	if projected_ac >= 0:
 		return SpellEffects.effective_ac(self, projected_ac) + SourceBenefitRules.total(self, "AC")
 	# Batch 070: an owned base_ac upgrade (even suppressed or merged) reads live, so suppression and switches apply at once.
-	var ac := _equipment_base_ac() if not protection_grants.is_empty() or features.any(func(f): return f.get("type", "") == "rule_upgrade" and f.get("changes", {}).has("base_ac")) else base_ac
+	var template_actor := class_id in ["familiar", "created_actor", "created_creature"]
+	var ac := _equipment_base_ac() if not template_actor and (not protection_grants.is_empty() or features.any(func(f): return f.get("type", "") == "rule_upgrade" and f.get("changes", {}).has("base_ac"))) else base_ac
 	var protection := ProtectionRules.ac(self,ac)
 	ac = int(protection.base)
 	var armor_id := inventory.get_armor()
@@ -1611,12 +1757,10 @@ func get_ac() -> int:
 	if has_condition("mage_armor"):
 		if armor_id.is_empty():
 			var dex_mod := ability_scores.get_ability_modifier("DEX")
-			var shield_ac: int = 0
-			var shield_id := inventory.get_equipped(Inventory.Slot.SHIELD)
-			if not shield_id.is_empty():
-				var shield_data := DataLoader.get_item(shield_id)
-				shield_ac = int(shield_data.get("ac_bonus", 2))
-			ac = maxi(ac, 13 + dex_mod + shield_ac)
+			ac = maxi(ac, 13 + dex_mod + trained_shield_bonus())
+
+	if not base_ac_choice.is_empty():
+		ac = selected_base_ac(base_ac_candidates(), ac)
 
 	ac += int(protection.addition)
 	# Shield spell grants +5 AC
@@ -2696,7 +2840,7 @@ func to_dict() -> Dictionary:
 	TemporaryHPRules.prune(self, int(GameManager.campaign_elapsed_seconds))
 	ProtectionRules.prune(self,int(GameManager.campaign_elapsed_seconds))
 	_prune_recent_damage_history(int(GameManager.campaign_elapsed_seconds))
-	return {
+	var snapshot := {
 		"character_id": character_id,
 		"name": character_name,
 		"race_id": race_id,
@@ -2734,6 +2878,7 @@ func to_dict() -> Dictionary:
 		"timed_temporary_hp_grants": timed_temporary_hp_grants.duplicate(true),
 		"timed_temporary_hp_current_grant_id": timed_temporary_hp_current_grant_id,
 		"base_ac": base_ac,
+		"base_ac_choice": base_ac_choice,
 		"speed": speed,
 		"movement_speeds_feet": movement_speeds_feet.duplicate(true),
 		"proficiency_bonus": proficiency_bonus,
@@ -2828,6 +2973,13 @@ func to_dict() -> Dictionary:
 		"ammunition_recovery": ammunition_recovery.duplicate(true),
 	}
 
+	# Keep temporarily ineligible sources; clear only a preference whose exact
+	# source is no longer owned or whose saved shape is invalid.
+	if not saved_base_ac_choice_error(snapshot).is_empty():
+		base_ac_choice = ""
+		snapshot["base_ac_choice"] = ""
+	return snapshot
+
 
 ## Deserialize character from dictionary.
 func from_dict(data: Dictionary) -> void:
@@ -2870,6 +3022,7 @@ func from_dict(data: Dictionary) -> void:
 	disintegrated = bool(data.get("disintegrated", false))
 	temp_hp = int(data.get("temp_hp", 0))
 	base_ac = int(data.get("base_ac", 10))
+	base_ac_choice = str(data.get("base_ac_choice", "")) if saved_base_ac_choice_error(data).is_empty() else ""
 	speed = int(data.get("speed", 6))
 	movement_speeds_feet = {"climb": 0, "swim": 0, "fly": 0}
 	var saved_movement_speeds: Variant = data.get("movement_speeds_feet", {})
@@ -3129,6 +3282,7 @@ func from_dict(data: Dictionary) -> void:
 	DruidRules.restore_saved_form(self, data.get("wild_shape_state", {}))
 	CorpseRules.restore(self, data)
 	ActorProjectionRules.restore(self)
+	if class_id not in ["familiar", "created_actor", "created_creature"] and not DataLoader.get_character_class(class_id).is_empty(): _recalculate_ac()
 	expire_timed_temporary_hp_grants(int(GameManager.campaign_elapsed_seconds))
 
 

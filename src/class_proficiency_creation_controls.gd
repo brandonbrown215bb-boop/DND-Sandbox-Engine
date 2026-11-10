@@ -51,10 +51,20 @@ static func run(h: Node) -> void:
 	creation.classes_data = [DataLoader.get_character_class("rogue")]
 	creation.btn_rand.pressed.emit()
 	h._assert(creation.current_step == creation.CreationStep.SUMMARY and creation._creation_choice_error().is_empty(), "Random Rogue fills valid distinct skills and reaches review")
+	var displayed_background: String = creation.selected_background_id
+	var displayed_background_choices: Dictionary = creation.background_choices.duplicate(true)
+	var displayed_skills: Array = creation._creation_choices().get("skills", []).duplicate()
+	var expected_tool_sources := {"thieves_tools": ["class:rogue"]}
+	var background := DataLoader.get_background(creation.selected_background_id)
+	var background_tools: Array = background.get("tool_proficiency_grants", []).duplicate()
+	background_tools.append_array(creation.background_choices.get("tools", []))
+	for tool_id in background_tools:
+		if not expected_tool_sources.has(tool_id): expected_tool_sources[tool_id] = []
+		expected_tool_sources[tool_id].append("background:" + creation.selected_background_id)
 	creation.btn_next.pressed.emit()
 	await h.get_tree().process_frame
 	var rogue: Character = PlayerManager.get_player(2).get("character")
-	h._assert(rogue != null and rogue.creation_choices.get("skills", []).size() == 4 and rogue.tool_proficiency_sources == {"thieves_tools": ["class:rogue"]}, "Random Rogue Confirm grants the displayed skills and Thieves' Tools")
+	h._assert(rogue != null and displayed_skills.size() == 4 and rogue.creation_choices.get("skills", []) == displayed_skills and displayed_skills.all(func(skill): return rogue.skill_proficiencies.count(skill) == 1) and rogue.tool_proficiency_sources == expected_tool_sources and rogue.tool_proficiencies.size() == expected_tool_sources.size() and expected_tool_sources.keys().all(func(tool): return rogue.tool_proficiencies.count(tool) == 1) and rogue.background_id == displayed_background and rogue.background_choices == displayed_background_choices, "Random Rogue Confirm grants the displayed skills and Thieves' Tools")
 	h._teardown_scene(creation)
 	GameManager.current_state = GameManager.GameState.OVERWORLD
 	GameManager.game_in_progress = true
@@ -66,7 +76,7 @@ static func run(h: Node) -> void:
 	malformed["party"]["characters"][druid.character_id]["tool_proficiency_sources"] = {"herbalism_kit": ["class:rogue"]}
 	h._assert(not SaveManager._validate_save_data(malformed).is_empty(), "A party record with another class's source is refused")
 	var f := FileAccess.open(IDS, FileAccess.WRITE)
-	f.store_string("|".join([monk.character_id, druid.character_id, rogue.character_id, JSON.stringify(monk.inventory.to_dict()), str(rogue.inventory.count_item("thieves_tools"))]))
+	f.store_string("|".join([monk.character_id, druid.character_id, rogue.character_id, JSON.stringify(monk.inventory.to_dict()), str(rogue.inventory.count_item("thieves_tools")), JSON.stringify(expected_tool_sources)]))
 	f.close()
 	await _legacy_bard_saves(h)
 	h._exit_test()
@@ -104,8 +114,8 @@ static func _legacy_bard_saves(h: Node) -> void:
 static func reload(h: Node) -> void:
 	h._enter_test("class_proficiency_creation_reload")
 	var p := FileAccess.get_file_as_string(IDS).strip_edges().split("|")
-	h._assert(p.size() == 5 and SaveManager.load_game(SLOT), "G2 fresh process loads the saved party")
-	if p.size() != 5:
+	h._assert(p.size() == 6 and SaveManager.load_game(SLOT), "G2 fresh process loads the saved party")
+	if p.size() != 6:
 		h._exit_test()
 		return
 	var monk: Character = PartyManager.characters.get(p[0], null)
@@ -113,7 +123,7 @@ static func reload(h: Node) -> void:
 	var rogue: Character = PartyManager.characters.get(p[2], null)
 	h._assert(monk != null and monk.tool_proficiencies == ["flute"] and monk.tool_proficiency_sources == {"flute": ["class_choice:monk"]} and JSON.stringify(monk.inventory.to_dict()) == p[3], "Fresh process: Monk choice survives without replaying grants or items")
 	h._assert(druid != null and druid.tool_proficiencies == ["herbalism_kit"] and CheckHelpRules.owns(druid, "tool", "herbalism_kit"), "Fresh process: Druid Herbalism proficiency is usable for Help")
-	h._assert(rogue != null and rogue.tool_proficiencies == ["thieves_tools"] and rogue.inventory.count_item("thieves_tools") == int(p[4]), "Fresh process: Rogue Thieves' Tools listed once with no extra item")
+	h._assert(rogue != null and rogue.tool_proficiency_sources == JSON.parse_string(p[5]) and rogue.tool_proficiencies.size() == rogue.tool_proficiency_sources.size() and rogue.tool_proficiency_sources.keys().all(func(tool): return rogue.tool_proficiencies.count(tool) == 1) and rogue.inventory.count_item("thieves_tools") == int(p[4]), "Fresh process: Rogue Thieves' Tools listed once with no extra item")
 	if druid != null:
 		await h.get_tree().process_frame
 		CharacterSheet.show_sheet(druid)

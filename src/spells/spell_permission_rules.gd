@@ -222,6 +222,7 @@ static func selected_permission(character: Character, spell: Dictionary) -> Dict
 ## Ready and reactions choose the same explicit permission/payment as normal casts.
 static func payment_choices(character: Character, spell_id: String) -> Array[Dictionary]:
 	var choices: Array[Dictionary] = []
+	if character.untrained_worn_armor() and DataLoader.get_spell(spell_id).get("casting_time", "") == "reaction": return choices
 	var spell_level := int(DataLoader.get_spell(spell_id).get("level", 0))
 	for permission in character.get_spell_permissions(spell_id):
 		var base := DataLoader.get_spell(spell_id).duplicate(true)
@@ -247,7 +248,7 @@ static func reaction_key(character: Character, spell_id: String) -> String:
 	return "spell_payment:%s:%s" % [SpellEffects.caster_id(character), spell_id]
 
 static func spend_reaction(character: Character, spell_id: String, decisions: Dictionary) -> Dictionary:
-	if not character.reaction_available or CombatAction.is_incapacitated(character): return {}
+	if character.untrained_worn_armor() or not character.reaction_available or CombatAction.is_incapacitated(character): return {}
 	var supplied: Variant = decisions.get(reaction_key(character, spell_id), {})
 	if not supplied is Dictionary: return {}
 	var selection: Dictionary = supplied

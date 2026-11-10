@@ -26,8 +26,8 @@ static func content_error(effect: Dictionary) -> String:
 
 static func eligible(actor: Character, effect: Dictionary) -> bool:
 	if actor==null or actor.inventory==null or not content_error(effect).is_empty(): return false
-	var armor := actor.inventory.get_armor()
-	var shield := actor.inventory.get_equipped(Inventory.Slot.SHIELD)
+	var armor := actor.worn_armor_id()
+	var shield := actor.worn_shield_id()
 	# Unknown equipped definitions are missing facts, never permission to be unarmored.
 	if not armor.is_empty() and DataLoader.get_item(armor).get("armor_type", "") not in ["light","medium","heavy"]: return false
 	if not shield.is_empty() and DataLoader.get_item(shield).get("type", "") != "shield": return false
@@ -115,8 +115,7 @@ static func ac(actor: Character, ordinary_base: int) -> Dictionary:
 			if not evaluated.get("success",false) or not ResourcePoolRules._integer(evaluated.get("value"),-100,100): continue
 			var value := int(evaluated.value)
 			if benefit.operation=="base":
-				var shield_id := actor.inventory.get_equipped(Inventory.Slot.SHIELD)
-				if not shield_id.is_empty(): value+=int(DataLoader.get_item(shield_id).get("ac_bonus",2))
+				value+=actor.trained_shield_bonus()
 				base=maxi(base,value)
 			else: addition+=value
 			contributions.append({"source_instance_id":grant.source_instance_id,"grant_instance_id":grant.grant_instance_id,"operation":benefit.operation,"value":value,"expires_at_seconds":grant.expires_at_seconds})

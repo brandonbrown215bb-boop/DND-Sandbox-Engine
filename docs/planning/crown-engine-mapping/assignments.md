@@ -1,6 +1,8 @@
 # Crown implementation assignments
 
-Planning only; no assignment was implemented or gameplay-accepted in this pass.
+The mapping pass was planning only. Later implementation boundaries are recorded
+in each Runtime status entry and the slice registry; the original Source check
+notes describe the pre-implementation findings.
 
 Prerequisites mean only the selected needed behavior, not completion of a whole referenced assignment or parent slice. Neutral loaded production fixtures can provide it without production catalogs. Numeric order picks ready work; independent ready work may proceed. CATALOG/JOURNEY are convergence checks, not gates on narrow promotion.
 
@@ -68,7 +70,7 @@ Reuse: G2 skill/tool choices, Monk tool copy, Explorer pack expansion, combined 
 
 Deliver: Wire16 full A/B/C/GP packages, six packs and linked choices once. No pack shell/contents double counting, invented Backpack fit, forced Amulet, Bard proficiency match or replay. Retained source conflicts remain explicit.
 
-Runtime status: **Partial CXM-03 delivery (2026-11-09)** in [progression choices](../../mechanics/progression-choices.md): generic `starting_equipment_choices` slots and one GP selector replaced the Bard/Barbarian branches. All 12 classes have their SRD kits and GP options (Fighter A/B/C via `starting_equipment_alternatives`), except Wizard B, which waits on a Spellbook ruling. Packs and their contents, Arrows, Quiver, Books, Pouch, Traveler's Clothes and the arcane-focus Quarterstaff are in the catalog; starting Arrows are stowed in the Quiver. Catalog bows don't spend Arrows yet. Background packages belong to CXM-04.
+Runtime status: **Partial CXM-03 delivery (2026-11-09)** in [progression choices](../../mechanics/progression-choices.md): generic `starting_equipment_choices` slots and one GP selector replaced the Bard/Barbarian branches. All 12 classes have their SRD kits and GP options (Fighter A/B/C via `starting_equipment_alternatives`), with Wizard B implemented as 55 GP plus a Spellbook under the recorded house ruling. Packs and their contents, Arrows, Quiver, Books, Pouch, Traveler's Clothes and the arcane-focus Quarterstaff are in the catalog; starting Arrows are stowed in the Quiver. Catalog bows don't spend Arrows yet. Background packages belong to CXM-04.
 
 Source check (2026-11-09): Background packages need BACKGROUND, which has no host yet. Deliver grants through the CLEAR_REWARD deliver-or-refuse helper.
 
@@ -86,7 +88,7 @@ Reuse: Four adapted candidates, ability/feat parameters, tool-source ownership a
 
 Deliver: Production background type/loader/creation step, listed +2/+1 or+1/+1/+1, fixed feat/skills/tool/A-or50GP once. Prevent legacy species ASI stacking, no legacy rewrite.
 
-Runtime status: **Partial CXM-04 delivery (2026-11-09)** in the [slice registry](../vocabulary-slices.md#background-acquisition-at-creation): backgrounds are a loaded content type with a creation step; the four SRD backgrounds grant their ability increase, skills, tool, kit or 50 GP and fixed Origin feat once, and a background character takes no legacy species ability bonuses. Alert, Savage Attacker and Magic Initiate are owned but their rules wait for CXM-05, CXM-06 and CXM-60, so the fixed Initiate spell and ability choice is not delivered.
+Runtime status: **Partial CXM-04 delivery (2026-11-09)** in the [slice registry](../vocabulary-slices.md#background-acquisition-at-creation): backgrounds are a loaded content type with a creation step; the four SRD backgrounds grant their ability increase, skills, tool, kit or 50 GP and fixed Origin feat once, and a background character takes no legacy species ability bonuses. Alert and Savage Attacker are implemented under CXM-05 and CXM-06; Magic Initiate's spell and ability choice still waits for CXM-60.
 
 Source check (2026-11-09): No background host exists (src/ui/character_creation/character_creation.gd:628: no background step yet). The four SRD backgrounds are written only as candidates in preparation/crown-characters/backgrounds. Their origin feats (Alert, Magic Initiate, Savage Attacker) are not loaded. Moved forward because every new character needs it.
 
@@ -97,6 +99,8 @@ Evidence: [progression-choices.md](../../../docs/mechanics/progression-choices.m
 Conditional dependencies: PACK: Only selected A package; GP alternative independent. CHOICE: Only selected Origin feat parameters. ACQUIRE: Only once-only background source grants/validation.
 
 ## CXM-05 — Immediate willing initiative exchange (INIT)
+
+Runtime: delivered for initial combat rolls; see the [exchange boundary](../vocabulary-slices.md#initial-willing-initiative-exchange).
 
 Owner: **S-091 initiative owner extension; S-233 acquisition reuse**. Prerequisites: accepted reuse only.
 
@@ -114,6 +118,8 @@ Evidence: [progression-choices.md](../../../docs/mechanics/progression-choices.m
 
 ## CXM-06 — Natural thresholds and whole damage rolls (DICE)
 
+Runtime status: **bounded delivery**; see the [slice boundary](../vocabulary-slices.md#src-01-batch-2). Savage Attacker is loaded; the cantrip feature is a renamed executable fixture, with Evoker catalog conversion separate. The broader S-240 death-save threshold remains open.
+
 Owner: **S-240; S-123/S-124/S-125/S-126 reuse**. Prerequisites: accepted reuse only.
 
 Consumers: Champion, GWF, Savage Attacker, Evoker Potent Cantrip, Fiendish Vigor, Empowered/Seeking Spell.
@@ -129,6 +135,8 @@ Acceptance: Natural18/19/20 versus modified19; two-handed/Versatile/one-hand, we
 Evidence: [shared-spells.md](../../../docs/mechanics/shared-spells.md), [attack-profiles.md](../../../docs/mechanics/attack-profiles.md), [combat_action.gd](../../../src/combat/combat_action.gd).
 
 ## CXM-07 — Worn penalties and legal base AC (ARMOR)
+
+Runtime status: **In progress**. Worn-item penalties and Shield training are being wired; explicit legal base-AC choice, production-control verification and checkpoint recovery remain open. See [equipment timing](../../mechanics/equipment-timing.md).
 
 Owner: **S-251; S-085/S-252 reuse**. Prerequisites: accepted reuse only.
 

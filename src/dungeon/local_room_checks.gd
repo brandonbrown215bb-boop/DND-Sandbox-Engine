@@ -85,6 +85,7 @@ static func run(check: Callable) -> void:
 	var partial_ration_user := Character.new()
 	partial_ration_user.initialize("Partial ration user", "human", "fighter", AbilityScores.new())
 	partial_ration_user.character_id = "partial_ration_user"
+	partial_ration_user.inventory = Inventory.new() # Only the ration under test.
 	partial_ration_user.inventory.add_item("rations")
 	var partial_ration_id := str(partial_ration_user.inventory.backpack_instances()[0]["instance_id"])
 	var quarter_ration := partial_ration_user.inventory.consume_ration_portion(partial_ration_id, partial_ration_user, 0.25)
@@ -137,6 +138,40 @@ static func run(check: Callable) -> void:
 	var pry_result := LocalRoomRules.interact(pry_state, "door", "pry", pry_character)
 	check.call(pry_result.get("success", false) and LocalRoomRules.get_object(pry_state, "door").get("open", false), "A carried crowbar supplies a playable pry action for locked room objects")
 	var state := LocalRoomRules.create(definition, [character])
+	var strike_owner := Character.new()
+	strike_owner.initialize("Room striker", "human", "fighter", AbilityScores.new())
+	strike_owner.character_id = "whole-room-striker"
+	strike_owner.origin_feat = "savage_attacker"
+	strike_owner.inventory.add_item("greatsword")
+	strike_owner.inventory.equip(Inventory.Slot.WEAPON, "greatsword")
+	var strike_room := LocalRoomRules.create(definition, [strike_owner])
+	strike_room.party_positions[strike_owner.character_id] = [-1, 0]
+	var strike_object := LocalRoomRules.get_object(strike_room, "door", strike_owner)
+	strike_object["hp"] = 100
+	strike_object["max_hp"] = 100
+	var strike_grid := HexGrid.new()
+	for cell in strike_room.get("cells", []):
+		var tile := HexTile.new()
+		tile.coord = LocalRoomRules.coord(cell)
+		strike_grid.add_tile(tile)
+	FighterChecks._seed_die(20, 20)
+	var strike_offer := CombatNoiseRules.room_interact(strike_room, strike_owner, [strike_owner], strike_grid, "door", "strike", "", true)
+	var strike_capture: Dictionary = strike_offer.get("room_strike", {})
+	var strike_use := CombatAction.resume_whole_damage(strike_capture.get("attack", {}), "use")
+	var strike_hit := CombatAction.resume_whole_damage(strike_use, "first")
+	var strike_done := CombatNoiseRules.finish_room_strike(strike_room, strike_owner, [strike_owner], strike_grid, "door", strike_capture, strike_hit)
+	var hp_after_strike := int(strike_object.hp)
+	var strike_replay := CombatNoiseRules.finish_room_strike(strike_room, strike_owner, [strike_owner], strike_grid, "door", strike_capture, strike_hit)
+	check.call(not strike_capture.is_empty() and strike_done.get("success", false) and strike_done.get("seconds", 0) == 6 and hp_after_strike < 100 and not strike_replay.get("success", true) and int(strike_object.hp) == hp_after_strike, "Room weapon strike offers a whole roll and applies object damage once")
+	FighterChecks._seed_die(20, 20)
+	var stale_offer := CombatNoiseRules.room_interact(strike_room, strike_owner, [strike_owner], strike_grid, "door", "strike", "", true)
+	var stale_capture: Dictionary = stale_offer.get("room_strike", {})
+	strike_room.party_positions[strike_owner.character_id] = [-3, 0]
+	var stale_error := CombatNoiseRules.room_strike_error(strike_room, strike_owner, [strike_owner], "door", stale_capture)
+	CombatAction.cancel_whole_damage(stale_capture.get("attack", {}))
+	var stale_result := CombatNoiseRules.abort_room_strike(strike_room, strike_owner, [strike_owner], strike_grid, stale_capture, stale_error)
+	check.call(not stale_error.is_empty() and not stale_result.get("success", true) and int(stale_result.get("seconds", 0)) == 6 and int(strike_object.hp) == hp_after_strike and not CombatNoiseRules.abort_room_strike(strike_room, strike_owner, [strike_owner], strike_grid, stale_capture, stale_error).get("success", true), "A stale room strike spends its committed time once without damaging the object")
+	strike_grid.free()
 	check.call(DungeonPersistence.local_error(state).is_empty(), "Authored room validates with production geometry")
 	var purifier := Character.new()
 	purifier.initialize("Purifier", "human", "cleric", AbilityScores.new())
@@ -334,6 +369,7 @@ static func run(check: Callable) -> void:
 	check.call(starving_character.exhaustion_level == 0 and starving_character.days_without_food == 0, "A full food portion unlocks recovery and a Long Rest removes one Exhaustion level")
 	var dehydrated_character := Character.new()
 	dehydrated_character.initialize("Dehydrated character", "human", "fighter", AbilityScores.new())
+	dehydrated_character.inventory.unequip(Inventory.Slot.BODY) # Isolate exhaustion from the fighter kit's Strength penalty.
 	dehydrated_character.nourishment_until_seconds = 86400
 	dehydrated_character.hydration_until_seconds = 86400
 	SurvivalRules.settle_day(dehydrated_character, 86400)
@@ -422,6 +458,7 @@ static func run(check: Callable) -> void:
 	check.call(not alarm_combat_support.get("available", true), "Alarm stays unavailable to the encounter spell pipeline")
 	var area_walker := Character.new()
 	area_walker.initialize("Area walker", "human", "fighter", AbilityScores.new())
+	area_walker.inventory.unequip(Inventory.Slot.BODY) # This fixture exercises declared movement speeds without armor penalties.
 	area_walker.character_id = "area_walker"
 	area_walker.set_movement_speed_feet("climb", 20)
 	area_walker.set_movement_speed_feet("swim", 15)
@@ -924,6 +961,13 @@ static func run(check: Callable) -> void:
 	var wizard_caster := Character.new()
 	wizard_caster.character_id = "wizard_caster_id"
 	wizard_caster.character_name = "Merlin"
+	wizard_caster.known_spells.assign(["knock", "arcane_lock"])
+	wizard_caster.spell_slots = {"2": 2}
+	wizard_caster.inventory.equip(Inventory.Slot.BODY, "chain_mail", true)
+	var before_refused_spells := door_obj.duplicate(true)
+	var refused_knock := LocalRoomRules.interact(room_state, "door_test", "knock", wizard_caster)
+	var refused_lock := LocalRoomRules.interact(room_state, "door_test", "arcane_lock", wizard_caster)
+	check.call(not refused_knock.success and not refused_lock.success and wizard_caster.spell_slots["2"] == 2 and door_obj == before_refused_spells, "CXM-07 actual room-object Knock and Arcane Lock refuse untrained armor before slot or object changes")
 
 	# Verify caster can open Arcane Locked door via LocalRoomRules.interact while stranger cannot
 	door_obj["open"] = false

@@ -4,6 +4,10 @@ extends RefCounted
 
 static func revalidate_selection(cast: SpellCastContext) -> bool:
 	# Recheck after asynchronous choices, before any resource or held Reaction.
+	if cast.ready_release_token.is_empty() and cast.caster.untrained_worn_armor():
+		cast.hud.add_log("You cannot cast spells while wearing armor you lack training in.")
+		cast.clear_pending(SpellCastContext.CLEAR_ACTION | SpellCastContext.CLEAR_SPELL)
+		return false
 	if not SharedSpell.weapon_attack_effect(cast.spell).is_empty():
 		var weapon := DataLoader.get_item(str(cast.spell.get("_true_strike_weapon_id", ""))).duplicate(true)
 		weapon["_ammunition_weapon_copy"] = str(cast.spell.get("_ammunition_weapon_copy", ""))

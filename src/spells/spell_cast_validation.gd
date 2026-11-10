@@ -157,7 +157,7 @@ static func validate_actor(cast: SpellCastContext) -> bool:
 			if candidate != null and candidate.is_alive and party_entity.get("hex_position", Vector2i.ZERO) == cast.target_coord:
 				eligible_armor_target = candidate
 				break
-		if eligible_armor_target == null or not eligible_armor_target.inventory.get_armor().is_empty():
+		if eligible_armor_target == null or not eligible_armor_target.worn_armor_id().is_empty():
 			cast.hud.add_log("Mage Armor needs a willing living party member who isn't wearing armor.")
 			cast.clear_pending(SpellCastContext.CLEAR_ACTION)
 			cast.clear_pending(SpellCastContext.CLEAR_SPELL)
@@ -182,6 +182,12 @@ static func validate_actor(cast: SpellCastContext) -> bool:
 			return false
 		cast.spell["_magic_weapon_id"] = weapon_id
 	if cast.ready_release_token.is_empty():
+		if cast.caster.untrained_worn_armor():
+			cast.hud.add_log("You cannot cast spells while wearing armor you lack training in.")
+			cast.clear_pending(SpellCastContext.CLEAR_ACTION)
+			cast.clear_pending(SpellCastContext.CLEAR_SPELL)
+			cast.highlight_reachable.call()
+			return false
 		if not DruidRules.can_cast_spells(cast.caster):
 			cast.hud.add_log("You cannot cast spells while using Wild Shape.")
 			cast.clear_pending(SpellCastContext.CLEAR_ACTION)

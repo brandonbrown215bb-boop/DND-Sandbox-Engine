@@ -28,5 +28,5 @@ Rules (ADR-0018 — no per-ID branches, no engine defaults):
 ## Not supported (PARTIAL)
 - Mid-turn combat state (remaining swings) is not saved.
 - Ungrouped consumer upgrades are refused.
-- Barbarian Unarmored Defense content has empty effects, so no shipped class uses `base_ac` yet; only the first `unarmored_defense` feature is a consumer.
+- Barbarian Unarmored Defense content has empty effects, so no shipped class uses `base_ac` yet; loaded unarmored-defense features can contribute competing legal bases.
 - Armored base-AC alternatives and reach/mastery consumers are out of scope.

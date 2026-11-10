@@ -214,7 +214,8 @@ static func _finish_attack(cast: SpellResolutionContext, attack_result: Dictiona
 		numeric_margin_fields["post_roll_reroll"] = attack_result["post_roll_reroll"].duplicate(true)
 	if not is_hit:
 		FighterRules.record_miss(cast.caster, cast.target)
-		if (cast.spell.has("miss_damage_scale") or cast.spell.has("damage_scale_by_outcome")) and cast.spell.has("damage"):
+		var avoided_damage := SpellDamageRolls.avoided_spell_damage(cast, "miss")
+		if (avoided_damage or cast.spell.has("miss_damage_scale") or cast.spell.has("damage_scale_by_outcome")) and (cast.spell.has("damage") or not cast.spell.get("damage_components", []).is_empty()):
 			if tracks_resolution_windows:
 				var miss_window_fields := {
 					"roll_natural": int(attack_result.get("natural", 0)),
@@ -228,8 +229,22 @@ static func _finish_attack(cast: SpellResolutionContext, attack_result: Dictiona
 				var miss_override_receipt := _outcome_override_receipt(selected_bonus, override_outcome)
 				if not miss_override_receipt.is_empty(): miss_window_fields["roll_outcome_override"] = miss_override_receipt
 				SpellDamageRolls.record_resolution_window(cast, "pre_damage", miss_window_fields)
-			var miss_damage_str := SpellDamageRolls.spell_damage_formula(cast.caster, cast.spell, cast.slot_level)
+			var components: Array = cast.spell.get("damage_components", [])
+			var primary: Dictionary = components[0] if not components.is_empty() else {}
+			var primary_spell := cast.spell if primary.is_empty() else {"damage": primary.get("damage", "0"), "level": cast.spell.get("level", 0), "upcast": primary.get("upcast", cast.spell.get("upcast", {}))}
+			var miss_damage_str := SpellDamageRolls.spell_damage_formula(cast.caster, primary_spell, cast.slot_level)
 			var miss_damage_details := SpellDamageRolls._roll_spell_damage(cast.caster, miss_damage_str, 1, cast.decisions, cast.spell.get("damage_dice_policy", {}))
+			var remaining_policy: Dictionary = cast.spell.get("damage_dice_policy", {}).duplicate()
+			SpellSaveResolver._consume_dice_policy(remaining_policy, miss_damage_details)
+			var extra_packets: Array[Dictionary] = []
+			for component in components.slice(1):
+				var component_spell := {"damage": component.get("damage", "0"), "level": cast.spell.get("level", 0), "upcast": component.get("upcast", cast.spell.get("upcast", {}))}
+				var formula := SpellDamageRolls.spell_damage_formula(cast.caster, component_spell, cast.slot_level)
+				var component_decisions := cast.decisions.duplicate()
+				component_decisions.erase("spell_damage_context")
+				var component_details := SpellDamageRolls._roll_spell_damage(cast.caster, formula, 1, component_decisions, remaining_policy)
+				SpellSaveResolver._consume_dice_policy(remaining_policy, component_details)
+				extra_packets.append({"component_id": str(component.get("id", component.get("damage_type", "untyped"))), "details": component_details, "type": str(component.get("damage_type", "untyped")), "label": str(component.get("label", "Damage")), "formula": formula})
 			var miss_base := {
 				"success": true, "hit": false, "slot_level": cast.slot_level,
 				"target_ac": target_ac, "attack_roll": int(attack_result.get("total", 0)),
@@ -256,10 +271,13 @@ static func _finish_attack(cast: SpellResolutionContext, attack_result: Dictiona
 				miss_base["roll_token_value"] = token_value
 			if tracks_resolution_windows:
 				miss_base["_resolution_context"] = cast
-			var miss_scale := SharedSpell.authored_damage_scale(cast.spell, "miss", float(cast.spell.get("miss_damage_scale", 0.0)))
+			var miss_scale := 0.5 if avoided_damage else SharedSpell.authored_damage_scale(cast.spell, "miss", float(cast.spell.get("miss_damage_scale", 0.0)))
+			if avoided_damage: miss_base["suppress_avoided_spell_effects"] = true
 			SharedSpell.record_damage_scale(miss_base, cast.spell, "miss", miss_scale)
-			return SpellDamageRolls._finish_spell_damage(cast.caster, cast.target, miss_damage_details, CombatAction.spell_damage_bonus(cast.caster, cast.spell), miss_scale, str(cast.spell.get("damage_type", "fire")), cast.decisions, miss_base, 1, [], cast.spell.get("damage_reductions", []), cast.spell.get("damage_bypasses", []))
+			if avoided_damage: miss_base["damage_scale_decision"] = {"outcome": "miss", "scale": 0.5, "source": "avoided_spell_damage", "rounding": "floor_after_bonus_before_typed_settlement"}
+			return SpellDamageRolls._finish_spell_damage(cast.caster, cast.target, miss_damage_details, CombatAction.spell_damage_bonus(cast.caster, cast.spell), miss_scale, str(primary.get("damage_type", cast.spell.get("damage_type", "fire"))), cast.decisions, miss_base, 1, extra_packets, cast.spell.get("damage_reductions", []), cast.spell.get("damage_bypasses", []))
 		var miss_out := {"success": true, "hit": false, "slot_level": cast.slot_level, "target_ac": target_ac, "attack_roll": attack_result["total"], "attack_advantage": spell_attack_advantage, "attack_disadvantage": spell_attack_disadvantage, "metamagic_used": seeking_spell_used, "stroke_of_luck_used": stroke_of_luck_used, "roll_token_replaced": token_replaced, "message": reaction_msg + "Spell missed! Ranged spell attack %d vs AC %d" % [attack_result["total"], target_ac]}
+		if avoided_damage: miss_out["suppress_avoided_spell_effects"] = true
 		for field in numeric_margin_fields: miss_out[field] = numeric_margin_fields[field]
 		if not selected_bonus.is_empty():
 			miss_out["selected_payment"] = selected_payment_receipt.duplicate(true)

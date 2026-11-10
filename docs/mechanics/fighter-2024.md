@@ -53,6 +53,12 @@ permits one mastery replacement. New mastery slots and Champion's second style
 can be filled later. Initial defaults are Defense, longsword/greatsword/longbow,
 and Athletics/Perception; change these before the first combat.
 
+Great Weapon Fighting raises eligible dice in weapon damage, extra attack
+packets, Brutal Strike, weapon-hit riders and Divine Smite, including critical
+dice. Later riders use the hit's captured weapon and grip. The versatile-weapon
+path currently treats an empty off hand as using two hands; a thrown attack
+does not receive the melee style.
+
 Second Wind costs a Bonus Action and heals d10 + Fighter level. A Short Rest
 restores one use; a Long Rest restores all. Tactical Mind offers a d10 after a
 failed event check and spends Second Wind only if the new total succeeds.

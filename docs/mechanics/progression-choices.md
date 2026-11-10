@@ -193,10 +193,25 @@ Species boundary: a character with a background takes no species
 and directly built characters have no background and are unchanged. Species
 data was not rewritten.
 
-Limits: Alert, Magic Initiate and Savage Attacker are loaded as acquisition
-records with `"effects_pending": true`. A background grants them, but their
-rules do nothing yet (CXM-05, CXM-60 and CXM-06), and `FeatRules.options` does
-not offer an effects-pending feat as a pick. Magic Initiate records its fixed
+Alert declares `"initiative": {"proficiency": true, "willing_exchange": true}`
+on the feat. An owner adds proficiency to Initiative; after the initial rolls
+and before the first turn, the owner can choose an ally and that ally must
+confirm. The exact initiative totals exchange, retaining each creature's own
+Dexterity tie-break. The initial choice is transient, consumed once, and is
+rechecked after consent; incapacitated or removed participants cannot exchange.
+Steeds sharing an owner's count follow the exchanged count. Late or grouped
+arrivals do not reopen the initial window.
+
+Savage Attacker declares `"weapon_damage_roll_choice": {"rolls": 2,
+"uses_per": "turn"}`. On a weapon hit its owner can decline, or roll the
+weapon's complete damage dice twice and choose either result. Critical weapon
+dice belong to each complete roll; separate damage riders are not rerolled.
+The use refreshes on each creature's turn, including an opportunity attack.
+The room-object strike host also offers the choice.
+
+Limits: Magic Initiate remains an acquisition record with `"effects_pending":
+true`; its rules are pending CXM-60, and `FeatRules.options` does not offer an
+effects-pending feat as a pick. Magic Initiate records its fixed
 list (`magic_initiate|cleric`) but no spells or casting ability. Book topics
 and the Holy Symbol form are not represented. A Fighter cannot swap a training
 skill onto a background skill.

@@ -16,6 +16,7 @@
 	"description": "Heavy armor of interlocking metal rings.",
 	"type": "armor",
 	"armor_type": "heavy",
+	"strength_requirement": 13,
 	"ac": 16,
 	"stealth_disadvantage": true,
 	"value": 75

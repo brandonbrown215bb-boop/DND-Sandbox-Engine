@@ -290,6 +290,7 @@ func release_attack(state: CombatState, record: Dictionary) -> Dictionary:
 	decisions.merge(await state._collect_roll_token_decision(actor, "attack", "Readied attack", decisions), true)
 	decisions.merge(choice.get("decisions", {}), true)
 	decisions["combat_history"] = state.action_history
+	decisions["allow_whole_damage_choice"] = true
 	if not str(still_error.call()).is_empty() or not pay_reaction(state, record): return {"status":"stale"}
 	var result := await state._settle_attack_profile_hit_choice(CombatAction.resolve_weapon_attack(actor, target, profile, false, false, CombatPerception.weapon_decisions(state.hex_grid, actor, target, decisions, origin, coord)))
 	await state._offer_sneak_attack(target, profile, result, actor)

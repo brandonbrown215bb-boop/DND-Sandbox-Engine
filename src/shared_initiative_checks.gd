@@ -18,6 +18,7 @@ static func ids(tracker: InitiativeTracker) -> Array:
 	return tracker.combatants.map(func(c): return str(c.id))
 
 static func run(check: Callable) -> void:
+	_exchange_checks(check)
 	load_fixtures()
 	check.call(DataLoader.get_load_errors().is_empty() and not DataLoader.get_spell(ROLLED).is_empty(), "Shared-count renamed JSON fixtures load through the production loader")
 	var bad := [{"initiative": "shared_count"}, {"initiative": "shared_count", "initiative_group": "all"}, {"initiative": "own", "initiative_group": "roll"}, {"initiative_group": "owner"}, {"initiative": "shared_count", "initiative_group": {"count": "owner"}}]
@@ -130,3 +131,56 @@ static func _rolled(check: Callable) -> void:
 		if entry.has("shared_group"): entry.roll = 12
 	battle.tracker.sort_initiative_preserving_active()
 	check.call(ids(battle.tracker) == [owner.character_id] + (a + b).map(func(member): return member.character_id) + ["b056_goblin"], "Shared-count separately rolled groups on an equal count retain deterministic contiguous member order")
+
+
+static func _exchange_checks(check: Callable) -> void:
+	var owner := Batch031Checks._character("exchange_owner", 30)
+	var ally := Batch031Checks._character("exchange_ally", 30)
+	owner.origin_feat = "alert"
+	var renamed: Dictionary = DataLoader.get_feat("alert").duplicate(true)
+	renamed.id = "fixture:exchange"
+	DataLoader.feats[renamed.id] = renamed
+	owner.origin_feat = renamed.id
+	var result := InitiativeTracker.roll_result(owner, 10)
+	check.call(int(result.modifier) == owner.proficiency_bonus, "CXM-05 renamed owned feat adds proficiency to the actual initiative roll")
+	var tracker := InitiativeTracker.new()
+	tracker.add_combatant("owner", "Owner", true, owner, 17, 10)
+	tracker.add_combatant("ally", "Ally", true, ally, 4, 10)
+	tracker.add_combatant("enemy", "Enemy", false, {}, 10, 10)
+	var token := tracker.begin_exchange("owner")
+	var target := tracker._exchange_entry("ally")
+	var bound := tracker.bind_exchange_target(token, target)
+	var changed := tracker.settle_exchange(token, target, true)
+	tracker.sort_initiative()
+	check.call(bound and changed and tracker._exchange_entry("owner").roll == 4 and target.roll == 17 and tracker.combatants.map(func(c): return c.id) == ["ally", "enemy", "owner"] and not tracker.settle_exchange(token, target, true) and tracker.begin_exchange("owner") < 0, "CXM-05 willing exchange swaps exact values and order once; replay and reopening refuse")
+	tracker.clear()
+	tracker.add_combatant("owner", "Owner", true, owner, 17, 10)
+	tracker.add_combatant("ally", "Ally", true, ally, 4, 10)
+	token = tracker.begin_exchange("owner")
+	target = tracker._exchange_entry("ally")
+	tracker.bind_exchange_target(token, target)
+	check.call(not tracker.settle_exchange(token, target, false) and tracker._exchange_entry("owner").roll == 17 and tracker.begin_exchange("owner") < 0, "CXM-05 declining consumes the window without swapping")
+	tracker.clear()
+	tracker.add_combatant("owner", "Owner", true, owner, 17, 10)
+	tracker.add_combatant("ally", "Ally", true, ally, 4, 10)
+	token = tracker.begin_exchange("owner")
+	target = tracker._exchange_entry("ally")
+	tracker.bind_exchange_target(token, target)
+	ally.add_condition("incapacitated", 1)
+	check.call(not tracker.settle_exchange(token, target, true) and tracker._exchange_entry("owner").roll == 17, "CXM-05 ally incapacitated after choosing cannot consent to a swap")
+	ally.remove_condition("incapacitated")
+	tracker.clear()
+	tracker.add_combatant("owner", "Owner", true, owner, 17, 10)
+	tracker.add_combatant("ally", "Ally", true, ally, 4, 10)
+	owner.add_condition("incapacitated", 1)
+	check.call(tracker.begin_exchange("owner") < 0, "CXM-05 incapacitated owner cannot open the window")
+	owner.remove_condition("incapacitated")
+	token = tracker.begin_exchange("owner")
+	target = tracker._exchange_entry("ally")
+	tracker.bind_exchange_target(token, target)
+	tracker.remove_combatant("ally")
+	tracker.add_combatant("ally", "Ally", true, ally, 4, 10)
+	check.call(not tracker.settle_exchange(token, target, true), "CXM-05 removed and replaced participant makes the choice stale")
+	tracker.close_exchange_entry()
+	check.call(tracker.begin_exchange("owner") < 0, "CXM-05 late arrivals cannot open the initial window")
+	DataLoader.feats.erase(renamed.id)

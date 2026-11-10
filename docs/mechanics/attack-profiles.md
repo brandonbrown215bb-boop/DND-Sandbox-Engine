@@ -1,5 +1,17 @@
 # Attack profiles and weapon damage-type choices
 
+## Whole weapon damage rolls (CXM-06)
+
+An Origin feat may declare `weapon_damage_roll_choice` with two rolls and
+`uses_per: turn`. A hit-window offer precedes damage; accepting captures two
+complete weapon rolls, each including critical weapon dice, and asks the owner
+to select one. Flat bonuses and independently rolled riders are applied once.
+The per-source use clears at each combat turn, including other creatures'
+turns. A declined offer spends nothing. Both offer and selection are one-shot
+continuations; room strikes recheck the actor and object before resuming.
+Unarmed Strikes and spell attacks do not qualify. This does not convert the
+rest of the feat or class catalogs.
+
 ## Weapon range bands and Heavy (S-250)
 
 Weapon definitions may provide `normal_range_feet` and `long_range_feet` as

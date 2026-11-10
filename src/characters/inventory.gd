@@ -41,7 +41,9 @@ func _publish_equipment_change(definition_id: String, state: String, instance_id
 	var owner_character = owner_character_ref.get_ref() if owner_character_ref != null else null
 	if owner_character != null:
 		SpellEffects.publish_event(owner_character, {"type": "equipment", "actor_id": SpellEffects.caster_id(owner_character), "equipment": definition_id, "state": state, "instance_id": instance_id})
-		if owner_character is Character: OwnedFeatureSources.sync(owner_character) # Batch 049: exact equipped copies own their features.
+		if owner_character is Character:
+			OwnedFeatureSources.sync(owner_character) # Exact equipped copies own their features.
+			if owner_character.class_id not in ["familiar", "created_actor", "created_creature"] and str(DataLoader.get_item(definition_id).get("type", "")) in ["armor", "shield"]: owner_character._recalculate_ac()
 
 
 func _sync_owned_features() -> void:

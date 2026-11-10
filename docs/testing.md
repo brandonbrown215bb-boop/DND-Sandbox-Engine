@@ -12,6 +12,15 @@ profile. Selecting either `class_skill_selection_flow_b` or
 `class_skill_selection_reload` runs the complete sequence, so recovery always
 has all seven characters and both checkpoints to inspect.
 
+`normal_creation_matrix` selects a background through the production controls
+before checking each pinned class kit. Its background gold alternative adds
+50 GP to the class total without adding background equipment. The Random Rogue
+in `class_proficiency_creation_flow` checks the displayed skills and exact
+class/background tool owners, including shared Thieves' Tools ownership, and
+its paired reload retains those owners without duplicate proficiencies.
+Controlled item-copy and ration fixtures use isolated inventories; class kits
+must not decide which exact copy a rules check exercises.
+
 `ammunition_flow` exercises S-249 renamed ammunition through actual Attack,
 activation-choice cancellation/identical-copy replacement, Extra Attack misses,
 Loading, Shield/free-hand refusal, exact container pieces, readied target
@@ -19,6 +28,15 @@ cancellation/release, encounter completion and Character Sheet recovery. Its
 paired `ammunition_reload` checks pending and completed recovery through both
 allowed DTOs in a fresh process. See [ammunition](mechanics/ammunition.md) for the
 bounded data contract and catalog/corrosion exclusions.
+
+`SharedInitiativeChecks` covers the feat-declared initiative bonus, consenting
+exchange, replay, refusal, incapacitation and stale participants.
+`shared_initiative_flow` also drives the owner and ally controls.
+
+The `classes`, `spells`, `combat` and `world` logic groups cover CXM-06's
+natural thresholds, whole-roll selection and replay, separate attack riders,
+cantrip miss/save behavior and room-object settlement. `whole_damage_flow`
+drives both choices through the combat HUD.
 
 The supported engine baseline is Godot 4.7.x on Windows. Provide a portable
 executable through `GODOT_BIN` or pass its path to the PowerShell runner.

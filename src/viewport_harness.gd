@@ -358,6 +358,7 @@ func _run_scenario(scenario: String) -> void:
 		"batch_039_created_actor_flow": await Batch039Controls.run(self)
 		"created_actor_scheduling_flow": await CreatedActorSchedulingFlow.run(self)
 		"shared_initiative_flow": await SharedInitiativeFlow.run(self)
+		"whole_damage_flow": await WholeDamageFlow.run(self)
 		"batch_040_successor_projection_flow": await Batch040Controls.run(self)
 		"batch_041_bond_equipment_flow": await Batch041Controls.run(self)
 		"form_equipment_ground_flow": await FormEquipmentGroundControls.run(self)

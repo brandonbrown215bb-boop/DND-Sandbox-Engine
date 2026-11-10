@@ -14,8 +14,16 @@ const PREFIX := "feat:"
 static func definition_error(data: Dictionary) -> String:
 	if "|" in str(data.get("id", "")): return "Feat ids cannot contain '|'"
 	if str(data.get("category", "")) not in CATEGORIES: return "Feat category must be origin, general, fighting_style or epic_boon"
+	if data.has("initiative"):
+		var initiative: Variant = data.initiative
+		if not initiative is Dictionary or initiative.is_empty(): return "Feat initiative must be an object"
+		for key in initiative:
+			if str(key) not in ["proficiency", "willing_exchange"] or not initiative[key] is bool: return "Feat initiative supports boolean proficiency and willing_exchange only"
 	if data.has("repeatable") and not data.repeatable is bool: return "Feat repeatable must be a boolean"
 	if data.has("effects_pending") and not data.effects_pending is bool: return "Feat effects_pending must be a boolean"
+	if data.has("weapon_damage_roll_choice"):
+		var policy: Variant = data.weapon_damage_roll_choice
+		if not policy is Dictionary or policy.size() != 2 or not FeatureModeRules._int(policy.get("rolls", null), 2, 2) or policy.get("uses_per", "") != "turn": return "weapon_damage_roll_choice requires two rolls once per turn"
 	if bool(data.get("repeatable", false)) and not data.get("features", []).is_empty(): return "A repeatable feat cannot own mode/upgrade features (their ids would collide)"
 	var pre: Variant = data.get("prerequisite", {})
 	if not pre is Dictionary: return "Feat prerequisite must be an object"
@@ -115,6 +123,20 @@ static func owned(c: Character) -> Array[String]:
 	return out
 
 ## Why this feat cannot be taken now ("" when it can). category="" means any.
+static func initiative_benefit(c: Character, benefit: String) -> bool:
+	if c == null: return false
+	for id in owned(c):
+		if bool(DataLoader.get_feat(id).get("initiative", {}).get(benefit, false)): return true
+	return false
+
+static func weapon_damage_roll_choice(c: Character) -> Dictionary:
+	if c == null: return {}
+	for id in owned(c):
+		var feat := DataLoader.get_feat(id)
+		if feat.has("weapon_damage_roll_choice"):
+			return {"id": id, "name": str(feat.get("name", id))}
+	return {}
+
 static func eligibility_error(c: Character, feat_id: String, category: String, parameter: String = "") -> String:
 	var feat := DataLoader.get_feat(feat_id)
 	if feat.is_empty(): return "Unknown feat."

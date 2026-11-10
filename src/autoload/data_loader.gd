@@ -506,6 +506,18 @@ func _validate_content(data: Dictionary, content_type: String, source: String) -
 		if not containment_error.is_empty():
 			_load_errors.append("%s in %s" % [containment_error, source])
 			return false
+	if content_type == "item" and data.get("type", "") == "armor" and (data.get("armor_type", "") not in ["light", "medium", "heavy"] or not ResourcePoolRules._integer(data.get("ac"), 1, 30)):
+		_load_errors.append("Armor requires a known category and integer base AC from 1 to 30 in %s" % source)
+		return false
+	if content_type == "item" and data.get("type", "") == "shield" and data.has("ac_bonus") and not ResourcePoolRules._integer(data.ac_bonus, 0, 30):
+		_load_errors.append("Shield ac_bonus must be an integer from 0 to 30 in %s" % source)
+		return false
+	if content_type == "item" and data.has("strength_requirement") and (str(data.get("type", "")) != "armor" or not ResourcePoolRules._integer(data.strength_requirement, 0, 30)):
+		_load_errors.append("Armor strength_requirement must be an integer from 0 to 30 in %s" % source)
+		return false
+	if content_type == "item" and data.has("stealth_disadvantage") and (str(data.get("type", "")) != "armor" or not data.stealth_disadvantage is bool):
+		_load_errors.append("Armor stealth_disadvantage must be a boolean in %s" % source)
+		return false
 	if content_type == "item":
 		var measure_error := ItemTypeRules.definition_error(data) # Batch 048: magic-item types and measurements.
 		if not measure_error.is_empty():
@@ -1023,6 +1035,7 @@ func _feature_content_error(feature: Dictionary) -> String:
 	var supported := ["hit_options", "heal_self", "grant_extra_action", "extra_attack", "modify_crit_range", "asi", "ability_score_increase", "skill_proficiency_choice", "skill_expertise_choice", "jack_of_all_trades", "short_rest_recharge", "initiative_resource_recovery", "resource_from_spell_slot", "spellcasting", "spell_list_expansion", "always_prepared_spells", "spell_free_cast", "concentration_protection", "spell_damage_dice_override", "attack_advantage_against_condition", "saving_throw_proficiency", "protection_aura", "saving_throw_aura", "aura_radius_expansion", "condition_immunity_aura", "additional_spell_target", "countercharm", "epic_boon_choice", "feature_choice", "grant_condition", "stat_modifier", "unarmored_defense", "reckless_attack", "monk_bonus_action", "martial_arts", "unarmed_attack", "monk_focus", "unarmored_movement", "speed_bonus", "initiative_advantage", "saving_throw_advantage", "ability_check_override", "ability_check_advantage", "ability_check_floor", "weapon_mastery", "weapon_damage_rider", "uncanny_metabolism", "reaction", "stunning_strike", "empowered_strikes", "evasion", "heightened_focus", "self_restoration", "fleet_step", "deflect_energy", "disciplined_survivor", "perfect_focus", "superior_defense", "divine_smite", "defense_style", "archery", "lay_on_hands", "divine_sense", "abjure_foes", "bardic_inspiration", "favored_foe", "sneak_attack", "cunning_strike", "cunning_action", "recover_spell_slots", "pact_magic", "pact_magic_recovery", "sorcery_points", "sorcerer_font_of_magic", "innate_sorcery", "metamagic", "metamagic_choices", "sorcery_incarnate", "arcane_apotheosis", "blindsight", "wizard_ritual_casting", "wizard_memorize_spell", "wizard_spell_mastery", "wizard_signature_spells", "elusive", "rogue_steady_aim", "stroke_of_luck", "give_item", "source_benefits"]
 	supported.append_array(["darkvision", "truesight", "tremorsense"])
 	supported.append("check_floor")
+	supported.append("avoided_spell_damage")
 	supported.append_array(["warlock_invocations", "warlock_mystic_arcanum", "concentration_save_advantage", "dark_ones_blessing", "dark_ones_own_luck", "fiendish_resilience", "hurl_through_hell", "roll_token_pool", "roll_token_pool_upgrade", "damage_ward_pool", "damage_ward_projection", "rest_slot_recovery", "failed_save_numeric_bonus", "failed_save_outcome_override", "roll_outcome_override", "weapon_attack_numeric_bonus", "attack_total_adjustment", "defending_ac_adjustment", "ability_check_numeric_bonus", "ability_check_mandatory_reroll", "ability_check_roll_mode", "ability_check_roll_mode_policy", "recipient_damage_map", "incoming_spell_negation"])
 	var effects: Array = feature.get("effects", []).duplicate()
 	effects.append_array(feature.get("passive_effects", []))
@@ -1032,6 +1045,9 @@ func _feature_content_error(feature: Dictionary) -> String:
 	var ability_check_bonus_filters: Array[String] = []
 	var ability_check_reroll_filters: Array[String] = []
 	for effect in effects:
+		if effect is Dictionary and effect.get("type", "") == "avoided_spell_damage":
+			if feature.get("type", "") != "passive" or effect.size() != 4 or not FeatureModeRules._int(effect.get("spell_level", null), 0, 0) or effect.get("outcomes", []) != ["miss", "success"] or not (effect.get("scale") is int or effect.get("scale") is float) or float(effect.get("scale", -1)) != 0.5:
+				return "avoided_spell_damage requires a passive cantrip miss/success half-damage rule"
 		if effect is Dictionary and effect.get("type") == "hit_options":
 			if feature.get("type") != "passive": return "Hit options require a passive feature."
 			var hit_error := CombatHitOptions.content_error(effect)

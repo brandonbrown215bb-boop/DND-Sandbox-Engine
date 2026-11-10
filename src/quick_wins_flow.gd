@@ -43,7 +43,7 @@ static func run(h: Node) -> void:
 	h._assert(SaveManager._validate_save_data(players).contains("method is not allowed") and SaveManager._validate_save_data(party_only_receipts).contains("method is not allowed"), "S242 campaign restrictions validate both player receipts and party-only receipts")
 	if old_methods == null: campaign.erase("ability_generation_methods")
 	else: campaign["ability_generation_methods"] = old_methods
-	for defect in ["generation", "repeat", "budget"]:
+	for defect in ["generation", "repeat", "budget", "base_ac"]:
 		for players_only in [false, true]:
 			var bad := (players if players_only else dto).duplicate(true)
 			var actor: Dictionary = bad.players[0].character if players_only else bad.party.characters[c.character_id]
@@ -51,7 +51,8 @@ static func run(h: Node) -> void:
 			elif defect == "repeat":
 				for key in actor.feature_choices:
 					if actor.feature_choices[key] == ["feat:fixture:distinct_origin|divine"]: actor.feature_choices[key] = ["feat:fixture:distinct_origin|arcane"]
-			else: actor.spell_effects[source].damage_budget_total = 60
+			elif defect == "budget": actor.spell_effects[source].damage_budget_total = 60
+			else: actor["base_ac_choice"] = JSON.stringify(["protection", "forged:protection:999"])
 			h._assert(not SaveManager._validate_save_data(bad).is_empty() and PlayerManager.get_player(0).get("character") == c, "Quick wins malformed %s refuses %s checkpoint before session mutation" % [defect, "players" if players_only else "party"])
 	h._exit_test()
 
@@ -136,8 +137,65 @@ static func combat_controls(h: Node, c: Character) -> void:
 	enemy.armor_class = -100
 	enemy.current_hp = 200; enemy.max_hp = 200
 	combat._update_grid_entities()
+	# Use the actual attack control at normal range so the armor is the only
+	# source of Disadvantage, then restore training for the other scenarios.
+	if c.inventory.get_armor() != "fixture:renamed_plate": c.inventory.equip(Inventory.Slot.BODY, "fixture:renamed_plate", true)
+	var strength_before := c.ability_scores.strength
+	c.ability_scores.strength = 12
+	var below_threshold := c.armor_speed_penalty() == 2
+	c.ability_scores.strength = 13
+	h._assert(below_threshold and c.armor_speed_penalty() == 0, "CXM-07 renamed worn armor applies its Strength threshold inclusively")
+	c.ability_scores.strength = strength_before
+	var old_training := c.armor_proficiencies.duplicate()
+	var wand := Batch041Checks.add_copy(c, "wand_of_magic_missiles")
+	var wand_equipped := c.inventory.equip_instance(Inventory.Slot.HANDS, wand)
+	var charges_before := int(c.inventory.get_instance(wand).get("state", {}).get("charges", 0))
+	var pending_command := CombatCommand.from_hud_for_character("activate_magic_item", {"instance_id":wand, "charges":1}, c)
+	c.armor_proficiencies.erase("heavy")
+	var saved_features := c.features.duplicate(true)
+	var saved_known := c.known_spells.duplicate()
+	var saved_slots := c.spell_slots.duplicate(true)
+	SpellPermissionChecks.grant_slot_permission(c, ["magic_missile"])
+	c.spell_slots["1"] = 1
+	var ordinary_cast_choices := SpellPermissionRules.payment_choices(c, "magic_missile")
+	if not ordinary_cast_choices.is_empty():
+		await combat._on_hud_action("cast_spell", {"spell": ordinary_cast_choices[0]})
+	h._assert(not ordinary_cast_choices.is_empty() and int(c.spell_slots.get("1", 0)) == 1 and combat._can_spend_action_cost("action") and combat.pending_action_type.is_empty(), "CXM-07 actual ordinary spell control refuses untrained armor before slot or Action")
+	c.features.assign(saved_features)
+	c.known_spells.assign(saved_known)
+	c.spell_slots = saved_slots
+	await combat._on_hud_action("activate_magic_item", {"instance_id": wand, "charges": 1})
+	h._assert(wand_equipped and charges_before > 0 and int(c.inventory.get_instance(wand).get("state", {}).get("charges", 0)) == charges_before and combat._can_spend_action_cost("action") and combat.pending_action_type.is_empty(), "CXM-07 actual magic-item spell control refuses untrained armor before charge or Action")
+	if pending_command != null:
+		var no_coords: Array[Vector2i] = []
+		var no_targets: Array[String] = []
+		var stale_cast: SpellCastContext = combat._spell_cast_context(Vector2i.ZERO, Vector2i(9999, 9999), no_coords, no_targets, c, pending_command.payload.spell)
+		stale_cast.spell["_metamagic_subtle"] = true
+		c.feature_uses["sorcery_points"] = 3
+		var before_uses := c.feature_uses.duplicate(true)
+		var metamagic_paid := SpellCastResources.commit_metamagic(stale_cast)
+		stale_cast.spell = pending_command.payload.spell.duplicate(true)
+		var spell_paid := SpellCastResources.commit_spell_resource(stale_cast)
+		h._assert(not metamagic_paid and not spell_paid and c.feature_uses == before_uses and int(c.inventory.get_instance(wand).get("state", {}).get("charges", 0)) == charges_before and combat._can_spend_action_cost("action"), "CXM-07 stale spell choice refuses before metamagic, item charge or Action payment")
+		c.feature_uses.erase("sorcery_points")
+	else:
+		h._assert(false, "CXM-07 captured item cast remains available for stale preflight")
+	c.inventory.unequip(Inventory.Slot.HANDS)
+	enemy.hex_position = Vector2i(3, 0)
+	combat._update_grid_entities()
+	var records_before := ActivityHistory.get_records().size()
+	combat.hud.btn_attack.pressed.emit()
+	await combat._on_hex_clicked(enemy.hex_position)
+	var records := ActivityHistory.get_records()
+	var last_attack: Dictionary = records.back() if records.size() > records_before else {}
+	h._assert(last_attack.get("kind", "") == "attack" and last_attack.get("payload", {}).get("disadvantage", false), "CXM-07 actual Attack control rolls with renamed untrained armor Disadvantage")
+	c.armor_proficiencies.assign(old_training)
+	combat._reset_turn_action_economy()
+	enemy.hex_position = Vector2i(6, 0)
+	combat._update_grid_entities()
 	combat.hud.btn_attack.pressed.emit()
 	var log_before: int = combat.hud.log_text.text.length()
+	var hp_before_long_attack := int(enemy.current_hp)
 	await combat._on_hex_clicked(enemy.hex_position)
 	# Acceptance and hit are separate facts. 30 ft is past the bow's 20 ft
 	# normal range, so the roll has Disadvantage and a natural 1 on the kept
@@ -145,7 +203,7 @@ static func combat_controls(h: Node, c: Character) -> void:
 	var attack_log: String = combat.hud.log_text.text.substr(log_before)
 	var hit := attack_log.contains("Hit!")
 	h._assert(not combat._can_spend_action_cost("action") and not attack_log.contains("out of range") and (hit or attack_log.contains("Miss!")), "S250 actual Attack targeting accepts a long-range target despite legacy range 1")
-	h._assert((enemy.current_hp < 200) == hit, "S250 accepted long-range attack deals damage exactly when it hits")
+	h._assert((enemy.current_hp < hp_before_long_attack) == hit, "S250 accepted long-range attack deals damage exactly when it hits")
 	combat._reset_turn_action_economy()
 	enemy.hex_position = Vector2i(13, 0)
 	combat._update_grid_entities()
@@ -168,8 +226,23 @@ static func combat_controls(h: Node, c: Character) -> void:
 		if not copy.is_empty():
 			var refused := c.inventory.equipment_control_equip(Inventory.Slot.BODY, str(copy[0].instance_id), combat)
 			h._assert(not refused.success and refused.seconds == 0, "S252 combat refuses donning " + id)
+	combat._reset_turn_action_economy()
+	combat.remaining_speed = float(c.get_speed())
+	var before_move: float = combat.remaining_speed
+	var destination := Vector2i(9999, 9999)
+	var origin: Vector2i = combat.player_entities[combat.current_player_idx].hex_position
+	for coord in combat._player_reachable(origin, combat.remaining_speed, c):
+		if HexUtils.get_distance(origin, coord) == 1:
+			destination = coord
+			break
+	if destination != Vector2i(9999, 9999): await combat._on_hex_clicked(destination)
+	var spent: float = before_move - combat.remaining_speed
+	var doffed := c.inventory.equipment_control_unequip(Inventory.Slot.BODY, combat)
+	combat._sync_changed_movement_speed()
+	h._assert(spent > 0 and doffed.success and is_equal_approx(combat.remaining_speed, float(c.get_speed()) - spent), "CXM-07 removing heavy armor refreshes Speed without refunding movement already spent")
 	h._teardown_scene(combat)
 	await h.get_tree().process_frame
+	c.inventory.equip(Inventory.Slot.BODY, "chain_mail")
 
 static func room_controls(h: Node, c: Character) -> void:
 	GameManager.current_state = GameManager.GameState.DUNGEON
@@ -196,6 +269,39 @@ static func room_controls(h: Node, c: Character) -> void:
 	time = int(GameManager.campaign_elapsed_seconds)
 	h._assert(selected and TetherGroupFlow.press(view, "Equip"), "S252 actual room selects an exact Heavy Armor copy")
 	h._assert(c.inventory.get_equipped(Inventory.Slot.BODY) == "chain_mail" and int(GameManager.campaign_elapsed_seconds) == time + 600 and "600 seconds" in view.hud.log_text.text, "S252 actual Heavy donning advances ten minutes and reports elapsed time")
+	h._assert(c.armor_speed_penalty() == 2 and EventResolver.ability_check_roll_mode(c, "DEX", "Stealth", {}).disadvantage, "CXM-07 the actual donned chain applies its Strength and Stealth penalties")
+	var saved_training := c.armor_proficiencies.duplicate()
+	c.armor_proficiencies.erase("heavy")
+	h._assert(c.untrained_worn_armor() and CombatAction.save_has_disadvantage(c, "STR") and CombatAction.attacker_has_condition_disadvantage(c, "DEX"), "CXM-07 the actual worn copy imposes untrained STR/DEX penalties")
+	c.armor_proficiencies.assign(saved_training)
+	# The second player chooses a lower legal base through the actual room menu;
+	# the first player's completed armor change remains in the same checkpoints.
+	var ally: Character = PlayerManager.get_player(1).get("character")
+	var ally_index := view.characters.find(ally)
+	if ally_index >= 0:
+		view.actors.select(ally_index)
+		view.actors.item_selected.emit(ally_index)
+		view.slots.select(Inventory.Slot.BODY)
+		if not ally.inventory.get_armor().is_empty(): TetherGroupFlow.press(view, "Unequip")
+		var cast := CombatAction.resolve_spell(ally, ally, DataLoader.get_spell("mage_armor"), false, {}, [], 1, 0)
+		if cast.get("success", false): SpellEffects.grant(ally, cast.get("effect_cast", {}), "mage_armor", "start")
+		LocalRoomModes.refresh(view)
+		var offer_index := -1
+		for index in view.mode_offers.item_count:
+			if view.mode_offers.get_item_metadata(index).get("feature_id", "") == ModeControls.BASE_AC_CONTROL: offer_index = index; break
+		var chosen := false
+		if offer_index >= 0:
+			view.mode_offers.select(offer_index)
+			var offer: Dictionary = view.mode_offers.get_item_metadata(offer_index)
+			var options := ModeControls.options(ModeControls.row(ally, ModeControls.BASE_AC_CONTROL), "base_ac")
+			var ordinary := JSON.stringify(["unarmored"])
+			var popup := LocalRoomModes.open(view)
+			if popup != null and ordinary in options:
+				popup.id_pressed.emit(options.find(ordinary) + 1)
+				chosen = ally.base_ac_choice == ordinary
+		h._assert(cast.get("success", false) and chosen and ally.get_ac() == 10 + ally.ability_scores.get_ability_modifier("DEX") + ally.trained_shield_bonus(), "CXM-07 actual room menu selects ordinary AC over Mage Armor: cast=%s chosen=%s offer=%d ac=%d expected=%d armor=%s" % [str(cast), str(chosen), offer_index, ally.get_ac(), 10 + ally.ability_scores.get_ability_modifier("DEX") + ally.trained_shield_bonus(), ally.inventory.get_armor()])
+	else:
+		h._assert(false, "CXM-07 second player is available in the room")
 	h._teardown_scene(dungeon)
 	await h.get_tree().process_frame
 
@@ -211,6 +317,8 @@ static func run_reload(h: Node) -> void:
 		h._assert(ally != null and ally.creation_choices.get("ability_generation", {}).get("method", "") == "random_4d6" and ally.creation_choices.ability_generation.seed == 123456 and AbilityScores.saved_generation_error(ally.to_dict()).is_empty(), "S242 fresh process retains seeded random generation without rerolling")
 		h._assert(receipt.get("method", "") == "standard_array" and AbilityScores.saved_generation_error(c.to_dict()).is_empty() and receipt.get("assigned_abilities", []) == ["CHA","DEX","CON","INT","WIS","STR"] and c.origin_feat == "fixture:distinct_origin|arcane" and "fixture:distinct_origin|arcane" not in FeatRules.options(c, "") and "fixture:distinct_origin|divine" not in FeatRules.options(c, ""), "S242/S233 fresh-process checkpoint retains assigned rolls and both distinct parameters")
 		h._assert(c.inventory.get_equipped(Inventory.Slot.BODY) == "chain_mail", "S252 fresh-process checkpoint retains completed armor change")
+		if ally != null:
+			h._assert(ally.base_ac_choice == JSON.stringify(["unarmored"]) and ally.has_condition("mage_armor") and ally.get_ac() == 10 + ally.ability_scores.get_ability_modifier("DEX") + ally.trained_shield_bonus(), "CXM-07 fresh-process checkpoint restores the selected ordinary base beside Mage Armor")
 		var source := ""
 		for id in c.spell_effects:
 			if c.spell_effects[id].get("spell_id", "") == "fixture:budget_light": source = str(id); break

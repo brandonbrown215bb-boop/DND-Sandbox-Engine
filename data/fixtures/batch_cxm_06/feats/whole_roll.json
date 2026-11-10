@@ -1,0 +1,9 @@
+[
+  {
+    "id": "fixture:whole_roll",
+    "name": "Measured Strike",
+    "category": "origin",
+    "weapon_damage_roll_choice": {"rolls": 2, "uses_per": "turn"},
+    "features": []
+  }
+]

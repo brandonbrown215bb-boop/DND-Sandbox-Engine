@@ -642,10 +642,16 @@ static func _weapon_attack_numeric_bonus(check: Callable) -> void:
 	for form_id in ["rat", "riding_horse", "spider", "wolf"]:
 		DruidRules.learn_form(shape_druid, form_id)
 	check.call(DruidRules.pending_known_form_count(shape_druid) == 0 and not DruidRules.learn_form(shape_druid, "wolf") and DruidRules.form_options(shape_druid).size() == 4, "Learned forms are saved, unique, capacity-bounded, and are the only forms offered for transformation")
+	shape_druid.inventory.unequip(Inventory.Slot.WEAPON)
+	shape_druid.inventory.unequip(Inventory.Slot.OFFHAND)
+	shape_druid.inventory.equip(Inventory.Slot.BODY, "chain_mail", true)
+	shape_druid.inventory.equip(Inventory.Slot.SHIELD, "shield", true)
 	shape_druid.temp_hp = 1
 	var shape_result := DruidRules.transform(shape_druid, "wolf")
 	var wolf_form := DruidRules.current_form(shape_druid)
 	check.call(shape_result.get("success", false) and shape_druid.feature_uses["druid_wild_shape_uses"] == 1 and shape_druid.temp_hp == 2 and shape_druid.get_ac() == 12 and shape_druid.get_speed() == 8 and shape_druid.ability_scores.get_score("STR") == 14 and shape_druid.ability_scores.get_score("WIS") == original_scores["WIS"] and wolf_form.get("challenge_rating", 99) == 0.25, "Wild Shape spends one shared use, gains Druid-level temporary HP, and applies eligible Beast AC, speed, and physical scores while retaining mental scores")
+	var unarmored_protection := {"type":"timed_protection", "duration_seconds":60, "group":"shape_check", "stacking":"stack", "eligibility":{"armor":"none", "shield":"none"}, "benefits":[{"stat":"AC", "operation":"add", "value":1}]}
+	check.call(shape_druid.worn_armor_id().is_empty() and shape_druid.worn_shield_id().is_empty() and shape_druid.is_unarmored() and ProtectionRules.eligible(shape_druid, unarmored_protection), "CXM-07 actual Wild Shape treats its merged armor and Shield as not worn")
 	var wolf_attack := DruidRules.current_attack_profile(shape_druid)
 	var adjacent_ally := _character("fighter", 1)
 	var wolf_target := {"hex_position": Vector2i(1, 0), "current_hp": 20, "is_alive": true, "size": "medium", "conditions": {}}

@@ -2088,6 +2088,17 @@ Acquisition and advancement clauses (feat/ASI/Fighting Style/subclass/skill/mast
 | S-240 — Natural-roll outcome thresholds (P3) | Planned | [V-102](../reviews/dnd-code-vocabulary-gap-checklist.md#src-01-batch-2-proposed), V-008, V-013 | A fixture source widens the critical threshold to 19–20 / 18–20 for declared attack kinds (weapons + Unarmed Strikes) and treats Death Save 18–20 as 20. The natural value stays visible, and consequences fire once in correct precedence with Advantage/rerolls. Affects Improved/Superior Critical and Survivor. | S-038, S-092, S-093 |
 | S-241 — Granted/forced movement with OA suppression (P7) | Planned | [V-103](../reviews/dnd-code-vocabulary-gap-checklist.md#src-01-batch-2-proposed), V-069, V-064 | Through the production combat grid, a fixture source grants a half-Speed move (optionally straight toward a target) and a 15-ft straight push with size eligibility. Each declares OA provocation and its budget policy. A blocked path stops at the last legal space, refusal spends nothing, and the reload state matches. Affects Instinctive Pounce, Forceful Blow, Tactical Shift, Tactical Master Push and Remarkable Athlete. | S-179, S-041, S-057 |
 
+**CXM-06 bounded delivery:** expanded weapon and Unarmed Strike critical
+thresholds retain their natural faces; Great Weapon Fighting handles eligible
+attack dice; the loaded Savage Attacker feat offers whole weapon rolls with a
+per-turn lock; and a renamed passive fixture supplies cantrip half damage on a
+miss or successful save without additional effects. Exact declarations and
+limits live in [attack profiles](../mechanics/attack-profiles.md),
+[Fighter](../mechanics/fighter-2024.md), and
+[shared spells](../mechanics/shared-spells.md). S-240 remains planned as a
+whole: death-save outcome replacement and its broader thresholds are not
+claimed by this combat slice. Evoker class conversion is separate.
+
 The provisional labels FEAT-B2-CRIT and FEAT-B2-MOVE became **S-240** (P3) and **S-241** (P7), parents V-102/V-103, after #62 (S-227–S-230), #63 (S-231–S-234) and #64 (S-235–S-239). The registry is now **245 defined, 151 verified, 94 not yet accepted**. S-241 is not a duplicate of #64's movement slice: S-239 covers fallback climb/swim, crawl, stand-up and jump costs within the ordinary movement budget, and S-236's Shove is a 5-ft push from an Unarmed Strike. S-241 owns feature-granted moves outside the normal budget with OA suppression, plus the 15-ft Forceful Blow push with size eligibility. They share the S-179 movement host and S-236's forced-displacement path; reuse those hosts rather than duplicating them.
 
 **Next queue.** (1) Monk + Open Hand, (2) Rogue (Thief absent), (3) Warlock `eldritch_master` refusal plus the Fiend clauses, (4) remaining classes, (5) the 17 SRD feat bodies (needs source-backed data; acquisition with Subclass Stager).
@@ -3971,6 +3982,16 @@ without is unchanged. Syntax, save checks and limits live in
 [progression choices](../mechanics/progression-choices.md#backgrounds-cxm-04--s-231).
 
 Checked by the `classes` logic group and the `background_creation_flow`
-scenario with its fresh-process reload. Not delivered: the rules of Alert
-(CXM-05), Savage Attacker (CXM-06) and Magic Initiate's spells and casting
-ability (CXM-60); those feats are owned but do nothing yet.
+scenario with its fresh-process reload. Savage Attacker is covered by CXM-06;
+Magic Initiate's spells and casting ability (CXM-60) remain pending. Alert is
+covered separately by the initial initiative exchange boundary below.
+
+
+## Initial willing initiative exchange
+
+CXM-05 adds data-declared feat initiative proficiency and an encounter-local
+exchange window before the first turn. Owners choose a same-combat ally, who
+must agree; incapacitated participants and stale or repeated selections cannot
+exchange. Exact totals move, and dependent steed counts follow their owners.
+The choice is transient and late or grouped arrivals do not reopen it. The
+loaded feat syntax is in [progression choices](../mechanics/progression-choices.md#backgrounds-cxm-04--s-231).

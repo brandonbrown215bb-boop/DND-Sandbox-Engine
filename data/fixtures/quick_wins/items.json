@@ -1,4 +1,5 @@
 [
   {"id":"fixture:banded_bow","name":"Banded Bow","type":"weapon","weapon_type":"simple","properties":["ranged","heavy"],"ability":"DEX","damage":"1d6","damage_type":"piercing","range":1,"normal_range_feet":20,"long_range_feet":60,"value":1},
+  {"id":"fixture:renamed_plate", "name":"Renamed Plate", "type":"armor", "armor_type":"heavy", "ac":16, "strength_requirement":13, "stealth_disadvantage":true, "value":1},
   {"id":"fixture:banded_thrower","name":"Banded Thrower","type":"weapon","weapon_type":"simple","properties":["thrown","finesse"],"ability":"STR","damage":"1d4","damage_type":"piercing","range":1,"normal_range_feet":20,"long_range_feet":60,"value":1}
 ]

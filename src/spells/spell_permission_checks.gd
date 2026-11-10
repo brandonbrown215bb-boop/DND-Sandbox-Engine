@@ -159,6 +159,15 @@ static func _ability_checks(check: Callable, caster: Character, selected_spell: 
 	caster.add_modifier("roll", "save:CON", -1000, 1)
 	var countered := CombatAction.resolve_spell(caster, target, DataLoader.get_spell("fireball"), false, counter_decisions, [reaction])
 	check.call(countered.get("countered", false) and countered.get("counterspell_save_dc", 0) == 13 and reaction.spell_slots["3"] == 1 and reaction.feature_uses["free_spell_cast:fixture:innate_reaction"] == 0, "021: the actual Counterspell resolver uses the chosen WIS source DC and exact free payment")
+	reaction.reaction_available = true
+	reaction.feature_uses["free_spell_cast:fixture:innate_reaction"] = 2
+	var stale_shield := SpellPermissionRules.payment_choices(reaction, "shield")[0]
+	var stale_counter := SpellPermissionRules.payment_choices(reaction, "counterspell")[0]
+	reaction.inventory.equip(Inventory.Slot.BODY, "chain_mail", true)
+	reaction.armor_proficiencies.erase("heavy")
+	var shield_refused := CombatAction.resolve_spell(caster, reaction, DataLoader.get_spell("magic_missile"), false, {"shield":true, SpellPermissionRules.reaction_key(reaction,"shield"):stale_shield})
+	var counter_refused := CombatAction.resolve_spell(caster, target, DataLoader.get_spell("fireball"), false, {"counterspell":true, SpellPermissionRules.reaction_key(reaction,"counterspell"):stale_counter}, [reaction])
+	check.call(SpellPermissionRules.payment_choices(reaction, "shield").is_empty() and SpellPermissionRules.payment_choices(reaction, "counterspell").is_empty() and not shield_refused.get("shield_used", false) and not counter_refused.get("countered", false) and reaction.reaction_available and reaction.feature_uses["free_spell_cast:fixture:innate_reaction"] == 2, "CXM-07 Shield and Counterspell refuse untrained armor before reaction or payment, including stale offers")
 
 static func load_fixtures() -> void:
 	for kind in ["class", "spell", "item"]:

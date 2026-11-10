@@ -747,6 +747,11 @@ static func _resolve_black_tentacles_save(area: Dictionary, character: Character
 	return {"spell_id": "black_tentacles", "save_total": int(save.get("total", 0)), "save_dc": dc, "saved": not failed, "damage": damage, "condition": "restrained" if failed and character.has_condition("restrained") else ""}
 
 
+static func finish_strike(object: Dictionary, weapon: Dictionary, character: Character, result: Dictionary) -> Dictionary:
+	if bool(result.get("refused", false)): return failure(str(result.get("message", "The attack is no longer available.")))
+	var dealt := CombatObjectRules.apply_damage(object, int(result.get("damage", 0)), str(weapon.get("damage_type", "bludgeoning"))) if bool(result.get("hit", false)) else 0
+	return {"success": true, "seconds": 6, "message": "%s strikes %s and deals %d damage%s." % [character.character_name, str(object["name"]), dealt, "; the barrier breaks" if int(object.get("hp", 1)) == 0 else ""], "damage": dealt, "hit": bool(result.get("hit", false))}
+
 static func interact(state: Dictionary, id: String, action: String, character: Character, instance_id: String = "", check_context: Dictionary = {}) -> Dictionary:
 	if ContainmentRules.involved(state, "object", id) or (character != null and not ContainmentRules.relation(state, "character", character.character_id).is_empty()): return failure("Internal interaction and occupied container changes require release support.")
 	var object := get_object(state, id, character)
@@ -764,9 +769,14 @@ static func interact(state: Dictionary, id: String, action: String, character: C
 		target["damage_immunities"] = []
 		target["damage_resistances"] = []
 		target["damage_vulnerabilities"] = []
-		var result := CombatAction.resolve_weapon_attack(character, target, weapon)
-		var dealt := CombatObjectRules.apply_damage(object, int(result.get("damage", 0)), str(weapon.get("damage_type", "bludgeoning"))) if bool(result.get("hit", false)) else 0
-		return {"success": true, "seconds": 6, "message": "%s strikes %s and deals %d damage%s." % [character.character_name, str(object["name"]), dealt, "; the barrier breaks" if int(object.get("hp", 1)) == 0 else ""], "damage": dealt, "hit": bool(result.get("hit", false))}
+		var allow_choice := bool(check_context.get("allow_whole_damage_choice", false))
+		if allow_choice: CombatAction.begin_room_weapon_turn()
+		var result := CombatAction.resolve_weapon_attack(character, target, weapon, false, false, {"allow_whole_damage_choice": allow_choice})
+		if result.has("whole_damage_request"):
+			return {"success": true, "pending": true, "room_strike": {"object": object, "weapon": weapon, "actor": character, "attack": result}}
+		return finish_strike(object, weapon, character, result)
+	if action in ["knock", "arcane_lock"] and character.untrained_worn_armor():
+		return failure("You cannot cast spells while wearing armor you lack training in.")
 	var alarm_areas: Array[Dictionary] = []
 	if action in ["open", "close", "lock", "unlock", "pick_lock", "pry", "force_open", "break_open", "bar", "unbar", "jam", "unjam", "close_unheld", "knock", "arcane_lock"]:
 		alarm_areas = LocalRoomAreas.touch_object(state, character.character_id, id, int(GameManager.campaign_elapsed_seconds))
@@ -1335,6 +1345,7 @@ static func travel_destination_error(state: Dictionary, character: Character, or
 
 
 static func _room_spell_caster_error(character: Character, spell: Dictionary) -> String:
+	if character != null and character.untrained_worn_armor(): return "You cannot cast spells while wearing armor you lack training in."
 	if character == null or not character.is_alive or CombatAction.is_incapacitated(character):
 		return "That character cannot cast a spell."
 	var spell_id := str(spell.get("id", ""))

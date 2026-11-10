@@ -224,6 +224,9 @@ static func resolve(cast: SpellResolutionContext) -> Dictionary:
 	var save_outcome := "success" if saved else "failure"
 	if cast.spell.has("damage_scale_by_outcome") and not has_evasion and not careful_saved:
 		damage_scale = SharedSpell.authored_damage_scale(cast.spell, save_outcome, damage_scale)
+	var avoided_damage := saved and SpellDamageRolls.avoided_spell_damage(cast, "success")
+	if avoided_damage and not has_evasion and not careful_saved:
+		damage_scale = 0.5
 	var recipient_damage_receipt: Dictionary = _recipient_damage_map(cast, save_outcome) if not has_evasion and not careful_saved else {}
 	if not recipient_damage_receipt.is_empty():
 		damage_scale = float(recipient_damage_receipt.get("scale", damage_scale))
@@ -273,11 +276,14 @@ static func resolve(cast: SpellResolutionContext) -> Dictionary:
 			msg += " %s adds +%d after the failed save." % [str(save_test.get("post_roll_bonus_source", "A source")), int(save_test.get("post_roll_bonus", 0))]
 	var effective_save_disadvantage: bool = (target_save_disadvantage or heightened) and not target_save_advantage
 	var base_res := {"success": true, "saved": saved, "automatic_save": trait_auto_saved, "save_total": save_roll, "save_dc": save_dc, "save_disadvantage": effective_save_disadvantage, "effect_cast": cast.effect_cast, "condition": inflicted_condition if not saved and not SharedSpell.uses(cast.spell) else "", "condition_source": "animal_friendship:%s" % cast.caster.character_id if str(cast.spell.get("id", "")) == "animal_friendship" else "", "caster_creature_type": cast.caster.creature_type, "countercharm_used": countercharm_used, "bardic_inspiration_used": bardic_inspiration_used, "stroke_of_luck_used": stroke_of_luck_used, "metamagic_used": careful_saved, "roll_token_replaced": bool(save_test.get("roll_token_replaced", false)), "message": msg}
+	if avoided_damage: base_res["suppress_avoided_spell_effects"] = true
 	base_res["save_test"] = save_test.duplicate(true)
 	if not save_context_receipt.is_empty():
 		base_res["save_context"] = save_context_receipt.duplicate(true)
 	if cast.spell.has("damage_scale_by_outcome") and not has_evasion and not careful_saved:
 		SharedSpell.record_damage_scale(base_res, cast.spell, save_outcome, damage_scale)
+	if avoided_damage and not has_evasion and not careful_saved and recipient_damage_receipt.is_empty() and exemption_receipt.is_empty():
+		base_res["damage_scale_decision"] = {"outcome": "success", "scale": 0.5, "source": "avoided_spell_damage", "rounding": "floor_after_bonus_before_typed_settlement"}
 	base_res["save_natural_roll"] = int(save_test.get("natural_roll", save_test.get("natural", save_roll)))
 	base_res["save_modifier"] = int(save_test.get("modifier", 0))
 	if not recipient_damage_receipt.is_empty():
